@@ -9,7 +9,11 @@ Ensure that the cancel and info handlers within the resource module works
 . `dirname $0`/sharness.sh
 
 grug="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/tiny.graphml"
+rv1="${SHARNESS_TEST_SRCDIR}/data/resource/rv1exec/tiny_rv1exec.json"
 jobspec="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/basics/test001.yaml"
+jobspec1="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/cancel/test018.yaml"
+jobspec2="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/cancel/test019.yaml"
+rv1cancel="${SHARNESS_TEST_SRCDIR}/data/resource/rv1exec/cancel/rank1_cancel.json"
 
 #
 # test_under_flux is under sharness.d/
@@ -65,6 +69,22 @@ test_expect_success 'resource-info on allocated jobs works' '
 
 test_expect_success 'cancel on nonexistent jobid is handled gracefully' '
     test_expect_code 3 flux ion-resource cancel 100000
+'
+
+test_expect_success 'removing resource works' '
+    remove_resource
+'
+
+test_expect_success 'loading resource module with a tiny machine config works' '
+    load_resource \
+load-file=${rv1} prune-filters=ALL:core \
+load-format=rv1exec subsystems=containment policy=low
+'
+
+test_expect_success 'resource-cancel works' '
+    flux ion-resource match allocate ${jobspec1} &&
+    flux ion-resource partial-cancel 0 ${rv1cancel} &&
+    flux ion-resource match allocate ${jobspec2}
 '
 
 test_expect_success 'removing resource works' '

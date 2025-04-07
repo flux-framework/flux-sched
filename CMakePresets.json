@@ -29,12 +29,37 @@
       "cacheVariables": {
         "SANITIZE_ADDRESS": "ON"
       }
+    },
+    {
+      "name": "rpm",
+      "displayName": "rpm",
+      "description": "rpm",
+      "generator": "Ninja",
+      "binaryDir": "build/rpm",
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_BUILD_TYPE":"RelWithDebInfo",
+        "CMAKE_EXPORT_COMPILE_COMMANDS":true,
+        "CMAKE_SHARED_LINKER_FLAGS":"-Wl,-z,relro -Wl,--as-needed   -Wl,-z,now -specs=/usr/lib/rpm/redhat/redhat-hardened-ld-errors -specs=/usr/lib/rpm/redhat/redhat-hardened-ld -specs=/usr/lib/rpm/redhat/redhat-annobin-cc1  -Wl,--build-id=sha1",
+        "CMAKE_EXE_LINKER_FLAGS":"-Wl,-z,relro -Wl,--as-needed   -Wl,-z,now -specs=/usr/lib/rpm/redhat/redhat-hardened-ld-errors -specs=/usr/lib/rpm/redhat/redhat-hardened-ld -specs=/usr/lib/rpm/redhat/redhat-annobin-cc1  -Wl,--build-id=sha1",
+        "CMAKE_INSTALL_PREFIX":"${sourceDir}/install/rpm",
+        "CMAKE_C_FLAGS": "-O2 -flto=auto -ffat-lto-objects -fexceptions -g -grecord-gcc-switches -pipe -Wall -Werror=format-security -Wp,-U_FORTIFY_SOURCE,-D_FORTIFY_SOURCE=3 -Wp,-D_GLIBCXX_ASSERTIONS -specs=/usr/lib/rpm/redhat/redhat-hardened-cc1 -fstack-protector-strong -specs=/usr/lib/rpm/redhat/redhat-annobin-cc1  -mbranch-protection=standard -fasynchronous-unwind-tables -fstack-clash-protection -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer",
+        "CMAKE_CXX_FLAGS": "-O2 -flto=auto -ffat-lto-objects -fexceptions -g -grecord-gcc-switches -pipe -Wall -Werror=format-security -Wp,-U_FORTIFY_SOURCE,-D_FORTIFY_SOURCE=3 -Wp,-D_GLIBCXX_ASSERTIONS -specs=/usr/lib/rpm/redhat/redhat-hardened-cc1 -fstack-protector-strong -specs=/usr/lib/rpm/redhat/redhat-annobin-cc1  -mbranch-protection=standard -fasynchronous-unwind-tables -fstack-clash-protection -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer"
+      },
+      "environment": {
+      },
+      "vendor": {}
     }
   ],
   "buildPresets": [
     {
       "name": "default",
       "configurePreset": "default"
+    },
+    {
+      "name": "rpm",
+      "configurePreset": "rpm"
     },
     {
       "name": "asan",
@@ -50,7 +75,7 @@
       },
       "execution": {
         "noTestsAction": "error",
-        "stopOnFailure": true
+        "stopOnFailure": false
       }
     },
     {
@@ -67,6 +92,11 @@
         "noTestsAction": "error",
         "stopOnFailure": true
       }
+    },
+    {
+      "name": "rpm",
+      "configurePreset": "rpm",
+      "inherits": "default"
     }
   ],
   "packagePresets": [

@@ -18,14 +18,13 @@
 namespace Flux {
 namespace queue_manager {
 
-std::shared_ptr<queue_policy_base_t> create_queue_policy (
-                                         const std::string &policy,
-                                         const std::string &reapi);
+std::shared_ptr<queue_policy_base_t> create_queue_policy (const std::string &policy,
+                                                          const std::string &reapi);
 
-} // namespace Flux::queue_manager
-} // namespace Flux
+}  // namespace queue_manager
+}  // namespace Flux
 
-#endif // QUEUE_POLICY_FACTORY_HPP
+#endif  // QUEUE_POLICY_FACTORY_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

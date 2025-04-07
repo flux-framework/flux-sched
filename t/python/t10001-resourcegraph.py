@@ -21,8 +21,6 @@ sys.path.insert(0, str(pathlib.Path(__file__).absolute().parents[2] / "src" / "p
 
 from fluxion.resourcegraph.V1 import (
     FluxionResourceGraphV1,
-    FluxionResourcePoolV1,
-    FluxionResourceRelationshipV1,
 )
 
 RV1 = {
@@ -61,19 +59,13 @@ class TestResourceGraph(unittest.TestCase):
     """Test for the ResourceGraph class."""
 
     def _check_metadata(self, metadata):
-        if metadata["type"] in ("node", "core", "gpu", "cluster"):
-            self.assertEqual(metadata["unit"], "")
-            self.assertEqual(metadata["size"], 1)
-            self.assertEqual(metadata["properties"], {})
-        else:
+        if metadata["type"] not in ("node", "core", "gpu", "cluster"):
             raise ValueError(metadata["type"])
 
     def test_basic(self):
         graph = FluxionResourceGraphV1(RV1)
-        self.assertTrue(graph.is_directed())
         j = graph.to_JSON()
         json.dumps(j)  # make sure it doesn't throw an error
-        self.assertTrue(j["graph"]["directed"])
         self.assertEqual(len(j["graph"]["nodes"]), len(graph.get_nodes()))
         self.assertEqual(len(j["graph"]["edges"]), len(graph.get_edges()))
         for node in graph.get_nodes():
@@ -81,10 +73,8 @@ class TestResourceGraph(unittest.TestCase):
 
     def test_basic_2(self):
         graph = FluxionResourceGraphV1(RV1_2)
-        self.assertTrue(graph.is_directed())
         j = graph.to_JSON()
         json.dumps(j)
-        self.assertTrue(j["graph"]["directed"])
         self.assertEqual(len(j["graph"]["nodes"]), len(graph.get_nodes()))
         self.assertEqual(len(j["graph"]["edges"]), len(graph.get_edges()))
         for node in graph.get_nodes():
@@ -92,9 +82,7 @@ class TestResourceGraph(unittest.TestCase):
 
     def test_basic_3(self):
         graph = FluxionResourceGraphV1(RV1_3)
-        self.assertTrue(graph.is_directed())
         j = graph.to_JSON()
-        self.assertTrue(j["graph"]["directed"])
         self.assertEqual(len(j["graph"]["nodes"]), len(graph.get_nodes()))
         self.assertEqual(len(j["graph"]["edges"]), len(graph.get_edges()))
         for node in graph.get_nodes():
@@ -102,10 +90,8 @@ class TestResourceGraph(unittest.TestCase):
             if metadata["type"] != "node":
                 self._check_metadata(node.get_metadata())
             else:
-                self.assertEqual(metadata["unit"], "")
-                self.assertEqual(metadata["size"], 1)
                 self.assertEqual(len(metadata["properties"]), 1)
-                if metadata["id"] < 10:
+                if int(metadata["name"][len("compute") :]) < 10:
                     self.assertEqual(metadata["properties"]["pdebug"], "")
                 else:
                     self.assertEqual(metadata["properties"]["pbatch"], "")

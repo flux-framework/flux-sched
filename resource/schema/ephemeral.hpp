@@ -19,26 +19,24 @@ namespace Flux {
 namespace resource_model {
 
 class ephemeral_t {
-public:
-    int insert (uint64_t epoch,
-                const std::string &key,
-                const std::string &value);
+   public:
+    int insert (uint64_t epoch, const std::string &key, const std::string &value);
     boost::optional<std::string> get (uint64_t epoch, const std::string &key);
-    const std::map<std::string, std::string>& to_map (uint64_t epoch);
-    const std::map<std::string, std::string>& to_map () const;
+    const std::map<std::string, std::string> &to_map (uint64_t epoch);
+    const std::map<std::string, std::string> &to_map () const;
     bool check_and_clear_if_stale (uint64_t epoch);
     void clear ();
 
-private:
+   private:
     std::map<std::string, std::string> m_store;
     // Need to initialize; Valgrind reports errors.
     uint64_t m_epoch = 0;
 };
 
-} // resource_model
-} // Flux
+}  // namespace resource_model
+}  // namespace Flux
 
-#endif // EPHEMERAL_H
+#endif  // EPHEMERAL_H
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

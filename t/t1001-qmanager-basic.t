@@ -8,8 +8,6 @@ hwloc_basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/hwloc-data`
 # 1 brokers, each (exclusively) have: 1 node, 2 sockets, 16 cores (8 per socket)
 excl_1N1B="${hwloc_basepath}/001N/exclusive/01-brokers"
 
-skip_all_unless_have jq
-
 export FLUX_SCHED_MODULE=none
 test_under_flux 1
 
@@ -83,6 +81,12 @@ test_expect_success 'qmanager: unsatisfiable jobspec rejected' '
         exec_test | flux job submit) &&
     flux job wait-event -t 10 ${jobid} clean &&
     flux job wait-event -t 10 ${jobid} exception | grep "unsatisfiable"
+'
+
+test_expect_success 'qmanager: check stats' '
+    flux module stats sched-fluxion-qmanager | tee stats.json &&
+    jq -e ".queues.default.action_counts.rejected == 1" stats.json &&
+    jq -e ".queues.default.action_counts.complete >= 4" stats.json
 '
 
 test_expect_success 'cleanup active jobs' '

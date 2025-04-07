@@ -1,0 +1,33 @@
+files: 'scripts/build-matrix|^(src|t|resource|qmanager)/.*(\.py|\.h|\.hpp|\.c|\.cpp)'
+exclude: "^(.*((pyco|lib)tap|yggdrasil|jsongraph).*)|src/common/libutil/.*$"
+repos:
+  - repo: meta
+    hooks:
+    - id: identity
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.0.1
+    hooks:
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-docstring-first
+      - id: check-shebang-scripts-are-executable
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: mixed-line-ending
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.1
+    hooks:
+      # Run the linter.
+      - id: ruff
+        types_or: [ python, pyi ]
+        args: [ --fix ]
+      # Run the formatter.
+      - id: ruff-format
+        types_or: [ python, pyi ]
+
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    # this is the release of 18.1.6
+    rev: 'eb7205de69febb10d8d455ed9cc0a9fa6ac3a17a'
+    hooks:
+    -   id: clang-format

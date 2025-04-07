@@ -28,6 +28,9 @@ set(ALL_TESTS
   t1023-multiqueue-constraints.t
   t1024-alloc-check.t
   t1025-rv1-reload.t
+  t1026-rv1-partial-release.t
+  t1027-rv1-partial-release-brokerless-resources.t
+  t2317-resource-shrink.t
   t3000-jobspec.t
   t3001-resource-basic.t
   t3002-resource-prefix.t
@@ -65,6 +68,7 @@ set(ALL_TESTS
   t3034-resource-pconstraints.t
   t3035-resource-remove.t
   t3036-rq2.t
+  t3037-resource-custom-policy.t
   t3300-system-dontblock.t
   t3301-system-latestart.t
   t4000-match-params.t

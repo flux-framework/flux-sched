@@ -31,8 +31,7 @@ struct eval_edg_t {
 
 struct eval_egroup_t {
     eval_egroup_t ();
-    eval_egroup_t (int64_t s, unsigned int c, unsigned int n,
-                   unsigned int x, bool r);
+    eval_egroup_t (int64_t s, unsigned int c, unsigned int n, unsigned int x, bool r);
     eval_egroup_t (const eval_egroup_t &o);
     eval_egroup_t &operator= (const eval_egroup_t &o);
 
@@ -47,10 +46,10 @@ struct eval_egroup_t {
 namespace detail {
 
 class evals_t {
-public:
+   public:
     evals_t ();
-    evals_t (int64_t cutline, const std::string &res_type);
-    evals_t (const std::string &res_type);
+    evals_t (int64_t cutline, resource_type_t res_type);
+    evals_t (resource_type_t res_type);
     evals_t (const evals_t &o);
     ~evals_t ();
     evals_t &operator= (const evals_t &o);
@@ -65,7 +64,7 @@ public:
     int64_t set_cutline (int64_t cutline);
     unsigned int best_k () const;
     unsigned int best_i () const;
-    int merge (evals_t &o);
+    int merge (const evals_t &o);
     void eval_egroups_iter_reset ();
     std::vector<eval_egroup_t>::iterator eval_egroups_iter_next ();
     std::vector<eval_egroup_t>::iterator eval_egroups_end ();
@@ -97,7 +96,7 @@ public:
     }
 
     template<class binary_op>
-    int64_t accum_best_k (binary_op accum, int init=0)
+    int64_t accum_best_k (binary_op accum, int init = 0)
     {
         if (m_best_k == 0 || m_best_i == 0) {
             errno = EINVAL;
@@ -112,30 +111,27 @@ public:
     template<class output_it, class unary_op>
     output_it transform (output_it o_it, unary_op uop)
     {
-        return std::transform (m_eval_egroups.begin (),
-                               m_eval_egroups.end (),
-                               o_it, uop);
+        return std::transform (m_eval_egroups.begin (), m_eval_egroups.end (), o_it, uop);
     }
 
-
-private:
+   private:
     std::vector<eval_egroup_t> m_eval_egroups;
     std::vector<eval_egroup_t>::iterator m_iter_cur;
     bool m_iter_cur_reset = true;
-    std::string m_resrc_type;
+    resource_type_t m_resrc_type;
     int64_t m_cutline = 0;
     unsigned int m_qual_count = 0;
     unsigned int m_total_count = 0;
-    unsigned int m_best_k = 0;      //<! best-k to be selected
-    unsigned int m_best_i = 0;      //<! first i elements in has best-k
+    unsigned int m_best_k = 0;  //<! best-k to be selected
+    unsigned int m_best_i = 0;  //<! first i elements in has best-k
 };
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace resource_model
-} // namespace Flux
+}  // namespace resource_model
+}  // namespace Flux
 
-#endif // EDGE_EVAL_API_HPP
+#endif  // EDGE_EVAL_API_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

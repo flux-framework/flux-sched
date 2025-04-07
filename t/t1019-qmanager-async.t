@@ -29,7 +29,7 @@ test_expect_success 'load test resources' '
 test_expect_success 'qmanager: loading resource and qmanager modules works' '
     flux module load sched-fluxion-resource prune-filters=ALL:core \
 subsystems=containment policy=low &&
-    load_qmanager
+    load_qmanager queue-policy=easy
 '
 
 test_expect_success 'qmanager: many basic job submitted' '

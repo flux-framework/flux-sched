@@ -1,2 +1,985 @@
-{"graph": {"nodes": [{"id": "359", "metadata": {"type": "core", "basename": "core", "name": "core30", "id": 30, "uniq_id": 359, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/medium0/rack0/node3/socket1/core30"}}}, {"id": "347", "metadata": {"type": "core", "basename": "core", "name": "core18", "id": 18, "uniq_id": 347, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/medium0/rack0/node3/socket1/core18"}}}, {"id": "364", "metadata": {"type": "core", "basename": "core", "name": "core35", "id": 35, "uniq_id": 364, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/medium0/rack0/node3/socket1/core35"}}}, {"id": "349", "metadata": {"type": "core", "basename": "core", "name": "core20", "id": 20, "uniq_id": 349, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/medium0/rack0/node3/socket1/core20"}}}, {"id": "352", "metadata": {"type": "core", "basename": "core", "name": "core23", "id": 23, "uniq_id": 352, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/medium0/rack0/node3/socket1/core23"}}}, {"id": "338", "metadata": {"type": "core", "basename": "core", "name": "core9", "id": 9, "uniq_id": 338, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/medium0/rack0/node3/socket0/core9"}}}, {"id": "330", "metadata": {"type": "core", "basename": "core", "name": "core1", "id": 1, "uniq_id": 330, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/medium0/rack0/node3/socket0/core1"}}}, {"id": "84", "metadata": {"type": "socket", "basename": "socket", "name": "socket1", "id": 1, "uniq_id": 84, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/medium0/rack0/node3/socket1"}}}, {"id": "83", "metadata": {"type": "socket", "basename": "socket", "name": "socket0", "id": 0, "uniq_id": 83, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/medium0/rack0/node3/socket0"}}}, {"id": "334", "metadata": {"type": "core", "basename": "core", "name": "core5", "id": 5, "uniq_id": 334, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/medium0/rack0/node3/socket0/core5"}}}, {"id": "344", "metadata": {"type": "core", "basename": "core", "name": "core15", "id": 15, "uniq_id": 344, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/medium0/rack0/node3/socket0/core15"}}}, {"id": "1", "metadata": {"type": "rack", "basename": "rack", "name": "rack0", "id": 0, "uniq_id": 1, "rank": -1, "exclusive": false, "unit": "", "size": 1, "paths": {"containment": "/medium0/rack0"}}}, {"id": "345", "metadata": {"type": "core", "basename": "core", "name": "core16", "id": 16, "uniq_id": 345, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/medium0/rack0/node3/socket0/core16"}}}, {"id": "354", "metadata": {"type": "core", "basename": "core", "name": "core25", "id": 25, "uniq_id": 354, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/medium0/rack0/node3/socket1/core25"}}}, {"id": "340", "metadata": {"type": "core", "basename": "core", "name": "core11", "id": 11, "uniq_id": 340, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/medium0/rack0/node3/socket0/core11"}}}, {"id": "342", "metadata": {"type": "core", "basename": "core", "name": "core13", "id": 13, "uniq_id": 342, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/medium0/rack0/node3/socket0/core13"}}}, {"id": "337", "metadata": {"type": "core", "basename": "core", "name": "core8", "id": 8, "uniq_id": 337, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/medium0/rack0/node3/socket0/core8"}}}, {"id": "362", "metadata": {"type": "core", "basename": "core", "name": "core33", "id": 33, "uniq_id": 362, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/medium0/rack0/node3/socket1/core33"}}}, {"id": "348", "metadata": {"type": "core", "basename": "core", "name": "core19", "id": 19, "uniq_id": 348, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/medium0/rack0/node3/socket1/core19"}}}, {"id": "356", "metadata": {"type": "core", "basename": "core", "name": "core27", "id": 27, "uniq_id": 356, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/medium0/rack0/node3/socket1/core27"}}}, {"id": "353", "metadata": {"type": "core", "basename": "core", "name": "core24", "id": 24, "uniq_id": 353, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/medium0/rack0/node3/socket1/core24"}}}, {"id": "331", "metadata": {"type": "core", "basename": "core", "name": "core2", "id": 2, "uniq_id": 331, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/medium0/rack0/node3/socket0/core2"}}}, {"id": "360", "metadata": {"type": "core", "basename": "core", "name": "core31", "id": 31, "uniq_id": 360, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/medium0/rack0/node3/socket1/core31"}}}, {"id": "346", "metadata": {"type": "core", "basename": "core", "name": "core17", "id": 17, "uniq_id": 346, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/medium0/rack0/node3/socket0/core17"}}}, {"id": "339", "metadata": {"type": "core", "basename": "core", "name": "core10", "id": 10, "uniq_id": 339, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/medium0/rack0/node3/socket0/core10"}}}, {"id": "358", "metadata": {"type": "core", "basename": "core", "name": "core29", "id": 29, "uniq_id": 358, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/medium0/rack0/node3/socket1/core29"}}}, {"id": "335", "metadata": {"type": "core", "basename": "core", "name": "core6", "id": 6, "uniq_id": 335, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/medium0/rack0/node3/socket0/core6"}}}, {"id": "350", "metadata": {"type": "core", "basename": "core", "name": "core21", "id": 21, "uniq_id": 350, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/medium0/rack0/node3/socket1/core21"}}}, {"id": "343", "metadata": {"type": "core", "basename": "core", "name": "core14", "id": 14, "uniq_id": 343, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/medium0/rack0/node3/socket0/core14"}}}, {"id": "361", "metadata": {"type": "core", "basename": "core", "name": "core32", "id": 32, "uniq_id": 361, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/medium0/rack0/node3/socket1/core32"}}}, {"id": "355", "metadata": {"type": "core", "basename": "core", "name": "core26", "id": 26, "uniq_id": 355, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/medium0/rack0/node3/socket1/core26"}}}, {"id": "351", "metadata": {"type": "core", "basename": "core", "name": "core22", "id": 22, "uniq_id": 351, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/medium0/rack0/node3/socket1/core22"}}}, {"id": "363", "metadata": {"type": "core", "basename": "core", "name": "core34", "id": 34, "uniq_id": 363, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/medium0/rack0/node3/socket1/core34"}}}, {"id": "329", "metadata": {"type": "core", "basename": "core", "name": "core0", "id": 0, "uniq_id": 329, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/medium0/rack0/node3/socket0/core0"}}}, {"id": "336", "metadata": {"type": "core", "basename": "core", "name": "core7", "id": 7, "uniq_id": 336, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/medium0/rack0/node3/socket0/core7"}}}, {"id": "8", "metadata": {"type": "node", "basename": "node", "name": "node3", "id": 3, "uniq_id": 8, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/medium0/rack0/node3"}}}, {"id": "332", "metadata": {"type": "core", "basename": "core", "name": "core3", "id": 3, "uniq_id": 332, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/medium0/rack0/node3/socket0/core3"}}}, {"id": "357", "metadata": {"type": "core", "basename": "core", "name": "core28", "id": 28, "uniq_id": 357, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/medium0/rack0/node3/socket1/core28"}}}, {"id": "341", "metadata": {"type": "core", "basename": "core", "name": "core12", "id": 12, "uniq_id": 341, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/medium0/rack0/node3/socket0/core12"}}}, {"id": "0", "metadata": {"type": "cluster", "basename": "medium", "name": "medium0", "id": 0, "uniq_id": 0, "rank": -1, "exclusive": false, "unit": "", "size": 1, "paths": {"containment": "/medium0"}}}, {"id": "333", "metadata": {"type": "core", "basename": "core", "name": "core4", "id": 4, "uniq_id": 333, "rank": -1, "exclusive": true, "unit": "", "size": 1, "paths": {"containment": "/medium0/rack0/node3/socket0/core4"}}}], "edges": [{"source": "360", "target": "84", "metadata": {"name": {"containment": "in"}}}, {"source": "84", "target": "353", "metadata": {"name": {"containment": "contains"}}}, {"source": "337", "target": "83", "metadata": {"name": {"containment": "in"}}}, {"source": "83", "target": "332", "metadata": {"name": {"containment": "contains"}}}, {"source": "331", "target": "83", "metadata": {"name": {"containment": "in"}}}, {"source": "8", "target": "1", "metadata": {"name": {"containment": "in"}}}, {"source": "84", "target": "360", "metadata": {"name": {"containment": "contains"}}}, {"source": "358", "target": "84", "metadata": {"name": {"containment": "in"}}}, {"source": "83", "target": "330", "metadata": {"name": {"containment": "contains"}}}, {"source": "83", "target": "345", "metadata": {"name": {"containment": "contains"}}}, {"source": "333", "target": "83", "metadata": {"name": {"containment": "in"}}}, {"source": "351", "target": "84", "metadata": {"name": {"containment": "in"}}}, {"source": "362", "target": "84", "metadata": {"name": {"containment": "in"}}}, {"source": "342", "target": "83", "metadata": {"name": {"containment": "in"}}}, {"source": "350", "target": "84", "metadata": {"name": {"containment": "in"}}}, {"source": "83", "target": "335", "metadata": {"name": {"containment": "contains"}}}, {"source": "357", "target": "84", "metadata": {"name": {"containment": "in"}}}, {"source": "83", "target": "334", "metadata": {"name": {"containment": "contains"}}}, {"source": "83", "target": "336", "metadata": {"name": {"containment": "contains"}}}, {"source": "83", "target": "346", "metadata": {"name": {"containment": "contains"}}}, {"source": "84", "target": "355", "metadata": {"name": {"containment": "contains"}}}, {"source": "345", "target": "83", "metadata": {"name": {"containment": "in"}}}, {"source": "84", "target": "364", "metadata": {"name": {"containment": "contains"}}}, {"source": "332", "target": "83", "metadata": {"name": {"containment": "in"}}}, {"source": "349", "target": "84", "metadata": {"name": {"containment": "in"}}}, {"source": "84", "target": "362", "metadata": {"name": {"containment": "contains"}}}, {"source": "335", "target": "83", "metadata": {"name": {"containment": "in"}}}, {"source": "1", "target": "0", "metadata": {"name": {"containment": "in"}}}, {"source": "83", "target": "341", "metadata": {"name": {"containment": "contains"}}}, {"source": "353", "target": "84", "metadata": {"name": {"containment": "in"}}}, {"source": "8", "target": "84", "metadata": {"name": {"containment": "contains"}}}, {"source": "84", "target": "351", "metadata": {"name": {"containment": "contains"}}}, {"source": "84", "target": "358", "metadata": {"name": {"containment": "contains"}}}, {"source": "84", "target": "349", "metadata": {"name": {"containment": "contains"}}}, {"source": "8", "target": "83", "metadata": {"name": {"containment": "contains"}}}, {"source": "83", "target": "340", "metadata": {"name": {"containment": "contains"}}}, {"source": "83", "target": "344", "metadata": {"name": {"containment": "contains"}}}, {"source": "344", "target": "83", "metadata": {"name": {"containment": "in"}}}, {"source": "84", "target": "359", "metadata": {"name": {"containment": "contains"}}}, {"source": "83", "target": "343", "metadata": {"name": {"containment": "contains"}}}, {"source": "83", "target": "333", "metadata": {"name": {"containment": "contains"}}}, {"source": "83", "target": "338", "metadata": {"name": {"containment": "contains"}}}, {"source": "83", "target": "331", "metadata": {"name": {"containment": "contains"}}}, {"source": "338", "target": "83", "metadata": {"name": {"containment": "in"}}}, {"source": "84", "target": "363", "metadata": {"name": {"containment": "contains"}}}, {"source": "83", "target": "329", "metadata": {"name": {"containment": "contains"}}}, {"source": "352", "target": "84", "metadata": {"name": {"containment": "in"}}}, {"source": "348", "target": "84", "metadata": {"name": {"containment": "in"}}}, {"source": "83", "target": "339", "metadata": {"name": {"containment": "contains"}}}, {"source": "361", "target": "84", "metadata": {"name": {"containment": "in"}}}, {"source": "355", "target": "84", "metadata": {"name": {"containment": "in"}}}, {"source": "343", "target": "83", "metadata": {"name": {"containment": "in"}}}, {"source": "341", "target": "83", "metadata": {"name": {"containment": "in"}}}, {"source": "330", "target": "83", "metadata": {"name": {"containment": "in"}}}, {"source": "340", "target": "83", "metadata": {"name": {"containment": "in"}}}, {"source": "84", "target": "8", "metadata": {"name": {"containment": "in"}}}, {"source": "0", "target": "1", "metadata": {"name": {"containment": "contains"}}}, {"source": "359", "target": "84", "metadata": {"name": {"containment": "in"}}}, {"source": "363", "target": "84", "metadata": {"name": {"containment": "in"}}}, {"source": "83", "target": "342", "metadata": {"name": {"containment": "contains"}}}, {"source": "84", "target": "354", "metadata": {"name": {"containment": "contains"}}}, {"source": "334", "target": "83", "metadata": {"name": {"containment": "in"}}}, {"source": "84", "target": "350", "metadata": {"name": {"containment": "contains"}}}, {"source": "339", "target": "83", "metadata": {"name": {"containment": "in"}}}, {"source": "336", "target": "83", "metadata": {"name": {"containment": "in"}}}, {"source": "83", "target": "337", "metadata": {"name": {"containment": "contains"}}}, {"source": "354", "target": "84", "metadata": {"name": {"containment": "in"}}}, {"source": "84", "target": "357", "metadata": {"name": {"containment": "contains"}}}, {"source": "84", "target": "348", "metadata": {"name": {"containment": "contains"}}}, {"source": "84", "target": "352", "metadata": {"name": {"containment": "contains"}}}, {"source": "83", "target": "8", "metadata": {"name": {"containment": "in"}}}, {"source": "356", "target": "84", "metadata": {"name": {"containment": "in"}}}, {"source": "329", "target": "83", "metadata": {"name": {"containment": "in"}}}, {"source": "346", "target": "83", "metadata": {"name": {"containment": "in"}}}, {"source": "84", "target": "356", "metadata": {"name": {"containment": "contains"}}}, {"source": "84", "target": "361", "metadata": {"name": {"containment": "contains"}}}, {"source": "347", "target": "84", "metadata": {"name": {"containment": "in"}}}, {"source": "84", "target": "347", "metadata": {"name": {"containment": "contains"}}}, {"source": "364", "target": "84", "metadata": {"name": {"containment": "in"}}}, {"source": "1", "target": "8", "metadata": {"name": {"containment": "contains"}}}]}}
-
+{
+    "graph": {
+        "nodes": [
+            {
+                "id": "359",
+                "metadata": {
+                    "type": "core",
+                    "basename": "core",
+                    "name": "core30",
+                    "id": 30,
+                    "uniq_id": 359,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node3/socket1/core30"
+                    }
+                }
+            },
+            {
+                "id": "347",
+                "metadata": {
+                    "type": "core",
+                    "basename": "core",
+                    "name": "core18",
+                    "id": 18,
+                    "uniq_id": 347,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node3/socket1/core18"
+                    }
+                }
+            },
+            {
+                "id": "364",
+                "metadata": {
+                    "type": "core",
+                    "basename": "core",
+                    "name": "core35",
+                    "id": 35,
+                    "uniq_id": 364,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node3/socket1/core35"
+                    }
+                }
+            },
+            {
+                "id": "349",
+                "metadata": {
+                    "type": "core",
+                    "basename": "core",
+                    "name": "core20",
+                    "id": 20,
+                    "uniq_id": 349,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node3/socket1/core20"
+                    }
+                }
+            },
+            {
+                "id": "352",
+                "metadata": {
+                    "type": "core",
+                    "basename": "core",
+                    "name": "core23",
+                    "id": 23,
+                    "uniq_id": 352,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node3/socket1/core23"
+                    }
+                }
+            },
+            {
+                "id": "338",
+                "metadata": {
+                    "type": "core",
+                    "basename": "core",
+                    "name": "core9",
+                    "id": 9,
+                    "uniq_id": 338,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node3/socket0/core9"
+                    }
+                }
+            },
+            {
+                "id": "330",
+                "metadata": {
+                    "type": "core",
+                    "basename": "core",
+                    "name": "core1",
+                    "id": 1,
+                    "uniq_id": 330,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node3/socket0/core1"
+                    }
+                }
+            },
+            {
+                "id": "84",
+                "metadata": {
+                    "type": "socket",
+                    "basename": "socket",
+                    "name": "socket1",
+                    "id": 1,
+                    "uniq_id": 84,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node3/socket1"
+                    }
+                }
+            },
+            {
+                "id": "83",
+                "metadata": {
+                    "type": "socket",
+                    "basename": "socket",
+                    "name": "socket0",
+                    "id": 0,
+                    "uniq_id": 83,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node3/socket0"
+                    }
+                }
+            },
+            {
+                "id": "334",
+                "metadata": {
+                    "type": "core",
+                    "basename": "core",
+                    "name": "core5",
+                    "id": 5,
+                    "uniq_id": 334,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node3/socket0/core5"
+                    }
+                }
+            },
+            {
+                "id": "344",
+                "metadata": {
+                    "type": "core",
+                    "basename": "core",
+                    "name": "core15",
+                    "id": 15,
+                    "uniq_id": 344,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node3/socket0/core15"
+                    }
+                }
+            },
+            {
+                "id": "1",
+                "metadata": {
+                    "type": "rack",
+                    "basename": "rack",
+                    "name": "rack0",
+                    "id": 0,
+                    "uniq_id": 1,
+                    "rank": -1,
+                    "exclusive": false,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0"
+                    }
+                }
+            },
+            {
+                "id": "345",
+                "metadata": {
+                    "type": "core",
+                    "basename": "core",
+                    "name": "core16",
+                    "id": 16,
+                    "uniq_id": 345,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node3/socket0/core16"
+                    }
+                }
+            },
+            {
+                "id": "354",
+                "metadata": {
+                    "type": "core",
+                    "basename": "core",
+                    "name": "core25",
+                    "id": 25,
+                    "uniq_id": 354,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node3/socket1/core25"
+                    }
+                }
+            },
+            {
+                "id": "340",
+                "metadata": {
+                    "type": "core",
+                    "basename": "core",
+                    "name": "core11",
+                    "id": 11,
+                    "uniq_id": 340,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node3/socket0/core11"
+                    }
+                }
+            },
+            {
+                "id": "342",
+                "metadata": {
+                    "type": "core",
+                    "basename": "core",
+                    "name": "core13",
+                    "id": 13,
+                    "uniq_id": 342,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node3/socket0/core13"
+                    }
+                }
+            },
+            {
+                "id": "337",
+                "metadata": {
+                    "type": "core",
+                    "basename": "core",
+                    "name": "core8",
+                    "id": 8,
+                    "uniq_id": 337,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node3/socket0/core8"
+                    }
+                }
+            },
+            {
+                "id": "362",
+                "metadata": {
+                    "type": "core",
+                    "basename": "core",
+                    "name": "core33",
+                    "id": 33,
+                    "uniq_id": 362,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node3/socket1/core33"
+                    }
+                }
+            },
+            {
+                "id": "348",
+                "metadata": {
+                    "type": "core",
+                    "basename": "core",
+                    "name": "core19",
+                    "id": 19,
+                    "uniq_id": 348,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node3/socket1/core19"
+                    }
+                }
+            },
+            {
+                "id": "356",
+                "metadata": {
+                    "type": "core",
+                    "basename": "core",
+                    "name": "core27",
+                    "id": 27,
+                    "uniq_id": 356,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node3/socket1/core27"
+                    }
+                }
+            },
+            {
+                "id": "353",
+                "metadata": {
+                    "type": "core",
+                    "basename": "core",
+                    "name": "core24",
+                    "id": 24,
+                    "uniq_id": 353,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node3/socket1/core24"
+                    }
+                }
+            },
+            {
+                "id": "331",
+                "metadata": {
+                    "type": "core",
+                    "basename": "core",
+                    "name": "core2",
+                    "id": 2,
+                    "uniq_id": 331,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node3/socket0/core2"
+                    }
+                }
+            },
+            {
+                "id": "360",
+                "metadata": {
+                    "type": "core",
+                    "basename": "core",
+                    "name": "core31",
+                    "id": 31,
+                    "uniq_id": 360,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node3/socket1/core31"
+                    }
+                }
+            },
+            {
+                "id": "346",
+                "metadata": {
+                    "type": "core",
+                    "basename": "core",
+                    "name": "core17",
+                    "id": 17,
+                    "uniq_id": 346,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node3/socket0/core17"
+                    }
+                }
+            },
+            {
+                "id": "339",
+                "metadata": {
+                    "type": "core",
+                    "basename": "core",
+                    "name": "core10",
+                    "id": 10,
+                    "uniq_id": 339,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node3/socket0/core10"
+                    }
+                }
+            },
+            {
+                "id": "358",
+                "metadata": {
+                    "type": "core",
+                    "basename": "core",
+                    "name": "core29",
+                    "id": 29,
+                    "uniq_id": 358,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node3/socket1/core29"
+                    }
+                }
+            },
+            {
+                "id": "335",
+                "metadata": {
+                    "type": "core",
+                    "basename": "core",
+                    "name": "core6",
+                    "id": 6,
+                    "uniq_id": 335,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node3/socket0/core6"
+                    }
+                }
+            },
+            {
+                "id": "350",
+                "metadata": {
+                    "type": "core",
+                    "basename": "core",
+                    "name": "core21",
+                    "id": 21,
+                    "uniq_id": 350,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node3/socket1/core21"
+                    }
+                }
+            },
+            {
+                "id": "343",
+                "metadata": {
+                    "type": "core",
+                    "basename": "core",
+                    "name": "core14",
+                    "id": 14,
+                    "uniq_id": 343,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node3/socket0/core14"
+                    }
+                }
+            },
+            {
+                "id": "361",
+                "metadata": {
+                    "type": "core",
+                    "basename": "core",
+                    "name": "core32",
+                    "id": 32,
+                    "uniq_id": 361,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node3/socket1/core32"
+                    }
+                }
+            },
+            {
+                "id": "355",
+                "metadata": {
+                    "type": "core",
+                    "basename": "core",
+                    "name": "core26",
+                    "id": 26,
+                    "uniq_id": 355,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node3/socket1/core26"
+                    }
+                }
+            },
+            {
+                "id": "351",
+                "metadata": {
+                    "type": "core",
+                    "basename": "core",
+                    "name": "core22",
+                    "id": 22,
+                    "uniq_id": 351,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node3/socket1/core22"
+                    }
+                }
+            },
+            {
+                "id": "363",
+                "metadata": {
+                    "type": "core",
+                    "basename": "core",
+                    "name": "core34",
+                    "id": 34,
+                    "uniq_id": 363,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node3/socket1/core34"
+                    }
+                }
+            },
+            {
+                "id": "329",
+                "metadata": {
+                    "type": "core",
+                    "basename": "core",
+                    "name": "core0",
+                    "id": 0,
+                    "uniq_id": 329,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node3/socket0/core0"
+                    }
+                }
+            },
+            {
+                "id": "336",
+                "metadata": {
+                    "type": "core",
+                    "basename": "core",
+                    "name": "core7",
+                    "id": 7,
+                    "uniq_id": 336,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node3/socket0/core7"
+                    }
+                }
+            },
+            {
+                "id": "8",
+                "metadata": {
+                    "type": "node",
+                    "basename": "node",
+                    "name": "node3",
+                    "id": 3,
+                    "uniq_id": 8,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node3"
+                    }
+                }
+            },
+            {
+                "id": "332",
+                "metadata": {
+                    "type": "core",
+                    "basename": "core",
+                    "name": "core3",
+                    "id": 3,
+                    "uniq_id": 332,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node3/socket0/core3"
+                    }
+                }
+            },
+            {
+                "id": "357",
+                "metadata": {
+                    "type": "core",
+                    "basename": "core",
+                    "name": "core28",
+                    "id": 28,
+                    "uniq_id": 357,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node3/socket1/core28"
+                    }
+                }
+            },
+            {
+                "id": "341",
+                "metadata": {
+                    "type": "core",
+                    "basename": "core",
+                    "name": "core12",
+                    "id": 12,
+                    "uniq_id": 341,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node3/socket0/core12"
+                    }
+                }
+            },
+            {
+                "id": "0",
+                "metadata": {
+                    "type": "cluster",
+                    "basename": "medium",
+                    "name": "medium0",
+                    "id": 0,
+                    "uniq_id": 0,
+                    "rank": -1,
+                    "exclusive": false,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0"
+                    }
+                }
+            },
+            {
+                "id": "333",
+                "metadata": {
+                    "type": "core",
+                    "basename": "core",
+                    "name": "core4",
+                    "id": 4,
+                    "uniq_id": 333,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node3/socket0/core4"
+                    }
+                }
+            }
+        ],
+        "edges": [
+            {
+                "source": "84",
+                "target": "353",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "83",
+                "target": "332",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "84",
+                "target": "360",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "83",
+                "target": "330",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "83",
+                "target": "345",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "83",
+                "target": "335",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "83",
+                "target": "334",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "83",
+                "target": "336",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "83",
+                "target": "346",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "84",
+                "target": "355",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "84",
+                "target": "364",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "84",
+                "target": "362",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "83",
+                "target": "341",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "8",
+                "target": "84",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "84",
+                "target": "351",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "84",
+                "target": "358",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "84",
+                "target": "349",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "8",
+                "target": "83",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "83",
+                "target": "340",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "83",
+                "target": "344",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "84",
+                "target": "359",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "83",
+                "target": "343",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "83",
+                "target": "333",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "83",
+                "target": "338",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "83",
+                "target": "331",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "84",
+                "target": "363",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "83",
+                "target": "329",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "83",
+                "target": "339",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "0",
+                "target": "1",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "83",
+                "target": "342",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "84",
+                "target": "354",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "84",
+                "target": "350",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "83",
+                "target": "337",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "84",
+                "target": "357",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "84",
+                "target": "348",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "84",
+                "target": "352",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "84",
+                "target": "356",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "84",
+                "target": "361",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "84",
+                "target": "347",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "1",
+                "target": "8",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            }
+        ]
+    }
+}

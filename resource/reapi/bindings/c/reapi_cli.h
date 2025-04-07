@@ -39,8 +39,7 @@ void reapi_cli_destroy (reapi_cli_ctx_t *ctx);
  * \param rgraph        string encoding the resource graph
  * \param options       json string initialization options
  */
-int reapi_cli_initialize (reapi_cli_ctx_t *ctx, const char *rgraph,
-                          const char *options);
+int reapi_cli_initialize (reapi_cli_ctx_t *ctx, const char *rgraph, const char *options);
 
 /*! Match a jobspec to the "best" resources and either allocate
  *  orelse reserve them. The best resources are determined by
@@ -49,13 +48,13 @@ int reapi_cli_initialize (reapi_cli_ctx_t *ctx, const char *rgraph,
  *  \param ctx       reapi_cli_ctx_t context object
  *  \param match_op  match_op_t: set to specify the specific match option
  *                   from 1 of 4 choices:
- *                   MATCH_ALLOCATE: try to allocate now and fail if resources 
- *                   aren't available. 
+ *                   MATCH_ALLOCATE: try to allocate now and fail if resources
+ *                   aren't available.
  *                   MATCH_ALLOCATE_ORELSE_RESERVE : Try to allocate and reserve
  *                   if resources aren't available now.
- *                   MATCH_SATISFIABILITY: Do a satisfiablity check and do not 
+ *                   MATCH_SATISFIABILITY: Do a satisfiablity check and do not
  *                   allocate.
- *                   MATCH_ALLOCATE_W_SATISFIABILITY: try to allocate and run 
+ *                   MATCH_ALLOCATE_W_SATISFIABILITY: try to allocate and run
  *                   satisfiability check if resources are not available.
  *  \param jobspec   jobspec string.
  *  \param jobid     jobid of the uint64_t type.
@@ -70,10 +69,14 @@ int reapi_cli_initialize (reapi_cli_ctx_t *ctx, const char *rgraph,
  *                   the match operation.
  *  \return          0 on success; -1 on error.
  */
-int reapi_cli_match (reapi_cli_ctx_t *ctx, match_op_t match_op,
-                     const char *jobspec, uint64_t *jobid,
+int reapi_cli_match (reapi_cli_ctx_t *ctx,
+                     match_op_t match_op,
+                     const char *jobspec,
+                     uint64_t *jobid,
                      bool *reserved,
-                     char **R, int64_t *at, double *ov);
+                     char **R,
+                     int64_t *at,
+                     double *ov);
 
 /*! Match a jobspec to the "best" resources and either allocate
  *  orelse reserve them. The best resources are determined by
@@ -96,24 +99,27 @@ int reapi_cli_match (reapi_cli_ctx_t *ctx, match_op_t match_op,
  *                   the match operation.
  *  \return          0 on success; -1 on error.
  */
-int reapi_cli_match_allocate (reapi_cli_ctx_t *ctx, bool orelse_reserve,
-                              const char *jobspec, uint64_t *jobid,
+int reapi_cli_match_allocate (reapi_cli_ctx_t *ctx,
+                              bool orelse_reserve,
+                              const char *jobspec,
+                              uint64_t *jobid,
                               bool *reserved,
-                              char **R, int64_t *at, double *ov);
+                              char **R,
+                              int64_t *at,
+                              double *ov);
 
 /*! Run Satisfiability check for jobspec.
  *
  *  \param ctx       reapi_cli_ctx_t context object
  *  \param jobspec   jobspec string.
- *  \param sat       bool sat into which to return if jobspec is 
- *                   satisfiable. 
+ *  \param sat       bool sat into which to return if jobspec is
+ *                   satisfiable.
  *  \param ov        Double into which to return performance overhead
  *                   in terms of elapse time needed to complete
  *                   the match operation.
  *  \return          0 on success; -1 on error.
  */
-int reapi_cli_match_satisfy (reapi_cli_ctx_t *ctx,
-                             const char *jobspec, bool *sat, double *ov);
+int reapi_cli_match_satisfy (reapi_cli_ctx_t *ctx, const char *jobspec, bool *sat, double *ov);
 
 /*! Update the resource state with R.
  *
@@ -128,8 +134,11 @@ int reapi_cli_match_satisfy (reapi_cli_ctx_t *ctx,
  *  \return          0 on success; -1 on error.
  */
 int reapi_cli_update_allocate (reapi_cli_ctx_t *ctx,
-                               const uint64_t jobid, const char *R, int64_t *at,
-                               double *ov, const char **R_out);
+                               const uint64_t jobid,
+                               const char *R,
+                               int64_t *at,
+                               double *ov,
+                               const char **R_out);
 
 /*! Cancel the allocation or reservation corresponding to jobid.
  *
@@ -138,8 +147,22 @@ int reapi_cli_update_allocate (reapi_cli_ctx_t *ctx,
  *  \param noent_ok  don't return an error on nonexistent jobid
  *  \return          0 on success; -1 on error.
  */
-int reapi_cli_cancel (reapi_cli_ctx_t *ctx,
-                      const uint64_t jobid, bool noent_ok);
+int reapi_cli_cancel (reapi_cli_ctx_t *ctx, const uint64_t jobid, bool noent_ok);
+
+/*! Cancel the allocation or reservation corresponding to jobid.
+ *
+ *  \param ctx       reapi_module_ctx_t context object
+ *  \param jobid     jobid of the uint64_t type.
+ *  \param R         R string to remove
+ *  \param noent_ok  don't return an error on nonexistent jobid
+ *  \param full_removal  don't return an error on nonexistent jobid
+ *  \return          0 on success; -1 on error.
+ */
+int reapi_cli_partial_cancel (reapi_cli_ctx_t *ctx,
+                              const uint64_t jobid,
+                              const char *R,
+                              bool noent_ok,
+                              bool *full_removal);
 
 /*! Get the information on the allocation or reservation corresponding
  *  to jobid.
@@ -156,8 +179,11 @@ int reapi_cli_cancel (reapi_cli_ctx_t *ctx,
  *                   the match operation.
  *  \return          0 on success; -1 on error.
  */
-int reapi_cli_info (reapi_cli_ctx_t *ctx, const uint64_t jobid,
-                    char **mode, bool *reserved, int64_t *at, 
+int reapi_cli_info (reapi_cli_ctx_t *ctx,
+                    const uint64_t jobid,
+                    char **mode,
+                    bool *reserved,
+                    int64_t *at,
                     double *ov);
 
 /*! Get the performance information about the resource infrastructure.
@@ -172,9 +198,14 @@ int reapi_cli_info (reapi_cli_ctx_t *ctx, const uint64_t jobid,
  *  \param avg       Avg match time
  *  \return          0 on success; -1 on error.
  */
-int reapi_cli_stat (reapi_cli_ctx_t *ctx, int64_t *V, int64_t *E,
-                    int64_t *J, double *load,
-                    double *min, double *max, double *avg);
+int reapi_cli_stat (reapi_cli_ctx_t *ctx,
+                    int64_t *V,
+                    int64_t *E,
+                    int64_t *J,
+                    double *load,
+                    double *min,
+                    double *max,
+                    double *avg);
 
 /*! Get the reapi cli error message.
  *
@@ -193,7 +224,7 @@ void reapi_cli_clear_err_msg (reapi_cli_ctx_t *ctx);
 }
 #endif
 
-#endif // REAPI_CLI_H
+#endif  // REAPI_CLI_H
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

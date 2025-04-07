@@ -1,3 +1,199 @@
+flux-sched version 0.44.0 - 2025-03-31
+--------------------------------------
+
+### New Features
+ * evaluators: find by name and by property (#1333)
+
+### Fixes
+ * Ensure `set-status` and `mark()` are idempotent (#1359)
+ * libjobspec: ensure task count has exactly one key (#1343)
+ * jobspec: enforce restrictions on resource range keys (#1341)
+
+
+flux-sched version 0.43.0 - 2025-03-03
+--------------------------------------
+
+### New Features
+ * resource: shrink resource graph by ranks (#1352)
+
+### Fixes
+ * comply with RFC 20 when parsing Rv1 `starttime` and `expiration`
+   (#1346)
+ * resource: fix leak in `status_request_cb()` (#1347)
+ * sched-sharness: stop looking in modules/.libs (#1348)
+ * yggdrasil: fix invalid template calls (#1338)
+ * resource: make property RPCs return error message (#1349)
+ * resource: Update the pruning filter default to ALL:core,ALL:node
+    and fix update_node_stats() (#1353)
+
+
+flux-sched version 0.42.2 - 2025-02-10
+--------------------------------------
+
+### New Features
+ * Break visitation cycle in mod_dfv to correct cancellation behavior
+   (#1335)
+
+
+flux-sched version 0.42.1 - 2025-02-08
+--------------------------------------
+
+### New Features
+ * resource: remove property (#1332)
+
+
+flux-sched version 0.42.0 - 2025-02-05
+--------------------------------------
+
+### New Features
+ * traverser: find by jobid and output aggregate filter data (#1322)
+ * policy: expose internals of resource module policy factory to allow
+   custom policies (#1268)
+
+### Build/Testsuite
+ * ci: add Arm runners and bring back alpine (#1328)
+
+
+flux-sched version 0.41.0 - 2025-01-15
+--------------------------------------
+
+### New Features
+ * qmanager: track API changes in core (#1320)
+ * qmanager: send partial-ok with sched.hello (#1321)
+ * qmanager: remove no-longer-supported schedutil_free_respond() (#1325)
+
+### Fixes
+ * traverser: clear traverser before traversal operations in dfu (#1323)
+
+### Build/Testsuite
+ * t: update job.exception output checks (#1315)
+ * ci: temporarily drop alpine (#1327)
+
+
+flux-sched version 0.40.0 - 2024-11-06
+--------------------------------------
+
+### Fixes
+ * Resource: support partial cancel of resources external to broker
+   ranks (#1292)
+ * readers: allow id of -1 in JGF (#1304)
+ * readers: fix rv1exec cancel with multiple entries in `R_lite` array
+   (#1307)
+ * traverser: don't prune traversal by leaf vertex subplans (#1314)
+
+### Build/Testsuite
+ * matrix: add el8 tag and make it test-install (#1311)
+ * libintern: fold into libfluxion-data (#1312)
+
+
+flux-sched version 0.39.0 - 2024-10-01
+--------------------------------------
+
+### New Features
+ * JGF: default edge subsystem (#1297)
+ * readers: JGF simplification (#1293)
+ * writers: JGF simplification (#1299)
+ * intern: Dense resource type with DoS protection (#1287)
+
+### Fixes
+ * resource-query: fix segfault in graphml writer (#1290)
+
+### Build/Testsuite
+ * cmake: clarify git-push suggestion (#1295)
+ * build: add descriptive warning about version (#1294)
+
+
+flux-sched version 0.38.0 - 2024-09-04
+--------------------------------------
+
+### New Features
+ * Speed up final constraint enforcement (#1286)
+ * resource: make feasibility service registration optional (#1281)
+
+### Fixes
+ * qmanager-stats: fix jansson refcount issue (#1273)
+ * qmanager: fix lifetime issue in partial release (#1277)
+ * move feasibility service into sched-fluxion-resource and fix
+   associated test (#1276)
+ * update satisfiability RPC to conform with RFC 27 (#1275)
+
+### Build/Testsuite
+ * Require gcc version 12 or higher and clang version 15 or higher
+   (#1272)
+ * docker-run-checks: export INSTALL_ONLY (#1279)
+ * mergify: update to new mergify.yml requirements (#1278)
+ * Resolve issues with Alpine linux and build release containers for
+   amd64 and arm64 (#1274)
+ * deps: add install-deps.sh script, use in docker (#1282)
+ * scripts: add build-matrix script to ease matching ci (#1283)
+ * Update build and ci to enforce compiler versions, bump to C++23,
+   remove vestigial deps, and generate images matching core (#1272)
+ * alpine: use root to avoid nosuid issue in ci (#1280)
+ * flux-sharness: sync with flux-core (#1252)
+
+
+flux-sched version 0.37.0 - 2024-08-13
+--------------------------------------
+
+### New Features
+ * graph: use builtin bidirectional graph (#1240)
+ * ion-resource: add meaningful error message when subcommand is missing
+   (#1243)
+ * Don't add pruning filter for leaf vertices (#1248)
+ * qmanager: add get-stats and clear-stats callbacks (#1265)
+ * String interner for subsystems and resource types and initial usage
+   (#1246)
+ * Support and handle optional "final" flag in .free RPC (#1266)
+
+### Fixes
+ * qmanager: annotate each job only once on reservation (#1250)
+ * interner/res_type: add a refcounted backend for interned strings
+   (#1262)
+ * traverser: set iter count when request_feasible returns < 0 (#1263)
+
+### Cleanup
+ * Reformat (#1218)
+ * chore: flux ion-resource jobspec argument redundancy (#1244)
+
+### Build/Testsuite
+ * actions/docker: add ~el9~,f40,noble drop focal (#1257)
+ * matrix: add explicit python path for el8 (#1256)
+ * pre-commit: show diff on failure (#1267)
+
+
+flux-sched version 0.36.1 - 2024-07-10
+--------------------------------------
+
+### New Features
+ * Add support for broker rank-based partial release (#1163)
+
+### Fixes
+ * planner/dfu: avoid dereferencing empty vector (#1239)
+
+### Cleanup
+ * graph: remove unused subsystem selector class (#1241)
+
+
+flux-sched version 0.36.0 - 2024-07-04
+--------------------------------------
+
+### New Features
+ * qmanager: Asynchronously communicate with resource in the scheduling
+   loop to allow job updates while matching (#1227)
+ * pruner: don't track own type for pruning (#1228)
+ * Excise filter (#1225)
+ * qmanager: restart sched loop on updates (#1236)
+ * qpolicy/base: schedulable on reconsider (#1224)
+ * dfu: add a quick-to-test feasibility precheck to match (#1232)
+
+### Fixes
+ * Fix match average calculation (#1233)
+
+### Build/Testsuite
+ * github-actions: actually push the flux-sched manifest (#1235)
+ * checks_run: work when no autogen.sh is present (#1234)
+
+
 flux-sched version 0.35.0 - 2024-06-06
 --------------------------------------
 

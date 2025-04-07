@@ -14,13 +14,15 @@
 #include <string>
 #include <map>
 
+#include "resource/schema/data_std.hpp"
+
 namespace Flux {
 namespace resource_model {
 
 //! Base resource type.
 //  Allows derived resource types for testing
 struct resource_t {
-    std::string type;
+    resource_type_t type;
     std::string basename;
     std::string name;
     std::map<std::string, std::string> properties;
@@ -28,10 +30,10 @@ struct resource_t {
     int rank = -1;
 };
 
-} // namespace resource_model
-} // namespace Flux
+}  // namespace resource_model
+}  // namespace Flux
 
-#endif // RESOURCE_BASE_HPP
+#endif  // RESOURCE_BASE_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

@@ -26,7 +26,7 @@ namespace Flux {
 namespace Jobspec {
 
 class Constraint {
-public:
+   public:
     Constraint () = default;
     virtual ~Constraint () = default;
     virtual bool match (const Flux::resource_model::resource_t &resource) const;
@@ -35,7 +35,7 @@ public:
 
 std::unique_ptr<Constraint> constraint_parser (const YAML::Node &constraint);
 
-} // namespace Jobspec
-} // namespace Flux
+}  // namespace Jobspec
+}  // namespace Flux
 
-#endif // JOBSPEC_CONSTRAINT_HPP
+#endif  // JOBSPEC_CONSTRAINT_HPP

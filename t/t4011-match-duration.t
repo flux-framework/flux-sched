@@ -31,6 +31,13 @@ test_expect_success 'set FLUX_RC_EXTRA so Fluxion modules are loaded under flux-
 	chmod +x rc1.d/rc1-fluxion rc3.d/rc3-fluxion &&
 	export FLUX_RC_EXTRA=$(pwd)
 '
+test_expect_success 'launching a fluxion instance with sched-simple works' '
+	jobid=$(flux alloc -N1 --bg) &&
+	flux proxy $jobid flux dmesg -H | grep fluxion &&
+	run_timeout 15 flux proxy $jobid flux run hostname &&
+	flux shutdown --quiet $jobid &&
+	flux job status $jobid
+'
 test_expect_success 'load fluxion modules in parent instance' '
 	flux module remove sched-simple &&
 	load_resource &&
@@ -119,7 +126,14 @@ test_expect_success FLUX_UPDATE_RUNNING \
 	duration2=$(subinstance_get_job_duration $id $id2) &&
 	test_debug "echo duration of subinstance job2 is $duration2" &&
 	echo $duration2 | jq -e ". > 300" &&
+	flux update $id duration=0 &&
+	exp4=$(subinstance_get_expiration $id) &&
+	test_debug "echo duration of subinstance is now $exp4" &&
+	duration1=$(subinstance_get_job_duration $id $id1) &&
+	test_debug "echo expiration of $id/$id1 is now $duration1" &&
 	flux proxy $id flux cancel --all &&
+	test_debug "echo a job can still be run in $id1" &&
+	flux proxy $id flux run hostname &&
 	flux shutdown --quiet $id
 '
 test_expect_success 'unload fluxion modules' '

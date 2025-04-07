@@ -3,6 +3,9 @@
 #  project-local sharness code for Flux
 #
 
+# add scripts directory to path
+export PATH="${SHARNESS_TEST_SRCDIR}/scripts:$PATH"
+
 #
 #  Extra functions for Flux testsuite
 #
@@ -98,7 +101,8 @@ make_bootstrap_config() {
     local full="0-$(($size-1))"
 
     mkdir $workdir/conf.d
-    flux keygen $workdir/cert
+    mkdir $workdir/state
+    flux keygen --name testcert $workdir/cert
     cat >$workdir/conf.d/bootstrap.toml <<-EOT
 	[bootstrap]
 	    curve_cert = "$workdir/cert"
@@ -109,10 +113,6 @@ make_bootstrap_config() {
 	    ]
 	EOT
     flux R encode --hosts=$fakehosts -r$full >$workdir/R
-    if test -n "$TEST_UNDER_FLUX_AUGMENT_R"; then
-        flux ion-R encode <$workdir/R >$workdir/R.augmented
-        mv $workdir/R.augmented $workdir/R
-    fi
     cat >$workdir/conf.d/resource.toml <<-EOT2
 	[resource]
 	    path = "$workdir/R"
@@ -121,10 +121,11 @@ make_bootstrap_config() {
     echo "--test-hosts=$fakehosts -o,-c$workdir/conf.d"
     echo "--test-exit-mode=${TEST_UNDER_FLUX_EXIT_MODE:-leader}"
     echo "--test-exit-timeout=${TEST_UNDER_FLUX_EXIT_TIMEOUT:-0}"
-    echo "-o,-Sbroker.quorum=${TEST_UNDER_FLUX_QUORUM:-$full}"
+    echo "-o,-Sbroker.quorum=${TEST_UNDER_FLUX_QUORUM:-$size}"
     echo "--test-start-mode=${TEST_UNDER_FLUX_START_MODE:-all}"
-    echo "-o,-Stbon.fanout=${TEST_UNDER_FLUX_FANOUT:-$size}"
+    echo "-o,-Stbon.topo=${TEST_UNDER_FLUX_TOPO:-custom}"
     echo "-o,-Stbon.zmqdebug=1"
+    echo "-o,-Sstatedir=$workdir/state"
 }
 
 #
@@ -175,11 +176,11 @@ remove_trashdir_wrapper() {
 #    - TEST_UNDER_FLUX_EXIT_TIMEOUT
 #        Set the flux-start exit timeout (default: 0)
 #    - TEST_UNDER_FLUX_QUORUM
-#        Set the broker.quorum attribute (default: 0-<highest_rank>)
+#        Set the broker.quorum attribute (default: <size>)
 #    - TEST_UNDER_FLUX_START_MODE
 #        Set the flux-start start mode (default: all)
-#    - TEST_UNDER_FLUX_FANOUT
-#        Set the TBON fanout (default: size (flat))
+#    - TEST_UNDER_FLUX_TOPO
+#        Set the TBON topology (default: custom (flat))
 #
 test_under_flux() {
     size=${1:-1}
@@ -230,6 +231,7 @@ test_under_flux() {
         # Place the re-executed test script trash within the first invocation's
         # trash to preserve config files for broker restart in test
         flags="${flags} --root=$SHARNESS_TRASH_DIRECTORY"
+        unset root
     elif test "$personality" != "full"; then
         RC1_PATH=$FLUX_SOURCE_DIR/t/rc/rc1-$personality
         RC3_PATH=$FLUX_SOURCE_DIR/t/rc/rc3-$personality
@@ -240,6 +242,10 @@ test_under_flux() {
         unset RC3_PATH
     fi
 
+    if test -n "$root"; then
+        flags="${flags} --root=$root"
+    fi
+
     if test -n "$FLUX_TEST_VALGRIND" ; then
         VALGRIND_SUPPRESSIONS=${SHARNESS_TEST_SRCDIR}/valgrind/valgrind.supp
         valgrind="--wrap=libtool,e"
@@ -247,6 +253,10 @@ test_under_flux() {
         valgrind="$valgrind,--trace-children=no,--child-silent-after-fork=yes"
         valgrind="$valgrind,--leak-resolution=med,--error-exitcode=1"
         valgrind="$valgrind,--suppressions=${VALGRIND_SUPPRESSIONS}"
+    elif test -n "$FLUX_TEST_HEAPTRACK" ; then
+        valgrind="--wrap=heaptrack,--record-only"
+    elif test -n "$FLUX_TEST_WRAP" ; then
+        valgrind="$FLUX_TEST_WRAP"
     fi
     # Extend timeouts when running under AddressSanitizer
     if test_have_prereq ASAN; then
@@ -289,73 +299,35 @@ test_on_rank() {
     flux exec --rank=${ranks} "$@"
 }
 
+#  Note: Some versions of bash may cause the `flux` libtool wrapper script
+#  to reset the COLUMNS shell variable even if it is explicitly set for
+#  for testing purposes. This causes tests that check for output truncation
+#  based on COLUMNS to erroneously fail. (Note: this only seems to be the
+#  case when tests are run with --debug --verbose for unknown reasons.
 #
-# Check for a program and skip all tests immediately if not found.
-# Exports the program in SHARNESS_test_skip_all_prereq for later
-# check in TEST_CHECK_PREREQS
+#  Add a script for tests that use COLUMNS to check if the variable will
+#  be preserved across an invovation of flux(1) so they may set a prereq
+#  and skip tests that might erroneous fail if COLUMNS is not preserved.
 #
-skip_all_unless_have()
-{
-    prog_path=$(which $1 2>/dev/null)
-    if test -z "$prog_path"; then
-        skip_all="$1 not found. Skipping all tests"
-        test_done
-    fi
-    eval "$1=$prog_path"
-    export SHARNESS_test_skip_all_prereq="$SHARNESS_test_skip_all_prereq,$1"
+test_columns_variable_preserved() {
+	local cols=$(COLUMNS=12 \
+	             flux python -c \
+	             "import shutil; print(shutil.get_terminal_size().columns)")
+	test "$cols" = "12"
 }
-
-GLOBAL_PROGRAM_PREREQS="HAVE_JQ:jq"
-
-#
-#  Check for programs in GLOBAL_PROGRAM_PREREQS and set prereq and
-#   "<name>=<program_path>" if found. If TEST_CHECK_PREREQS is set, then
-#   create a wrapper script in trash-directory/bin which will ensure the
-#   prereq (or global skip_all above) has been used before each invocation
-#   of program. This will catch places in testsuite where program is used
-#   without testing the prerequisite.
-#
-for prereq in $GLOBAL_PROGRAM_PREREQS; do
-    prog=${prereq#*:}
-    path_prog=$(which ${prog} 2>/dev/null || echo "/bin/false")
-    req=${prereq%:*}
-    test "${path_prog}" = "/bin/false" || test_set_prereq ${req}
-    eval "${prog}=${path_prog}"
-    if test -n "$TEST_CHECK_PREREQS"; then
-		dir=${SHARNESS_TRASH_DIRECTORY}/bin
-		mkdir -p ${dir}
-		cat <<-EOF > ${dir}/$prog
-		#!/bin/sh
-		saved_IFS=\$IFS
-		IFS=,
-		for x in \$test_prereq; do
-		  test "\$x" = "$req" && ok=t
-		done
-		for x in \$SHARNESS_test_skip_all_prereq; do
-		  test "\$x" = "$prog" && ok=t
-		done
-		test -n "\$ok" && exec $path_prog "\$@"
-		echo >&2 "Use of $prog without prereq $req!"
-		exit 1
-		EOF
-		chmod +x ${dir}/$prog
-		# Override $$prog to point to wrapper script:
-		eval "${prog}=${dir}/${prog}"
-    fi
-done
-
-if test -n "$TEST_CHECK_PREREQS"; then
-    export PATH=${SHARNESS_TRASH_DIRECTORY}/bin:${PATH}
-fi
 
 #  Export a shorter name for this test
 TEST_NAME=$SHARNESS_TEST_NAME
 export TEST_NAME
 
 #  Test requirements for testsuite
+if ! command -v jq >/dev/null; then
+    error "jq is required for the flux-core testsuite"
+fi
 if ! run_timeout 10.0 lua -e 'require "posix"'; then
     error "failed to find lua posix module in path"
 fi
+jq=$(command -v jq)
 
 #  Some tests in flux don't work with --chain-lint, add a prereq for
 #   --no-chain-lint:
@@ -384,9 +356,18 @@ for var in $(env | grep ^SLURM); do unset ${var%%=*}; done
 unset FLUX_SHELL_RC_PATH
 unset FLUX_RC_EXTRA
 unset FLUX_CONF_DIR
+unset FLUX_JOB_CC
+unset FLUX_F58_FORCE_ASCII
 
 # Individual tests that need to force local URI resolution should set
 #  this specifically. In general it breaks other URI tests:
 unset FLUX_URI_RESOLVE_LOCAL
+
+# Set XDG_CONFIG_DIRS and XDG_CONFIG_HOME to a nonexistent directory to
+#  avoid system or user configuration influencing tests for utilities
+#  that use flux.util.UtilConfig or other config classes utilizing
+#  the XDG base directory specification.
+export XDG_CONFIG_DIRS=/noexist
+export XDG_CONFIG_HOME=/noexist
 
 # vi: ts=4 sw=4 expandtab

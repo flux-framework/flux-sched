@@ -38,8 +38,10 @@ typedef struct planner_t planner_t;
  *                          EINVAL: invalid argument.
  *                          ERANGE: resource_total is an out-of-range value.
  */
-planner_t *planner_new (int64_t base_time, uint64_t duration,
-                        uint64_t resource_total, const char *resource_type);
+planner_t *planner_new (int64_t base_time,
+                        uint64_t duration,
+                        uint64_t resource_total,
+                        const char *resource_type);
 
 /*! Initialize empty planner.
  *
@@ -66,7 +68,7 @@ planner_t *planner_copy (planner_t *p);
  *  \param lhs          the base planner which will be assigned to rhs.
  *  \param rhs          the base planner which will be copied and returned as
  *                      a new planner context.
- * 
+ *
  */
 void planner_assign (planner_t *lhs, planner_t *rhs);
 
@@ -118,8 +120,10 @@ const char *planner_resource_type (planner_t *ctx);
  *                          ERANGE: request is an out-of-range value.
  *                          ENOENT: no scheduleable point
  */
-int64_t planner_avail_time_first (planner_t *ctx, int64_t on_or_after,
-                                  uint64_t duration, uint64_t request);
+int64_t planner_avail_time_first (planner_t *ctx,
+                                  int64_t on_or_after,
+                                  uint64_t duration,
+                                  uint64_t request);
 
 /*! Find and return the next earliest point in time at which the same request
  *  queried before via either planner_avail_time_first or
@@ -134,7 +138,6 @@ int64_t planner_avail_time_first (planner_t *ctx, int64_t on_or_after,
  *                          ENOENT: no scheduleable point
  */
 int64_t planner_avail_time_next (planner_t *ctx);
-
 
 /*! Test if the given request can be satisfied at the start time.
  *  Note on semantics: Unlike planner_avail_time* functions, this function
@@ -151,8 +154,7 @@ int64_t planner_avail_time_next (planner_t *ctx);
  *                          ERANGE: request is an out-of-range value.
  *                          ENOTSUP: internal error encountered.
  */
-int planner_avail_during (planner_t *ctx, int64_t at, uint64_t duration,
-                          uint64_t request);
+int planner_avail_during (planner_t *ctx, int64_t at, uint64_t duration, uint64_t request);
 
 /*! Return how resources are available for the duration starting from at.
  *
@@ -163,8 +165,7 @@ int planner_avail_during (planner_t *ctx, int64_t at, uint64_t duration,
  *                      as follows:
  *                          EINVAL: invalid argument.
  */
-int64_t planner_avail_resources_during (planner_t *ctx, int64_t at,
-                                        uint64_t duration);
+int64_t planner_avail_resources_during (planner_t *ctx, int64_t at, uint64_t duration);
 
 /*! Return how many resources are available at the given time.
  *
@@ -175,7 +176,6 @@ int64_t planner_avail_resources_during (planner_t *ctx, int64_t at,
  *                          EINVAL: invalid argument.
  */
 int64_t planner_avail_resources_at (planner_t *ctx, int64_t at);
-
 
 /*! Add a new span to the planner and update the planner's resource/time state.
  *  Reset the planner's iterator so that planner_avail_time_next will be made
@@ -193,8 +193,7 @@ int64_t planner_avail_resources_at (planner_t *ctx, int64_t at);
  *                          ERANGE: a resource state became out of a valid range,
  *                                  e.g., reserving more than available.
  */
-int64_t planner_add_span (planner_t *ctx, int64_t start_time, uint64_t duration,
-                          uint64_t request);
+int64_t planner_add_span (planner_t *ctx, int64_t start_time, uint64_t duration, uint64_t request);
 
 /*! Remove the existing span from the planner and update its resource/time state.
  *  Reset the planner's iterator such that planner_avail_time_next will be made
@@ -209,6 +208,23 @@ int64_t planner_add_span (planner_t *ctx, int64_t start_time, uint64_t duration,
  *                          ERANGE: a resource state became out of a valid range.
  */
 int planner_rem_span (planner_t *ctx, int64_t span_id);
+
+/*! Reduce the existing span's resources from the planner.
+ *  This function will be called for a partial release/cancel.
+ *  If the number of resources to be removed is equal to those
+ *  allocated to the span, completely remove the span.
+ *
+ *  \param ctx          opaque planner context returned from planner_new.
+ *  \param span_id      span_id returned from planner_add_span.
+ *  \param to_remove    number of resources to free from the span
+ *  \param removed      bool indicating if the entire span was removed.
+ *  \return             0 on success; -1 on an error with errno set as follows:
+ *                          EINVAL: invalid argument.
+ *                          EKEYREJECTED: span could not be removed from
+ *                                        the planner's internal data structures.
+ *                          ERANGE: a resource state became out of a valid range.
+ */
+int planner_reduce_span (planner_t *ctx, int64_t span_id, int64_t to_remove, bool &removed);
 
 //! Span iterators -- there is no specific iteration order
 int64_t planner_span_first (planner_t *ctx);
@@ -226,7 +242,7 @@ int64_t planner_span_resource_count (planner_t *ctx, int64_t span_id);
 /*
  *  Returns true if all the member variables and objects are equal.
  *  Used by testsuite.
-*/
+ */
 bool planners_equal (planner_t *lhs, planner_t *rhs);
 
 /*! Update the resource count to support elasticity.
@@ -239,8 +255,7 @@ bool planners_equal (planner_t *lhs, planner_t *rhs);
  *  \return             0 on success; -1 on an error with errno set as follows:
  *                          EINVAL: invalid argument.
  */
-int planner_update_total (planner_t *ctx,
-                          uint64_t resource_total);
+int planner_update_total (planner_t *ctx, uint64_t resource_total);
 
 #ifdef __cplusplus
 }

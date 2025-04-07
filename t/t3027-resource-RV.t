@@ -4,8 +4,6 @@ test_description='Test emitted resource-set correctness as schema changes'
 
 . $(dirname $0)/sharness.sh
 
-skip_all_unless_have jq
-
 full_job="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/RV/full.yaml"
 duration3600="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/RV/duration3600.yaml"
 exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/RV"

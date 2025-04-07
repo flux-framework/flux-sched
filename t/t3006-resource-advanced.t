@@ -8,6 +8,7 @@ cmd_dir="${SHARNESS_TEST_SRCDIR}/data/resource/commands/advanced"
 exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/advanced"
 grugs="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/advanced_test.graphml"
 disag="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/disaggr.graphml"
+ssd="${SHARNESS_TEST_SRCDIR}/data/resource/jgfs/issue1260.json"
 query="../../resource/utilities/resource-query"
 
 #
@@ -74,6 +75,19 @@ test_expect_success HAVE_JQ "${test005_desc}" '
     jq -r ".graph.nodes[] | .metadata | .ephemeral.label" 005.jgf.json \
        | sort | uniq -c > 005.counts &&
     test_cmp -w 005.counts ${exp_dir}/005.counts
+'
+
+# Test to ensure scheduling leaf vertices in clusters with ssds and nodes
+# connected to rack and cluster vertices, respectively, doesn't result in
+# match errors (see issue 1260).
+#
+cmds006="${cmd_dir}/cmds06.in"
+test006_desc="match vertices in asymmetrical system (pol=lonodex)"
+test_expect_success "${test006_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds006} > cmds006 &&
+    ${query} -L ${ssd} -S CA -P lonodex -f jgf -t 006.R.out < cmds006 2> err.out &&
+    cat err.out >> 006.R.out &&
+    test_cmp 006.R.out ${exp_dir}/006.R.out
 '
 
 test_done

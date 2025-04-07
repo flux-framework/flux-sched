@@ -28,7 +28,7 @@
 # if make is old, and scl is here, and devtoolset is available and not turned
 # on, re-exec ourself with it active to get a newer make
 if make --version | grep 'GNU Make 4' 2>&1 > /dev/null ; then
-  MAKE="make --output-sync=line --no-print-directory"
+  MAKE="make --no-print-directory"
 else
   MAKE="make" #use this if all else fails
   if test "X$X_SCLS" = "X" ; then
@@ -40,6 +40,7 @@ else
 fi
 
 if test -n "$CHECK_RUN_SOURCE_ENV" ; then
+	echo Sourcing $CHECK_RUN_SOURCE_ENV
 	source "$CHECK_RUN_SOURCE_ENV"
 fi
 
@@ -131,6 +132,11 @@ if test "$COVERAGE" = "t"; then
 	(chmod 444 coverage.xml || :) &&
 	(coverage report || :)"
 
+# Use make install for installonly
+elif test "$INSTALL_ONLY" = "t"; then
+    ARGS="$ARGS --prefix=/usr --sysconfdir=/etc"
+    CHECKCMDS="sudo make install"
+
 # Use make install for T_INSTALL:
 elif test "$TEST_INSTALL" = "t"; then
     ARGS="$ARGS --prefix=/usr --sysconfdir=/etc"
@@ -183,6 +189,7 @@ if test -n "$BUILD_DIR" ; then
   cd "$BUILD_DIR"
 fi
 
+pwd
 checks_group "configure ${ARGS}"  /usr/src/configure ${ARGS} \
 	|| (printf "::error::configure failed\n"; cat config.log; exit 1)
 checks_group "make clean..." make clean

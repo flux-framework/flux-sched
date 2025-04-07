@@ -23,28 +23,30 @@ namespace resource_model {
 /*! Variation-aware policy: allocate resources based on
  * similar performance class.
  */
-struct var_aware_t : public dfu_match_cb_t
-{
+struct var_aware_t : public dfu_match_cb_t {
     var_aware_t ();
     var_aware_t (const std::string &name);
     var_aware_t (const var_aware_t &o);
     var_aware_t &operator= (const var_aware_t &o);
     ~var_aware_t ();
 
-    int dom_finish_graph (const subsystem_t &subsystem,
+    int dom_finish_graph (subsystem_t subsystem,
                           const std::vector<Flux::Jobspec::Resource> &resources,
-                          const resource_graph_t &g, scoring_api_t &dfu);
-    int dom_finish_vtx (vtx_t u, const subsystem_t &subsystem,
+                          const resource_graph_t &g,
+                          scoring_api_t &dfu);
+    int dom_finish_vtx (vtx_t u,
+                        subsystem_t subsystem,
                         const std::vector<Flux::Jobspec::Resource> &resources,
-                        const resource_graph_t &g, scoring_api_t &dfu);
+                        const resource_graph_t &g,
+                        scoring_api_t &dfu);
 
-    int dom_finish_slot (const subsystem_t &subsystem, scoring_api_t &dfu);
+    int dom_finish_slot (subsystem_t subsystem, scoring_api_t &dfu);
 };
 
-} // resource_model
-} // Flux
+}  // namespace resource_model
+}  // namespace Flux
 
-#endif // DFU_MATCH_VAR_AWARE_HPP
+#endif  // DFU_MATCH_VAR_AWARE_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

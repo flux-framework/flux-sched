@@ -21,14 +21,9 @@ subsystems=containment policy=low &&
     load_qmanager
 '
 
-test_expect_success HAVE_JQ 'feasibility: --plugins=feasibility works ' '
+test_expect_success 'feasibility: --plugins=feasibility works ' '
     flux run -n 999 --dry-run hostname | \
         flux job-validator --jobspec-only --plugins=feasibility \
-        | jq -e ".errnum != 0" &&
-    flux run -n 999 --dry-run hostname | \
-        flux job-validator --jobspec-only \
-        --plugins=feasibility \
-        --feasibility-service=sched-fluxion-resource.satisfiability \
         | jq -e ".errnum != 0"
 '
 

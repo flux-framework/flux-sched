@@ -21,7 +21,7 @@ test_under_flux 2 system
 
 startctl="flux python ${SHARNESS_TEST_SRCDIR}/scripts/startctl.py"
 
-SCHED_MODULE=$(flux module list | awk '$NF == "sched" {print $1}')
+SCHED_MODULE=$(flux module list | awk '$NF ~ /^\s*(\w+,)?sched(,\w+)?\s*$/ { print $1 }')
 
 test_expect_success 'sched service provided by fluxion' '
 	test_debug "echo sched service provided by ${SCHED_MODULE}" &&
@@ -55,7 +55,7 @@ test_expect_success 'resource status shows no drained nodes' '
 
 test_expect_success 'flux exec -r 1 fails with EHOSTUNREACH' '
 	test_must_fail run_timeout 30 flux exec -r 1 /bin/true 2>unreach.err &&
-	grep "No route to host" unreach.err
+	grep "$(strerror_symbol EHOSTUNREACH)" unreach.err
 '
 
 test_expect_success 'single node job can run with only rank 0 up' '
@@ -74,8 +74,16 @@ test_expect_success HAVE_JQ 'startctl shows rank 1 pid not -1' '
 	test $($startctl status | jq -r ".procs[1].pid") != "-1"
 '
 
-# Side effect: this test blocks until the rank 1 broker has a chance to
-# wire up and start services
+# Updated behavior: the first job is unsatisfiable and fails
+test_expect_failure 'two node job can now run' '
+	run_timeout 30 flux job attach $(cat jobid)
+'
+
+test_expect_success 'two node job is accepted and runs' '
+	sleep 5 &&
+	flux submit -N2 -n2 echo Hello >jobid
+'
+
 test_expect_success 'two node job can now run' '
 	run_timeout 30 flux job attach $(cat jobid)
 '

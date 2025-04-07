@@ -1,8 +1,8 @@
-remove /tiny0/rack0/node1/socket1/core30
-remove /tiny0/rack0/node1/socket1/core31
-remove /tiny0/rack0/node1/socket1/core32
-remove /tiny0/rack0/node1/socket1/core33
-remove /tiny0/rack0/node1/socket1/core34
-remove /tiny0/rack0/node1/socket1/core35
+remove /tiny0/rack0/node1/socket1/core30 true
+remove /tiny0/rack0/node1/socket1/core31 true
+remove /tiny0/rack0/node1/socket1/core32 true
+remove /tiny0/rack0/node1/socket1/core33 true
+remove /tiny0/rack0/node1/socket1/core34 true
+remove /tiny0/rack0/node1/socket1/core35 true
 find status=up
 quit

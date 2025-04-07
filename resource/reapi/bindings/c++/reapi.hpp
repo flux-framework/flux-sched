@@ -25,13 +25,12 @@ extern "C" {
 namespace Flux {
 namespace resource_model {
 
-
 /*! Queue adapter base API class: define a set of methods a queue
  *  policy class (a subclass of this API class) must implement
  *  to be able to work with reapi_t under asynchronous execution.
  */
 class queue_adapter_base_t {
-public:
+   public:
     /*! When a match succeeds, this method is called back
      *  by reapi_t with the matched resource information.
      *  The implementor (e.g., queue policy class) of this method
@@ -48,8 +47,11 @@ public:
      *                   of the elapse time to complete the match operation.
      *  \return          0 on success; -1 on error.
      */
-    virtual int handle_match_success (flux_jobid_t jobid, const char *status,
-                                      const char *R, int64_t at, double ov) = 0;
+    virtual int handle_match_success (flux_jobid_t jobid,
+                                      const char *status,
+                                      const char *R,
+                                      int64_t at,
+                                      double ov) = 0;
 
     /*! When a match failed (e.g., unsatisfiable jobspec, resource
      *  unavailable, no more jobspec to process), this method is
@@ -86,12 +88,11 @@ public:
     virtual int set_sched_loop_active (bool active) = 0;
 };
 
-
 /*! High-level resource API base class. Derived classes must implement
  *  the methods.
  */
 class reapi_t {
-public:
+   public:
     /*! Match a jobspec to the "best" resources and either allocate
      *  orelse reserve them. The best resources are determined by
      *  the selected match policy.
@@ -102,13 +103,13 @@ public:
      *                   to a flux_t object.
      *  \param match_op  match_op_t: set to specify the specific match option
      *                   from 1 of 4 choices:
-     *                   MATCH_ALLOCATE: try to allocate now and fail if resources 
-     *                   aren't available. 
+     *                   MATCH_ALLOCATE: try to allocate now and fail if resources
+     *                   aren't available.
      *                   MATCH_ALLOCATE_ORELSE_RESERVE : Try to allocate and reseve
      *                   if resources aren't available now.
-     *                   MATCH_SATISFIABILITY: Do a satisfiablity check and do not 
+     *                   MATCH_SATISFIABILITY: Do a satisfiablity check and do not
      *                   allocate.
-     *                   MATCH_ALLOCATE_W_SATISFIABILITY: try to allocate and run 
+     *                   MATCH_ALLOCATE_W_SATISFIABILITY: try to allocate and run
      *                   satisfiability check if resources are not available.
      *  \param jobspec   jobspec string.
      *  \param jobid     jobid of the uint64_t type.
@@ -123,10 +124,14 @@ public:
      *                   the match operation.
      *  \return          0 on success; -1 on error.
      */
-    static int match_allocate (void *h, bool orelse_reserve,
+    static int match_allocate (void *h,
+                               bool orelse_reserve,
                                const std::string &jobspec,
-                               const uint64_t jobid, bool &reserved,
-                               std::string &R, int64_t &at, double &ov)
+                               const uint64_t jobid,
+                               bool &reserved,
+                               std::string &R,
+                               int64_t &at,
+                               double &ov)
     {
         return -1;
     }
@@ -141,13 +146,13 @@ public:
      *                   to a flux_t object.
      *  \param match_op  match_op_t: set to specify the specific match option
      *                   from 1 of 4 choices:
-     *                   MATCH_ALLOCATE: try to allocate now and fail if resources 
-     *                   aren't available. 
+     *                   MATCH_ALLOCATE: try to allocate now and fail if resources
+     *                   aren't available.
      *                   MATCH_ALLOCATE_ORELSE_RESERVE : Try to allocate and reseve
      *                   if resources aren't available now.
-     *                   MATCH_SATISFIABILITY: Do a satisfiablity check and do not 
+     *                   MATCH_SATISFIABILITY: Do a satisfiablity check and do not
      *                   allocate.
-     *                   MATCH_ALLOCATE_W_SATISFIABILITY: try to allocate and run 
+     *                   MATCH_ALLOCATE_W_SATISFIABILITY: try to allocate and run
      *  \param jobs      JSON array of jobspecs.
      *  \param adapter   queue_adapter_base_t object that provides
      *                   a set of callback methods to be called each time
@@ -155,7 +160,8 @@ public:
      *                   resource match service.
      *  \return          0 on success; -1 on error.
      */
-    static int match_allocate_multi (void *h, bool orelse_reserve,
+    static int match_allocate_multi (void *h,
+                                     bool orelse_reserve,
                                      const char *jobs,
                                      queue_adapter_base_t *adapter);
 
@@ -174,8 +180,11 @@ public:
      *  \param R_out     return the updated R string.
      *  \return          0 on success; -1 on error.
      */
-    static int update_allocate (void *h, const uint64_t jobid,
-                                const std::string &R, int64_t &at, double &ov,
+    static int update_allocate (void *h,
+                                const uint64_t jobid,
+                                const std::string &R,
+                                int64_t &at,
+                                double &ov,
                                 std::string &R_out)
     {
         return -1;
@@ -196,6 +205,23 @@ public:
         return -1;
     }
 
+    /*! Cancel the allocation or reservation corresponding to jobid.
+     *
+     *  \param ctx       reapi_module_ctx_t context object
+     *  \param jobid     jobid of the uint64_t type.
+     *  \param R         R string to remove
+     *  \param noent_ok  don't return an error on nonexistent jobid
+     *  \param full_removal  bool indictating whether the job is fully canceled
+     *  \return          0 on success; -1 on error.
+     */
+    static int cancel (void *h,
+                       const uint64_t jobid,
+                       const char *R,
+                       bool noent_ok,
+                       bool &full_removal)
+    {
+        return -1;
+    }
 
     /*! Get the information on the allocation or reservation corresponding
      *  to jobid.
@@ -215,8 +241,11 @@ public:
      *                   the match operation.
      *  \return          0 on success; -1 on error.
      */
-    static int info (void *h, const uint64_t jobid,
-                     std::string &mode, bool &reserved, int64_t &at, 
+    static int info (void *h,
+                     const uint64_t jobid,
+                     std::string &mode,
+                     bool &reserved,
+                     int64_t &at,
                      double &ov)
     {
         return -1;
@@ -237,17 +266,23 @@ public:
      *  \param avg       Avg match time
      *  \return          0 on success; -1 on error.
      */
-    static int stat (void *h, int64_t &V, int64_t &E,int64_t &J,
-                     double &load, double &min, double &max, double &avg)
+    static int stat (void *h,
+                     int64_t &V,
+                     int64_t &E,
+                     int64_t &J,
+                     double &load,
+                     double &min,
+                     double &max,
+                     double &avg)
     {
         return -1;
     }
 };
 
-} // namespace Flux::resource_model
-} // namespace Flux
+}  // namespace resource_model
+}  // namespace Flux
 
-#endif // REAPI_HPP
+#endif  // REAPI_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

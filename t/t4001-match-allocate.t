@@ -56,6 +56,11 @@ test_expect_success 'handling of a malformed jobspec works' '
     test_expect_code 2 flux ion-resource match allocate ${malform}
 '
 
+test_expect_success 'handling of an invalid resource type works' '
+    test_expect_code 1 flux ion-resource match allocate \
+        "${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/basics/bad_res_type.yaml"
+'
+
 test_expect_success 'invalid duration is caught' '
     test_must_fail flux ion-resource match allocate ${duration_too_large} &&
     test_must_fail flux ion-resource match allocate ${duration_negative}

@@ -40,9 +40,8 @@ bool scheduled_point_t::operator== (const scheduled_point_t &o) const
 
 bool scheduled_point_t::operator!= (const scheduled_point_t &o) const
 {
-    return !operator == (o);
+    return !operator== (o);
 }
-
 
 /*
  * vi: ts=4 sw=4 expandtab

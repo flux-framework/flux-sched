@@ -22,15 +22,15 @@ namespace Flux {
 namespace Jobspec {
 
 class parse_error : public std::runtime_error {
-public:
+   public:
     int position;
     int line;
     int column;
-    parse_error(const char *msg);
-    parse_error(const YAML::Node& node, const char *msg);
+    parse_error (const char *msg);
+    parse_error (const YAML::Node &node, const char *msg);
 };
 
-} // namespace Jobspec
-} // namespace Flux
+}  // namespace Jobspec
+}  // namespace Flux
 
-#endif // JOBSPEC_PARSE_ERROR_HPP
+#endif  // JOBSPEC_PARSE_ERROR_HPP

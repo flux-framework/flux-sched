@@ -6,8 +6,6 @@ test_description='Test property constraints-based matching'
 
 query="../../resource/utilities/resource-query"
 
-skip_all_unless_have jq
-
 test_expect_success 'pconstraints: configuring a heterogeneous machine works' '
 	flux R encode -r 0 -c 0-1 -g 0-1 -p "arm-v9@core:0" -H foo2 > out &&
 	flux R encode -r 1 -c 0 -H foo3 -p "arm-v8@core:1" >> out &&
@@ -148,8 +146,11 @@ test_expect_success 'allocate 1 job with arm-v9@core and rv1 (pol=hinodex)' '
 	host=$(cat 011.R.out | grep -v INFO | jq -r ".execution.nodelist[]") &&
 	jgfh=$(cat 011.R.out | grep -v INFO | \
 		jq -r ".scheduling.graph.nodes[] | \
-		select (.metadata.type == \"node\") | .metadata.name") &&
-	test "$host" = "${jgfh}"
+		select (.metadata.type == \"node\") | .metadata.basename") &&
+	jgfid=$(cat 011.R.out | grep -v INFO | \
+		jq -r ".scheduling.graph.nodes[] | \
+		select (.metadata.type == \"node\") | .metadata.id") &&
+	test "$host" = "${jgfh}${jgfid}"
 '
 
 test_expect_success 'allocate 1 job with arm-v9@core and JGF (pol=hinodex)' '

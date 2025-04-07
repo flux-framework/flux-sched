@@ -14,13 +14,15 @@ if test -n "$FLUX_SCHED_TEST_INSTALLED"; then
 else
   # Set up environment so that we find flux-sched modules,
   #  and commands from the build directories:
-  FLUX_MODULE_PATH_PREPEND="${SHARNESS_BUILD_DIRECTORY}/resource/modules/"
-  FLUX_MODULE_PATH_PREPEND="${SHARNESS_BUILD_DIRECTORY}/resource/modules/.libs":${FLUX_MODULE_PATH_PREPEND}
-  FLUX_MODULE_PATH_PREPEND="${SHARNESS_BUILD_DIRECTORY}/qmanager/modules/":${FLUX_MODULE_PATH_PREPEND}
-  FLUX_MODULE_PATH_PREPEND="${SHARNESS_BUILD_DIRECTORY}/qmanager/modules/.libs":${FLUX_MODULE_PATH_PREPEND}
+  FLUX_MODULE_PATH_PREPEND="${SHARNESS_BUILD_DIRECTORY}/resource/modules/:${FLUX_MODULE_PATH_PREPEND}"
+  FLUX_MODULE_PATH_PREPEND="${SHARNESS_BUILD_DIRECTORY}/qmanager/modules/:${FLUX_MODULE_PATH_PREPEND}"
   FLUX_EXEC_PATH_PREPEND="${SHARNESS_TEST_SRCDIR}/scripts":"${SHARNESS_TEST_SRCDIR}/../src/cmd"
   export PYTHONPATH="${SHARNESS_TEST_SRCDIR}/../src/python${PYTHONPATH:+:${PYTHONPATH}}"
 fi
+
+# Setup FLUX_SOURCE_DIR for use in flux-sharness.sh
+FLUX_SOURCE_DIR="$(cd ${SHARNESS_TEST_SRCDIR}/.. && pwd)"
+export FLUX_SOURCE_DIR
 
 ## Set up environment using flux(1) in PATH
 flux --help >/dev/null 2>&1 || error "Failed to find flux in PATH"
@@ -44,6 +46,12 @@ fi
 # PUBLIC:
 #   Accessors 
 #
+
+test_cmp_json() {
+    jq -S "$1" > "$1.tmp"
+    jq -S "$2" > "$2.tmp"
+    test_cmp "$1.tmp" "$1.tmp"
+}
 
 load_qmanager () {
     flux module load sched-fluxion-qmanager "$@"
@@ -120,8 +128,7 @@ remap_rv1_resource_type() {
     local filter=".scheduling.graph.nodes[].metadata | \
 select(.type == \"${type}\") | .name |= .[${#type}:] | \
 .paths.containment |= .[${path_prefix}:] | \
-[ (.name | tonumber - ${id_rebase}), \
-if .rank == 0 then .rank - ${rank_remap0} \
+[ if .rank == 0 then .rank - ${rank_remap0} \
 elif .rank == 1 then .rank - ${rank_remap1} \
 elif .rank == 2 then .rank - ${rank_remap2} \
 else .rank - ${rank_remap3} end, .id - ${id_rebase}, \

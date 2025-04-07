@@ -16,8 +16,6 @@ verify() {
     return $?
 }
 
-skip_all_unless_have jq
-
 export FLUX_SCHED_MODULE=none
 test_under_flux 4
 

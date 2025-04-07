@@ -79,7 +79,7 @@ class Graph:
         if isinstance(edge, Edge):
             if self._directed:
                 if edge.is_directed() == None:
-                    edge.is_directed(True)
+                    edge.set_directed(True)
                 if not edge.is_directed() and not force_direction:
                     ValueError("Adding undirected edge to directed graph")
                 if not edge.is_directed() and force_direction:

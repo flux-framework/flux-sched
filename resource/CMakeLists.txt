@@ -1,3 +1,12 @@
+add_library(fluxion-data SHARED schema/data_std.cpp)
+target_link_libraries(fluxion-data PRIVATE
+    intern
+    )
+set_target_properties(fluxion-data PROPERTIES
+    VERSION ${PROJECT_VERSION}
+    SOVERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+    )
+install(TARGETS fluxion-data LIBRARY NAMELINK_SKIP)
 add_subdirectory(libjobspec)
 add_subdirectory(planner)
 set(RESOURCE_HEADERS 
@@ -11,7 +20,6 @@ set(RESOURCE_HEADERS
     policies/dfu_match_policy_factory.hpp
     jobinfo/jobinfo.hpp
     schema/resource_graph.hpp
-    schema/data_std.hpp
     schema/infra_data.hpp
     schema/sched_data.hpp
     schema/resource_base.hpp
@@ -39,7 +47,7 @@ set(RESOURCE_HEADERS
     evaluators/expr_eval_vtx_target.hpp
     config/system_defaults.hpp
     store/resource_graph_store.hpp
-    )
+)
 
 set(RESOURCE_SRCFILES 
     policies/dfu_match_locality.cpp
@@ -96,11 +104,8 @@ target_link_libraries(resource PUBLIC
     PkgConfig::JANSSON
     PkgConfig::HWLOC
     PkgConfig::UUID
-    Boost::system
     Boost::graph
-    Boost::regex
     jobspec_conv
-    Boost::filesystem
     OpenSSL::Crypto
     # This needs to be conditional eventually
     #${perfflow_deps}

@@ -16,19 +16,16 @@ extern "C" {
 
 #include "planner_internal_tree.hpp"
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // Private Scheduled Point Search Tree Methods
 ////////////////////////////////////////////////////////////////////////////////
 
-scheduled_point_t *scheduled_point_tree_t::get_recent_state (
-                       scheduled_point_t *new_point,
-                       scheduled_point_t *old_point) const
+scheduled_point_t *scheduled_point_tree_t::get_recent_state (scheduled_point_t *new_point,
+                                                             scheduled_point_t *old_point) const
 {
     if (!old_point)
         return new_point;
-    return (new_point->at > old_point->at)? new_point : old_point;
+    return (new_point->at > old_point->at) ? new_point : old_point;
 }
 
 void scheduled_point_tree_t::destroy (scheduled_point_rb_node_t *node)
@@ -42,39 +39,34 @@ void scheduled_point_tree_t::destroy (scheduled_point_rb_node_t *node)
     data = nullptr;
 }
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // Public Scheduled Point RBTree Node Methods
 ////////////////////////////////////////////////////////////////////////////////
 
-bool scheduled_point_rb_node_t::operator< (
-         const scheduled_point_rb_node_t &other) const
+bool scheduled_point_rb_node_t::operator< (const scheduled_point_rb_node_t &other) const
 {
     return this->get_point ()->at < other.get_point ()->at;
 }
 
-bool operator<(const scheduled_point_rb_node_t &lhs, const int64_t rhs) {
+bool operator< (const scheduled_point_rb_node_t &lhs, const int64_t rhs)
+{
     return lhs.get_point ()->at < rhs;
 }
 
-bool operator<(const int64_t lhs, const scheduled_point_rb_node_t &rhs) {
+bool operator< (const int64_t lhs, const scheduled_point_rb_node_t &rhs)
+{
     return lhs < rhs.get_point ()->at;
 }
 
-bool scheduled_point_rb_node_t::operator== (
-         const scheduled_point_rb_node_t &other) const
+bool scheduled_point_rb_node_t::operator== (const scheduled_point_rb_node_t &other) const
 {
     return this->get_point ()->at == other.get_point ()->at;
 }
 
-bool scheduled_point_rb_node_t::operator!= (
-         const scheduled_point_rb_node_t &other) const
+bool scheduled_point_rb_node_t::operator!= (const scheduled_point_rb_node_t &other) const
 {
-    return !operator == (other);
+    return !operator== (other);
 }
-
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Public Scheduled Point Search Tree Methods
@@ -123,7 +115,7 @@ scheduled_point_t *scheduled_point_tree_t::next (scheduled_point_t *point) const
 scheduled_point_t *scheduled_point_tree_t::search (int64_t tm)
 {
     auto iter = m_tree.find (tm);
-    return (iter != m_tree.end ())? iter->get_point () : nullptr;
+    return (iter != m_tree.end ()) ? iter->get_point () : nullptr;
 }
 
 /*! While scheduled_point_search returns the exact match scheduled_point_state

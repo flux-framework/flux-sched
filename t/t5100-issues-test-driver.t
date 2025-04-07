@@ -8,8 +8,6 @@ if test_have_prereq ASAN; then
     skip_all='skipping issues tests under AddressSanitizer'
     test_done
 fi
-skip_all_unless_have jq
-
 SIZE=2
 test_under_flux ${SIZE}
 echo "# $0: flux session size will be ${SIZE}"

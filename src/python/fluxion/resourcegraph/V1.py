@@ -8,15 +8,12 @@
 # SPDX-License-Identifier: LGPL-3.0
 ##############################################################
 
-import re
-
 from flux.idset import IDset
 from flux.hostlist import Hostlist
 from fluxion.jsongraph.objects.graph import Graph, Node, Edge
 
 
 class FluxionResourcePoolV1(Node):
-
     """
     Fluxion Resource Pool Vertex Class: extend jsongraph's Node class
     """
@@ -25,16 +22,16 @@ class FluxionResourcePoolV1(Node):
         self,
         vtxId,
         resType,
-        basename,
-        name,
-        iden,
-        uniqId,
-        rank,
-        exclusive,
-        unit,
-        size,
-        properties,
-        path,
+        basename=None,
+        name=None,
+        iden=None,
+        uniqId=None,
+        rank=None,
+        exclusive=None,
+        unit=None,
+        size=None,
+        properties=None,
+        path=None,
         status=0,
     ):
         """Constructor
@@ -58,18 +55,30 @@ class FluxionResourcePoolV1(Node):
             raise ValueError(f"resource type={resType} unsupported by RV1")
         metadata = {
             "type": resType,
-            "basename": basename,
-            "name": name,
-            "id": iden,
-            "uniq_id": uniqId,
-            "rank": rank,
-            "exclusive": exclusive,
-            "unit": unit,
-            "size": size,
-            "properties": properties,
-            "paths": {"containment": path},
         }
-        if status != 0:  # reduce the footprint by only adding status if nonzero
+        if basename is not None:
+            metadata["basename"] = basename
+        if name is not None:
+            metadata["name"] = name
+        if iden is not None:
+            metadata["id"] = iden
+        if uniqId is not None:
+            metadata["uniq_id"] = uniqId
+        if rank is not None:
+            metadata["rank"] = rank
+        if exclusive is not None:
+            metadata["exclusive"] = exclusive
+        if unit:
+            metadata["unit"] = unit
+        if size is not None:
+            metadata["size"] = size
+        if properties:
+            metadata["properties"] = properties
+        if path is not None:
+            metadata["paths"] = {"containment": path}
+        else:
+            raise ValueError("path must not be None")
+        if status != 0:
             metadata["status"] = status
         super().__init__(vtxId, metadata=metadata)
 
@@ -83,18 +92,6 @@ class FluxionResourceRelationshipV1(Edge):
     Fluxion Resource Relationship V1 Class: extend jsongraph's Edge class
     """
 
-    def __init__(self, parentId, vtxId):
-        """Constructor
-        parentId -- Parent vertex Id
-        vtxId -- Child vertex Id
-        """
-        super().__init__(
-            parentId,
-            vtxId,
-            directed=True,
-            metadata={"name": {"containment": "contains"}},
-        )
-
 
 class FluxionResourceGraphV1(Graph):
     """
@@ -106,7 +103,8 @@ class FluxionResourceGraphV1(Graph):
         rv1 -- RV1 Dictorary that conforms to Flux RFC 20:
                    Resource Set Specification Version 1
         """
-        super().__init__()
+        super().__init__(directed=False)
+        # graph *is* directed, however, suppress unnecessary `"directed": true` fields
         self._uniqId = 0
         self._rv1NoSched = rv1
         self._encode()
@@ -120,88 +118,51 @@ class FluxionResourceGraphV1(Graph):
             self.add_edge(edg)
         self._tick_uniq_id()
 
-    def _extract_id_from_hn(self, hostName):
-        postfix = re.findall(r"(\d+$)", hostName)
-        rc = self._uniqId
-        if len(postfix) == 1:
-            rc = int(postfix[0])
-        return rc
-
     def _contains_any(self, prop_str, charset):
         for c in charset:
             if c in prop_str:
                 return True
         return False
 
-    def _encode_child(self, ppid, hPath, rank, resType, i, properties):
-        path = f"{hPath}/{resType}{i}"
-        properties = {}
-        # This can be extended later to support fine grained property
-        # attachment using properties passed in from parent;
-        # for now, set empty properties
+    def _encode_child(self, ppid, path, rank, resType, i):
         vtx = FluxionResourcePoolV1(
-            self._uniqId,
-            resType,
-            resType,
-            resType + str(i),
-            i,
-            self._uniqId,
-            rank,
-            True,
-            "",
-            1,
-            properties,
-            path,
+            self._uniqId, resType, iden=i, rank=rank, path=f"{path}/{resType}{i}"
         )
         edg = FluxionResourceRelationshipV1(ppid, vtx.get_id())
         self._add_and_tick_uniq_id(vtx, edg)
 
-    def _encode_rank(self, ppid, rank, children, hList, rdict, properties):
-        if rdict[rank] >= len(hList):
-            raise ValueError(f"nodelist doesn't include node for rank={rank}")
-        hPath = f"/cluster0/{hList[rdict[rank]]}"
-        iden = self._extract_id_from_hn(hList[rdict[rank]])
+    def _encode_rank(self, ppid, path, rank, children, hostname, properties):
+        path = f"{path}/{hostname}"
         vtx = FluxionResourcePoolV1(
             self._uniqId,
             "node",
-            "node",
-            hList[rdict[rank]],
-            iden,
-            self._uniqId,
-            rank,
-            True,
-            "",
-            1,
-            properties,
-            hPath,
+            name=hostname,
+            rank=rank,
+            properties=properties,
+            path=path,
         )
         edg = FluxionResourceRelationshipV1(ppid, vtx.get_id())
         self._add_and_tick_uniq_id(vtx, edg)
         for key, val in children.items():
             for i in IDset(val):
-                self._encode_child(vtx.get_id(), hPath, rank, str(key), i, properties)
+                self._encode_child(vtx.get_id(), path, rank, str(key), i)
 
-    def _encode_rlite(self, ppid, entry, hList, rdict, pdict):
+    def _encode_rlite(self, ppid, path, entry, hList, rdict, pdict):
         for rank in list(IDset(entry["rank"])):
+            if rdict[rank] >= len(hList):
+                raise ValueError(f"nodelist doesn't include node for rank={rank}")
+            hostname = hList[rdict[rank]]
             self._encode_rank(
-                ppid, rank, entry["children"], hList, rdict, pdict.get(rank, {})
+                ppid, path, rank, entry["children"], hostname, pdict.get(rank)
             )
 
     def _encode(self):
         hList = Hostlist(self._rv1NoSched["execution"]["nodelist"])
+        path = "/cluster0"
         vtx = FluxionResourcePoolV1(
             self._uniqId,
             "cluster",
-            "cluster",
-            "cluster0",
-            0,
-            self._uniqId,
-            -1,
-            True,
-            "",
-            1,
-            {},
-            "/cluster0",
+            path=path,
         )
         self._add_and_tick_uniq_id(vtx, None)
         i = 0
@@ -224,6 +185,5 @@ class FluxionResourceGraphV1(Graph):
                     pdict[rank][p] = ""
                 else:
                     pdict[rank] = {p: ""}
-
         for entry in self._rv1NoSched["execution"]["R_lite"]:
-            self._encode_rlite(vtx.get_id(), entry, hList, rdict, pdict)
+            self._encode_rlite(vtx.get_id(), path, entry, hList, rdict, pdict)

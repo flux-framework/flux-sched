@@ -18,27 +18,26 @@ namespace queue_manager {
 namespace detail {
 
 template<class reapi_type>
-class queue_policy_conservative_t : public queue_policy_bf_base_t<reapi_type>
-{
-public:
-    virtual ~queue_policy_conservative_t ();
+class queue_policy_conservative_t : public queue_policy_bf_base_t<reapi_type> {
+   public:
     queue_policy_conservative_t ();
-    queue_policy_conservative_t (
-        const queue_policy_conservative_t &p) = default;
+    queue_policy_conservative_t (const queue_policy_conservative_t &p) = default;
     queue_policy_conservative_t (queue_policy_conservative_t &&p) = default;
-    queue_policy_conservative_t &operator= (
-        const queue_policy_conservative_t &p) = default;
-    queue_policy_conservative_t &operator= (
-        queue_policy_conservative_t &&p) = default;
+    queue_policy_conservative_t &operator= (const queue_policy_conservative_t &p) = default;
+    queue_policy_conservative_t &operator= (queue_policy_conservative_t &&p) = default;
 
-    virtual int apply_params ();
+    int apply_params () override;
+    const std::string_view policy () const override
+    {
+        return "conservative";
+    }
 };
 
-} // namespace Flux::queue_manager::detail
-} // namespace Flux::queue_manager
-} // namespace Flux
+}  // namespace detail
+}  // namespace queue_manager
+}  // namespace Flux
 
-#endif // QUEUE_POLICY_CONSERVATIVE_HPP
+#endif  // QUEUE_POLICY_CONSERVATIVE_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

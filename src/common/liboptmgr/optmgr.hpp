@@ -18,7 +18,6 @@
 namespace Flux {
 namespace opts_manager {
 
-
 /*! Flux module option composer class: Module options can come
  *  from multiple sources (e.g., through compile-time default,
  *  configuration file and module load options). This simple templated
@@ -35,10 +34,9 @@ namespace opts_manager {
  *  have it; otherwise override it. However, this wrapper class simply
  *  delegates the composition rule down to the template T class.
  */
-template <class T>
+template<class T>
 class optmgr_composer_t {
-public:
-
+   public:
     /*!
      * Compose the option-set state managed by "this" object
      * with the option-set state from another object with
@@ -46,11 +44,12 @@ public:
      * If T doesn't have operator+=(), a compilation error
      * will ensue.
      *
-     * \param o        option-set object of T type 
+     * \param o        option-set object of T type
      * \return         the option set object of type T of "this"
      *                 after composed with o.
      */
-    T &operator+= (const T &o) {
+    T &operator+= (const T &o)
+    {
         return m_opt += o;
     }
 
@@ -59,7 +58,8 @@ public:
      * of the object of the option set class T which canonicalizes
      * its internal state after all the composition completes.
      */
-    T &canonicalize () {
+    T &canonicalize ()
+    {
         return m_opt.canonicalize ();
     }
 
@@ -68,7 +68,8 @@ public:
      *
      * \return         Option set object of type T
      */
-    const T &get_opt () const {
+    const T &get_opt () const
+    {
         return m_opt;
     }
 
@@ -78,14 +79,14 @@ public:
      *  \param json_out  output JSON string
      *  \return          0 on success; -1 on error.
      */
-    int jsonify (std::string &json_out) const {
+    int jsonify (std::string &json_out) const
+    {
         return m_opt.jsonify (json_out);
     }
 
-private:
+   private:
     T m_opt;
 };
-
 
 /*! A key value store class that helps parsing and holding
  *  the option set from a single source (e.g., an option set passed from
@@ -96,14 +97,14 @@ private:
  *  In addition, T must provide "operator()" method to give specific
  *  iteration order on the option set.
  */
-template <class T>
+template<class T>
 struct optmgr_kv_t {
-
     /*! Getter
      *
      * \return         Option set object of type T of "this" object.
      */
-    const T &get_opt () const {
+    const T &get_opt () const
+    {
         return m_opt;
     }
 
@@ -114,7 +115,8 @@ struct optmgr_kv_t {
      *
      * \return         0 on success; -1 on error.
      */
-    int put (const std::string &k, const std::string &v) {
+    int put (const std::string &k, const std::string &v)
+    {
         int rc = 0;
         try {
             auto ret = m_kv.insert (std::pair<std::string, std::string> (k, v));
@@ -122,8 +124,7 @@ struct optmgr_kv_t {
                 errno = EEXIST;
                 rc = -1;
             }
-        }
-        catch (std::bad_alloc &) {
+        } catch (std::bad_alloc &) {
             errno = ENOMEM;
             rc = -1;
         }
@@ -136,9 +137,10 @@ struct optmgr_kv_t {
      *
      * \return         0 on success; -1 on error.
      */
-    int put (const std::string &kv) {
+    int put (const std::string &kv)
+    {
         size_t found = std::string::npos;
-        if ( (found = kv.find_first_of ("=")) == std::string::npos) {
+        if ((found = kv.find_first_of ("=")) == std::string::npos) {
             errno = EPROTO;
             return -1;
         }
@@ -152,16 +154,15 @@ struct optmgr_kv_t {
      *
      * \return         0 on success; -1 on error.
      */
-    int get (const std::string &k, std::string &v) const {
+    int get (const std::string &k, std::string &v) const
+    {
         int rc = 0;
         try {
             v = m_kv.at (k);
-        }
-        catch (std::bad_alloc &) {
+        } catch (std::bad_alloc &) {
             errno = ENOMEM;
             rc = -1;
-        }
-        catch (std::out_of_range &) {
+        } catch (std::out_of_range &) {
             errno = ENOENT;
             rc = -1;
         }
@@ -175,28 +176,27 @@ struct optmgr_kv_t {
      * \param info     parse warning or error string.
      * \return         0 on success; -1 on error.
      */
-    int parse (std::string &info) {
+    int parse (std::string &info)
+    {
         int rc = 0;
         for (const auto &kv : m_kv) {
             // If T doesn't have parse method, this produces an compiler error
-            if ( (rc = m_opt.parse (kv.first, kv.second, info)) < 0) {
+            if ((rc = m_opt.parse (kv.first, kv.second, info)) < 0) {
                 return rc;
             }
         }
         return rc;
     }
 
-private:
+   private:
     T m_opt;
     std::map<std::string, std::string, T> m_kv;
 };
 
-
 /*! Parsing utilities.
  *
  */
-struct optmgr_parse_t  {
-
+struct optmgr_parse_t {
     /*! Parse a string that contains key and value delimited with token.
      *  The parsed key and value are passed through k and v respectively.
      *
@@ -208,14 +208,17 @@ struct optmgr_parse_t  {
      * \return         0 on success; -1 on error.
      *                 errno: EINVAL and EPROTO
      */
-    int parse_single (const std::string &str, const std::string &token,
-                      std::string &k, std::string &v) {
+    int parse_single (const std::string &str,
+                      const std::string &token,
+                      std::string &k,
+                      std::string &v)
+    {
         size_t found;
         if (str == "" || token == "") {
             errno = EINVAL;
             return -1;
         }
-        if ( (found = str.find_first_of (token)) == std::string::npos) {
+        if ((found = str.find_first_of (token)) == std::string::npos) {
             errno = EPROTO;
             return -1;
         }
@@ -237,8 +240,10 @@ struct optmgr_parse_t  {
      * \return         0 on success; -1 on error.
      *                 errno: ENOMEM
      */
-    int parse_multi (const std::string multi_value, const char delim,
-                     std::vector<std::string> &entries) {
+    int parse_multi (const std::string multi_value,
+                     const char delim,
+                     std::vector<std::string> &entries)
+    {
         int rc = 0;
         try {
             std::stringstream ss;
@@ -246,8 +251,7 @@ struct optmgr_parse_t  {
             ss << multi_value;
             while (getline (ss, entry, delim))
                 entries.push_back (entry);
-        }
-        catch (std::bad_alloc &) {
+        } catch (std::bad_alloc &) {
             errno = ENOMEM;
             rc = -1;
         }
@@ -268,29 +272,29 @@ struct optmgr_parse_t  {
      * \return         0 on success; -1 on error.
      *                 errno: ENOMEM, EEXIST, EINVAL and EPROTO.
      */
-    int parse_multi_options (const std::string &m_opts, const char odelim,
-                             const char kdelim, std::map<std::string,
-                                                         std::string> &opt_mp) {
+    int parse_multi_options (const std::string &m_opts,
+                             const char odelim,
+                             const char kdelim,
+                             std::map<std::string, std::string> &opt_mp)
+    {
         int rc = 0;
         try {
             std::vector<std::string> entries;
-            if ( (rc = parse_multi (m_opts, odelim, entries)) < 0)
+            if ((rc = parse_multi (m_opts, odelim, entries)) < 0)
                 goto done;
             for (const auto &entry : entries) {
                 std::string n = "";
                 std::string v = "";
-                if ( (rc = parse_single (entry, std::string (1, kdelim), n, v)) < 0)
+                if ((rc = parse_single (entry, std::string (1, kdelim), n, v)) < 0)
                     goto done;
-                auto ret = opt_mp.insert (std::pair<std::string,
-                                                    std::string> (n, v));
+                auto ret = opt_mp.insert (std::pair<std::string, std::string> (n, v));
                 if (!ret.second) {
                     errno = EEXIST;
                     rc = -1;
                     goto done;
                 }
             }
-        }
-        catch (std::bad_alloc &) {
+        } catch (std::bad_alloc &) {
             errno = ENOMEM;
             rc = -1;
         }
@@ -299,10 +303,10 @@ struct optmgr_parse_t  {
     }
 };
 
-} // namespace Flux::opts_manager
-} // namespace Flux
+}  // namespace opts_manager
+}  // namespace Flux
 
-#endif // OPTMGR_HPP
+#endif  // OPTMGR_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

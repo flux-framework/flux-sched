@@ -24,8 +24,6 @@ hwloc_basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/hwloc-data`
 # 1 brokers, each (exclusively) have: 1 node, 2 sockets, 16 cores (8 per socket)
 excl_1N1B="${hwloc_basepath}/001N/exclusive/01-brokers"
 
-skip_all_unless_have jq
-
 export FLUX_SCHED_MODULE=none
 test_under_flux 1
 

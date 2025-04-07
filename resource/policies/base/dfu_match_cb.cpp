@@ -21,17 +21,13 @@ namespace resource_model {
 
 dfu_match_cb_t::dfu_match_cb_t () : m_trav_level (0)
 {
-
 }
 
-dfu_match_cb_t::dfu_match_cb_t (const std::string &name)
-    : matcher_data_t (name), m_trav_level (0)
+dfu_match_cb_t::dfu_match_cb_t (const std::string &name) : matcher_data_t (name), m_trav_level (0)
 {
-
 }
 
-dfu_match_cb_t::dfu_match_cb_t (const dfu_match_cb_t &o)
-    : matcher_data_t (o)
+dfu_match_cb_t::dfu_match_cb_t (const dfu_match_cb_t &o) : matcher_data_t (o)
 {
     m_trav_level = o.m_trav_level;
 }
@@ -45,63 +41,55 @@ dfu_match_cb_t &dfu_match_cb_t::operator= (const dfu_match_cb_t &o)
 
 dfu_match_cb_t::~dfu_match_cb_t ()
 {
-
 }
 
-int dfu_match_cb_t::dom_finish_graph (
-    const subsystem_t &subsystem,
-    const std::vector<Flux::Jobspec::Resource> &resources,
-    const resource_graph_t &g,
-    scoring_api_t &dfu)
+int dfu_match_cb_t::dom_finish_graph (subsystem_t subsystem,
+                                      const std::vector<Flux::Jobspec::Resource> &resources,
+                                      const resource_graph_t &g,
+                                      scoring_api_t &dfu)
 {
     return 0;
 }
 
-int dfu_match_cb_t::dom_finish_slot (
-    const subsystem_t &subsystem,
-    scoring_api_t &dfu)
+int dfu_match_cb_t::dom_finish_slot (subsystem_t subsystem, scoring_api_t &dfu)
 {
     return 0;
 }
 
-int dfu_match_cb_t::dom_discover_vtx (
-    vtx_t u,
-    const subsystem_t &subsystem,
-    const std::vector<Flux::Jobspec::Resource> &resources,
-    const resource_graph_t &g)
+int dfu_match_cb_t::dom_discover_vtx (vtx_t u,
+                                      subsystem_t subsystem,
+                                      const std::vector<Flux::Jobspec::Resource> &resources,
+                                      const resource_graph_t &g)
 {
     m_trav_level++;
     return 0;
 }
 
-int dfu_match_cb_t::dom_finish_vtx (
-    vtx_t u,
-    const subsystem_t &subsystem,
-    const std::vector<Flux::Jobspec::Resource> &resources,
-    const resource_graph_t &g,
-    scoring_api_t &dfu)
+int dfu_match_cb_t::dom_finish_vtx (vtx_t u,
+                                    subsystem_t subsystem,
+                                    const std::vector<Flux::Jobspec::Resource> &resources,
+                                    const resource_graph_t &g,
+                                    scoring_api_t &dfu)
 {
     m_trav_level--;
     return 0;
 }
 
-int dfu_match_cb_t::aux_discover_vtx (
-    vtx_t u,
-    const subsystem_t &subsystem,
-    const std::vector<Flux::Jobspec::Resource> &resources,
-    const resource_graph_t &g)
+int dfu_match_cb_t::aux_discover_vtx (vtx_t u,
+                                      subsystem_t subsystem,
+                                      const std::vector<Flux::Jobspec::Resource> &resources,
+                                      const resource_graph_t &g)
 
 {
     m_trav_level++;
     return 0;
 }
 
-int dfu_match_cb_t::aux_finish_vtx (
-    vtx_t u,
-    const subsystem_t &subsystem,
-    const std::vector<Flux::Jobspec::Resource> &resources,
-    const resource_graph_t &g,
-    scoring_api_t &dfu)
+int dfu_match_cb_t::aux_finish_vtx (vtx_t u,
+                                    subsystem_t subsystem,
+                                    const std::vector<Flux::Jobspec::Resource> &resources,
+                                    const resource_graph_t &g,
+                                    scoring_api_t &dfu)
 {
     m_trav_level--;
     return 0;
@@ -138,8 +126,8 @@ std::string dfu_match_cb_t::level ()
     return prefix;
 }
 
-} // resource_model
-} // Flux
+}  // namespace resource_model
+}  // namespace Flux
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

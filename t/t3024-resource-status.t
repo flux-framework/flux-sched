@@ -200,4 +200,12 @@ test_expect_success "${test036_desc}" '
     test_cmp 036.R.out ${exp_dir}/036.R.out
 '
 
+cmds037="${cmd_dir}/cmds17.in"
+test037_desc="check set-status idempotence"
+test_expect_success "${test037_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds037} > cmds037 &&
+    ${query} -L ${grugs} -F simple -S CA -P hinodex -t 037.R.out < cmds037 &&
+    test_cmp 037.R.out ${exp_dir}/037.R.out
+'
+
 test_done

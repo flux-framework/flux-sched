@@ -36,7 +36,7 @@ Options:\n\
  -k, --keep                    Keep intermediate files\n\
 "
 
-GETOPTS=`/usr/bin/getopt -u -o ${short_opts} -l ${long_opts} -n ${prog} -- ${@}`
+GETOPTS=`/usr/bin/env getopt -u -o ${short_opts} -l ${long_opts} -n ${prog} -- ${@}`
 if [[ $? != 0 ]]; then
     die "${usage}"
 fi

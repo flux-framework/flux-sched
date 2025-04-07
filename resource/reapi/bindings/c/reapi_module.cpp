@@ -48,9 +48,13 @@ extern "C" void reapi_module_destroy (reapi_module_ctx_t *ctx)
 }
 
 extern "C" int reapi_module_match (reapi_module_ctx_t *ctx,
-                                   match_op_t match_op, const char *jobspec,
-                                   const uint64_t jobid, bool *reserved,
-                                   char **R, int64_t *at, double *ov)
+                                   match_op_t match_op,
+                                   const char *jobspec,
+                                   const uint64_t jobid,
+                                   bool *reserved,
+                                   char **R,
+                                   int64_t *at,
+                                   double *ov)
 {
     int rc = -1;
     std::string R_buf = "";
@@ -60,12 +64,12 @@ extern "C" int reapi_module_match (reapi_module_ctx_t *ctx,
         errno = EINVAL;
         goto out;
     }
-    if ((rc = reapi_module_t::match_allocate (ctx->h, match_op, jobspec,
-                                              jobid, *reserved,
-                                              R_buf, *at, *ov)) < 0) {
+    if ((rc = reapi_module_t::
+             match_allocate (ctx->h, match_op, jobspec, jobid, *reserved, R_buf, *at, *ov))
+        < 0) {
         goto out;
     }
-    if ( !(R_buf_c = strdup (R_buf.c_str ()))) {
+    if (!(R_buf_c = strdup (R_buf.c_str ()))) {
         rc = -1;
         goto out;
     }
@@ -76,33 +80,36 @@ out:
 }
 
 extern "C" int reapi_module_match_allocate (reapi_module_ctx_t *ctx,
-                                            bool orelse_reserve, const char *jobspec,
-                                            const uint64_t jobid, bool *reserved,
-                                            char **R, int64_t *at, double *ov)
+                                            bool orelse_reserve,
+                                            const char *jobspec,
+                                            const uint64_t jobid,
+                                            bool *reserved,
+                                            char **R,
+                                            int64_t *at,
+                                            double *ov)
 {
-    match_op_t match_op = orelse_reserve ? match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE 
-                                         : match_op_t::MATCH_ALLOCATE;
+    match_op_t match_op =
+        orelse_reserve ? match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE : match_op_t::MATCH_ALLOCATE;
 
-    return reapi_module_match (ctx, match_op, jobspec, jobid, reserved, 
-                                     R, at, ov);
+    return reapi_module_match (ctx, match_op, jobspec, jobid, reserved, R, at, ov);
 }
 
-extern "C" int reapi_module_match_satisfy (reapi_module_ctx_t *ctx,
-                                           const char *jobspec, double *ov)
+extern "C" int reapi_module_match_satisfy (reapi_module_ctx_t *ctx, const char *jobspec, double *ov)
 {
     match_op_t match_op = match_op_t::MATCH_SATISFIABILITY;
-    const uint64_t jobid =0;
+    const uint64_t jobid = 0;
     bool *reserved;
-    char **R; 
-    int64_t *at; 
+    char **R;
+    int64_t *at;
 
-    return reapi_module_match (ctx, match_op, jobspec, jobid,
-                               reserved, R, at, ov);
+    return reapi_module_match (ctx, match_op, jobspec, jobid, reserved, R, at, ov);
 }
 
 extern "C" int reapi_module_update_allocate (reapi_module_ctx_t *ctx,
-                                             const uint64_t jobid, const char *R,
-                                             int64_t *at, double *ov,
+                                             const uint64_t jobid,
+                                             const char *R,
+                                             int64_t *at,
+                                             double *ov,
                                              const char **R_out)
 {
     int rc = -1;
@@ -113,22 +120,19 @@ extern "C" int reapi_module_update_allocate (reapi_module_ctx_t *ctx,
         errno = EINVAL;
         goto out;
     }
-    if ( (rc = reapi_module_t::update_allocate (ctx->h, jobid, R,
-                                                *at, *ov, R_buf)) < 0) {
+    if ((rc = reapi_module_t::update_allocate (ctx->h, jobid, R, *at, *ov, R_buf)) < 0) {
         goto out;
     }
-    if ( !(R_buf_c = strdup (R_buf.c_str ()))) {
+    if (!(R_buf_c = strdup (R_buf.c_str ()))) {
         rc = -1;
         goto out;
     }
     *R_out = R_buf_c;
 out:
     return rc;
-
 }
 
-extern "C" int reapi_module_cancel (reapi_module_ctx_t *ctx,
-                                    const uint64_t jobid, bool noent_ok)
+extern "C" int reapi_module_cancel (reapi_module_ctx_t *ctx, const uint64_t jobid, bool noent_ok)
 {
     if (!ctx || !ctx->h) {
         errno = EINVAL;
@@ -137,8 +141,24 @@ extern "C" int reapi_module_cancel (reapi_module_ctx_t *ctx,
     return reapi_module_t::cancel (ctx->h, jobid, noent_ok);
 }
 
-extern "C" int reapi_module_info (reapi_module_ctx_t *ctx, const uint64_t jobid,
-                                  bool *reserved, int64_t *at, double *ov)
+extern "C" int reapi_module_partial_cancel (reapi_module_ctx_t *ctx,
+                                            const uint64_t jobid,
+                                            const char *R,
+                                            bool noent_ok,
+                                            bool &full_removal)
+{
+    if (!ctx || !ctx->h || !R) {
+        errno = EINVAL;
+        return -1;
+    }
+    return reapi_module_t::cancel (ctx->h, jobid, R, noent_ok, full_removal);
+}
+
+extern "C" int reapi_module_info (reapi_module_ctx_t *ctx,
+                                  const uint64_t jobid,
+                                  bool *reserved,
+                                  int64_t *at,
+                                  double *ov)
 {
     if (!ctx || !ctx->h) {
         errno = EINVAL;
@@ -147,9 +167,14 @@ extern "C" int reapi_module_info (reapi_module_ctx_t *ctx, const uint64_t jobid,
     return reapi_module_t::info (ctx->h, jobid, *reserved, *at, *ov);
 }
 
-extern "C" int reapi_module_stat (reapi_module_ctx_t *ctx, int64_t *V,
-                                  int64_t *E, int64_t *J, double *load,
-                                  double *min, double *max, double *avg)
+extern "C" int reapi_module_stat (reapi_module_ctx_t *ctx,
+                                  int64_t *V,
+                                  int64_t *E,
+                                  int64_t *J,
+                                  double *load,
+                                  double *min,
+                                  double *max,
+                                  double *avg)
 {
     if (!ctx || !ctx->h) {
         errno = EINVAL;

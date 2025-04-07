@@ -1,0 +1,26 @@
+version: 9999
+resources:
+  - type: slot
+    count: 1
+    label: default
+    with:
+      - type: ssd
+        count: 1
+      - type: node
+        count: 1
+        exclusive: true
+        with:
+          - type: slot
+            count: 1
+            label: task
+            with:
+              - type: core
+                count: 1
+tasks:
+  - command: [ "hostname" ]
+    slot: task
+    count:
+      per_slot: 1
+attributes:
+  system:
+    duration: 0

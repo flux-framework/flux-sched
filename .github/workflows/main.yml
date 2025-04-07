@@ -24,8 +24,8 @@ jobs:
       uses: crate-ci/typos@bcafd462cb07ef7ba57e34abf458fe20767e808b # v1.19.0
 
   python-format:
-    name: python format
-    runs-on: ubuntu-20.04
+    name: code formatting
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/setup-python@v5
       with:
@@ -34,26 +34,10 @@ jobs:
       with:
         ref: ${{ github.event.pull_request.head.sha }}
         fetch-depth: 0
-    - name: install black
-      run: python3 -m pip install 'black==22.3.0' --force-reinstall
-    - name: check format
-      run: ./scripts/check-format
-
-  python-lint:
-    name: python lint
-    runs-on: ubuntu-20.04
-    steps:
-    - uses: actions/setup-python@v5
-      with:
-        python-version: 3.8
-    - uses: actions/checkout@v4
-      with:
-        ref: ${{ github.event.pull_request.head.sha }}
-        fetch-depth: 0
-    - name: install pylint
-      run: python3 -m pip install 'pylint==2.4.4' --force-reinstall
-    - name: run pylint
-      run: ./scripts/pylint
+    - name: install linting and formatting deps
+      run: pip install -r scripts/requirements-dev.txt
+    - name: format and linting checks
+      run: pre-commit run --all-files --show-diff-on-failure
 
   generate-matrix:
     # https://stackoverflow.com/questions/59977364
@@ -75,7 +59,7 @@ jobs:
 
   ci-checks:
     needs: [ generate-matrix ]
-    runs-on: ubuntu-latest
+    runs-on: ${{matrix.runner}}
     env:
       TAP_DRIVER_QUIET: 1
       FLUX_TEST_TIMEOUT: 300
@@ -83,7 +67,6 @@ jobs:
       DOCKER_USERNAME: travisflux
       DOCKER_PASSWORD: ${{ secrets.DOCKER_HUB_TRAVISFLUX_TOKEN }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    timeout-minutes: 30
     strategy:
       matrix: ${{fromJson(needs.generate-matrix.outputs.matrix)}}
       fail-fast: false
@@ -123,11 +106,8 @@ jobs:
       uses: docker/setup-buildx-action@v3
       if: matrix.needs_buildx
 
-    - name: setup qemu-user-static
-      run: |
-        docker run --rm --privileged aptman/qus -s -- -p --credential aarch64
-
     - name: docker-run-checks
+      timeout-minutes: ${{matrix.timeout_minutes}}
       env: ${{matrix.env}}
       run: ${{matrix.command}}
 
@@ -173,16 +153,17 @@ jobs:
     runs-on: ubuntu-latest
     needs: [ci-checks]
     env:
-      DOCKER_REPO: fluxrm/flux-core
+      DOCKER_REPO: fluxrm/flux-sched
       DOCKER_USERNAME: travisflux
       DOCKER_PASSWORD: ${{ secrets.DOCKER_HUB_TRAVISFLUX_TOKEN }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-    - name: make and push manifest as fluxrm/flux-core
+    - name: make and push manifest as fluxrm/flux-sched
       if: >
         (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/master')
       run: |
         echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-        # maybe bring back later: fluxrm/flux-core:bookworm-386
-        docker manifest create fluxrm/flux-core:bookworm fluxrm/flux-core:bookworm-amd64 fluxrm/flux-core:bookworm-arm64
-        docker manifest push fluxrm/flux-core:bookworm
+        for d in el9 noble bookworm ; do
+          docker manifest create fluxrm/flux-sched:$d fluxrm/flux-sched:$d-amd64 fluxrm/flux-sched:$d-arm64
+          docker manifest push fluxrm/flux-sched:$d
+        done

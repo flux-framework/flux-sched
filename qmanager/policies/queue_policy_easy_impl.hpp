@@ -20,7 +20,6 @@ namespace detail {
 template<class reapi_type>
 queue_policy_easy_t<reapi_type>::~queue_policy_easy_t ()
 {
-
 }
 
 template<class reapi_type>
@@ -35,11 +34,11 @@ queue_policy_easy_t<reapi_type>::queue_policy_easy_t ()
     queue_policy_bf_base_t<reapi_type>::m_reservation_depth = 1;
 }
 
-} // namespace Flux::queue_manager::detail
-} // namespace Flux::queue_manager
-} // namespace Flux
+}  // namespace detail
+}  // namespace queue_manager
+}  // namespace Flux
 
-#endif // QUEUE_POLICY_EASY_IMPL_HPP
+#endif  // QUEUE_POLICY_EASY_IMPL_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

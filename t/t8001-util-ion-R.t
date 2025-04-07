@@ -4,8 +4,6 @@ test_description='Test flux ion-R Utility'
 
 . $(dirname $0)/sharness.sh
 
-skip_all_unless_have jq
-
 print_schema (){
     jq -r '.graph.nodes[].metadata | "\(.paths.containment) \(.rank)"' $1 > $2
 }
@@ -16,7 +14,7 @@ print_schema2 (){
 
 test_expect_success 'fluxion-R: encoding nodelists on heterogeneity works' '
     cat <<-EOF >expected1 &&
-	/cluster0 -1
+	/cluster0 null
 	/cluster0/foo2 0
 	/cluster0/foo2/core0 0
 	/cluster0/foo2/core1 0
@@ -41,7 +39,7 @@ test_expect_success 'fluxion-R: encoding nodelists on heterogeneity works' '
 
 test_expect_success 'fluxion-R: encoding nodelists with high ranks' '
     cat <<-EOF >expected2 &&
-	/cluster0 -1
+	/cluster0 null
 	/cluster0/fluke82 79
 	/cluster0/fluke82/core0 79
 	/cluster0/fluke82/core1 79
@@ -92,7 +90,7 @@ test_expect_success 'fluxion-R: encoding nodelists with high ranks' '
 
 test_expect_success 'fluxion-R: encoding nodelists with reverse mapping' '
     cat <<-EOF >expected3 &&
-	/cluster0 -1
+	/cluster0 null
 	/cluster0/fluke102 79
 	/cluster0/fluke102/core0 79
 	/cluster0/fluke102/core1 79
@@ -159,24 +157,24 @@ test_expect_success 'fluxion-R: can detect insufficient nodelist' '
 
 test_expect_success 'fluxion-R: encoding properties on heterogeneity works' '
     cat <<-EOF >expected6 &&
-	/cluster0 -1 {}
+	/cluster0 null null
 	/cluster0/foo2 0 {"arm-v9@core":""}
-	/cluster0/foo2/core0 0 {}
-	/cluster0/foo2/core1 0 {}
-	/cluster0/foo2/gpu0 0 {}
-	/cluster0/foo2/gpu1 0 {}
+	/cluster0/foo2/core0 0 null
+	/cluster0/foo2/core1 0 null
+	/cluster0/foo2/gpu0 0 null
+	/cluster0/foo2/gpu1 0 null
 	/cluster0/foo3 2 {"arm-v9@core":"","amd-mi60@gpu":""}
-	/cluster0/foo3/core0 2 {}
-	/cluster0/foo3/core1 2 {}
-	/cluster0/foo3/gpu0 2 {}
-	/cluster0/foo3/gpu1 2 {}
+	/cluster0/foo3/core0 2 null
+	/cluster0/foo3/core1 2 null
+	/cluster0/foo3/gpu0 2 null
+	/cluster0/foo3/gpu1 2 null
 	/cluster0/foo1 3 {"arm-v9@core":"","amd-mi60@gpu":""}
-	/cluster0/foo1/core0 3 {}
-	/cluster0/foo1/core1 3 {}
-	/cluster0/foo1/gpu0 3 {}
-	/cluster0/foo1/gpu1 3 {}
+	/cluster0/foo1/core0 3 null
+	/cluster0/foo1/core1 3 null
+	/cluster0/foo1/gpu0 3 null
+	/cluster0/foo1/gpu1 3 null
 	/cluster0/foo4 1 {"arm-v8@core":""}
-	/cluster0/foo4/core0 1 {}
+	/cluster0/foo4/core0 1 null
 	EOF
     flux R encode -r 0 -c 0-1 -g 0-1 -p "arm-v9@core:0" -H foo2 > out6 &&
     flux R encode -r 1 -c 0 -H foo3 -p "arm-v8@core:1" >> out6 &&

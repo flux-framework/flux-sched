@@ -23,8 +23,6 @@ using namespace Flux;
 using namespace Flux::resource_model;
 using namespace Flux::opts_manager;
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // Public API for Resource Match Option Class
 ////////////////////////////////////////////////////////////////////////////////
@@ -92,9 +90,9 @@ void resource_prop_t::set_load_allowlist (const std::string &p)
     m_load_allowlist = p;
 }
 
-bool resource_prop_t::set_match_policy (const std::string &p)
+bool resource_prop_t::set_match_policy (const std::string &p, std::string &error_str)
 {
-    if (!known_match_policy (p))
+    if (!known_match_policy (p, error_str))
         return false;
     m_match_policy = p;
     return true;
@@ -182,36 +180,25 @@ bool resource_prop_t::is_update_interval_set () const
 json_t *resource_prop_t::jsonify () const
 {
     return json_pack ("{ s:s? s:s? s:s? s:s? s:s? s:s? s:i s:s? s:i }",
-                          "load-file", is_load_file_set ()
-                              ? get_load_file ().c_str ()
-                              : nullptr,
-                          "load-format", is_load_format_set ()
-                              ? get_load_format ().c_str ()
-                              : nullptr,
-                          "load-allowlist", is_load_allowlist_set ()
-                              ? get_load_allowlist ().c_str ()
-                              : nullptr,
-                          "policy", is_match_policy_set ()
-                              ? get_match_policy ().c_str ()
-                              : nullptr,
-                          "match-format", is_match_format_set ()
-                              ? get_match_format ().c_str ()
-                              : nullptr,
-                          "subsystems", is_match_subsystems_set ()
-                              ? get_match_subsystems ().c_str ()
-                              : nullptr,
-                          "reserve-vtx-vec", is_reserve_vtx_vec_set ()
-                              ? get_reserve_vtx_vec ()
-                              : 0,
-                          "prune-filters", is_prune_filters_set ()
-                              ? get_prune_filters ().c_str ()
-                              : nullptr,
-                          "update-interval", is_update_interval_set ()
-                              ? get_update_interval ()
-                              : 0);
+                      "load-file",
+                      is_load_file_set () ? get_load_file ().c_str () : nullptr,
+                      "load-format",
+                      is_load_format_set () ? get_load_format ().c_str () : nullptr,
+                      "load-allowlist",
+                      is_load_allowlist_set () ? get_load_allowlist ().c_str () : nullptr,
+                      "policy",
+                      is_match_policy_set () ? get_match_policy ().c_str () : nullptr,
+                      "match-format",
+                      is_match_format_set () ? get_match_format ().c_str () : nullptr,
+                      "subsystems",
+                      is_match_subsystems_set () ? get_match_subsystems ().c_str () : nullptr,
+                      "reserve-vtx-vec",
+                      is_reserve_vtx_vec_set () ? get_reserve_vtx_vec () : 0,
+                      "prune-filters",
+                      is_prune_filters_set () ? get_prune_filters ().c_str () : nullptr,
+                      "update-interval",
+                      is_update_interval_set () ? get_update_interval () : 0);
 }
-
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Private API for Resource Match Property Class
@@ -221,12 +208,11 @@ bool resource_opts_t::is_number (const std::string &num_str)
 {
     if (num_str.empty ())
         return false;
-    auto i = std::find_if (num_str.begin (), num_str.end (),
-                           [] (unsigned char c) { return !std::isdigit (c); });
+    auto i = std::find_if (num_str.begin (), num_str.end (), [] (unsigned char c) {
+        return !std::isdigit (c);
+    });
     return i == num_str.end ();
 }
-
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Public API for Resource Match Property Class
@@ -241,65 +227,56 @@ resource_opts_t::resource_opts_t ()
 
     bool inserted = true;
 
-    auto ret = m_tab.insert (std::pair<std::string, int> (
-              "load-file",
-              static_cast<int> (resource_opts_t
-                                    ::resource_opts_key_t
-                                        ::LOAD_FILE)));
+    auto ret = m_tab.insert (
+        std::pair<std::string, int> ("load-file",
+                                     static_cast<int> (
+                                         resource_opts_t ::resource_opts_key_t ::LOAD_FILE)));
     inserted &= ret.second;
-    ret = m_tab.insert (std::pair<std::string, int> (
-              "load-format",
-              static_cast<int> (resource_opts_t
-                                    ::resource_opts_key_t
-                                        ::LOAD_FORMAT)));
+    ret = m_tab.insert (
+        std::pair<std::string, int> ("load-format",
+                                     static_cast<int> (
+                                         resource_opts_t ::resource_opts_key_t ::LOAD_FORMAT)));
     inserted &= ret.second;
-    ret = m_tab.insert (std::pair<std::string, int> (
-              "load-allowlist",
-              static_cast<int> (resource_opts_t
-                                    ::resource_opts_key_t
-                                        ::LOAD_ALLOWLIST)));
+    ret = m_tab.insert (
+        std::pair<std::string, int> ("load-allowlist",
+                                     static_cast<int> (
+                                         resource_opts_t ::resource_opts_key_t ::LOAD_ALLOWLIST)));
     inserted &= ret.second;
-    ret = m_tab.insert (std::pair<std::string, int> (
-              "policy",
-              static_cast<int> (resource_opts_t
-                                    ::resource_opts_key_t
-                                        ::MATCH_POLICY)));
+    ret = m_tab.insert (
+        std::pair<std::string, int> ("policy",
+                                     static_cast<int> (
+                                         resource_opts_t ::resource_opts_key_t ::MATCH_POLICY)));
     inserted &= ret.second;
-    ret = m_tab.insert (std::pair<std::string, int> (
-              "match-policy",
-              static_cast<int> (resource_opts_t
-                                    ::resource_opts_key_t
-                                        ::MATCH_POLICY)));
+    ret = m_tab.insert (
+        std::pair<std::string, int> ("match-policy",
+                                     static_cast<int> (
+                                         resource_opts_t ::resource_opts_key_t ::MATCH_POLICY)));
     inserted &= ret.second;
-    ret = m_tab.insert (std::pair<std::string, int> (
-              "match-format",
-              static_cast<int> (resource_opts_t
-                                    ::resource_opts_key_t
-                                        ::MATCH_FORMAT)));
+    ret = m_tab.insert (
+        std::pair<std::string, int> ("match-format",
+                                     static_cast<int> (
+                                         resource_opts_t ::resource_opts_key_t ::MATCH_FORMAT)));
     inserted &= ret.second;
-    ret = m_tab.insert (std::pair<std::string, int> (
-              "subsystems",
-              static_cast<int> (resource_opts_t
-                                    ::resource_opts_key_t
-                                        ::MATCH_SUBSYSTEMS)));
+    ret = m_tab.insert (
+        std::pair<std::string,
+                  int> ("subsystems",
+                        static_cast<int> (
+                            resource_opts_t ::resource_opts_key_t ::MATCH_SUBSYSTEMS)));
     inserted &= ret.second;
-    ret= m_tab.insert (std::pair<std::string, int> (
-              "reserve-vtx-vec",
-              static_cast<int> (resource_opts_t
-                                    ::resource_opts_key_t
-                                        ::RESERVE_VTX_VEC)));
+    ret = m_tab.insert (
+        std::pair<std::string, int> ("reserve-vtx-vec",
+                                     static_cast<int> (
+                                         resource_opts_t ::resource_opts_key_t ::RESERVE_VTX_VEC)));
     inserted &= ret.second;
-    ret= m_tab.insert (std::pair<std::string, int> (
-              "prune-filters",
-              static_cast<int> (resource_opts_t
-                                    ::resource_opts_key_t
-                                        ::PRUNE_FILTERS)));
+    ret = m_tab.insert (
+        std::pair<std::string, int> ("prune-filters",
+                                     static_cast<int> (
+                                         resource_opts_t ::resource_opts_key_t ::PRUNE_FILTERS)));
     inserted &= ret.second;
-    ret= m_tab.insert (std::pair<std::string, int> (
-              "update-interval",
-              static_cast<int> (resource_opts_t
-                                    ::resource_opts_key_t
-                                        ::UPDATE_INTERVAL)));
+    ret = m_tab.insert (
+        std::pair<std::string, int> ("update-interval",
+                                     static_cast<int> (
+                                         resource_opts_t ::resource_opts_key_t ::UPDATE_INTERVAL)));
     inserted &= ret.second;
 
     if (!inserted)
@@ -371,9 +348,9 @@ void resource_opts_t::set_load_allowlist (const std::string &o)
     m_resource_prop.set_load_allowlist (o);
 }
 
-bool resource_opts_t::set_match_policy (const std::string &o)
+bool resource_opts_t::set_match_policy (const std::string &o, std::string &e)
 {
-    return m_resource_prop.set_match_policy (o);
+    return m_resource_prop.set_match_policy (o, e);
 }
 
 bool resource_opts_t::set_match_format (const std::string &o)
@@ -454,40 +431,31 @@ resource_opts_t &resource_opts_t::canonicalize ()
 resource_opts_t &resource_opts_t::operator+= (const resource_opts_t &src)
 {
     if (src.m_resource_prop.is_load_file_set ())
-        m_resource_prop.set_load_file (
-            src.m_resource_prop.get_load_file ());
+        m_resource_prop.set_load_file (src.m_resource_prop.get_load_file ());
     if (src.m_resource_prop.is_load_format_set ())
-        m_resource_prop.set_load_format (
-            src.m_resource_prop.get_load_format ());
+        m_resource_prop.set_load_format (src.m_resource_prop.get_load_format ());
     if (src.m_resource_prop.is_load_allowlist_set ())
-        m_resource_prop.set_load_allowlist (
-            src.m_resource_prop.get_load_allowlist ());
-    if (src.m_resource_prop.is_match_policy_set ())
-        m_resource_prop.set_match_policy (
-            src.m_resource_prop.get_match_policy ());
+        m_resource_prop.set_load_allowlist (src.m_resource_prop.get_load_allowlist ());
+    if (src.m_resource_prop.is_match_policy_set ()) {
+        std::string e = "";
+        m_resource_prop.set_match_policy (src.m_resource_prop.get_match_policy (), e);
+    }
     if (src.m_resource_prop.is_match_format_set ())
-        m_resource_prop.set_match_format (
-            src.m_resource_prop.get_match_format ());
+        m_resource_prop.set_match_format (src.m_resource_prop.get_match_format ());
     if (src.m_resource_prop.is_match_subsystems_set ())
-        m_resource_prop.set_match_subsystems (
-            src.m_resource_prop.get_match_subsystems ());
+        m_resource_prop.set_match_subsystems (src.m_resource_prop.get_match_subsystems ());
     if (src.m_resource_prop.is_reserve_vtx_vec_set ())
-        m_resource_prop.set_reserve_vtx_vec (
-            src.m_resource_prop.get_reserve_vtx_vec ());
+        m_resource_prop.set_reserve_vtx_vec (src.m_resource_prop.get_reserve_vtx_vec ());
     if (src.m_resource_prop.is_prune_filters_set ())
-        m_resource_prop.set_prune_filters (
-            src.m_resource_prop.get_prune_filters ());
+        m_resource_prop.set_prune_filters (src.m_resource_prop.get_prune_filters ());
     if (src.m_resource_prop.is_update_interval_set ())
-        m_resource_prop.set_update_interval (
-            src.m_resource_prop.get_update_interval ());
+        m_resource_prop.set_update_interval (src.m_resource_prop.get_update_interval ());
     return *this;
 }
 
-bool resource_opts_t::operator ()(const std::string &k1,
-                                  const std::string &k2) const
+bool resource_opts_t::operator() (const std::string &k1, const std::string &k2) const
 {
-    if (m_tab.find (k1) == m_tab.end ()
-        || m_tab.find (k2) == m_tab.end ())
+    if (m_tab.find (k1) == m_tab.end () || m_tab.find (k2) == m_tab.end ())
         return k1 < k2;
     return m_tab.at (k1) < m_tab.at (k2);
 }
@@ -519,8 +487,7 @@ ret:
     return rc;
 }
 
-int resource_opts_t::parse (const std::string &k,
-                            const std::string &v, std::string &info)
+int resource_opts_t::parse (const std::string &k, const std::string &v, std::string &info)
 {
     int rc = 0;
     std::string dflt;
@@ -531,71 +498,73 @@ int resource_opts_t::parse (const std::string &k,
         key = m_tab[k];
 
     switch (key) {
-    case static_cast<int> (resource_opts_key_t::LOAD_FILE):
-        m_resource_prop.set_load_file (v);
-        break;
+        case static_cast<int> (resource_opts_key_t::LOAD_FILE):
+            m_resource_prop.set_load_file (v);
+            break;
 
-    case static_cast<int> (resource_opts_key_t::LOAD_FORMAT):
-        if (!m_resource_prop.set_load_format (v)) {
-            info += "Unknown resource reader (" + v + ")! ";
-            info += "Using default.";
-        }
-        break;
-
-    case static_cast<int> (resource_opts_key_t::LOAD_ALLOWLIST):
-        m_resource_prop.set_load_allowlist (v);
-        break;
-
-    case static_cast<int> (resource_opts_key_t::MATCH_POLICY):
-        if (!m_resource_prop.set_match_policy (v)) {
-            info += "Unknown match policy (" + v + ")! ";
-            info += "Using default.";
-        }
-        break;
-
-    case static_cast<int> (resource_opts_key_t::MATCH_FORMAT):
-        if (!m_resource_prop.set_match_format (v)) {
-            info += "Unknown match format (" + v + ")! ";
-            info += "Using default.";
-        }
-        break;
-
-    case static_cast<int> (resource_opts_key_t::MATCH_SUBSYSTEMS):
-        m_resource_prop.set_match_subsystems (v);
-        break;
-
-    case static_cast<int> (resource_opts_key_t::RESERVE_VTX_VEC):
-        if (is_number (v)) {
-            int s = std::stoi (v);
-            if ( !(s <= 0 || s > 2000000)) {
-                m_resource_prop.set_reserve_vtx_vec (s);
+        case static_cast<int> (resource_opts_key_t::LOAD_FORMAT):
+            if (!m_resource_prop.set_load_format (v)) {
+                info += "Unknown resource reader (" + v + ")! ";
+                info += "Using default.";
             }
-        }
-        break;
+            break;
 
-    case static_cast<int> (resource_opts_key_t::PRUNE_FILTERS):
-        if (v.find_first_not_of(' ') != std::string::npos) {
-            if (m_resource_prop.is_prune_filters_set ())
-                m_resource_prop.add_to_prune_filters (v);
-            else
-                m_resource_prop.set_prune_filters (v);
-        }
-        break;
+        case static_cast<int> (resource_opts_key_t::LOAD_ALLOWLIST):
+            m_resource_prop.set_load_allowlist (v);
+            break;
 
-    case static_cast<int> (resource_opts_key_t::UPDATE_INTERVAL):
-        if (is_number (v)) {
-            int s = std::stoi (v);
-            if ( !(s <= 0 || s > 2000000)) {
-                m_resource_prop.set_update_interval (s);
+        case static_cast<int> (resource_opts_key_t::MATCH_POLICY):
+            if (!m_resource_prop.set_match_policy (v, info)) {
+                info += "Unknown match policy (" + v + ")! ";
+                errno = EINVAL;
+                rc = -1;
+                return rc;
             }
-        }
-        break;
+            break;
 
-    default:
-        info += "Unknown option (" + k + ").";
-        errno = EINVAL;
-        rc = -1;
-        break;
+        case static_cast<int> (resource_opts_key_t::MATCH_FORMAT):
+            if (!m_resource_prop.set_match_format (v)) {
+                info += "Unknown match format (" + v + ")! ";
+                info += "Using default.";
+            }
+            break;
+
+        case static_cast<int> (resource_opts_key_t::MATCH_SUBSYSTEMS):
+            m_resource_prop.set_match_subsystems (v);
+            break;
+
+        case static_cast<int> (resource_opts_key_t::RESERVE_VTX_VEC):
+            if (is_number (v)) {
+                int s = std::stoi (v);
+                if (!(s <= 0 || s > 2000000)) {
+                    m_resource_prop.set_reserve_vtx_vec (s);
+                }
+            }
+            break;
+
+        case static_cast<int> (resource_opts_key_t::PRUNE_FILTERS):
+            if (v.find_first_not_of (' ') != std::string::npos) {
+                if (m_resource_prop.is_prune_filters_set ())
+                    m_resource_prop.add_to_prune_filters (v);
+                else
+                    m_resource_prop.set_prune_filters (v);
+            }
+            break;
+
+        case static_cast<int> (resource_opts_key_t::UPDATE_INTERVAL):
+            if (is_number (v)) {
+                int s = std::stoi (v);
+                if (!(s <= 0 || s > 2000000)) {
+                    m_resource_prop.set_update_interval (s);
+                }
+            }
+            break;
+
+        default:
+            info += "Unknown option (" + k + ").";
+            errno = EINVAL;
+            rc = -1;
+            break;
     }
 
     return rc;

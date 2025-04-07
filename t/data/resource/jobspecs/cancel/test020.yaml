@@ -1,0 +1,24 @@
+version: 9999
+resources:
+    - type: node
+      count: 2
+      exclusive: false
+      with:
+        - type: slot
+          count: 1
+          label: default
+          with:
+            - type: core
+              count: 8
+            - type: gpu
+              count: 2
+# a comment
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: default
+    count:
+      per_slot: 1
+

@@ -12,6 +12,29 @@ else()
 endif()
 message(STATUS "VER ${FLUX_SCHED_VER}")
 string(REGEX REPLACE "-.*$" "" FLUX_SCHED_VER_NOGIT "${FLUX_SCHED_VER}")
+# I took this regex from the CMake source code. If the version fails to
+# match it, CMake will error out. We can help the end-user get past this
+# with a few tips.
+string(REGEX MATCH "(^([0-9]+(\.[0-9]+(\.[0-9]+(\.[0-9]+)?)?)?)?$)" CHECK_FLUX_SCHED_VER "${FLUX_SCHED_VER_NOGIT}")
+string(LENGTH "${CHECK_FLUX_SCHED_VER}" LENGTH_FLUX_SCHED_VER)
+if (LENGTH_FLUX_SCHED_VER STREQUAL "0")
+    message(WARNING 
+    "CMake may generate an error that says \"VERSION \"${FLUX_SCHED_VER}\" format invalid.\"\n"
+    "If this happens, try the following:\n"
+    "    1. Set the variable manually, with `cmake -DFLUX_SCHED_VER=<version> ...`\n"
+    "       or FLUX_SCHED_VERSION=<version> in your environment.\n"
+    "    2. If you are running in a CI environment, run `git fetch --tags`\n"
+    "       before building. Versions in flux-sched are derived from \n"
+    "       `git describe` which uses the most recent tag.\n"
+    "    3. If you are running remote CI in a fork of the main repository,\n"
+    "       try pushing the upstream tags to your fork with\n"
+    "       `git push --tags <your_remote>` to make sure tags are\n"
+    "       synchronized in your fork.\n"
+    "    4. If you are running outside of a repo (such as in a buildfarm),\n"
+    "       add a file to the source directory called flux-sched.ver and\n"
+    "       place a valid version string in that file."
+    )
+endif()
 project(flux-sched VERSION ${FLUX_SCHED_VER_NOGIT} LANGUAGES CXX C)
 message(STATUS "Building flux-sched version ${FLUX_SCHED_VER}")
 
@@ -19,9 +42,28 @@ if(POLICY CMP0140)
   cmake_policy(SET CMP0140 NEW)
 endif()
 
-set(CMAKE_CXX_STANDARD 20 CACHE STRING "The C++ standard to use")
+set(CMAKE_CXX_STANDARD 23 CACHE STRING "The C++ standard to use")
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+# check compiler versions
+if(NOT FLUX_IGNORE_COMPILER_SUPPORT_AND_FIX_THIS_MYSELF)
+  set(CLANG_VER "15")
+  set(GCC_VER "12")
+  set(COMPILER_MESSAGE "\
+  Insufficient compiler version, gcc@${GCC_VER} or clang@${CLANG_VER}
+  or higher are the supported compilers.  To ignore these requirements
+  (at your own peril) set FLUX_IGNORE_COMPILER_SUPPORT_AND_FIX_THIS_MYSELF=On")
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS ${GCC_VER})
+      message(FATAL_ERROR ${COMPILER_MESSAGE})
+    endif()
+  elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS ${CLANG_VER})
+      message(FATAL_ERROR ${COMPILER_MESSAGE})
+    endif()
+  endif()
+endif()
 
 configure_file(config.h.in config.h)
 
@@ -33,7 +75,7 @@ set( CMAKE_BUILD_RPATH
 # the RPATH to be used when installing, but only if it's not a system directory
 list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
 if("${isSystemDir}" STREQUAL "-1")
-  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib64:${CMAKE_INSTALL_PREFIX}/lib")
 endif("${isSystemDir}" STREQUAL "-1")
 
 # Setting the include directory for the application to find config.h
@@ -89,11 +131,16 @@ pkg_check_modules(UUID REQUIRED IMPORTED_TARGET uuid)
 set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
-find_package(Boost 1.50 REQUIRED COMPONENTS
-  system
-  filesystem
+find_package(Boost CONFIG 1.66 COMPONENTS
   graph
-  regex)
+)
+# if the upstream boost cmake config is not found, fall back
+# TODO: remove this when we require 1.70+
+if (NOT Boost_FOUND)
+  find_package(Boost 1.66 REQUIRED COMPONENTS
+    graph
+    )
+endif ()
 message(STATUS "Boost version: ${Boost_VERSION}")
 
 # Install paths

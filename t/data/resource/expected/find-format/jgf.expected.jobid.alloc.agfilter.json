@@ -1,0 +1,42 @@
+{
+  "graph": {
+    "nodes": [
+      {
+        "id": "1",
+        "metadata": {
+          "type": "node",
+          "basename": "cab",
+          "id": 1234,
+          "exclusive": true,
+          "paths": {
+            "containment": "/cluster0/cab1234"
+          },
+          "agfilter": {
+            "core": "used:16, total:16"
+          }
+        }
+      },
+      {
+        "id": "0",
+        "metadata": {
+          "type": "cluster",
+          "id": 0,
+          "exclusive": true,
+          "paths": {
+            "containment": "/cluster0"
+          },
+          "agfilter": {
+            "core": "used:16, total:16",
+            "node": "used:1, total:1"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "0",
+        "target": "1"
+      }
+    ]
+  }
+}

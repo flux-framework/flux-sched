@@ -14,8 +14,6 @@ if test -z "${FLUX_SCHED_TEST_INSTALLED}" || test -z "${FLUX_SCHED_CO_INST}"
      export FLUX_RC_EXTRA="${SHARNESS_TEST_SRCDIR}/../etc"
 fi
 
-skip_all_unless_have jq
-
 # Run broker with specified config file and sched-fluxion-resource options.
 # Usage: start_resource config-path outfile [module options]
 start_resource () {
@@ -73,7 +71,7 @@ test_expect_success 'resource: sched-fluxion-resource loads with no config' '
     check_match_format ${outfile} "\"rv1_nosched\"" &&
     check_match_subsystems ${outfile} "\"containment\"" &&
     check_reserve_vtx_vec ${outfile} 0 &&
-    check_prune_filters ${outfile} "\"ALL:core\""
+    check_prune_filters ${outfile} "\"ALL:core,ALL:node\""
 '
 
 test_expect_success 'resource: sched-fluxion-resource loads with valid toml' '
@@ -116,7 +114,7 @@ test_expect_success 'resource: sched-fluxion-resource loads with no keys' '
     check_match_format ${outfile} "\"rv1_nosched\"" &&
     check_match_subsystems ${outfile} "\"containment\"" &&
     check_reserve_vtx_vec ${outfile} 0 &&
-    check_prune_filters ${outfile} "\"ALL:core\""
+    check_prune_filters ${outfile} "\"ALL:core,ALL:node\""
 '
 
 test_expect_success 'resource: sched-fluxion-resource loads with extra keys' '
@@ -133,11 +131,10 @@ test_expect_success 'resource: sched-fluxion-resource loads with extra keys' '
     check_prune_filters ${outfile} "\"ALL:core,ALL:gpu\""
 '
 
-test_expect_success 'resource: load must tolerate an invalid policy' '
+test_expect_failure 'resource: load must error out on an invalid policy' '
     conf_name="09-invalid-policy" &&
     outfile=${conf_name}.out &&
-    start_resource ${conf_base}/${conf_name} ${outfile} &&
-    check_match_policy ${outfile} "\"first\""
+    start_resource ${conf_base}/${conf_name} ${outfile}
 '
 
 test_expect_success 'resource: load must fail on a bad value' '

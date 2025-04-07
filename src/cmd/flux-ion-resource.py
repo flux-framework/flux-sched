@@ -78,9 +78,17 @@ class ResourceModuleInterface:
         payload = {"jobid": jobid}
         return self.handle.rpc("sched-fluxion-resource.cancel", payload).get()
 
+    def rpc_partial_cancel(self, jobid, rv1exec):
+        payload = {"jobid": jobid, "R": rv1exec}
+        return self.handle.rpc("sched-fluxion-resource.partial-cancel", payload).get()
+
     def rpc_set_property(self, sp_resource_path, sp_keyval):
         payload = {"sp_resource_path": sp_resource_path, "sp_keyval": sp_keyval}
         return self.handle.rpc("sched-fluxion-resource.set_property", payload).get()
+
+    def rpc_remove_property(self, rp_resource_path, rp_key):
+        payload = {"resource_path": rp_resource_path, "key": rp_key}
+        return self.handle.rpc("sched-fluxion-resource.remove_property", payload).get()
 
     def rpc_get_property(self, gp_resource_path, gp_key):
         payload = {"gp_resource_path": gp_resource_path, "gp_key": gp_key}
@@ -197,6 +205,18 @@ def cancel_action(args):
     rmod = ResourceModuleInterface()
     jobid = args.jobid
     rmod.rpc_cancel(jobid)
+
+
+def partial_cancel_action(args):
+    """
+    Action for partial cancel sub-command
+    """
+
+    with open(args.rv1exec, "r") as stream:
+        rv1exec = json.dumps(json.load(stream))
+        rmod = ResourceModuleInterface()
+        jobid = args.jobid
+        rmod.rpc_partial_cancel(jobid, rv1exec)
 
 
 def info_action(args):
@@ -318,6 +338,14 @@ def set_property_action(args):
     rmod.rpc_set_property(sp_resource_path, sp_keyval)
 
 
+def remove_property_action(args):
+    """
+    Action for remove-property sub-command
+    """
+    rmod = ResourceModuleInterface()
+    rmod.rpc_remove_property(args.rp_resource_path, args.rp_key)
+
+
 def get_property_action(args):
     """
     Action for get-property sub-command
@@ -337,10 +365,11 @@ def find_action(args):
 
     rmod = ResourceModuleInterface()
     resp = rmod.rpc_find(args.criteria, find_format=args.format)
-    print("CRITERIA")
-    print("'" + args.criteria + "'")
-    print("=" * width())
-    print("MATCHED RESOURCES:")
+    if not args.quiet:
+        print("CRITERIA")
+        print("'" + args.criteria + "'")
+        print("=" * width())
+        print("MATCHED RESOURCES:")
     print(json.dumps(resp["R"]))
 
 
@@ -420,35 +449,16 @@ def parse_match(parser_m: argparse.ArgumentParser):
     )
 
     #
-    # Positional argument for match allocate sub-command
+    # Jobspec positional argument for all match sub-commands
     #
-    parser_ma.add_argument(
-        "jobspec", metavar="Jobspec", type=str, help="Jobspec file name"
-    )
+    for subparser in parser_ma, parser_ms, parser_mr, parser_fe:
+        subparser.add_argument(
+            "jobspec", metavar="Jobspec", type=str, help="Jobspec file name"
+        )
+
     parser_ma.set_defaults(func=match_alloc_action)
-
-    #
-    # Positional argument for match allocate_with_satisfiability sub-command
-    #
-    parser_ms.add_argument(
-        "jobspec", metavar="Jobspec", type=str, help="Jobspec file name"
-    )
     parser_ms.set_defaults(func=match_alloc_sat_action)
-
-    #
-    # Positional argument for match allocate_orelse_reserve sub-command
-    #
-    parser_mr.add_argument(
-        "jobspec", metavar="Jobspec", type=str, help="Jobspec file name"
-    )
     parser_mr.set_defaults(func=match_reserve_action)
-
-    #
-    # Positional argument for match satisfiability sub-command
-    #
-    parser_fe.add_argument(
-        "jobspec", metavar="Jobspec", type=str, help="Jobspec file name"
-    )
     parser_fe.set_defaults(func=satisfiability_action)
 
 
@@ -482,6 +492,7 @@ def parse_find(parser_f: argparse.ArgumentParser):
     parser_f.add_argument(
         "--format", type=str, default=None, help="Writer format for find query"
     )
+    parser_f.add_argument("-q", "--quiet", action="store_true", help="be quiet")
     parser_f.set_defaults(func=find_action)
 
 
@@ -533,12 +544,14 @@ def main():
     parser_s = mkparser("stats", "Print overall performance statistics.")
     parser_sc = mkparser("stats-cancel", "Clear overall performance statistics.")
     parser_c = mkparser("cancel", "Cancel an allocated or reserved job.")
+    parser_pc = mkparser("partial-cancel", "Partially cancel an allocated job.")
     parse_find(mkparser("find", "Find resources matching with a criteria."))
     parser_st = mkparser("status", "Display resource status.")
     parse_set_status(mkparser("set-status", "Set up/down status of a resource vertex."))
     parser_sp = mkparser(
         "set-property", "Set property-key=value for specified resource."
     )
+    parser_rp = mkparser("remove-property", "Remove property for specified resource.")
     parser_gp = mkparser(
         "get-property", "Get value for specified resource and property-key."
     )
@@ -562,6 +575,13 @@ def main():
     parser_c.set_defaults(func=cancel_action)
 
     #
+    # Positional argument for partial cancel sub-command
+    #
+    parser_pc.add_argument("jobid", metavar="Jobid", type=JobID, help="Jobid")
+    parser_pc.add_argument("rv1exec", metavar="rv1exec", type=str, help="RV1exec")
+    parser_pc.set_defaults(func=partial_cancel_action)
+
+    #
     # Positional argument for find sub-command
     #
     parser_st.set_defaults(func=status_action)
@@ -581,6 +601,22 @@ def main():
         help="set-property resource_path property-key=val",
     )
     parser_sp.set_defaults(func=set_property_action)
+
+    # Positional arguments for remove-property sub-command
+    #
+    parser_rp.add_argument(
+        "rp_resource_path",
+        metavar="ResourcePath",
+        type=str,
+        help="remove-property resource_path property-key=val",
+    )
+    parser_rp.add_argument(
+        "rp_key",
+        metavar="PropertyKey",
+        type=str,
+        help="remove-property resource_path property-key",
+    )
+    parser_rp.set_defaults(func=remove_property_action)
 
     # Positional argument for get-property sub-command
     #
@@ -619,6 +655,13 @@ def main():
     #
     try:
         args = parser.parse_args()
+
+        # A subcommand is required
+        if not hasattr(args, "func"):
+            parser.print_help()
+            print("\nA subcommand is required.")
+            sys.exit(1)
+
         args.func(args)
 
     except (IOError, EnvironmentError) as exc:

@@ -17,7 +17,7 @@ test_expect_success "vertex/edge counts for a tiny machine are correct" '
     vtx=$(grep "Vertex" out1.txt  | sed "s/INFO: Vertex Count: //") &&
     edg=$(grep "Edge" out1.txt  | sed "s/INFO: Edge Count: //") &&
     test ${vtx} -eq 100 &&
-    test ${edg} -eq 198
+    test ${edg} -eq 99
 '
 
 # Note that by default the rank is -1, meaning that the by_rank map 
@@ -98,7 +98,7 @@ out5.txt &&
     vtx=$(grep "Vertex" out5.txt | sed "s/INFO: Vertex Count: //") &&
     edg=$(grep "Edge" out5.txt | sed "s/INFO: Edge Count: //") &&
     test ${vtx} -eq 100 &&
-    test ${edg} -eq 198
+    test ${edg} -eq 99
 '
 
 test_expect_success LONGTEST "--reserve-vtx-vec improves loading performance" '

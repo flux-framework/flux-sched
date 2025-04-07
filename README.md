@@ -45,6 +45,9 @@ Fluxion requires an installed flux-core package.  Instructions
 for installing flux-core can be found in [the flux-core
 README](https://github.com/flux-framework/flux-core/blob/master/README.md).
 
+To install our other dependencies on a dnf, apk or apt-using distro you should
+be able to use ./scripts/install-deps.sh to install all necessary dependencies.
+
 <!-- A collapsible section with markdown -->
 <details>
   <summary>Click to expand and see our full dependency table</summary>
@@ -53,37 +56,25 @@ Fluxion also requires the following packages to build:
 
 **redhat**                | **ubuntu**              | **version**       | **note**
 ----------                | ----------              | -----------       | --------
-hwloc-devel               | libhwloc-dev            | >= 1.11.1         |
-boost-devel               | libboost-dev            | == 1.53 or > 1.58 | *1*
-boost-graph               | libboost-graph-dev      | == 1.53 or > 1.58 | *1*
-boost-system              | libboost-system-dev     | == 1.53 or > 1.58 | *1*
-boost-filesystem          | libboost-filesystem-dev | == 1.53 or > 1.58 | *1*
-boost-regex               | libboost-regex-dev      | == 1.53 or > 1.58 | *1*
+hwloc-devel               | libhwloc-dev            | >= 2         |
+boost-devel               | libboost-dev            | >= 1.66 | *1*
+boost-graph               | libboost-graph-dev      | >= 1.66 | *1*
 libedit-devel             | libedit-dev             | >= 3.0            |
 python3-pyyaml            | python3-yaml            | >= 3.10           |
 yaml-cpp-devel            | libyaml-cpp-dev         | >= 0.5.1          |
 
-*Note 1 - Boost package versions 1.54-1.58 contain a bug that
-leads to compilation error.*
-
-The following optional dependencies enable additional testing:
-
-**redhat**        | **ubuntu**        | **version**
-----------        | ----------        | -----------
-valgrind-devel    | valgrind          |
-jq                | jq                |
 </details>
 
 ##### Installing RedHat/CentOS Packages
 ```bash
-sudo dnf install hwloc-devel boost-devel boost-graph boost-system boost-filesystem boost-regex libedit-devel python3-pyyaml yaml-cpp-devel
+sudo dnf install hwloc-devel boost-devel boost-graph libedit-devel python3-pyyaml yaml-cpp-devel
 ```
 
 ##### Installing Ubuntu Packages
 
 ```bash
 sudo apt-get update
-sudo apt install libhwloc-dev libboost-dev libboost-system-dev libboost-filesystem-dev libboost-graph-dev libboost-regex-dev libedit-dev libyaml-cpp-dev python3-yaml
+sudo apt install libhwloc-dev libboost-dev libboost-graph-dev libedit-dev libyaml-cpp-dev python3-yaml
 ```
 
 Clone flux-sched, the repo name for Fluxion, from an upstream repo and prepare for configure:
@@ -159,7 +150,7 @@ from the source directory or use the usual ctest options to filter by regex:
 
 ```bash
 $ cd build/t
-$ ../../t/t9001-golang-basic.t 
+$ ../../t/t9001-golang-basic.t
 ok 1 - match allocate 1 slot: 1 socket: 1 core (pol=default)
 ok 2 - match allocate 2 slots: 2 sockets: 5 cores 1 gpu 6 memory
 # passed all 2 test(s)

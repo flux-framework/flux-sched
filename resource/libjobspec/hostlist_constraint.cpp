@@ -22,12 +22,12 @@ HostlistConstraint::HostlistConstraint (const YAML::Node &values)
 {
     if (!(hl = hostlist_create ()))
         throw parse_error (values, "Out of memory");
-    for (auto&& val: values) {
-        std::string hosts = val.as<std::string>();
-        if (hostlist_append (hl, hosts.c_str()) < 0) {
+    for (auto &&val : values) {
+        std::string hosts = val.as<std::string> ();
+        if (hostlist_append (hl, hosts.c_str ()) < 0) {
             hostlist_destroy (hl);
             std::string msg = "Invalid hostlist `" + hosts + "'";
-            throw parse_error (val, msg.c_str());
+            throw parse_error (val, msg.c_str ());
         }
     }
 }
@@ -35,7 +35,7 @@ HostlistConstraint::HostlistConstraint (const YAML::Node &values)
 bool HostlistConstraint::match (const Flux::resource_model::resource_t &r) const
 {
     int saved_errno = errno;
-    int rc = hostlist_find (hl, r.name.c_str());
+    int rc = hostlist_find (hl, r.name.c_str ());
     errno = saved_errno;
     return rc < 0 ? false : true;
 }

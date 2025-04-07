@@ -4,6 +4,7 @@
 extend-exclude = [
   "cmake/sanitizers-cmake/*",
   "config/*",
+  "external/*",
   "m4/*",
   "src/common/libutil/json.hpp",
   "src/common/yggdrasil/*",

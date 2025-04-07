@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """run command with a timeout, timeout as a float is first argument, rest are command"""
+
 import sys
 import os
 import signal

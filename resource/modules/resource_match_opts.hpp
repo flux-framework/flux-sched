@@ -25,7 +25,7 @@ namespace opts_manager {
 const std::string RESOURCE_OPTS_UNSET_STR = "0xdeadbeef";
 
 class resource_prop_t {
-public:
+   public:
     const std::string &get_load_file () const;
     const std::string &get_load_format () const;
     const std::string &get_load_allowlist () const;
@@ -40,7 +40,7 @@ public:
     void set_load_file (const std::string &o);
     bool set_load_format (const std::string &o);
     void set_load_allowlist (const std::string &o);
-    bool set_match_policy (const std::string &o);
+    bool set_match_policy (const std::string &o, std::string &e);
     bool set_match_format (const std::string &o);
     void set_match_subsystems (const std::string &o);
     void set_reserve_vtx_vec (const int i);
@@ -60,7 +60,7 @@ public:
 
     json_t *jsonify () const;
 
-private:
+   private:
     std::string m_load_file = RESOURCE_OPTS_UNSET_STR;
     std::string m_load_format = RESOURCE_OPTS_UNSET_STR;
     std::string m_load_allowlist = RESOURCE_OPTS_UNSET_STR;
@@ -72,22 +72,21 @@ private:
     int m_update_interval = 0;
 };
 
-
 /*! resource match option set class
  */
 class resource_opts_t : public optmgr_parse_t {
-public:
+   public:
     enum class resource_opts_key_t : int {
-        LOAD_FILE                 = 1,
-        LOAD_FORMAT               = 10,
-        LOAD_ALLOWLIST            = 20,
-        MATCH_POLICY              = 30, // policy
-        MATCH_FORMAT              = 40, // match-format
-        MATCH_SUBSYSTEMS          = 50, // subsystem
-        RESERVE_VTX_VEC           = 60, // reserve-vtx-vec
-        PRUNE_FILTERS             = 70, // prune-filter
-        UPDATE_INTERVAL           = 80, // update-interval
-        UNKNOWN                   = 5000
+        LOAD_FILE = 1,
+        LOAD_FORMAT = 10,
+        LOAD_ALLOWLIST = 20,
+        MATCH_POLICY = 30,      // policy
+        MATCH_FORMAT = 40,      // match-format
+        MATCH_SUBSYSTEMS = 50,  // subsystem
+        RESERVE_VTX_VEC = 60,   // reserve-vtx-vec
+        PRUNE_FILTERS = 70,     // prune-filter
+        UPDATE_INTERVAL = 80,   // update-interval
+        UNKNOWN = 5000
     };
 
     // These constructors can throw std::bad_alloc exception
@@ -112,7 +111,7 @@ public:
     void set_load_file (const std::string &o);
     bool set_load_format (const std::string &o);
     void set_load_allowlist (const std::string &o);
-    bool set_match_policy (const std::string &o);
+    bool set_match_policy (const std::string &o, std::string &e);
     bool set_match_format (const std::string &o);
     void set_match_subsystems (const std::string &o);
     void set_reserve_vtx_vec (const int i);
@@ -151,7 +150,7 @@ public:
      *  \param k2        comparing key
      *  \return          true if k1 should precede k2 during iteration.
      */
-    bool operator ()(const std::string &k1, const std::string &k2) const;
+    bool operator() (const std::string &k1, const std::string &k2) const;
 
     /*! Parse the value string (v) according to the key string (k).
      *  The parsed results are stored in "this" object.
@@ -170,7 +169,7 @@ public:
      */
     int jsonify (std::string &json_out) const;
 
-private:
+   private:
     bool is_number (const std::string &num_str);
 
     // default queue properties
@@ -180,10 +179,10 @@ private:
     std::map<std::string, int> m_tab;
 };
 
-} // namespace opts_manager
-} // namespace Flux
+}  // namespace opts_manager
+}  // namespace Flux
 
-#endif // RESOURCE_MATCH_OPTS_HPP
+#endif  // RESOURCE_MATCH_OPTS_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

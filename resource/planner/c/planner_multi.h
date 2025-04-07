@@ -44,9 +44,11 @@ typedef struct planner_multi_t planner_multi_t;
  *                          ERANGE: resource_totals contains an out-of-range
  *                                  value.
  */
-planner_multi_t *planner_multi_new (int64_t base_time, uint64_t duration,
+planner_multi_t *planner_multi_new (int64_t base_time,
+                                    uint64_t duration,
                                     const uint64_t *resource_totals,
-                                    const char **resource_types, size_t len);
+                                    const char **resource_types,
+                                    size_t len);
 
 /*! Initialize empty planner_multi.
  *
@@ -72,7 +74,7 @@ planner_multi_t *planner_multi_copy (planner_multi_t *mp);
  *  \param lhs          the base planner_multi which will be assigned to rhs.
  *  \param rhs          the base planner_multi which will be copied and returned as
  *                      a new planner_multi context.
- * 
+ *
  */
 void planner_multi_assign (planner_multi_t *lhs, planner_multi_t *rhs);
 
@@ -86,8 +88,7 @@ size_t planner_multi_resources_len (planner_multi_t *ctx);
 const char *planner_multi_resource_type_at (planner_multi_t *ctx, unsigned int i);
 const uint64_t *planner_multi_resource_totals (planner_multi_t *ctx);
 int64_t planner_multi_resource_total_at (planner_multi_t *ctx, unsigned int i);
-int64_t planner_multi_resource_total_by_type (planner_multi_t *ctx,
-                                              const char *resource_type);
+int64_t planner_multi_resource_total_by_type (planner_multi_t *ctx, const char *resource_type);
 
 /*! Reset the planner_multi_t context with a new time bound.
  *  Destroy all existing planned spans in its managed planner_t objects.
@@ -101,8 +102,7 @@ int64_t planner_multi_resource_total_by_type (planner_multi_t *ctx,
  *  \return             0 on success; -1 on error with errno set as follows:
  *                          EINVAL: invalid argument.
  */
-int planner_multi_reset (planner_multi_t *ctx, int64_t base_time,
-                         uint64_t duration);
+int planner_multi_reset (planner_multi_t *ctx, int64_t base_time, uint64_t duration);
 
 /*! Destroy the planner_multi.
  *
@@ -150,8 +150,10 @@ planner_t *planner_multi_planner_at (planner_multi_t *ctx, unsigned int i);
  *                          ENOENT: no scheduleable point
  */
 int64_t planner_multi_avail_time_first (planner_multi_t *ctx,
-                                        int64_t on_or_after, uint64_t duration,
-                                        const uint64_t *resource_requests, size_t len);
+                                        int64_t on_or_after,
+                                        uint64_t duration,
+                                        const uint64_t *resource_requests,
+                                        size_t len);
 
 /*! Find and return the next earliest point in time at which the same request
  *  queried before via either planner_avail_time_first or
@@ -169,7 +171,6 @@ int64_t planner_multi_avail_time_first (planner_multi_t *ctx,
  */
 int64_t planner_multi_avail_time_next (planner_multi_t *ctx);
 
-
 /*! Return how many resources of ith type is available at the given time.
  *
  *  \param ctx          opaque planner context returned from planner_multi_new.
@@ -179,8 +180,7 @@ int64_t planner_multi_avail_time_next (planner_multi_t *ctx);
  *                      as follows:
  *                          EINVAL: invalid argument.
  */
-int64_t planner_multi_avail_resources_at (planner_multi_t *ctx, int64_t at,
-                                          unsigned int i);
+int64_t planner_multi_avail_resources_at (planner_multi_t *ctx, int64_t at, unsigned int i);
 
 /*! Return how many resources are available at the given instant time (at).
  *
@@ -194,8 +194,10 @@ int64_t planner_multi_avail_resources_at (planner_multi_t *ctx, int64_t at,
  *  \return             0 on success; -1 on error with errno set as follows:
  *                          EINVAL: invalid argument.
  */
-int planner_multi_avail_resources_array_at (planner_multi_t *ctx, int64_t at,
-                                            int64_t *resource_counts, size_t len);
+int planner_multi_avail_resources_array_at (planner_multi_t *ctx,
+                                            int64_t at,
+                                            int64_t *resource_counts,
+                                            size_t len);
 
 /*! Test if the given resource request can be satisfied at the start time.
  *  Note on semantics: Unlike planner_multi_avail_time* functions, this function
@@ -216,9 +218,11 @@ int planner_multi_avail_resources_array_at (planner_multi_t *ctx, int64_t at,
  *                          ERANGE: resource_counts contain an out-of-range value.
  *                          ENOTSUP: internal error encountered.
  */
-int planner_multi_avail_during (planner_multi_t *ctx, int64_t at,
+int planner_multi_avail_during (planner_multi_t *ctx,
+                                int64_t at,
                                 uint64_t duration,
-                                const uint64_t *resource_requests, size_t len);
+                                const uint64_t *resource_requests,
+                                size_t len);
 
 /*! Return how many resources are available for the duration starting from at.
  *
@@ -235,8 +239,10 @@ int planner_multi_avail_during (planner_multi_t *ctx, int64_t at,
  */
 
 int planner_multi_avail_resources_array_during (planner_multi_t *ctx,
-                                                int64_t at, uint64_t duration,
-                                                int64_t *resource_counts, size_t len);
+                                                int64_t at,
+                                                uint64_t duration,
+                                                int64_t *resource_counts,
+                                                size_t len);
 
 /*! Add a new span to the multi-planner and update the planner's resource/time
  *  state. Reset the multi-planner's iterator so that
@@ -259,8 +265,10 @@ int planner_multi_avail_resources_array_during (planner_multi_t *ctx,
  *                          ERANGE: a resource state became out of a valid
  *                                  range, e.g., reserving more than available.
  */
-int64_t planner_multi_add_span (planner_multi_t *ctx, int64_t start_time,
-                                uint64_t duration, const uint64_t *resource_requests,
+int64_t planner_multi_add_span (planner_multi_t *ctx,
+                                int64_t start_time,
+                                uint64_t duration,
+                                const uint64_t *resource_requests,
                                 size_t len);
 
 /*! Remove the existing span from multi-planner and update resource/time state.
@@ -278,6 +286,47 @@ int64_t planner_multi_add_span (planner_multi_t *ctx, int64_t start_time,
  */
 int planner_multi_rem_span (planner_multi_t *ctx, int64_t span_id);
 
+/*! Reduce the existing span's resources from the planner.
+ *  This function will be called for a partial release/cancel.
+ *  If the number of resources to be removed is equal to those
+ *  allocated to the span, completely remove the span.
+ *
+ *  \param ctx          opaque multi-planner context returned
+ *                      from planner_multi_new.
+ *  \param span_id      span_id returned from planner_add_span.
+ *  \param reduced_totals
+ *                      64-bit unsigned integer array of size len where each
+ *                      element contains the total count of available resources
+ *                      of a single resource type.
+ *  \param resource_types
+ *                      string array of size len where each element contains
+ *                      the resource type corresponding to each corresponding
+ *                      element in the resource_totals array.
+ *  \param len          length of the resource_totals and resource_types arrays.
+ *  \param removed      bool indicating if the entire span was removed.
+ *  \return             0 on success; -1 on error with errno set as follows:
+ *                          EINVAL: invalid argument.
+ *                          EKEYREJECTED: span could not be removed from
+ *                                        the planner's internal data structures.
+ *                          ERANGE: a resource state became out of a valid range.
+ */
+int planner_multi_reduce_span (planner_multi_t *ctx,
+                               int64_t span_id,
+                               const uint64_t *reduced_totals,
+                               const char **resource_types,
+                               size_t len,
+                               bool &removed);
+
+/*! Get the number of used resources of resource index i corresponding
+ *  to the provided span id.
+ *
+ *  \param ctx          opaque multi-planner context returned
+ *                      from planner_multi_new.
+ *  \param span_id      span_id returned from planner_add_span.
+ *  \param i            index of the resource type to queried
+ */
+int64_t planner_multi_span_planned_at (planner_multi_t *ctx, int64_t span_id, unsigned int i);
+
 //! Span iterators -- there is no specific iteration order
 //  return -1 when you no longer can iterate: EINVAL when ctx is NULL.
 //  ENOENT when you reached the end of the spans
@@ -289,7 +338,7 @@ size_t planner_multi_span_size (planner_multi_t *ctx);
 /*
  *  Returns true if all the member variables and objects are equal.
  *  Used by testsuite.
-*/
+ */
 bool planner_multis_equal (planner_multi_t *lhs, planner_multi_t *rhs);
 
 /*! Update the counts and resource types to support elasticity.
@@ -312,7 +361,6 @@ int planner_multi_update (planner_multi_t *ctx,
                           const uint64_t *resource_totals,
                           const char **resource_types,
                           size_t len);
-
 
 #ifdef __cplusplus
 }

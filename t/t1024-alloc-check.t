@@ -1,3 +1,5 @@
+#!/bin/sh
+
 test_description='Check that fluxion never double books resources'
 
 . `dirname $0`/sharness.sh
@@ -39,10 +41,10 @@ test_expect_success 'submit node-exclusive jobs that exceed their time limit' '
 	done) 2>joberr
 '
 test_expect_success 'some jobs received timeout exception' '
-	grep "job.exception type=timeout" joberr
+	grep "job.exception" joberr | grep "type=timeout"
 '
 test_expect_success 'no jobs received alloc-check exception' '
-	test_must_fail grep "job.exception type=alloc-check" joberr
+	test_must_fail grep "job.exception.*type=alloc-check" joberr
 '
 test_expect_success 'clean up' '
 	flux cancel --all &&
@@ -55,10 +57,10 @@ test_expect_success 'submit non-exclusive jobs that exceed their time limit' '
 	done) 2>joberr2
 '
 test_expect_success 'some jobs received timeout exception' '
-	grep "job.exception type=timeout" joberr2
+	grep "job.exception" joberr2 | grep "type=timeout"
 '
 test_expect_success 'no jobs received alloc-check exception' '
-	test_must_fail grep "job.exception type=alloc-check" joberr2
+	test_must_fail grep "job.exception.*type=alloc-check" joberr2
 '
 test_expect_success 'clean up' '
 	flux cancel --all &&

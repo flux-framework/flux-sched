@@ -10,7 +10,7 @@
 
 extern "C" {
 #if HAVE_CONFIG_H
- #include "config.h"
+#include "config.h"
 #endif
 }
 #include <cstdlib>
@@ -24,12 +24,16 @@ extern "C" {
 #include "planner.h"
 #include "src/common/libtap/tap.h"
 
-static void to_stream (int64_t base_time, uint64_t duration, uint64_t cnts,
-                      const char *type, std::stringstream &ss)
+static void to_stream (int64_t base_time,
+                       uint64_t duration,
+                       uint64_t cnts,
+                       const char *type,
+                       std::stringstream &ss)
 {
     if (base_time != -1)
         ss << "B(" << base_time << "):";
-    ss << "D(" << duration << "):" << "R_";
+    ss << "D(" << duration << "):"
+       << "R_";
     ss << type << "(" << cnts << ")";
 }
 
@@ -390,7 +394,7 @@ int test_remove_more ()
     uint64_t resource_total = 10;
     char resource_type[] = "core";
     uint64_t count = 5;
-    int overlap_factor = resource_total/count;
+    int overlap_factor = resource_total / count;
     std::vector<int64_t> query_times;
     planner_t *ctx = NULL;
     std::stringstream ss;
@@ -402,7 +406,7 @@ int test_remove_more ()
 
     std::vector<int64_t> spans;
     for (i = 0; i < 10000; ++i) {
-        at = i/overlap_factor * 1000;
+        at = i / overlap_factor * 1000;
         span = planner_add_span (ctx, at, 1000, count);
         spans.push_back (span);
         bo = (bo || span == -1);
@@ -416,7 +420,6 @@ int test_remove_more ()
     ok (!bo, "removing more works");
     planner_destroy (&ctx);
     return 0;
-
 }
 
 int test_stress_fully_overlap ()
@@ -503,7 +506,7 @@ static int test_resource_service_flow ()
     std::map<int, const char *> types;
     std::vector<uint64_t> global_totals;
     std::vector<const char *> global_types;
-    std::vector <planner_t *> locals;
+    std::vector<planner_t *> locals;
     planner_t *global1 = NULL, *global2 = NULL, *global3 = NULL;
     std::stringstream ss;
 
@@ -519,8 +522,7 @@ static int test_resource_service_flow ()
     for (auto &kv : totals)
         global_totals.push_back (L2_size * kv.second);
     for (int i = 0; i < L1_size; ++i)
-        locals.push_back (planner_new (0, INT64_MAX, totals[i % L2_size],
-                                       types[i%L2_size]));
+        locals.push_back (planner_new (0, INT64_MAX, totals[i % L2_size], types[i % L2_size]));
 
     global1 = planner_new (0, INT64_MAX, global_totals[0], global_types[0]);
     global2 = planner_new (0, INT64_MAX, global_totals[1], global_types[1]);
@@ -555,7 +557,7 @@ static int test_resource_service_flow ()
             global = global3;
 
         t = planner_avail_time_first (global, at, duration, totals[j]);
-        bo = (bo || t != (int64_t)(at + (i/L1_size)*duration));
+        bo = (bo || t != (int64_t)(at + (i / L1_size) * duration));
 
         // Descend/Reserve lower-level resource at this schedule point
         rc = planner_avail_during (locals[k], t, duration, totals[j]);
@@ -584,8 +586,7 @@ static int test_resource_service_flow ()
 static int test_more_add_remove ()
 {
     int rc;
-    int64_t span1 = -1, span2 = -1, span3 = -1, span4 = -1, span5 = -1,
-            span6 = -1;
+    int64_t span1 = -1, span2 = -1, span3 = -1, span4 = -1, span5 = -1, span6 = -1;
     bool bo = false;
     uint64_t resource_total = 100000;
     uint64_t resource1 = 36;
@@ -717,8 +718,9 @@ static int test_constructors_and_overload ()
     bo = (bo || !(planners_equal (ctx, ctx4)));
     ok (!bo, "copy constructor works on planners with state");
 
-    bo = (bo || !(planner_avail_resources_at (ctx, 57600) ==
-                        planner_avail_resources_at (ctx4, 57600)));
+    bo =
+        (bo
+         || !(planner_avail_resources_at (ctx, 57600) == planner_avail_resources_at (ctx4, 57600)));
     ok (!bo, "test for avail time equality");
 
     planner_destroy (&ctx);
@@ -741,7 +743,7 @@ static int test_update ()
     uint64_t resource4 = 2304;
     uint64_t resource5 = 468;
     uint64_t resource6 = 50000;
-    int64_t avail, avail1 = 0;
+    int64_t avail = 0, avail1 = 0;
     const char resource_type[] = "core";
     planner_t *ctx = NULL, *ctx2 = NULL;
 
@@ -775,6 +777,11 @@ static int test_update ()
     span = planner_add_span (ctx, 1152000, 57600, resource6);
     bo = (bo || (planners_equal (ctx, ctx2)) || span != -1);
     ok (!bo, "reducing resources below request should prevent scheduling");
+    span = planner_add_span (ctx, 1152000, 57600, 40000);
+    // rc = planner_reduce_span (ctx, span, 40000, removed);
+    // std::cout << "Reduce span rc: " << rc << " removed: " << removed << " errno: " << errno <<
+    // "\n";
+    rc = planner_rem_span (ctx, span);
 
     planner_destroy (&ctx);
     planner_destroy (&ctx2);
@@ -782,9 +789,58 @@ static int test_update ()
     return 0;
 }
 
+static int test_partial_cancel ()
+{
+    int rc;
+    int64_t span1 = -1, span2 = -1, span3 = -1, span4 = -1;
+    bool bo = false, removed = false;
+    uint64_t resource_total = 100;
+    uint64_t resource1 = 25;
+    uint64_t resource2 = 75;
+    int64_t avail1 = 0, avail2 = 0, avail3 = 0;
+    const char resource_type[] = "core";
+    planner_t *ctx = NULL;
+
+    ctx = planner_new (0, INT64_MAX, resource_total, resource_type);
+    // Add some spans
+    span1 = planner_add_span (ctx, 0, 600, resource1);
+    span2 = planner_add_span (ctx, 0, 1200, resource2);
+
+    rc = planner_reduce_span (ctx, span1, 15, removed);
+    avail1 = planner_avail_resources_at (ctx, 0);
+    bo = (bo || removed || avail1 != 15);
+    ok (!bo, "reducing span resources results in expected availability");
+
+    removed = false;
+    rc = planner_reduce_span (ctx, span1, 10, removed);
+    avail1 = planner_avail_resources_at (ctx, 0);
+    bo = (bo || avail1 != 25 || !removed);
+    ok (!bo, "reducing all span resources results in expected availability and full removal");
+
+    removed = false;
+    rc = planner_reduce_span (ctx, span2, 25, removed);
+    avail1 = planner_avail_resources_at (ctx, 300);
+    span3 = planner_add_span (ctx, 300, 300, 50);
+    avail2 = planner_avail_resources_at (ctx, 300);
+    bo = (bo || avail1 != 50 || avail2 != 0 || removed);
+    ok (!bo, "reducing overlapping span enables new span with expected allocation");
+
+    removed = false;
+    planner_rem_span (ctx, span2);
+    rc = planner_reduce_span (ctx, span3, 50, removed);
+    span3 = planner_add_span (ctx, 300, 300, 100);
+    avail3 = planner_avail_resources_at (ctx, 300);
+    bo = (bo || avail3 != 0 || span3 == -1 || rc != 0 || !removed);
+    ok (!bo, "reducing span to zero removes allocation and allows subsequent full allocation");
+
+    planner_destroy (&ctx);
+
+    return 0;
+}
+
 int main (int argc, char *argv[])
 {
-    plan (67);
+    plan (71);
 
     test_planner_getters ();
 
@@ -809,6 +865,8 @@ int main (int argc, char *argv[])
     test_constructors_and_overload ();
 
     test_update ();
+
+    test_partial_cancel ();
 
     done_testing ();
 

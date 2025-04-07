@@ -13,6 +13,7 @@
 
 #include <string>
 #include <memory>
+#include <vector>
 #include "resource/schema/resource_graph.hpp"
 #include "resource/evaluators/expr_eval_target.hpp"
 
@@ -36,7 +37,6 @@ struct vtx_predicates_override_t {
     void set (bool sd, bool sna, bool sfr);
 };
 
-
 /*! Expression evaluation resource vertex target class.
  *  Each resource vertex defines a set of predicates that
  *  return true or false based on its current state.
@@ -46,8 +46,7 @@ struct vtx_predicates_override_t {
  *  its validate and evaluate interfaces to do this work.
  */
 class expr_eval_vtx_target_t : public expr_eval_target_base_t {
-public:
-
+   public:
     /*! Validate if a predicate expression is valid w/ respect to
      *  a resource vertex.
      *  As a predicate is often denoted as p(x), the method parameters
@@ -71,8 +70,21 @@ public:
      *                   this vertex expression evaluation target.
      *  \return          0 on success; -1 on error
      */
-    virtual int evaluate (const std::string &p,
-                          const std::string &x, bool &result) const;
+    virtual int evaluate (const std::string &p, const std::string &x, bool &result) const;
+
+    /*! Extract jobid and agfilter bool if provided.
+     *
+     *  \param expr      expression string
+     *  \param target    expression evaluation target
+     *  \param jobid     jobid optionally specified in expression
+     *  \param agfilter  bool optionally specified in expression
+     *                   of expr_eval_target_base_t type
+     *  \return          0 on success; -1 on error
+     */
+    virtual int extract (
+        const std::string &p,
+        const std::string &x,
+        std::vector<std::pair<std::string, std::string>> &predicates) const override;
 
     /*! Initialize the object of this class with a resource vertex.
      *  This must be called before the validate and evaluate interfaces
@@ -90,17 +102,17 @@ public:
      */
     bool is_initialized () const;
 
-private:
+   private:
     bool m_initialized{false};
     vtx_predicates_override_t m_overridden;
     const resource_graph_t *m_g;
     vtx_t m_u;
 };
 
-} // resource_model
-} // Flux
+}  // namespace resource_model
+}  // namespace Flux
 
-#endif // EXPR_EVAL_VTX_TARGET_HPP
+#endif  // EXPR_EVAL_VTX_TARGET_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

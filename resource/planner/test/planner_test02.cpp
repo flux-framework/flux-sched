@@ -10,7 +10,7 @@
 
 extern "C" {
 #if HAVE_CONFIG_H
-# include <config.h>
+#include <config.h>
 #endif
 }
 #include <cstdlib>
@@ -24,13 +24,18 @@ extern "C" {
 #include "resource/planner/c/planner_multi.h"
 #include "src/common/libtap/tap.h"
 
-static void to_stream (int64_t base_time, uint64_t duration, const uint64_t *cnts,
-                      const char **types, size_t len, std::stringstream &ss)
+static void to_stream (int64_t base_time,
+                       uint64_t duration,
+                       const uint64_t *cnts,
+                       const char **types,
+                       size_t len,
+                       std::stringstream &ss)
 {
     if (base_time != -1)
         ss << "B(" << base_time << "):";
 
-    ss << "D(" << duration << "):" << "R(<";
+    ss << "D(" << duration << "):"
+       << "R(<";
     for (unsigned int i = 0; i < len; ++i)
         ss << types[i] << "(" << cnts[i] << ")";
 
@@ -254,8 +259,7 @@ static int test_multi_strictly_larger ()
     t = planner_multi_avail_time_next (ctx);
     ok ((t == 5000), "avail_time_next for (%s)", ss.str ().c_str ());
     t = planner_multi_avail_time_next (ctx);
-    ok ((t == -1 && errno == ENOENT), "avail_time_next for (%s)",
-         ss.str ().c_str ());
+    ok ((t == -1 && errno == ENOENT), "avail_time_next for (%s)", ss.str ().c_str ());
 
     ss.str ("");
     to_stream (0, 1000, requestB, (const char **)resource_types, len, ss);
@@ -272,16 +276,14 @@ static int test_multi_strictly_larger ()
     t = planner_multi_avail_time_next (ctx);
     ok ((t == 5000), "avail_time_next for (%s)", ss.str ().c_str ());
     t = planner_multi_avail_time_next (ctx);
-    ok ((t == -1 && errno == ENOENT), "avail_time_next for (%s)",
-         ss.str ().c_str ());
+    ok ((t == -1 && errno == ENOENT), "avail_time_next for (%s)", ss.str ().c_str ());
 
     t = planner_multi_avail_time_first (ctx, 3500, 1000, requestB, len);
     ok ((t == 4000), "avail_time_first for (%s)", ss.str ().c_str ());
     t = planner_multi_avail_time_next (ctx);
     ok ((t == 5000), "avail_time_next for (%s)", ss.str ().c_str ());
     t = planner_multi_avail_time_next (ctx);
-    ok ((t == -1 && errno == ENOENT), "avail_time_next for (%s)",
-         ss.str ().c_str ());
+    ok ((t == -1 && errno == ENOENT), "avail_time_next for (%s)", ss.str ().c_str ());
 
     ss.str ("");
     to_stream (0, 1000, requestC, (const char **)resource_types, len, ss);
@@ -292,8 +294,7 @@ static int test_multi_strictly_larger ()
     t = planner_multi_avail_time_next (ctx);
     ok ((t == 5000), "avail_time_next for (%s)", ss.str ().c_str ());
     t = planner_multi_avail_time_next (ctx);
-    ok ((t == -1 && errno == ENOENT), "avail_time_next for (%s)",
-         ss.str ().c_str ());
+    ok ((t == -1 && errno == ENOENT), "avail_time_next for (%s)", ss.str ().c_str ());
 
     planner_multi_destroy (&ctx);
     return 0;
@@ -379,8 +380,7 @@ static int test_multi_partially_larger ()
     t = planner_multi_avail_time_first (ctx, 0, 1000, requestA, len);
     ok ((t == 5000), "avail_time_first for (%s)", ss.str ().c_str ());
     t = planner_multi_avail_time_next (ctx);
-    ok ((t == -1 && errno == ENOENT), "avail_time_next for (%s)",
-         ss.str ().c_str ());
+    ok ((t == -1 && errno == ENOENT), "avail_time_next for (%s)", ss.str ().c_str ());
 
     ss.str ("");
     to_stream (-1, 1000, requestB, (const char **)resource_types, len, ss);
@@ -393,8 +393,7 @@ static int test_multi_partially_larger ()
     t = planner_multi_avail_time_next (ctx);
     ok ((t == 5000), "avail_time_next for (%s)", ss.str ().c_str ());
     t = planner_multi_avail_time_next (ctx);
-    ok ((t == -1 && errno == ENOENT), "avail_time_next for (%s)",
-         ss.str ().c_str ());
+    ok ((t == -1 && errno == ENOENT), "avail_time_next for (%s)", ss.str ().c_str ());
 
     ss.str ("");
     to_stream (-1, 1000, requestC, (const char **)resource_types, len, ss);
@@ -403,8 +402,7 @@ static int test_multi_partially_larger ()
     t = planner_multi_avail_time_next (ctx);
     ok ((t == 5000), "avail_time_next for (%s)", ss.str ().c_str ());
     t = planner_multi_avail_time_next (ctx);
-    ok ((t == -1 && errno == ENOENT), "avail_time_next for (%s)",
-         ss.str ().c_str ());
+    ok ((t == -1 && errno == ENOENT), "avail_time_next for (%s)", ss.str ().c_str ());
 
     planner_multi_destroy (&ctx);
     return 0;
@@ -436,11 +434,9 @@ static int test_multi_many_spans ()
         request[1] = 99 - (i % 100);
         request[2] = i % 100;
 
-        rc = planner_multi_avail_during (ctx, i*1000, 1000,
-                                         (const uint64_t *)request, len);
+        rc = planner_multi_avail_during (ctx, i * 1000, 1000, (const uint64_t *)request, len);
         bo = (bo || rc);
-        span = planner_multi_add_span (ctx, i*1000, 1000,
-                                       (const uint64_t *)request, len);
+        span = planner_multi_add_span (ctx, i * 1000, 1000, (const uint64_t *)request, len);
         bo = (bo || span == -1);
     }
     ok (!bo, "many multi_add_spans work");
@@ -450,8 +446,7 @@ static int test_multi_many_spans ()
     t = planner_multi_avail_time_first (ctx, 0, 1000, requestA, len);
     ok ((t == 1000000), "avail_time_first for (%s)", ss.str ().c_str ());
     t = planner_multi_avail_time_next (ctx);
-    ok ((t == -1) && errno == ENOENT , "avail_time_next for (%s)",
-    ss.str ().c_str ());
+    ok ((t == -1) && errno == ENOENT, "avail_time_next for (%s)", ss.str ().c_str ());
 
     ss.str ("");
     bo = false;
@@ -541,7 +536,6 @@ static int test_multi_add_remove ()
 
     planner_multi_destroy (&ctx);
     return 0;
-
 }
 
 static int test_constructors_and_overload ()
@@ -558,8 +552,7 @@ static int test_constructors_and_overload ()
     const uint64_t request3[] = {0, 0, 3, 0, 0};
     planner_multi_t *ctx = NULL, *ctx2 = NULL, *ctx3 = NULL, *ctx4 = NULL;
 
-    ctx = planner_multi_new (0, INT64_MAX, resource_totals, resource_types,
-                             len);
+    ctx = planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
 
     planner_multi_add_span (ctx, 0, 1000, request1, len);
     span = planner_multi_add_span (ctx, 1000, 1000, request2, len);
@@ -608,8 +601,9 @@ static int test_constructors_and_overload ()
     bo = (bo || !(planner_multis_equal (ctx, ctx4)));
     ok (!bo, "copy constructor works on planners with updated state");
 
-    bo = (bo || !(planner_multi_avail_resources_at (ctx, 500, 1) ==
-                        planner_multi_avail_resources_at (ctx4, 500, 1)));
+    bo = (bo
+          || !(planner_multi_avail_resources_at (ctx, 500, 1)
+               == planner_multi_avail_resources_at (ctx4, 500, 1)));
     ok (!bo, "test for avail time equality");
 
     planner_multi_destroy (&ctx);
@@ -618,7 +612,6 @@ static int test_constructors_and_overload ()
     planner_multi_destroy (&ctx4);
 
     return 0;
-
 }
 
 static int test_multi_update ()
@@ -683,8 +676,7 @@ static int test_multi_update ()
     ok (!bo, "can allocate full added resources");
 
     for (int i = 0; i < planner_multi_resources_len (ctx); ++i) {
-        if (planner_multi_resource_total_by_type (ctx, resource_types2[i])
-                    != resource_totals2[i]) {
+        if (planner_multi_resource_total_by_type (ctx, resource_types2[i]) != resource_totals2[i]) {
             found = false;
             break;
         }
@@ -696,12 +688,102 @@ static int test_multi_update ()
     planner_multi_destroy (&ctx2);
 
     return 0;
+}
 
+static int test_partial_cancel ()
+{
+    bool bo = false, removed = false, removed1 = false, removed2 = false, removed3 = false,
+         removed4 = false;
+    size_t len = 5;
+    int rc = -1;
+    int64_t span1 = -1, span2 = -1, span3 = -1, span4 = -1, avail1 = -1, avail2 = -1, avail3 = -1,
+            avail4 = -1, avail5 = -1, avail6 = -1, avail7 = -1;
+    const uint64_t resource_totals[] = {10, 20, 30, 40, 50};
+    const char *resource_types[] = {"A", "B", "C", "D", "E"};
+    const char *resource_types1[] = {"B", "A", "E"};
+    const char *resource_types2[] = {"B", "A", "C", "D", "G", "X", "Y"};
+    const char *resource_types3[] = {"C", "D", "A", "B", "E"};
+    const char *resource_types4[] = {"D"};
+    const char *resource_types5[] = {"A"};
+    const char *resource_types6[] = {"B"};
+    const uint64_t reduce1[] = {1, 0, 0, 0, 0};
+    const uint64_t reduce2[] = {2, 1, 5};
+    const uint64_t reduce3[] = {2, 1, 5, 6, 7, 8, 9};
+    const uint64_t reduce4[] = {3, 3, 0, 0, 0};
+    const uint64_t reduce5[] = {1};
+    const uint64_t request1[] = {2, 0, 0, 0, 0};
+    const uint64_t request2[] = {1, 2, 3, 4, 5};
+    const uint64_t request3[] = {2, 2, 0, 0, 0};
+    planner_multi_t *ctx = NULL;
+
+    ctx = planner_multi_new (0, INT64_MAX, resource_totals, resource_types, len);
+
+    span1 = planner_multi_add_span (ctx, 0, 1000, request1, len);
+    span2 = planner_multi_add_span (ctx, 0, 2000, request2, len);
+    rc = planner_multi_reduce_span (ctx, span1, reduce1, resource_types, 5, removed);
+    avail1 = planner_multi_avail_resources_at (ctx, 0, 0);
+    bo = (bo || avail1 != 8 || removed || rc != 0);
+    ok (!bo, "reducing span results in expected availability counts and doesn't remove span");
+
+    removed = false;
+    rc = planner_multi_reduce_span (ctx, span1, reduce1, resource_types, 5, removed);
+    avail1 = planner_multi_avail_resources_at (ctx, 0, 0);
+    bo = (bo || avail1 != 9 || !removed || rc != 0);
+    ok (!bo, "two partial reductions with appropriate removals totally remove span");
+
+    removed = false;
+    rc = planner_multi_reduce_span (ctx, span2, reduce2, resource_types1, 3, removed);
+    avail2 = planner_multi_avail_resources_at (ctx, 0, 1);
+    bo = (bo || avail2 != 20 || removed || rc != 0);
+    ok (!bo, "underspecified and reordered reduction types is handled correctly");
+
+    removed = false;
+    rc = planner_multi_reduce_span (ctx, span2, reduce3, resource_types2, 7, removed);
+    avail2 = planner_multi_avail_resources_at (ctx, 0, 2);
+    bo = (bo || avail2 != 27 || removed || rc != -1);
+    ok (!bo, "incorrect resource type reduction does not change availability");
+
+    removed = false;
+    rc = planner_multi_reduce_span (ctx, span2, reduce4, resource_types3, 5, removed);
+    avail2 = planner_multi_avail_resources_at (ctx, 0, 3);
+    bo = (bo || avail2 != 39 || removed || rc != 0);
+    ok (!bo, "reordered partial reduction results in correct availability");
+
+    removed = false;
+    rc = planner_multi_reduce_span (ctx, span2, reduce5, resource_types4, 1, removed);
+    avail2 = planner_multi_avail_resources_at (ctx, 0, 3);
+    bo = (bo || avail2 != 40 || !removed || rc != 0);
+    ok (!bo, "removing final span resource completely removes span");
+
+    span3 = planner_multi_add_span (ctx, 0, 2000, resource_totals, len);
+    avail1 = planner_multi_avail_resources_at (ctx, 1000, 0);
+    avail2 = planner_multi_avail_resources_at (ctx, 1000, 1);
+    avail3 = planner_multi_avail_resources_at (ctx, 1000, 2);
+    avail4 = planner_multi_avail_resources_at (ctx, 1000, 3);
+    avail5 = planner_multi_avail_resources_at (ctx, 1000, 4);
+    bo = (bo || avail1 != 0 || avail2 != 0 || avail3 != 0 || avail4 != 0 || avail5 != 0 || !removed
+          || rc != 0);
+    ok (!bo, "can fully allocate resources after partial removals");
+
+    span4 = planner_multi_add_span (ctx, 3000, 1000, request3, len);
+    rc = planner_multi_reduce_span (ctx, span4, reduce5, resource_types5, 1, removed1);
+    rc = planner_multi_reduce_span (ctx, span4, reduce5, resource_types5, 1, removed2);
+    rc = planner_multi_reduce_span (ctx, span4, reduce5, resource_types6, 1, removed3);
+    rc = planner_multi_reduce_span (ctx, span4, reduce5, resource_types6, 1, removed4);
+    avail6 = planner_multi_avail_resources_at (ctx, 3500, 0);
+    avail7 = planner_multi_avail_resources_at (ctx, 3500, 1);
+    bo = (bo || avail6 != 10 || avail7 != 20 || removed1 || removed2 || removed3 || !removed4
+          || rc != 0);
+    ok (!bo, "series of partial removals fully removes span");
+
+    planner_multi_destroy (&ctx);
+
+    return 0;
 }
 
 int main (int argc, char *argv[])
 {
-    plan (98);
+    plan (106);
 
     test_multi_basics ();
 
@@ -718,6 +800,8 @@ int main (int argc, char *argv[])
     test_constructors_and_overload ();
 
     test_multi_update ();
+
+    test_partial_cancel ();
 
     done_testing ();
 

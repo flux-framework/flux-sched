@@ -1,3 +1,3 @@
-remove /tiny0/rack0/node1/socket1
+remove /tiny0/rack0/node1/socket1 true
 find status=up
 quit

@@ -6,16 +6,15 @@
 #
 
 import argparse
-import errno
 import json
 import jsonschema
 
-"""
-    Print json document and schema as a verbose option
-"""
-
 
 def print_verbose(doc, schema):
+    """
+    Print json document and schema as a verbose option
+    """
+
     print("==============================================")
     print(" Jsonschema ")
     print("==============================================")
@@ -28,12 +27,11 @@ def print_verbose(doc, schema):
     print("")
 
 
-"""
-    Main entry point
-"""
-
-
 def main():
+    """
+    Main entry point
+    """
+
     desc = "Validate an JSON document against an JSON scheme."
     parser = argparse.ArgumentParser(description=desc)
     parser.add_argument("schema", help="JSON schema file name")

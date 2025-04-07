@@ -2,6 +2,13 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
   include(CTest)
 endif()
 
+# Try to use installed catch2 to save build time, require at least version 3
+find_package(Catch2 3 CONFIG)
+if (NOT Catch2_FOUND)
+    add_subdirectory(external/catch2)
+endif ()
+include(Catch)
+
 set(TEST_ENV)
 set(FLUX_CO_INST "")
 if(FLUX_PREFIX EQUAL CMAKE_INSTALL_PREFIX)
@@ -18,6 +25,16 @@ list(APPEND TEST_ENV "FLUX_SCHED_EXEC_DIR=${FLUX_CMD_DIR}")
 list(APPEND TEST_ENV "FLUX_SCHED_PYTHON_SITELIB=${PYTHON_INSTALL_SITELIB}")
 
 # add maybe-installtest to the start
+function(flux_config_test)
+  set(options "")
+  set(oneValueArgs NAME COMMAND)
+  set(multiValueArgs "")
+
+  cmake_parse_arguments(PARSE_ARGV 0 ARG
+    "${options}" "${oneValueArgs}" "${multiValueArgs}")
+  set_property(TEST ${ARG_NAME} PROPERTY ENVIRONMENT "${TEST_ENV}")
+endfunction()
+find_program(TEST_SHELL NAMES bash zsh sh)
 function(flux_add_test)
   # This odd construction is as close as we can get to
   # generic argument forwarding
@@ -39,8 +56,9 @@ function(flux_add_test)
   cmake_language(EVAL CODE "
   add_test(
       NAME ${ARG_NAME}
-      COMMAND ${CMAKE_SOURCE_DIR}/t/scripts/maybe-installtest ${ARG_COMMAND}
+      COMMAND ${TEST_SHELL} ${CMAKE_SOURCE_DIR}/t/scripts/maybe-installtest ${ARG_COMMAND}
       ${__argsQuoted}
     ) ")
-    set_property(TEST ${ARG_NAME} PROPERTY ENVIRONMENT "${TEST_ENV}")
+    flux_config_test(NAME ${ARG_NAME})
 endfunction()
+

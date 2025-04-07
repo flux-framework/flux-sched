@@ -1,0 +1,103 @@
+#!/usr/bin/env python3
+
+import argparse
+import json
+import os
+from pathlib import Path
+import platform
+import subprocess as sp
+import shlex
+import sys
+
+# populate matrix
+my_path = Path(__file__).absolute()
+generate_matrix = my_path.parent.parent.joinpath("src/test/generate-matrix.py")
+includes = json.loads(
+    sp.check_output([generate_matrix], env={"GITHUB_REF": "refs/heads/master"}).decode()
+)["include"]
+matrix = {}
+for b in includes:
+    matrix[b["name"]] = b
+
+
+def get_list():
+    return matrix.keys()
+
+
+def usage():
+    print("specify the name of a matrix entry as the first argument, from this list:")
+    for tgt in matrix.keys():
+        print(tgt)
+
+
+p = argparse.ArgumentParser()
+p.add_argument("-p", "--platform", default=None)
+p.add_argument("--list", action="store_true", help="print list of matrix targets")
+p.add_argument("--debug", action="store_true")
+p.add_argument("--pretend", action="store_true")
+p.add_argument("--interactive", action="store_true")
+p.add_argument(
+    "name",
+    help="name of the matrix entry to run, or if you want the default for a multi-build target the distro-name",
+)
+args = p.parse_args()
+
+
+if args.platform is None:
+    plt = platform.machine()
+else:
+    plt = args.platform
+suffix = "test-install"
+if plt in ("x86_64", "amd64"):
+    plt = "amd64"
+elif plt == "aarch64":
+    plt = "arm64"
+    suffix = "arm64"
+suffix = f" - {suffix}"
+
+if args.list:
+    for tgt in get_list():
+        print(tgt)
+    sys.exit(0)
+tgt = None
+if args.name in matrix:
+    tgt = matrix[args.name]
+else:
+    tgt = matrix.get(f"{args.name}{suffix}", None)
+
+if tgt is None:
+    usage()
+    sys.exit(1)
+
+
+cmd_arr = shlex.split(tgt["command"])
+brk = cmd_arr.index("--")
+arg_before = cmd_arr[:brk]
+arg_after = cmd_arr[brk + 1 :]
+
+if args.platform is not None:
+    new_arg_before = []
+    for s in arg_before:
+        if s.startswith("--platform"):
+            continue
+        new_arg_before.append(s)
+    new_arg_before.append(f"--platform=linux/{plt}")
+    arg_before = new_arg_before
+
+
+if args.interactive:
+    arg_before.append("--interactive")
+arg_before.append("-D")
+arg_before.append(f"build/{tgt['image']}")
+cmd_arr = arg_before + ["--"] + arg_after
+if args.pretend or args.debug:
+    from pprint import pprint
+
+    print("running:")
+    pprint(cmd_arr)
+    print("with env:")
+    pprint(tgt["env"])
+base_env = dict(os.environ)
+base_env.update(tgt["env"])
+if not args.pretend:
+    sp.call(cmd_arr, env=base_env)

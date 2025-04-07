@@ -19,36 +19,27 @@ extern "C" {
 namespace Flux {
 namespace resource_model {
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // Edge Evaluator Public Method Definitions
 ////////////////////////////////////////////////////////////////////////////////
 
 eval_edg_t::eval_edg_t (unsigned int c, unsigned int n, unsigned int x, edg_t e)
-                        : count (c), needs (n), exclusive (x), edge (e)
+    : count (c), needs (n), exclusive (x), edge (e)
 {
-
 }
 
 eval_edg_t::eval_edg_t (unsigned int c, unsigned int n, unsigned int x)
-                        : count (c), needs (n), exclusive (x)
+    : count (c), needs (n), exclusive (x)
 {
-
 }
-
 
 eval_egroup_t::eval_egroup_t ()
 {
-
 }
 
-eval_egroup_t::eval_egroup_t (int64_t s, unsigned int c, unsigned int n,
-                              unsigned int x, bool r)
-                              : score (s), count (c), needs (n), exclusive (x),
-                                root (r)
+eval_egroup_t::eval_egroup_t (int64_t s, unsigned int c, unsigned int n, unsigned int x, bool r)
+    : score (s), count (c), needs (n), exclusive (x), root (r)
 {
-
 }
 
 eval_egroup_t::eval_egroup_t (const eval_egroup_t &o)
@@ -72,25 +63,19 @@ eval_egroup_t &eval_egroup_t::operator= (const eval_egroup_t &o)
     return *this;
 }
 
-
 namespace detail {
 
 evals_t::evals_t ()
 {
-
 }
 
-evals_t::evals_t (int64_t cutline, const std::string &res_type)
-                  : m_resrc_type (res_type), m_cutline (cutline)
+evals_t::evals_t (int64_t cutline, resource_type_t res_type)
+    : m_resrc_type (res_type), m_cutline (cutline)
 {
-
 }
 
-
-evals_t::evals_t (const std::string &res_type)
-                  : m_resrc_type (res_type)
+evals_t::evals_t (resource_type_t res_type) : m_resrc_type (res_type)
 {
-
 }
 
 evals_t::evals_t (const evals_t &o)
@@ -172,7 +157,7 @@ unsigned int evals_t::best_i () const
     return m_best_i;
 }
 
-int evals_t::merge (evals_t &o)
+int evals_t::merge (const evals_t &o)
 {
     if (m_cutline != o.m_cutline || m_resrc_type != o.m_resrc_type) {
         errno = EINVAL;
@@ -181,7 +166,8 @@ int evals_t::merge (evals_t &o)
     m_qual_count += o.m_qual_count;
     m_total_count += o.m_total_count;
     m_cutline = o.m_cutline;
-    m_eval_egroups.insert (m_eval_egroups.end (), o.m_eval_egroups.begin (),
+    m_eval_egroups.insert (m_eval_egroups.end (),
+                           o.m_eval_egroups.begin (),
                            o.m_eval_egroups.end ());
     return 0;
 }
@@ -196,8 +182,7 @@ std::vector<eval_egroup_t>::iterator evals_t::eval_egroups_iter_next ()
     if (m_iter_cur_reset) {
         m_iter_cur = m_eval_egroups.begin ();
         m_iter_cur_reset = false;
-    }
-    else if (m_iter_cur != m_eval_egroups.end ()) {
+    } else if (m_iter_cur != m_eval_egroups.end ()) {
         m_iter_cur++;
     }
     return m_iter_cur;
@@ -208,10 +193,9 @@ std::vector<eval_egroup_t>::iterator evals_t::eval_egroups_end ()
     return m_eval_egroups.end ();
 }
 
-
-} // Flux::resource_model::detail
-} // Flux::resource_model
-} // Flux
+}  // namespace detail
+}  // namespace resource_model
+}  // namespace Flux
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

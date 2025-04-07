@@ -15,13 +15,13 @@
 namespace Flux {
 namespace resource_model {
 namespace detail {
-    const int64_t SYSTEM_DEFAULT_DURATION = 43200; // 12 hours
-    const int64_t SYSTEM_MAX_DURATION = 3153600000; // 100 years
-} // namespace detail
-} // namespace resource_model
-} // namespace Flux
+const int64_t SYSTEM_DEFAULT_DURATION = 43200;   // 12 hours
+const int64_t SYSTEM_MAX_DURATION = 3153600000;  // 100 years
+}  // namespace detail
+}  // namespace resource_model
+}  // namespace Flux
 
-#endif // SYSTEM_DEFAULT_HPP
+#endif  // SYSTEM_DEFAULT_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

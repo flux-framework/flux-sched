@@ -1,0 +1,53 @@
+{
+  "resources": [
+    {
+      "type": "slot",
+      "count": 1,
+      "label": "default",
+      "with": [
+        {
+          "type": "node",
+          "count": 1,
+          "exclusive": true,
+          "with": [
+            {
+              "type": "slot",
+              "count": 1,
+              "with": [
+                {
+                  "type": "core",
+                  "count": 1
+                }
+              ],
+              "label": "task"
+            }
+          ]
+        },
+        {
+          "type": "ssd",
+          "count": 20480,
+          "exclusive": true
+        }
+      ]
+    }
+  ],
+  "tasks": [
+    {
+      "command": [
+        "hostname"
+      ],
+      "slot": "task",
+      "count": {
+        "per_slot": 1
+      }
+    }
+  ],
+  "attributes": {
+    "system": {
+      "duration": 0,
+      "environment": {},
+      "shell": {}
+    }
+  },
+  "version": 1
+}

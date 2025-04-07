@@ -11,8 +11,6 @@ hwloc_basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/hwloc-data`
 # 1 node, 2 sockets, 44 cores (22 per socket), 4 gpus (2 per socket)
 excl_4N4B="${hwloc_basepath}/004N/exclusive/04-brokers-sierra2"
 
-skip_all_unless_have jq
-
 export FLUX_SCHED_MODULE=none
 test_under_flux 4 full -o,--config-path=$(pwd)/config
 
@@ -37,8 +35,11 @@ test_expect_success 'load test resources' '
 	load_test_resources ${excl_4N4B}
 '
 
+# Note: updating test to specify ALL:core. The default (ALL:core,ALL:node)
+# causes requests of drained resources to be unsatisfiable rather than the
+# expected behavior of blocking under fcfs.
 test_expect_success 'dyn-state: loading fluxion modules works' '
-	load_resource match-format=rv1 &&
+	load_resource match-format=rv1 prune-filters=ALL:core &&
 	load_qmanager
 '
 
@@ -161,8 +162,11 @@ test_expect_success 'configure queues' '
 	flux queue start --all
 '
 
+# Note: updating test to specify ALL:core. The default (ALL:core,ALL:node)
+# causes requests of drained resources to be unsatisfiable rather than the
+# expected behavior of blocking under fcfs.
 test_expect_success 'dyn-state: loading fluxion modules works' '
-	load_resource match-format=rv1 &&
+	load_resource match-format=rv1 prune-filters=ALL:core &&
 	load_qmanager
 '
 

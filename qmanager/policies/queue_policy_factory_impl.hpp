@@ -32,9 +32,8 @@ namespace detail {
 using namespace resource_model;
 using namespace resource_model::detail;
 
-std::shared_ptr<queue_policy_base_t> create_queue_policy (
-                                         const std::string &policy,
-                                         const std::string &reapi)
+std::shared_ptr<queue_policy_base_t> create_queue_policy (const std::string &policy,
+                                                          const std::string &reapi)
 {
     std::shared_ptr<queue_policy_base_t> p = nullptr;
 
@@ -42,19 +41,15 @@ std::shared_ptr<queue_policy_base_t> create_queue_policy (
         if (policy == "fcfs") {
             if (reapi == "module")
                 p = std::make_shared<queue_policy_fcfs_t<reapi_module_t>> ();
-        }
-        else if (policy == "easy") {
+        } else if (policy == "easy") {
             if (reapi == "module")
                 p = std::make_shared<queue_policy_easy_t<reapi_module_t>> ();
-        }
-        else if (policy == "hybrid") {
+        } else if (policy == "hybrid") {
             if (reapi == "module")
                 p = std::make_shared<queue_policy_hybrid_t<reapi_module_t>> ();
-        }
-        else if (policy == "conservative") {
+        } else if (policy == "conservative") {
             if (reapi == "module")
-                p = std::make_shared<queue_policy_conservative_t<
-                                         reapi_module_t>> ();
+                p = std::make_shared<queue_policy_conservative_t<reapi_module_t>> ();
         }
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;
@@ -64,11 +59,11 @@ std::shared_ptr<queue_policy_base_t> create_queue_policy (
     return p;
 }
 
-} // namespace Flux::queue_manager::detail
-} // namespace Flux::queue_manager
-} // namespace Flux
+}  // namespace detail
+}  // namespace queue_manager
+}  // namespace Flux
 
-#endif // QUEUE_POLICY_FACTORY_IMPL_HPP
+#endif  // QUEUE_POLICY_FACTORY_IMPL_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

@@ -4,8 +4,6 @@ test_description='Test constraints complementing t3034-resource-pconstraints.t'
 
 . `dirname $0`/sharness.sh
 
-skip_all_unless_have jq
-
 if flux python -m flux.constraint.parser >/dev/null 2>&1; then
    test_set_prereq RFC35_SYNTAX
 fi

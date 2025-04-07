@@ -28,10 +28,8 @@ namespace resource_model {
  *  resource.
  */
 template<typename FOLD>
-class multilevel_id_t : public dfu_match_cb_t
-{
-public:
-
+class multilevel_id_t : public dfu_match_cb_t {
+   public:
     multilevel_id_t ();
     multilevel_id_t (const std::string &name);
     multilevel_id_t (const multilevel_id_t &o);
@@ -41,39 +39,42 @@ public:
     /*! Please see its overriding method within
      *  dfu_match_cb_t@base/dfu_match_cb.hpp
      */
-    int dom_finish_graph (const subsystem_t &subsystem,
+    int dom_finish_graph (subsystem_t subsystem,
                           const std::vector<Flux::Jobspec::Resource> &resources,
-                          const resource_graph_t &g, scoring_api_t &dfu);
+                          const resource_graph_t &g,
+                          scoring_api_t &dfu) override;
 
     /*! Please see its overriding method within
      *  dfu_match_cb_t@base/dfu_match_cb.hpp
      */
-    int dom_finish_slot (const subsystem_t &subsystem, scoring_api_t &dfu);
+    int dom_finish_slot (subsystem_t subsystem, scoring_api_t &dfu) override;
 
     /*! Please see its overriding method within
      *  dfu_match_cb_t@base/dfu_match_cb.hpp
      */
     int dom_discover_vtx (vtx_t u,
-                          const subsystem_t &subsystem,
+                          subsystem_t subsystem,
                           const std::vector<Flux::Jobspec::Resource> &resources,
-                          const resource_graph_t &g);
+                          const resource_graph_t &g) override;
 
     /*! Please see its overriding method within
      *  dfu_match_cb_t@base/dfu_match_cb.hpp
      */
-    int dom_finish_vtx (vtx_t u, const subsystem_t &subsystem,
+    int dom_finish_vtx (vtx_t u,
+                        subsystem_t subsystem,
                         const std::vector<Flux::Jobspec::Resource> &resources,
-                        const resource_graph_t &g, scoring_api_t &dfu);
+                        const resource_graph_t &g,
+                        scoring_api_t &dfu) override;
 
     /*! Please see its overriding method within
      *  dfu_match_cb_t@base/dfu_match_cb.hpp
      */
-    virtual int set_stop_on_k_matches (unsigned int k);
+    int set_stop_on_k_matches (unsigned int k) override;
 
     /*! Please see its overriding method within
      *  dfu_match_cb_t@base/dfu_match_cb.hpp
      */
-    virtual int get_stop_on_k_matches () const;
+    int get_stop_on_k_matches () const override;
 
     /*!
      * Add a high-level resource type to the multilevel factor
@@ -96,38 +97,35 @@ public:
      *                       EEXIST: type already has been added;
      *                       ENOMEM: out of memory.
      */
-    int add_score_factor (const std::string &type,
-                          unsigned add_by, unsigned multiply_by);
+    int add_score_factor (const resource_type_t type, unsigned add_by, unsigned multiply_by);
 
-private:
+   private:
     class score_factor_t {
-    public:
+       public:
         score_factor_t () = default;
-        score_factor_t (const std::string &type,
-                        unsigned int add_by,
-                        unsigned int multiply_by);
+        score_factor_t (resource_type_t type, unsigned int add_by, unsigned int multiply_by);
         score_factor_t (const score_factor_t &o) = default;
         int64_t calc_factor (int64_t base_factor, int64_t break_tie);
         int64_t m_factor = 0;
 
-    private:
-        std::string m_type;
+       private:
+        resource_type_t m_type;
         unsigned int m_add_by = 0;
         unsigned int m_multiply_by = 1;
     };
 
-    void set_base_factor (const std::string &type, unsigned int id);
+    void set_base_factor (resource_type_t type, unsigned int id);
 
     FOLD m_comp;
     unsigned m_stop_on_k_matches = 0;
     int64_t m_multilevel_scores = 0;
-    std::unordered_map<std::string, score_factor_t> m_multilevel_factors;
+    std::unordered_map<resource_type_t, score_factor_t> m_multilevel_factors;
 };
 
-} // resource_model
-} // Flux
+}  // namespace resource_model
+}  // namespace Flux
 
-#endif // DFU_MATCH_MULTILEVEL_ID_HPP
+#endif  // DFU_MATCH_MULTILEVEL_ID_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

@@ -15,10 +15,10 @@ match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test01
 match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test015.yaml
 match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test016.yaml
 match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test017.yaml
-cancel 1
+cancel 1 stats
 match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test001.yaml
-cancel 2
+cancel 2 stats
 match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test002.yaml
-cancel 12
+cancel 12 stats
 match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/cancel/test012.yaml
 quit

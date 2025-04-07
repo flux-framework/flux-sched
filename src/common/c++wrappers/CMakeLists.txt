@@ -1,3 +1,5 @@
-add_library(cppwrappers INTERFACE)
+add_library(cppwrappers INTERFACE
+        eh_wrapper.hpp
+        jansson.hpp)
 target_include_directories(cppwrappers INTERFACE .)
-add_subdirectory( test )
+add_subdirectory(test)

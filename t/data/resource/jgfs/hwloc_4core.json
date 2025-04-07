@@ -1,235 +1,169 @@
 {
-  "graph": {
-    "nodes": [
-      {
-        "id": "0",
-        "metadata": {
-          "type": "cluster",
-          "basename": "cluster",
-          "name": "cluster0",
-          "id": 0,
-          "uniq_id": 0,
-          "rank": -1,
-          "exclusive": false,
-          "unit": "",
-          "size": 1,
-          "paths": {
-            "containment": "/cluster0"
-          }
-        }
-      },
-      {
-        "id": "1",
-        "metadata": {
-          "type": "node",
-          "basename": "cab1251",
-          "name": "cab1251",
-          "id": -1,
-          "uniq_id": 1,
-          "rank": -1,
-          "exclusive": false,
-          "unit": "",
-          "size": 1,
-          "paths": {
-            "containment": "/cluster0/cab1251"
-          }
-        }
-      },
-      {
-        "id": "2",
-        "metadata": {
-          "type": "socket",
-          "basename": "socket",
-          "name": "socket0",
-          "id": 0,
-          "uniq_id": 2,
-          "rank": -1,
-          "exclusive": false,
-          "unit": "",
-          "size": 1,
-          "paths": {
-            "containment": "/cluster0/cab1251/socket0"
-          }
-        }
-      },
-      {
-        "id": "3",
-        "metadata": {
-          "type": "core",
-          "basename": "core",
-          "name": "core0",
-          "id": 0,
-          "uniq_id": 3,
-          "rank": -1,
-          "exclusive": false,
-          "unit": "",
-          "size": 1,
-          "paths": {
-            "containment": "/cluster0/cab1251/socket0/core0"
-          }
-        }
-      },
-      {
-        "id": "4",
-        "metadata": {
-          "type": "core",
-          "basename": "core",
-          "name": "core1",
-          "id": 1,
-          "uniq_id": 4,
-          "rank": -1,
-          "exclusive": false,
-          "unit": "",
-          "size": 1,
-          "paths": {
-            "containment": "/cluster0/cab1251/socket0/core1"
-          }
-        }
-      },
-      {
-        "id": "5",
-        "metadata": {
-          "type": "core",
-          "basename": "core",
-          "name": "core2",
-          "id": 2,
-          "uniq_id": 5,
-          "rank": -1,
-          "exclusive": false,
-          "unit": "",
-          "size": 1,
-          "paths": {
-            "containment": "/cluster0/cab1251/socket0/core2"
-          }
-        }
-      },
-      {
-        "id": "6",
-        "metadata": {
-          "type": "core",
-          "basename": "core",
-          "name": "core3",
-          "id": 3,
-          "uniq_id": 6,
-          "rank": -1,
-          "exclusive": false,
-          "unit": "",
-          "size": 1,
-          "paths": {
-            "containment": "/cluster0/cab1251/socket0/core3"
-          }
-        }
-      }
-    ],
-    "edges": [
-      {
-        "source": "0",
-        "target": "1",
-        "metadata": {
-          "name": {
-            "containment": "contains"
-          }
-        }
-      },
-      {
-        "source": "1",
-        "target": "0",
-        "metadata": {
-          "name": {
-            "containment": "in"
-          }
-        }
-      },
-      {
-        "source": "1",
-        "target": "2",
-        "metadata": {
-          "name": {
-            "containment": "contains"
-          }
-        }
-      },
-      {
-        "source": "2",
-        "target": "1",
-        "metadata": {
-          "name": {
-            "containment": "in"
-          }
-        }
-      },
-      {
-        "source": "2",
-        "target": "3",
-        "metadata": {
-          "name": {
-            "containment": "contains"
-          }
-        }
-      },
-      {
-        "source": "2",
-        "target": "4",
-        "metadata": {
-          "name": {
-            "containment": "contains"
-          }
-        }
-      },
-      {
-        "source": "2",
-        "target": "5",
-        "metadata": {
-          "name": {
-            "containment": "contains"
-          }
-        }
-      },
-      {
-        "source": "2",
-        "target": "6",
-        "metadata": {
-          "name": {
-            "containment": "contains"
-          }
-        }
-      },
-      {
-        "source": "3",
-        "target": "2",
-        "metadata": {
-          "name": {
-            "containment": "in"
-          }
-        }
-      },
-      {
-        "source": "4",
-        "target": "2",
-        "metadata": {
-          "name": {
-            "containment": "in"
-          }
-        }
-      },
-      {
-        "source": "5",
-        "target": "2",
-        "metadata": {
-          "name": {
-            "containment": "in"
-          }
-        }
-      },
-      {
-        "source": "6",
-        "target": "2",
-        "metadata": {
-          "name": {
-            "containment": "in"
-          }
-        }
-      }
-    ]
-  }
+    "graph": {
+        "nodes": [
+            {
+                "id": "0",
+                "metadata": {
+                    "type": "cluster",
+                    "basename": "cluster",
+                    "name": "cluster0",
+                    "id": 0,
+                    "uniq_id": 0,
+                    "rank": -1,
+                    "exclusive": false,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/cluster0"
+                    }
+                }
+            },
+            {
+                "id": "1",
+                "metadata": {
+                    "type": "node",
+                    "basename": "cab1251",
+                    "name": "cab1251",
+                    "id": -1,
+                    "uniq_id": 1,
+                    "rank": -1,
+                    "exclusive": false,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/cluster0/cab1251"
+                    }
+                }
+            },
+            {
+                "id": "2",
+                "metadata": {
+                    "type": "socket",
+                    "basename": "socket",
+                    "name": "socket0",
+                    "id": 0,
+                    "uniq_id": 2,
+                    "rank": -1,
+                    "exclusive": false,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/cluster0/cab1251/socket0"
+                    }
+                }
+            },
+            {
+                "id": "3",
+                "metadata": {
+                    "type": "core",
+                    "basename": "core",
+                    "name": "core0",
+                    "id": 0,
+                    "uniq_id": 3,
+                    "rank": -1,
+                    "exclusive": false,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/cluster0/cab1251/socket0/core0"
+                    }
+                }
+            },
+            {
+                "id": "4",
+                "metadata": {
+                    "type": "core",
+                    "basename": "core",
+                    "name": "core1",
+                    "id": 1,
+                    "uniq_id": 4,
+                    "rank": -1,
+                    "exclusive": false,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/cluster0/cab1251/socket0/core1"
+                    }
+                }
+            },
+            {
+                "id": "5",
+                "metadata": {
+                    "type": "core",
+                    "basename": "core",
+                    "name": "core2",
+                    "id": 2,
+                    "uniq_id": 5,
+                    "rank": -1,
+                    "exclusive": false,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/cluster0/cab1251/socket0/core2"
+                    }
+                }
+            },
+            {
+                "id": "6",
+                "metadata": {
+                    "type": "core",
+                    "basename": "core",
+                    "name": "core3",
+                    "id": 3,
+                    "uniq_id": 6,
+                    "rank": -1,
+                    "exclusive": false,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/cluster0/cab1251/socket0/core3"
+                    }
+                }
+            }
+        ],
+        "edges": [
+            {
+                "source": "0",
+                "target": "1",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "1",
+                "target": "2",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "2",
+                "target": "3",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "2",
+                "target": "4",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "2",
+                "target": "5",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "2",
+                "target": "6",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            }
+        ]
+    }
 }

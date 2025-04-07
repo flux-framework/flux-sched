@@ -8,8 +8,6 @@ hwloc_basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/hwloc-data`
 # 4 brokers: 1 node, 2 sockets, 44 cores 4 gpus
 excl_4N4B="${hwloc_basepath}/004N/exclusive/04-brokers-sierra2"
 
-skip_all_unless_have jq
-
 export FLUX_SCHED_MODULE=none
 
 test_under_flux 4

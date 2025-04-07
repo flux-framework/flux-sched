@@ -93,13 +93,6 @@ test_expect_success 'loading resource module with known policies works' '
     load_resource policy=locality
 '
 
-test_expect_success 'loading resource module with unknown policies is tolerated' '
-    unload_resource &&
-    load_resource policy=foo &&
-    remove_resource &&
-    load_resource policy=bar
-'
-
 test_expect_success 'resource module stats and clear work' '
     unload_resource &&
     load_resource &&
@@ -111,7 +104,13 @@ test_expect_success 'resource module stats and clear work' '
     flux module stats --clear sched-fluxion-resource
 '
 
+test_expect_failure 'loading resource module with unknown policies errors out' '
+    unload_resource &&
+    load_resource policy=foo
+'
+
 test_expect_success 'removing resource works' '
+    load_resource &&
     remove_resource
 '
 

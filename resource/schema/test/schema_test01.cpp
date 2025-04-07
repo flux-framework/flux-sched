@@ -9,7 +9,7 @@
 \*****************************************************************************/
 
 #if HAVE_CONFIG_H
-# include <config.h>
+#include <config.h>
 #endif
 #include <cstdlib>
 #include <sstream>
@@ -50,7 +50,7 @@ static int test_constructors_and_overload ()
 
     sched3 = new schedule_t (*sched1);
     bo = (bo || !(*sched3 == *sched1));
-    ok (!bo, "copied schedule_t equal to rhs schedule_t");    
+    ok (!bo, "copied schedule_t equal to rhs schedule_t");
 
     sched4 = new schedule_t ();
     *sched4 = *sched1;
@@ -80,7 +80,6 @@ static int test_constructors_and_overload ()
 
     return 0;
 }
-
 
 int main (int argc, char *argv[])
 {

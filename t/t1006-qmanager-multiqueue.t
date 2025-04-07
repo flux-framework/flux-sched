@@ -142,7 +142,7 @@ test_expect_success 'reconfigure with one queue and load qmanager' '
 '
 test_expect_success 'job submitted with no queue gets fatal exception' '
 	test_must_fail flux job attach $(cat noqueue.jobid) 2>noqueue.err &&
-	grep "job.exception type=alloc severity=0" noqueue.err
+	grep "job.exception" noqueue.err | grep "type=alloc severity=0"
 '
 test_expect_success 'unload qmanager' '
 	remove_qmanager
@@ -157,7 +157,7 @@ test_expect_success 'deconfigure queues and load qmanager' '
 '
 test_expect_success 'job submitted with queue gets fatal exception' '
 	test_must_fail flux job attach $(cat withqueue.jobid) 2>foo.err &&
-	grep "job.exception type=alloc severity=0 queue" foo.err
+	grep "job.exception" foo.err | grep "type=alloc severity=0 queue"
 '
 
 test_expect_success 'cleanup active jobs' '

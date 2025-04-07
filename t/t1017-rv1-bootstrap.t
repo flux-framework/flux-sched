@@ -9,8 +9,6 @@ hwloc_basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/hwloc-data`
 excl_4N4B="${hwloc_basepath}/004N/exclusive/04-brokers-sierra2"
 export WAITFILE="${SHARNESS_TEST_SRCDIR}/scripts/waitfile.lua"
 
-skip_all_unless_have jq
-
 export FLUX_SCHED_MODULE=none
 
 test_under_flux 4
@@ -43,10 +41,10 @@ test_expect_success 'rv1-bootstrap: resource idempotency preserved' '
     JOBID=$(flux batch -n4 -N4 -c44 -g4 \
 	./nest.sh high 4 4 44 4 nest.json) &&
     $WAITFILE -t 600 -v -p \"R_lite\" nest.json &&
-    jq " del(.execution.starttime, .execution.expiration) " \
+    jq -S " del(.execution.starttime, .execution.expiration) " \
 	nest.json > nest.norm.json &&
     flux job info ${JOBID} R | \
-	jq " del(.execution.starttime, .execution.expiration) " \
+    jq -S " del(.execution.starttime, .execution.expiration) " \
 	> job.norm.json &&
     test_cmp job.norm.json nest.norm.json
 '
