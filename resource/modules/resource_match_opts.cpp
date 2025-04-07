@@ -18,6 +18,7 @@ extern "C" {
 #include "resource/policies/dfu_match_policy_factory.hpp"
 #include "resource/readers/resource_reader_factory.hpp"
 #include "resource/writers/match_writers.hpp"
+#include "resource/traversers/dfu_traverser_policy_factory.hpp"
 
 using namespace Flux;
 using namespace Flux::resource_model;
@@ -72,6 +73,11 @@ const int resource_prop_t::get_update_interval () const
     return m_update_interval;
 }
 
+const std::string &resource_prop_t::get_traverser_policy () const
+{
+    return m_traverser_policy;
+}
+
 void resource_prop_t::set_load_file (const std::string &p)
 {
     m_load_file = p;
@@ -119,6 +125,14 @@ void resource_prop_t::set_reserve_vtx_vec (const int i)
 void resource_prop_t::set_prune_filters (const std::string &p)
 {
     m_prune_filters = p;
+}
+
+bool resource_prop_t::set_traverser_policy (const std::string &p)
+{
+    if (!known_traverser_policy (p))
+        return false;
+    m_traverser_policy = p;
+    return true;
 }
 
 void resource_prop_t::add_to_prune_filters (const std::string &p)
@@ -177,9 +191,14 @@ bool resource_prop_t::is_update_interval_set () const
     return m_update_interval != 0;
 }
 
+bool resource_prop_t::is_traverser_policy_set () const
+{
+    return m_traverser_policy != RESOURCE_OPTS_UNSET_STR;
+}
+
 json_t *resource_prop_t::jsonify () const
 {
-    return json_pack ("{ s:s? s:s? s:s? s:s? s:s? s:s? s:i s:s? s:i }",
+    return json_pack ("{ s:s? s:s? s:s? s:s? s:s? s:s? s:i s:s? s:i s:s? }",
                       "load-file",
                       is_load_file_set () ? get_load_file ().c_str () : nullptr,
                       "load-format",
@@ -197,7 +216,9 @@ json_t *resource_prop_t::jsonify () const
                       "prune-filters",
                       is_prune_filters_set () ? get_prune_filters ().c_str () : nullptr,
                       "update-interval",
-                      is_update_interval_set () ? get_update_interval () : 0);
+                      is_update_interval_set () ? get_update_interval () : 0,
+                      "traverser",
+                      is_traverser_policy_set () ? get_traverser_policy ().c_str () : nullptr);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -278,6 +299,12 @@ resource_opts_t::resource_opts_t ()
                                      static_cast<int> (
                                          resource_opts_t ::resource_opts_key_t ::UPDATE_INTERVAL)));
     inserted &= ret.second;
+    ret = m_tab.insert (
+        std::pair<std::string,
+                  int> ("traverser",
+                        static_cast<int> (
+                            resource_opts_t ::resource_opts_key_t ::TRAVERSER_POLICY)));
+    inserted &= ret.second;
 
     if (!inserted)
         throw std::bad_alloc ();
@@ -333,6 +360,11 @@ const resource_prop_t &resource_opts_t::get_resource_prop () const
     return m_resource_prop;
 }
 
+const std::string &resource_opts_t::get_traverser_policy () const
+{
+    return m_resource_prop.get_traverser_policy ();
+}
+
 void resource_opts_t::set_load_file (const std::string &o)
 {
     m_resource_prop.set_load_file (o);
@@ -376,6 +408,11 @@ void resource_opts_t::set_prune_filters (const std::string &o)
 void resource_opts_t::set_update_interval (const int i)
 {
     m_resource_prop.set_update_interval (i);
+}
+
+bool resource_opts_t::set_traverser_policy (const std::string &o)
+{
+    return m_resource_prop.set_traverser_policy (o);
 }
 
 bool resource_opts_t::is_load_file_set () const
@@ -423,6 +460,11 @@ bool resource_opts_t::is_update_interval_set () const
     return m_resource_prop.is_update_interval_set ();
 }
 
+bool resource_opts_t::is_traverser_policy_set () const
+{
+    return m_resource_prop.is_traverser_policy_set ();
+}
+
 resource_opts_t &resource_opts_t::canonicalize ()
 {
     return *this;
@@ -450,6 +492,8 @@ resource_opts_t &resource_opts_t::operator+= (const resource_opts_t &src)
         m_resource_prop.set_prune_filters (src.m_resource_prop.get_prune_filters ());
     if (src.m_resource_prop.is_update_interval_set ())
         m_resource_prop.set_update_interval (src.m_resource_prop.get_update_interval ());
+    if (src.m_resource_prop.is_traverser_policy_set ())
+        m_resource_prop.set_traverser_policy (src.m_resource_prop.get_traverser_policy ());
     return *this;
 }
 
@@ -557,6 +601,15 @@ int resource_opts_t::parse (const std::string &k, const std::string &v, std::str
                 if (!(s <= 0 || s > 2000000)) {
                     m_resource_prop.set_update_interval (s);
                 }
+            }
+            break;
+
+        case static_cast<int> (resource_opts_key_t::TRAVERSER_POLICY):
+            if (!m_resource_prop.set_traverser_policy (v)) {
+                info += "Unknown traverser policy (" + v + ")! ";
+                errno = EINVAL;
+                rc = -1;
+                return rc;
             }
             break;
 

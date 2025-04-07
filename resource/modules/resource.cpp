@@ -117,6 +117,7 @@ static void set_default_args (std::shared_ptr<resource_ctx_t> &ctx)
     ct_opts.set_prune_filters ("ALL:core,ALL:node");
     ct_opts.set_match_format ("rv1_nosched");
     ct_opts.set_update_interval (0);
+    ct_opts.set_traverser_policy ("simple");
     ctx->opts += ct_opts;
 }
 
@@ -129,7 +130,6 @@ static std::shared_ptr<resource_ctx_t> getctx (flux_t *h)
     if (!ctx) {
         try {
             ctx = std::make_shared<resource_ctx_t> ();
-            ctx->traverser = std::make_shared<dfu_traverser_t> ();
             ctx->db = std::make_shared<resource_graph_db_t> ();
         } catch (std::bad_alloc &e) {
             errno = ENOMEM;
@@ -138,9 +138,10 @@ static std::shared_ptr<resource_ctx_t> getctx (flux_t *h)
         ctx->h = h;
         ctx->handlers = NULL;
         set_default_args (ctx);
-        ctx->matcher = nullptr; /* Cannot be allocated at this point */
-        ctx->writers = nullptr; /* Cannot be allocated at this point */
-        ctx->reader = nullptr;  /* Cannot be allocated at this point */
+        ctx->traverser = nullptr; /* Cannot be allocated at this point */
+        ctx->matcher = nullptr;   /* Cannot be allocated at this point */
+        ctx->writers = nullptr;   /* Cannot be allocated at this point */
+        ctx->reader = nullptr;    /* Cannot be allocated at this point */
         ctx->m_resources_updated = true;
         ctx->m_resources_down_updated = true;
         ctx->m_resources_alloc_updated = std::chrono::system_clock::now ();
@@ -1424,6 +1425,10 @@ error:
 static int init_resource_graph (std::shared_ptr<resource_ctx_t> &ctx)
 {
     int rc = 0;
+
+    // Select the appropriate traverser based on CLI policy.
+    ctx->traverser =
+        std::make_shared<dfu_traverser_t> (ctx->opts.get_opt ().get_traverser_policy ());
 
     // Select the appropriate matcher based on CLI policy.
     if (!(ctx->matcher = create_match_cb (ctx->opts.get_opt ().get_match_policy ()))) {
