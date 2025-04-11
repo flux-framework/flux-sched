@@ -33,6 +33,7 @@ struct test_params_t {
     std::string o_fname;        /* Output file to dump the filtered graph */
     std::ofstream r_out;        /* Output file stream for emitted R */
     std::string r_fname;        /* Output file to dump the emitted R */
+    std::string b_fname;        /* Input file of a sequence of resource queries */
     std::string o_fext;         /* File extension */
     std::string prune_filters;  /* Raw prune-filter specification */
     std::string match_format;   /* Format to emit a matched resources */
