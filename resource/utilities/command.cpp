@@ -16,6 +16,8 @@ extern "C" {
 }
 
 #include <sys/time.h>
+#include <unistd.h>
+#include <cstdio>
 #include "command.hpp"
 #include <readers/resource_reader_factory.hpp>
 
@@ -105,6 +107,7 @@ command_t commands[] =
      {"list", "l", cmd_list, "List all jobs: resource-query> list"},
      {"info", "i", cmd_info, "Print info on a jobid: resource-query> info jobid"},
      {"stat", "s", cmd_stat, "Print overall stats: resource-query> stat jobid"},
+     {"statm", "v", cmd_statm, "Show current /proc/self/statm: resource-query> statm"},
      {"cat", "a", cmd_cat, "Print jobspec file: resource-query> cat jobspec"},
      {"help", "h", cmd_help, "Print help message: resource-query> help"},
      {"quit", "q", cmd_quit, "Quit the session: resource-query> quit"},
@@ -1006,6 +1009,59 @@ int cmd_stat (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string>
     std::cout << "INFO: Min. Match Time: " << min << std::endl;
     std::cout << "INFO: Max. Match Time: " << ctx->perf.max << std::endl;
     std::cout << "INFO: Avg. Match Time: " << avg << std::endl;
+    return 0;
+}
+
+typedef struct {
+    unsigned long m_size, m_resident, m_share, m_text, m_lib, m_data, m_dt;
+} statm_t;
+
+static int get_mem_status (statm_t *ms)
+{
+    unsigned long dummy;
+    const char *statm_path = "/proc/self/statm";
+
+    FILE *f = fopen (statm_path, "r");
+
+    if (!ms || !f) {
+        perror (statm_path);
+        return EXIT_FAILURE;
+    }
+    if (7
+        != fscanf (f,
+                   "%lu %lu %lu %lu %lu %lu %lu",
+                   &(ms->m_size),
+                   &(ms->m_resident),
+                   &(ms->m_share),
+                   &(ms->m_text),
+                   &(ms->m_lib),
+                   &(ms->m_data),
+                   &(ms->m_dt))) {
+        perror (statm_path);
+        return EXIT_FAILURE;
+    }
+    fclose (f);
+    return EXIT_SUCCESS;
+}
+
+int cmd_statm (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+{
+    const char *nt = "statm";
+    statm_t ms;
+    if (get_mem_status (&ms) != EXIT_SUCCESS)
+        return 0;
+
+    printf (
+        "statm:\tsize %lu\tresident %lu\tshare %lu\ttext %lu"
+        "\tlib %lu\tdata %lu\tdt %lu (in # pages of %ld)\n",
+        ms.m_size,
+        ms.m_resident,
+        ms.m_share,
+        ms.m_text,
+        ms.m_lib,
+        ms.m_data,
+        ms.m_dt,
+        sysconf (_SC_PAGESIZE));
     return 0;
 }
 

@@ -250,7 +250,7 @@ static void set_default_params (std::shared_ptr<resource_context_t> &ctx)
     ctx->params.matcher_policy = "first";
     ctx->params.o_fname = "";
     ctx->params.r_fname = "";
-    ctx->params.b_fname.clear();
+    ctx->params.b_fname.clear ();
     ctx->params.o_fext = "dot";
     ctx->params.match_format = "simple";
     ctx->params.o_format = emit_format_t::GRAPHVIZ_DOT;
@@ -459,62 +459,14 @@ static void write_to_graph (std::shared_ptr<resource_context_t> &ctx)
     o.close ();
 }
 
-
-typedef struct {
-    unsigned long m_size, m_resident, m_share, m_text, m_lib, m_data, m_dt;
-} statm_t;
-
-// https://docs.kernel.org/filesystems/proc.html
-static int get_mem_status (statm_t* ms)
-{
-    unsigned long dummy;
-    const char* statm_path = "/proc/self/statm";
-
-    FILE *f = fopen (statm_path, "r");
-
-    if (!ms || !f) {
-        perror (statm_path);
-        return EXIT_FAILURE;
-    }
-    if (7 != fscanf (f, "%lu %lu %lu %lu %lu %lu %lu",
-                     &(ms->m_size), &(ms->m_resident), &(ms->m_share),
-                     &(ms->m_text), &(ms->m_lib), &(ms->m_data), &(ms->m_dt)))
-    {
-        perror (statm_path);
-        return EXIT_FAILURE;
-    }
-    fclose (f);
-    return EXIT_SUCCESS;
-}
-
-static int print_mem_status (const char* note, char* buf, unsigned bufsize)
-{
-    statm_t ms;
-    const char* nt = (!note ? "" : note);
-    if (get_mem_status (&ms) != EXIT_SUCCESS) return 0;
-
-    if (!buf) {
-        printf ("%s:\tsize %lu\tresident %lu\tshare %lu\ttext %lu"
-                "\tlib %lu\tdata %lu\tdt %lu (in # pages of %ld)\n",
-                nt, ms.m_size, ms.m_resident, ms.m_share, ms.m_text,
-                ms.m_lib, ms.m_data, ms.m_dt, sysconf (_SC_PAGESIZE));
-    } else {
-        return snprintf (buf, bufsize, "%s:\tsize %lu\tresident %lu\tshare %lu\t"
-                         "text %lu\tlib %lu\tdata %lu\tdt %lu (in # pages of %ld)\n",
-                         nt, ms.m_size, ms.m_resident, ms.m_share, ms.m_text,
-                         ms.m_lib, ms.m_data, ms.m_dt, sysconf (_SC_PAGESIZE));
-    }
-    return 0;
-}
-
-static void batch_run (std::shared_ptr<resource_context_t> &ctx)
+static int batch_run (std::shared_ptr<resource_context_t> &ctx)
 {
     cmd_func_f *cmd = NULL;
 
     std::string line;
     std::ifstream ifs (ctx->params.b_fname);
 
-    while (std::getline(ifs, line)) {
+    while (std::getline (ifs, line)) {
         if (line.empty ())
             continue;
 
@@ -523,14 +475,17 @@ static void batch_run (std::shared_ptr<resource_context_t> &ctx)
         std::copy (std::istream_iterator<std::string> (iss),
                    std::istream_iterator<std::string> (),
                    back_inserter (tokens));
-        if (tokens.empty ())
+        if (tokens.empty () || tokens[0].empty () || tokens[0][0] == '#')
             continue;
 
         std::string &t0 = tokens[0];
-        unsigned n_repeat =
-            (!t0.empty () &&
-             std::find_if(t0.begin (), t0.end (),
-                          [](unsigned char c) { return !std::isdigit (c); }) == t0.end ())? atoi (t0.c_str ()) : 1u;
+        unsigned n_repeat = (!t0.empty ()
+                             && std::find_if (t0.begin (),
+                                              t0.end (),
+                                              [] (unsigned char c) { return !std::isdigit (c); })
+                                    == t0.end ())
+                                ? atoi (t0.c_str ())
+                                : 1u;
         if (n_repeat > 1u) {
             tokens.erase (tokens.begin ());
         }
@@ -542,20 +497,19 @@ static void batch_run (std::shared_ptr<resource_context_t> &ctx)
         }
 
         unsigned i = 0u;
-        for ( ; i < n_repeat; ++i) {
+        for (; i < n_repeat; ++i) {
             if (cmd (ctx, tokens) != 0) {
-                std::cerr << "Failed to execute '" + line + "' at " + std::to_string (i+1) + "th time\n";
-                break;
+                if (cmd_str != "quit") {
+                    std::cerr << "Failed to execute '" + line + "' at " + std::to_string (i + 1)
+                                     + "th time\n";
+                }
+                return -1;
             }
             add_history (line.c_str ());
         }
-
-        if (i != n_repeat) break;
     }
-    print_mem_status ("/proc/self/statm", nullptr, 0u);
 
-    ifs.close();
-
+    return 0;
 }
 
 static void control_loop (std::shared_ptr<resource_context_t> &ctx)
@@ -563,16 +517,17 @@ static void control_loop (std::shared_ptr<resource_context_t> &ctx)
     cmd_func_f *cmd = NULL;
 
     if (!ctx->params.b_fname.empty ()) {
-        batch_run (ctx);
-        return;
+        if (batch_run (ctx) != 0)
+            return;
     }
 
     while (1) {
         char *line = ctx->params.disable_prompt ? readline ("") : readline ("resource-query> ");
-        if (line == NULL)
+
+        if ((line == NULL) || (std::strlen (line) == 0u))
             continue;
-        else if (*line)
-            add_history (line);
+
+        std::string line_str (line);
 
         std::vector<std::string> tokens;
         std::istringstream iss (line);
@@ -580,15 +535,22 @@ static void control_loop (std::shared_ptr<resource_context_t> &ctx)
                    std::istream_iterator<std::string> (),
                    back_inserter (tokens));
         free (line);
+
         if (tokens.empty ())
             continue;
 
         std::string &cmd_str = tokens[0];
 
-        if (!(cmd = find_cmd (cmd_str)))
+        if (!(cmd = find_cmd (cmd_str))) {
+            std::cerr << "Cannot find command '" + cmd_str + "'\n";
             continue;
-        if (cmd (ctx, tokens) != 0)
+        }
+        if (cmd (ctx, tokens) != 0) {
+            if (cmd_str != "quit")
+                std::cerr << "Failed to execute '" + line_str + "'\n";
             break;
+        }
+        add_history (line_str.c_str ());
     }
 }
 

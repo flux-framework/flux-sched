@@ -82,6 +82,7 @@ int cmd_get_status (std::shared_ptr<resource_context_t> &ctx, std::vector<std::s
 int cmd_list (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args);
 int cmd_info (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args);
 int cmd_stat (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args);
+int cmd_statm (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args);
 int cmd_cat (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args);
 int cmd_quit (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args);
 int cmd_help (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args);
