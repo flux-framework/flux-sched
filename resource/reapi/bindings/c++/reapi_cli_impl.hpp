@@ -407,6 +407,7 @@ int resource_query_t::set_resource_ctx_params (const std::string &options)
     params.load_allowlist = "";
     params.matcher_name = "CA";
     params.matcher_policy = "first";
+    params.traverser_policy = "simple";
     params.o_fname = "";
     params.r_fname = "";
     params.o_fext = "dot";
@@ -461,6 +462,16 @@ int resource_query_t::set_resource_ctx_params (const std::string &options)
             errno = EINVAL;
             m_err_msg += __FUNCTION__;
             m_err_msg += ": Error loading matcher_policy\n";
+            json_decref (opt_json);
+            goto out;
+        }
+    }
+    if ((tmp_json = json_object_get (opt_json, "traverser_policy"))) {
+        params.traverser_policy = json_string_value (tmp_json);
+        if (!params.traverser_policy.c_str ()) {
+            errno = EINVAL;
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": Error loading traverser_policy\n";
             json_decref (opt_json);
             goto out;
         }
@@ -520,7 +531,6 @@ resource_query_t::resource_query_t (const std::string &rgraph, const std::string
 
     // Both calls can throw bad_alloc. Client must handle the errors.
     db = std::make_shared<resource_graph_db_t> ();
-    traverser = std::make_shared<dfu_traverser_t> ();
 
     if (set_resource_ctx_params (options) < 0) {
         tmp_err = __FUNCTION__;
@@ -533,6 +543,8 @@ resource_query_t::resource_query_t (const std::string &rgraph, const std::string
         tmp_err += ": ERROR: can't create matcher\n";
         throw std::runtime_error (tmp_err);
     }
+
+    traverser = std::make_shared<dfu_traverser_t> (params.traverser_policy);
 
     if (params.reserve_vtx_vec != 0)
         db->resource_graph.m_vertices.reserve (params.reserve_vtx_vec);
