@@ -237,6 +237,12 @@ static void update_resource (flux_future_t *f, void *arg)
         flux_reactor_stop (flux_get_reactor (ctx->h)); /* Cancels notify msgs */
         goto done;
     }
+    flux_log_error (ctx->h, "%s: up: %s", __FUNCTION__, up);
+    flux_log_error (ctx->h, "%s: down: %s", __FUNCTION__, down);
+    flux_log_error (ctx->h, "%s: lost: %s", __FUNCTION__, lost);
+    flux_log_error (ctx->h, "%s: pup: %p", __FUNCTION__, up);
+    flux_log_error (ctx->h, "%s: pdown: %p", __FUNCTION__, down);
+    flux_log_error (ctx->h, "%s: plost: %p", __FUNCTION__, lost);
     if ((rc = update_resource_db (ctx, resources, up, down, lost)) < 0) {
         flux_log_error (ctx->h, "%s: update_resource_db", __FUNCTION__);
         goto done;

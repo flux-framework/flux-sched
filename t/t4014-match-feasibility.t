@@ -107,7 +107,8 @@ test_expect_success 'a job on all ranks is satisfiable' '
 '
 
 test_expect_success 'disconnect rank 3' '
-	flux overlay disconnect 3
+	flux overlay disconnect 3 &&
+    flux dmesg
 '
 
 test_expect_success 'a 4 node job is now unsatisfiable' '
