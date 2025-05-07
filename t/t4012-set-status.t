@@ -77,7 +77,28 @@ test_expect_success 'jobs fail when all racks are marked down' '
 	flux ion-resource find status=down | grep null
 '
 
-test_expect_success 'removing resource works' '
+test_expect_success 'reloading resource and loading qmanager works' '
+	remove_resource &&
+	flux module reload resource &&
+	reload_resource &&
+	reload_qmanager_sync
+'
+
+test_expect_success 'set-status RPC causes jobs to be reconsidered' '
+	up=$(flux ion-resource find -q --format jgf status=up \
+		| jq -r ".graph.nodes[].metadata | select(.type == \"node\") \
+		| .paths.containment") &&
+	for path in $up; do flux ion-resource set-status $path down ; done &&
+	flux ion-resource find status=up | grep null &&
+	jobid=$(flux submit -n1 true) &&
+	test_must_fail flux job wait-event -vt2 $jobid alloc &&
+	for path in $up; do flux ion-resource set-status $path up ; done &&
+	flux job wait-event -vt1 $jobid alloc &&
+	flux job wait-event -vt2 -H $jobid clean
+'
+
+test_expect_success 'removing qmanager and resource works' '
+	remove_qmanager &&
 	remove_resource
 '
 
