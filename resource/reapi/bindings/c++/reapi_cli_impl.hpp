@@ -74,6 +74,14 @@ int reapi_cli_t::match_allocate (void *h,
         rc = -1;
         goto out;
     }
+    if (match_op == match_op_t::MATCH_GROW_ALLOCATION) {
+        if (!rq->job_exists (jobid)) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": ERROR: Nonexistent jobid: " + std::to_string (jobid) + "\n";
+            rc = -1;
+            goto out;
+        }
+    }
 
     try {
         Flux::Jobspec::Jobspec job{jobspec};
