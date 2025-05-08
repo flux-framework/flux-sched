@@ -69,6 +69,7 @@ set(ALL_TESTS
   t3035-resource-remove.t
   t3036-rq2.t
   t3037-resource-custom-policy.t
+  t3038-resource-flexible.t
   t3300-system-dontblock.t
   t3301-system-latestart.t
   t4000-match-params.t
@@ -85,6 +86,7 @@ set(ALL_TESTS
   t4011-match-duration.t
   t4012-set-status.t
   t4013-unreservable.sh
+  t4014-match-flexible.t
   t5000-valgrind.t
   t5100-issues-test-driver.t
   t6000-graph-size.t
