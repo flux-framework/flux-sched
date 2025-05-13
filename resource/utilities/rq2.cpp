@@ -58,6 +58,7 @@ command_t commands[] = {{"match",
                          "allocate | allocate_with_satisfiability | allocate_orelse_reserve) | "
                          "satisfiability: "
                          "resource-query> match allocate jobspec"},
+                        {"info", "i", info, "Print info on a jobid: resource-query> info jobid"},
                         {"help", "h", help, "Print help message: resource-query> help"},
                         {"quit", "q", quit, "Quit the session: resource-query> quit"},
                         {"NA", "NA", (cmd_func_f *)NULL, "NA"}};
@@ -413,6 +414,30 @@ int match (resource_query_t &ctx, std::vector<std::string> &args, json_t *params
 
     jobspec_in.close ();
 
+    return 0;
+}
+
+int info (resource_query_t &ctx, std::vector<std::string> &args, json_t *params, std::ostream &out)
+{
+    std::shared_ptr<job_info_t> info = nullptr;
+    std::string mode;
+
+    if (args.size () != 2) {
+        std::cerr << "ERROR: malformed command" << std::endl;
+        return 0;
+    }
+    const uint64_t jobid = (uint64_t)std::atoll (args[1].c_str ());
+
+    if (reapi_cli_t::info (&ctx, jobid, info) != 0) {
+        std::cerr << reapi_cli_t::get_err_message ();
+        reapi_cli_t::clear_err_message ();
+        return 0;
+    }
+
+    get_jobstate_str (info->state, mode);
+
+    std::cout << "INFO: " << info->jobid << ", " << mode << ", " << info->scheduled_at << ", "
+              << info->jobspec_fn << ", " << info->overhead << std::endl;
     return 0;
 }
 
