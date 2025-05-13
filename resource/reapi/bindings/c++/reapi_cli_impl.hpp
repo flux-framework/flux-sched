@@ -187,6 +187,7 @@ int reapi_cli_t::cancel (void *h, const uint64_t jobid, bool noent_ok)
     } else {
         m_err_msg += __FUNCTION__;
         m_err_msg += ": ERROR: nonexistent job " + std::to_string (jobid) + "\n";
+        rc = noent_ok ? 0 : -1;
         goto out;
     }
 
@@ -217,7 +218,7 @@ int reapi_cli_t::cancel (void *h,
     } else {
         m_err_msg += __FUNCTION__;
         m_err_msg += ": WARNING: can't find allocation for jobid: " + std::to_string (jobid) + "\n";
-        rc = 0;
+        rc = noent_ok ? 0 : -1;
         goto out;
     }
 
