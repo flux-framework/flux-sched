@@ -111,6 +111,7 @@ int reapi_cli_t::match_allocate (void *h,
     // Check for an unsuccessful match
     if ((rc == 0) && (match_op != match_op_t::MATCH_SATISFIABILITY)) {
         matched = true;
+        errno = 0;
     }
 
     if ((rc = rq->writers->emit (o)) < 0) {
