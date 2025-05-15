@@ -25,6 +25,7 @@ int match (resource_query_t &ctx,
            json_t *params,
            std::ostream &out);
 int info (resource_query_t &ctx, std::vector<std::string> &args, json_t *params, std::ostream &out);
+int find (resource_query_t &ctx, std::vector<std::string> &args, json_t *params, std::ostream &out);
 int cancel (resource_query_t &ctx,
             std::vector<std::string> &args,
             json_t *params,
