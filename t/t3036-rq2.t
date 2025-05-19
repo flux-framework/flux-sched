@@ -36,5 +36,14 @@ test_expect_success "${test003_desc}" '
     test_cmp 003.R.out ${exp_dir}/003.R.out
 '
 
+cmds004="${cmd_dir}/cmds04.in"
+test004_desc="rq2 info, find, and cancel test"
+test_expect_success "${test004_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds004} > cmds004 &&
+    ${query} -L ${jgf} -f jgf -t 004.R.out \
+    < cmds004 &&
+    test_cmp 004.R.out ${exp_dir}/004.R.out
+'
+
 
 test_done
