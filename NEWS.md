@@ -1,3 +1,13 @@
+flux-sched version 0.45.0 - 2025-05-08
+--------------------------------------
+
+### Fixes
+ * resource: send notify response on mark RPC (#1362)
+
+### Build/Testsuite
+ * ci: update ubuntu version for spelling (#1363)
+
+
 flux-sched version 0.44.0 - 2025-03-31
 --------------------------------------
 

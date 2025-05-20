@@ -3089,6 +3089,23 @@ error:
 }
 
 /*
+ * Send a NULL resource.notify message to get qmanager to reconsider jobs
+ */
+static int reconsider_blocked_jobs (
+    flux_t *h,
+    const std::map<std::string, std::shared_ptr<msg_wrap_t>> &notify_msgs)
+{
+    int rc = 0;
+    for (auto &kv : notify_msgs) {
+        if (flux_respond (h, kv.second->get_msg (), NULL) < 0) {
+            rc = -1;
+            flux_log_error (h, "%s: flux_respond", __FUNCTION__);
+        }
+    }
+    return rc;
+}
+
+/*
  * Mark a vertex as up or down
  */
 static void set_status_request_cb (flux_t *h,
@@ -3133,6 +3150,12 @@ static void set_status_request_cb (flux_t *h,
     ctx->m_resources_down_updated = true;
     if (flux_respond (h, msg, NULL) < 0) {
         flux_log_error (h, "%s: flux_respond", __FUNCTION__);
+    }
+    // if status was UP, need to reconsider blocked jobs
+    if (status_it->second == resource_pool_t::status_t::UP) {
+        if (reconsider_blocked_jobs (h, ctx->notify_msgs) < 0) {
+            flux_log_error (h, "%s: reconsider_blocked_jobs", __FUNCTION__);
+        }
     }
     return;
 
