@@ -58,6 +58,22 @@ command_t commands[] = {{"match",
                          "allocate | allocate_with_satisfiability | allocate_orelse_reserve) | "
                          "satisfiability: "
                          "resource-query> match allocate jobspec"},
+                        {"info", "i", info, "Print info on a jobid: resource-query> info jobid"},
+                        {"cancel",
+                         "c",
+                         cancel,
+                         "Cancel an allocation or reservation: "
+                         "resource-query> cancel jobid (optional subcmd: stats)"},
+                        {"find",
+                         "f",
+                         find,
+                         "Find resources matched with criteria "
+                         "(predicates: status={up|down} sched-now={allocated|free} "
+                         "sched-future={reserved|free} "
+                         "agfilter={true|false} names=hostlist jobid-alloc=jobid jobid-span=jobid "
+                         "jobid-tag=jobid "
+                         "jobid-reserved=jobid property=name): "
+                         "resource-query> find status=down and sched-now=allocated"},
                         {"help", "h", help, "Print help message: resource-query> help"},
                         {"quit", "q", quit, "Quit the session: resource-query> quit"},
                         {"NA", "NA", (cmd_func_f *)NULL, "NA"}};
@@ -412,6 +428,117 @@ int match (resource_query_t &ctx, std::vector<std::string> &args, json_t *params
         print_sat_info (ctx, out, sat, ov, json_object_get (params, "elapse_time"));
 
     jobspec_in.close ();
+
+    return 0;
+}
+
+int info (resource_query_t &ctx, std::vector<std::string> &args, json_t *params, std::ostream &out)
+{
+    std::shared_ptr<job_info_t> info = nullptr;
+    std::string mode;
+
+    if (args.size () != 2) {
+        std::cerr << "ERROR: malformed command" << std::endl;
+        return 0;
+    }
+    const uint64_t jobid = (uint64_t)std::atoll (args[1].c_str ());
+
+    if (reapi_cli_t::info (&ctx, jobid, info) != 0) {
+        std::cerr << reapi_cli_t::get_err_message ();
+        reapi_cli_t::clear_err_message ();
+        return 0;
+    }
+
+    get_jobstate_str (info->state, mode);
+
+    std::cout << "INFO: " << info->jobid << ", " << mode << ", " << info->scheduled_at << ", "
+              << info->jobspec_fn << ", " << info->overhead << std::endl;
+    return 0;
+}
+int cancel (resource_query_t &ctx,
+            std::vector<std::string> &args,
+            json_t *params,
+            std::ostream &out)
+{
+    std::shared_ptr<job_info_t> info = nullptr;
+    std::string mode;
+    std::string stats = "";
+    unsigned int preorder_count = 0;
+    unsigned int postorder_count = 0;
+
+    if (args.size () < 2 || args.size () > 3) {
+        std::cerr << "ERROR: malformed command" << std::endl;
+        return 0;
+    }
+
+    const uint64_t jobid = (uint64_t)std::atoll (args[1].c_str ());
+
+    if (args.size () == 3) {
+        stats = args[2];
+    }
+
+    if (reapi_cli_t::cancel (&ctx, jobid, false) != 0) {
+        std::cerr << reapi_cli_t::get_err_message ();
+        reapi_cli_t::clear_err_message ();
+        return 0;
+    }
+
+    if (stats == "stats") {
+        preorder_count = reapi_cli_t::preorder_count (&ctx);
+        postorder_count = reapi_cli_t::postorder_count (&ctx);
+        out << "INFO:"
+            << " =============================" << std::endl;
+        out << "INFO:"
+            << " CANCEL PREORDER COUNT=\"" << preorder_count << "\"" << std::endl;
+        out << "INFO:"
+            << " CANCEL POSTORDER COUNT=\"" << postorder_count << "\"" << std::endl;
+        out << "INFO:"
+            << " =============================" << std::endl;
+    }
+
+    return 0;
+}
+
+int find (resource_query_t &ctx, std::vector<std::string> &args, json_t *params, std::ostream &out)
+{
+    json_t *o = nullptr;
+    char *json_str = nullptr;
+
+    if (args.size () < 2) {
+        std::cerr << "ERROR: malformed command: " << std::endl;
+        return 0;
+    }
+
+    std::string criteria = args[1];
+    for (int i = 2; i < static_cast<int> (args.size ()); ++i)
+        criteria += " " + args[i];
+
+    if ((reapi_cli_t::find (&ctx, criteria, o)) < 0) {
+        std::cerr << "ERROR: " << reapi_cli_t::get_err_message ();
+        reapi_cli_t::clear_err_message ();
+        return 0;
+    }
+
+    if (o) {
+        if (json_is_string (o)) {
+            out << json_string_value (o);
+        } else if (!(json_str = json_dumps (o, JSON_INDENT (0)))) {
+            json_decref (o);
+            o = NULL;
+            errno = ENOMEM;
+            return 0;
+        } else if (json_str) {
+            out << json_str << std::endl;
+            free (json_str);
+        }
+        json_decref (o);
+    }
+    out << "INFO:"
+        << " =============================" << std::endl;
+    out << "INFO:"
+        << " EXPRESSION=\"" << criteria << "\"" << std::endl;
+    out << "INFO:"
+        << " =============================" << std::endl;
 
     return 0;
 }

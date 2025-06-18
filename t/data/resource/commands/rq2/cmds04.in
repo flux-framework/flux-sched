@@ -1,0 +1,20 @@
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test001.yaml
+cancel 1
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test001.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test001.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test001.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test001.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test001.yaml
+cancel 2 stats
+cancel 10
+cancel
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test001.yaml
+info 3
+info 1
+info 4
+info 10
+find status=up 
+find status=up status=up 
+find fail=fail
+find
+quit
