@@ -9,6 +9,9 @@ hwloc_basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/hwloc-data`
 # 1 node, 2 sockets, 44 cores (22 per socket), 4 gpus (2 per socket)
 excl_4N4B="${hwloc_basepath}/004N/exclusive/04-brokers-sierra2"
 
+# Expected agfilter output
+expected_agfilter="${SHARNESS_TEST_SRCDIR}/data/resource/expected/find-status/agfilter.json"
+
 remove_times() {
     cat ${1} | jq 'del (.execution.starttime) | del (.execution.expiration)'
 }
@@ -119,6 +122,12 @@ test_expect_success 'find/status: flux resource list works' '
     validate_list_row resource.list.out 2 0 0 0 &&
     validate_list_row resource.list.out 3 4 176 16 &&
     validate_list_row resource.list.out 4 1 44 4
+'
+
+test_expect_success 'find/agfilters: dump agfilter status works' '
+    flux ion-resource find --format=jgf agfilter=true |\
+tail -1 > agfilter.json &&
+    diff ${expected_agfilter} agfilter.json
 '
 
 test_expect_success 'find/status: cancel jobs' '
