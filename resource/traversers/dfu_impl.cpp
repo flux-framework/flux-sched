@@ -17,6 +17,7 @@ extern "C" {
 #include "resource/traversers/dfu_impl.hpp"
 #include <optional>
 #include <boost/iterator/transform_iterator.hpp>
+#include <chrono>
 
 using namespace Flux::Jobspec;
 using namespace Flux::resource_model;
@@ -838,10 +839,20 @@ int dfu_impl_t::dom_find_dfv (std::shared_ptr<match_writers_t> &w,
         if ((filter_plan = (*m_graph)[u].idata.subplans[dom]) == NULL)
             goto done;
         if (jobid == 0) {  // jobid not specified; get totals
+            auto now = std::chrono::system_clock::now ();
+            int64_t now_epoch =
+                std::chrono::duration_cast<std::chrono::seconds> (now.time_since_epoch ()).count ();
             for (size_t i = 0; i < planner_multi_resources_len (filter_plan); ++i) {
                 int64_t total_resources = planner_multi_resource_total_at (filter_plan, i);
-                int64_t diff =
-                    total_resources - planner_multi_avail_resources_at (filter_plan, 0, i);
+                int64_t free_now = planner_multi_avail_resources_at (filter_plan, now_epoch, i);
+                // Need to check for the case where now = 0, which is used in the testsuite.
+                // At will never be 0 in production
+                if (free_now == total_resources) {
+                    int64_t tmp_usage = planner_multi_avail_resources_at (filter_plan, 0, i);
+                    if (tmp_usage != total_resources)
+                        free_now = tmp_usage;
+                }
+                int64_t diff = total_resources - free_now;
                 std::string rtype = std::string (planner_multi_resource_type_at (filter_plan, i));
                 std::string fcounts =
                     "used:" + std::to_string (diff) + ", total:" + std::to_string (total_resources);
