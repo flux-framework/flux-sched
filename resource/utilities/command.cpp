@@ -110,7 +110,7 @@ command_t commands[] =
      {"quit", "q", cmd_quit, "Quit the session: resource-query> quit"},
      {"NA", "NA", (cmd_func_f *)NULL, "NA"}};
 
-static int do_remove (std::shared_ptr<resource_context_t> &ctx, int64_t jobid)
+static int do_remove (std::shared_ptr<detail::resource_query_t> &ctx, int64_t jobid)
 {
     int rc = -1;
     if ((rc = ctx->traverser->remove ((int64_t)jobid)) == 0) {
@@ -124,7 +124,7 @@ static int do_remove (std::shared_ptr<resource_context_t> &ctx, int64_t jobid)
     return rc;
 }
 
-static int do_partial_remove (std::shared_ptr<resource_context_t> &ctx,
+static int do_partial_remove (std::shared_ptr<detail::resource_query_t> &ctx,
                               std::shared_ptr<resource_reader_base_t> &reader,
                               int64_t jobid,
                               const std::string &R_cancel,
@@ -143,7 +143,7 @@ static int do_partial_remove (std::shared_ptr<resource_context_t> &ctx,
     return rc;
 }
 
-static void print_sat_info (std::shared_ptr<resource_context_t> &ctx,
+static void print_sat_info (std::shared_ptr<detail::resource_query_t> &ctx,
                             std::ostream &out,
                             bool sat,
                             double elapse,
@@ -166,7 +166,7 @@ static void print_sat_info (std::shared_ptr<resource_context_t> &ctx,
     }
 }
 
-static void print_schedule_info (std::shared_ptr<resource_context_t> &ctx,
+static void print_schedule_info (std::shared_ptr<detail::resource_query_t> &ctx,
                                  std::ostream &out,
                                  uint64_t jobid,
                                  const std::string &jobspec_fn,
@@ -230,7 +230,7 @@ static void print_schedule_info (std::shared_ptr<resource_context_t> &ctx,
     ctx->jobid_counter++;
 }
 
-static void update_match_perf (std::shared_ptr<resource_context_t> &ctx, double elapse)
+static void update_match_perf (std::shared_ptr<detail::resource_query_t> &ctx, double elapse)
 {
     ctx->perf.min = (ctx->perf.min > elapse) ? elapse : ctx->perf.min;
     ctx->perf.max = (ctx->perf.max < elapse) ? elapse : ctx->perf.max;
@@ -244,11 +244,12 @@ double get_elapse_time (timeval &st, timeval &et)
     return ts2 - ts1;
 }
 
-static int run_match (std::shared_ptr<resource_context_t> &ctx,
+static int run_match (std::shared_ptr<detail::resource_query_t> &ctx,
                       int64_t jobid,
                       const std::string cmd,
                       const std::string &jobspec_fn,
-                      Flux::Jobspec::Jobspec &job)
+                      Flux::Jobspec::Jobspec &job,
+                      std::ostream &out)
 {
     int rc = 0;
     int rc2 = 0;
@@ -259,7 +260,6 @@ static int run_match (std::shared_ptr<resource_context_t> &ctx,
     unsigned int preorder_count = 0;
     unsigned int postorder_count = 0;
     struct timeval st, et;
-    std::ostream &out = (ctx->params.r_fname != "") ? ctx->params.r_out : std::cout;
 
     if ((rc = gettimeofday (&st, NULL)) < 0) {
         std::cerr << "ERROR: gettimeofday: " << strerror (errno) << std::endl;
@@ -334,7 +334,9 @@ done:
     return rc + rc2;
 }
 
-int cmd_match (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+int cmd_match (std::shared_ptr<detail::resource_query_t> &ctx,
+               std::vector<std::string> &args,
+               std::ostream &out)
 {
     if (args.size () != 3) {
         std::cerr << "ERROR: malformed command" << std::endl;
@@ -358,7 +360,7 @@ int cmd_match (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string
         Flux::Jobspec::Jobspec job{jobspec_in};
         jobspec_in.close ();
 
-        run_match (ctx, jobid, subcmd, jobspec_fn, job);
+        run_match (ctx, jobid, subcmd, jobspec_fn, job, out);
 
     } catch (parse_error &e) {
         std::cerr << "ERROR: Jobspec error for " << ctx->jobid_counter << ": " << e.what ()
@@ -367,7 +369,9 @@ int cmd_match (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string
     return 0;
 }
 
-int cmd_match_multi (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+int cmd_match_multi (std::shared_ptr<detail::resource_query_t> &ctx,
+                     std::vector<std::string> &args,
+                     std::ostream &out)
 {
     size_t i;
 
@@ -394,7 +398,7 @@ int cmd_match_multi (std::shared_ptr<resource_context_t> &ctx, std::vector<std::
             Flux::Jobspec::Jobspec job{jobspec_in};
             jobspec_in.close ();
 
-            if (run_match (ctx, jobid, subcmd, jobspec_fn, job) < 0)
+            if (run_match (ctx, jobid, subcmd, jobspec_fn, job, out) < 0)
                 return 0;
         }
     } catch (parse_error &e) {
@@ -404,13 +408,14 @@ int cmd_match_multi (std::shared_ptr<resource_context_t> &ctx, std::vector<std::
     return 0;
 }
 
-static int update_run (std::shared_ptr<resource_context_t> &ctx,
+static int update_run (std::shared_ptr<detail::resource_query_t> &ctx,
                        const std::string &fn,
                        const std::string &str,
                        int64_t id,
                        int64_t at,
                        uint64_t d,
-                       const std::string &reader)
+                       const std::string &reader,
+                       std::ostream &out)
 {
     int rc = -1;
     double elapse = 0.0f;
@@ -443,7 +448,6 @@ static int update_run (std::shared_ptr<resource_context_t> &ctx,
     }
 
     ctx->writers->emit (o);
-    std::ostream &out = (ctx->params.r_fname != "") ? ctx->params.r_out : std::cout;
     out << o.str ();
     gettimeofday (&et, NULL);
 
@@ -455,7 +459,9 @@ static int update_run (std::shared_ptr<resource_context_t> &ctx,
     return 0;
 }
 
-static int update (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+static int update (std::shared_ptr<detail::resource_query_t> &ctx,
+                   std::vector<std::string> &args,
+                   std::ostream &out)
 {
     uint64_t d = 0;
     int64_t at = 0;
@@ -494,17 +500,19 @@ static int update (std::shared_ptr<resource_context_t> &ctx, std::vector<std::st
     buffer << jgf_file.rdbuf ();
     jgf_file.close ();
 
-    return update_run (ctx, args[3], buffer.str (), jobid, at, d, reader);
+    return update_run (ctx, args[3], buffer.str (), jobid, at, d, reader, out);
 }
 
-int cmd_update (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+int cmd_update (std::shared_ptr<detail::resource_query_t> &ctx,
+                std::vector<std::string> &args,
+                std::ostream &out)
 {
     try {
         if (args.size () != 7) {
             std::cerr << "ERROR: malformed command" << std::endl;
             return 0;
         }
-        update (ctx, args);
+        update (ctx, args, out);
 
     } catch (std::ifstream::failure &e) {
         std::cerr << "ERROR: file I/O exception: " << e.what () << std::endl;
@@ -514,7 +522,9 @@ int cmd_update (std::shared_ptr<resource_context_t> &ctx, std::vector<std::strin
     return 0;
 }
 
-static int attach (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+static int attach (std::shared_ptr<detail::resource_query_t> &ctx,
+                   std::vector<std::string> &args,
+                   std::ostream &out)
 {
     std::stringstream buffer{};
     std::shared_ptr<resource_reader_base_t> rd;
@@ -548,7 +558,10 @@ static int attach (std::shared_ptr<resource_context_t> &ctx, std::vector<std::st
     return 0;
 }
 
-static int remove (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+static int remove (std::shared_ptr<detail::resource_query_t> &ctx,
+                   std::vector<std::string> &args,
+
+                   std::ostream &out)
 {
     const std::string target = args[1];
     const std::string is_path = args[2];
@@ -596,14 +609,16 @@ static int remove (std::shared_ptr<resource_context_t> &ctx, std::vector<std::st
     return 0;
 }
 
-int cmd_attach (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+int cmd_attach (std::shared_ptr<detail::resource_query_t> &ctx,
+                std::vector<std::string> &args,
+                std::ostream &out)
 {
     try {
         if (args.size () != 2) {
             std::cerr << "ERROR: malformed command" << std::endl;
             return 0;
         }
-        attach (ctx, args);
+        attach (ctx, args, out);
 
     } catch (std::ifstream::failure &e) {
         std::cerr << "ERROR: file I/O exception: " << e.what () << std::endl;
@@ -613,14 +628,16 @@ int cmd_attach (std::shared_ptr<resource_context_t> &ctx, std::vector<std::strin
     return 0;
 }
 
-int cmd_remove (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+int cmd_remove (std::shared_ptr<detail::resource_query_t> &ctx,
+                std::vector<std::string> &args,
+                std::ostream &out)
 {
     try {
         if (args.size () != 3) {
             std::cerr << "ERROR: malformed command" << std::endl;
             return 0;
         }
-        remove (ctx, args);
+        remove (ctx, args, out);
 
     } catch (std::ifstream::failure &e) {
         std::cerr << "ERROR: file I/O exception: " << e.what () << std::endl;
@@ -630,7 +647,9 @@ int cmd_remove (std::shared_ptr<resource_context_t> &ctx, std::vector<std::strin
     return 0;
 }
 
-int cmd_find (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+int cmd_find (std::shared_ptr<detail::resource_query_t> &ctx,
+              std::vector<std::string> &args,
+              std::ostream &out)
 {
     int rc = -1;
     int i = 0;
@@ -641,7 +660,6 @@ int cmd_find (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string>
         std::cerr << "ERROR: malformed command: " << std::endl;
         return 0;
     }
-    std::ostream &out = (ctx->params.r_fname != "") ? ctx->params.r_out : std::cout;
     std::string criteria = args[1];
     for (int i = 2; i < static_cast<int> (args.size ()); ++i)
         criteria += " " + args[i];
@@ -680,7 +698,9 @@ done:
     return 0;
 }
 
-int cmd_cancel (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+int cmd_cancel (std::shared_ptr<detail::resource_query_t> &ctx,
+                std::vector<std::string> &args,
+                std::ostream &out)
 {
     if (args.size () < 2 || args.size () > 3) {
         std::cerr << "ERROR: malformed command" << std::endl;
@@ -693,7 +713,6 @@ int cmd_cancel (std::shared_ptr<resource_context_t> &ctx, std::vector<std::strin
     std::string stats = "";
     unsigned int preorder_count = 0;
     unsigned int postorder_count = 0;
-    std::ostream &out = (ctx->params.r_fname != "") ? ctx->params.r_out : std::cout;
 
     if (args.size () == 3) {
         stats = args[2];
@@ -731,7 +750,9 @@ done:
     return 0;
 }
 
-int cmd_partial_cancel (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+int cmd_partial_cancel (std::shared_ptr<detail::resource_query_t> &ctx,
+                        std::vector<std::string> &args,
+                        std::ostream &out)
 {
     int rc = -1;
     std::stringstream buffer{};
@@ -750,7 +771,6 @@ int cmd_partial_cancel (std::shared_ptr<resource_context_t> &ctx, std::vector<st
     std::string stats = "";
     unsigned int preorder_count = 0;
     unsigned int postorder_count = 0;
-    std::ostream &out = (ctx->params.r_fname != "") ? ctx->params.r_out : std::cout;
 
     if (args.size () == 5) {
         stats = args[4];
@@ -814,7 +834,9 @@ done:
     return 0;
 }
 
-int cmd_set_property (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+int cmd_set_property (std::shared_ptr<detail::resource_query_t> &ctx,
+                      std::vector<std::string> &args,
+                      std::ostream &out)
 {
     if (args.size () != 3) {
         std::cerr << "ERROR: malformed command" << std::endl;
@@ -823,7 +845,6 @@ int cmd_set_property (std::shared_ptr<resource_context_t> &ctx, std::vector<std:
 
     std::string resource_path = args[1];
     std::string property_key, property_value;
-    std::ostream &out = (ctx->params.r_fname != "") ? ctx->params.r_out : std::cout;
     size_t pos = args[2].find ('=');
 
     if (pos == 0 || (pos == args[2].size () - 1) || pos == std::string::npos) {
@@ -857,7 +878,9 @@ int cmd_set_property (std::shared_ptr<resource_context_t> &ctx, std::vector<std:
     return 0;
 }
 
-int cmd_get_property (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+int cmd_get_property (std::shared_ptr<detail::resource_query_t> &ctx,
+                      std::vector<std::string> &args,
+                      std::ostream &out)
 {
     if (args.size () != 2) {
         std::cerr << "ERROR: malformed command" << std::endl;
@@ -865,7 +888,6 @@ int cmd_get_property (std::shared_ptr<resource_context_t> &ctx, std::vector<std:
     }
 
     std::string resource_path = args[1];
-    std::ostream &out = (ctx->params.r_fname != "") ? ctx->params.r_out : std::cout;
 
     std::map<std::string, std::vector<vtx_t>>::const_iterator it =
         ctx->db->metadata.by_path.find (resource_path);
@@ -890,7 +912,9 @@ int cmd_get_property (std::shared_ptr<resource_context_t> &ctx, std::vector<std:
     return 0;
 }
 
-int cmd_set_status (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+int cmd_set_status (std::shared_ptr<detail::resource_query_t> &ctx,
+                    std::vector<std::string> &args,
+                    std::ostream &out)
 {
     if (args.size () != 3) {
         std::cerr << "ERROR: malformed command" << std::endl;
@@ -901,8 +925,6 @@ int cmd_set_status (std::shared_ptr<resource_context_t> &ctx, std::vector<std::s
     std::map<std::string, std::vector<vtx_t>>::const_iterator it =
         ctx->db->metadata.by_path.find (vtx_path);
     resource_pool_t::string_to_status sts = resource_pool_t::str_to_status;
-
-    std::ostream &out = (ctx->params.r_fname != "") ? ctx->params.r_out : std::cout;
 
     if (it == ctx->db->metadata.by_path.end ()) {
         out << "Could not find path " << vtx_path << " in resource graph." << std::endl;
@@ -918,7 +940,9 @@ int cmd_set_status (std::shared_ptr<resource_context_t> &ctx, std::vector<std::s
     return ctx->traverser->mark (vtx_path, status_it->second);
 }
 
-int cmd_get_status (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+int cmd_get_status (std::shared_ptr<detail::resource_query_t> &ctx,
+                    std::vector<std::string> &args,
+                    std::ostream &out)
 {
     if (args.size () != 2) {
         std::cerr << "ERROR: malformed command" << std::endl;
@@ -929,8 +953,6 @@ int cmd_get_status (std::shared_ptr<resource_context_t> &ctx, std::vector<std::s
         ctx->db->metadata.by_path.find (vtx_path);
     resource_pool_t::string_to_status sts = resource_pool_t::str_to_status;
     std::string status = "";
-
-    std::ostream &out = (ctx->params.r_fname != "") ? ctx->params.r_out : std::cout;
 
     if (it == ctx->db->metadata.by_path.end ()) {
         out << "Could not find path " << vtx_path << " in resource graph." << std::endl;
@@ -958,7 +980,9 @@ int cmd_get_status (std::shared_ptr<resource_context_t> &ctx, std::vector<std::s
     return 0;
 }
 
-int cmd_list (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+int cmd_list (std::shared_ptr<detail::resource_query_t> &ctx,
+              std::vector<std::string> &args,
+              std::ostream &out)
 {
     for (auto &kv : ctx->jobs) {
         std::shared_ptr<job_info_t> info = kv.second;
@@ -970,7 +994,9 @@ int cmd_list (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string>
     return 0;
 }
 
-int cmd_info (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+int cmd_info (std::shared_ptr<detail::resource_query_t> &ctx,
+              std::vector<std::string> &args,
+              std::ostream &out)
 {
     if (args.size () != 2) {
         std::cerr << "ERROR: malformed command" << std::endl;
@@ -989,7 +1015,9 @@ int cmd_info (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string>
     return 0;
 }
 
-int cmd_stat (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+int cmd_stat (std::shared_ptr<detail::resource_query_t> &ctx,
+              std::vector<std::string> &args,
+              std::ostream &out)
 {
     if (args.size () != 1) {
         std::cerr << "ERROR: malformed command" << std::endl;
@@ -1009,7 +1037,9 @@ int cmd_stat (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string>
     return 0;
 }
 
-int cmd_cat (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+int cmd_cat (std::shared_ptr<detail::resource_query_t> &ctx,
+             std::vector<std::string> &args,
+             std::ostream &out)
 {
     std::string &jspec_filename = args[1];
     std::ifstream jspec_in;
@@ -1023,7 +1053,9 @@ int cmd_cat (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> 
     return 0;
 }
 
-int cmd_help (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+int cmd_help (std::shared_ptr<detail::resource_query_t> &ctx,
+              std::vector<std::string> &args,
+              std::ostream &out)
 {
     bool multi = true;
     bool found = false;
@@ -1047,7 +1079,9 @@ int cmd_help (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string>
     return 0;
 }
 
-int cmd_quit (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+int cmd_quit (std::shared_ptr<detail::resource_query_t> &ctx,
+              std::vector<std::string> &args,
+              std::ostream &out)
 {
     return -1;
 }
