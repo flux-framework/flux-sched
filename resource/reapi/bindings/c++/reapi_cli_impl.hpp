@@ -403,7 +403,7 @@ int resource_query_t::set_resource_ctx_params (const std::string &options)
     perf.max = 0.0f;
     perf.accum = 0.0f;
     params.load_file = "conf/default";
-    params.load_format = "jgf";
+    params.load_format = "grug";
     params.load_allowlist = "";
     params.matcher_name = "CA";
     params.matcher_policy = "first";
