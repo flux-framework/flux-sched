@@ -27,7 +27,7 @@ test_expect_success LONGTEST "Large R emitted with -F jgf validates" '
     flux jsonschemalint -v ${schema} o3.json
 '
 
-test_expect_success HAVE_JQ "--match-format=rv1 works" '
+test_expect_success "--match-format=rv1 works" '
     echo "match allocate ${jobspec}" > in5.txt &&
     echo "quit" >> in5.txt &&
     ${query} -L ${tiny_grug} -F rv1 -d -t o5 -P high < in5.txt &&
@@ -35,7 +35,7 @@ test_expect_success HAVE_JQ "--match-format=rv1 works" '
     flux jsonschemalint -v ${schema} o5.json
 '
 
-test_expect_success HAVE_JQ "--match-format=rv1_nosched and =rlite works" '
+test_expect_success "--match-format=rv1_nosched and =rlite works" '
     echo "match allocate ${jobspec}" > in7.txt &&
     echo "quit" >> in7.txt &&
     ${query} -L ${tiny_grug} -F rv1_nosched -d -t o7 -P high < in7.txt &&
@@ -53,7 +53,7 @@ test_expect_success "--match-format=pretty_simple works" '
     test -s o9.simple
 '
 
-test_expect_success HAVE_JQ "rv1 contains starttime and expiration keys" '
+test_expect_success "rv1 contains starttime and expiration keys" '
     echo "match allocate ${jobspec}" > in10.txt &&
     echo "quit" >> in10.txt &&
     ${query} -L ${tiny_grug} -F rv1_nosched -d -t o10 -P high < in10.txt &&
@@ -63,7 +63,7 @@ test_expect_success HAVE_JQ "rv1 contains starttime and expiration keys" '
     test ${expiration} -eq 3600
 '
 
-test_expect_success HAVE_JQ "rv1_nosched contains starttime and expiration keys" '
+test_expect_success "rv1_nosched contains starttime and expiration keys" '
     echo "match allocate ${jobspec}" > in11.txt &&
     echo "quit" >> in11.txt &&
     ${query} -L ${tiny_grug} -F rv1 -d -t o11 -P high < in11.txt &&

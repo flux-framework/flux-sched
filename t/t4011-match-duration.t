@@ -73,7 +73,7 @@ subinstance_get_job_expiration() {
 	flux proxy $1 job_manager_get_R $2 | jq '.R.execution.expiration'
 }
 
-test_expect_success HAVE_JQ 'parent expiration is inherited when duration=0' '
+test_expect_success 'parent expiration is inherited when duration=0' '
 	cat >get_R.sh <<-EOT &&
 	#!/bin/sh
 	flux job info \$FLUX_JOB_ID R
