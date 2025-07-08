@@ -37,7 +37,7 @@ test_expect_success 'broker.quorum was set to 0 by system test personality' '
 	flux getattr broker.quorum >quorum.out &&
 	test_cmp quorum.exp quorum.out
 '
-test_expect_success HAVE_JQ 'startctl shows rank 1 pids as -1' '
+test_expect_success 'startctl shows rank 1 pids as -1' '
 	test $($startctl status | jq -r ".procs[1].pid") = "-1"
 '
 
@@ -70,7 +70,7 @@ test_expect_success 'start rank 1' '
 	$startctl run 1
 '
 
-test_expect_success HAVE_JQ 'startctl shows rank 1 pid not -1' '
+test_expect_success 'startctl shows rank 1 pid not -1' '
 	test $($startctl status | jq -r ".procs[1].pid") != "-1"
 '
 
