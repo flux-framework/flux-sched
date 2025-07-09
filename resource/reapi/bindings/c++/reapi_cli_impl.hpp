@@ -488,6 +488,9 @@ int resource_query_t::set_resource_ctx_params (const std::string &options)
     if ((tmp_json = json_object_get (opt_json, "reserve_vtx_vec")))
         // No need for check here; returns 0 on failure
         params.reserve_vtx_vec = json_integer_value (tmp_json);
+    if ((tmp_json = json_object_get (opt_json, "elapse_time")))
+        // No need for check here; returns 0 on failure
+        params.elapse_time = json_boolean_value (tmp_json);
 
     rc = 0;
 
