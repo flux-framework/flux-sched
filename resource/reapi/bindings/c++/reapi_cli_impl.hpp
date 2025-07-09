@@ -587,6 +587,8 @@ resource_query_t::resource_query_t (const std::string &rgraph, const std::string
         throw std::runtime_error (tmp_err);
     }
 
+    subsystem_t::storage_t::finalize ();
+    resource_type_t::storage_t::finalize ();
     return;
 }
 
