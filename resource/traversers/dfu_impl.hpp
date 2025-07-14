@@ -85,6 +85,10 @@ struct jobmeta_t {
             errno = EINVAL;
             return -1;
         }
+        if (jobspec.attributes.system.duration < 0.0f) {
+            errno = EINVAL;
+            return -1;
+        }
         if (jobspec.attributes.system.duration == 0.0f) {
             duration = g_duration;
         } else {
