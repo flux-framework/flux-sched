@@ -250,6 +250,9 @@ error:
 static int init_resource_graph (std::shared_ptr<resource_ctx_t> &ctx)
 {
     int rc = 0;
+    std::optional<std::string> match_subsystems = ctx->opts.get_opt ().get_match_subsystems ();
+    std::optional<std::string> match_format = ctx->opts.get_opt ().get_match_format ();
+    std::optional<std::string> prune_filters = ctx->opts.get_opt ().get_prune_filters ();
 
     // The feasibility module should only use "first". Exclusivity has no effect.
     if (!(ctx->matcher = create_match_cb ("first"))) {
@@ -260,30 +263,29 @@ static int init_resource_graph (std::shared_ptr<resource_ctx_t> &ctx)
         flux_log (ctx->h, LOG_ERR, "%s: can't populate graph resource database", __FUNCTION__);
         return rc;
     }
-    if ((rc = select_subsystems (ctx)) != 0) {
+    if (match_subsystems && (rc = select_subsystems (ctx, *match_subsystems)) != 0) {
         flux_log (ctx->h,
                   LOG_ERR,
                   "%s: error processing subsystems %s",
                   __FUNCTION__,
-                  ctx->opts.get_opt ().get_match_subsystems ().c_str ());
+                  match_subsystems ? match_subsystems->c_str () : "(unset)");
         return rc;
     }
 
-    // Create a writers object for matched vertices and edges
-    match_format_t format =
-        match_writers_factory_t::get_writers_type (ctx->opts.get_opt ().get_match_format ());
+    // Create a writers object for matched vertices and edges.
+    // Passing "" when match_format is unset gets the default value.
+    match_format_t format = match_writers_factory_t::get_writers_type (match_format.value_or (""));
     if (!(ctx->writers = match_writers_factory_t::create (format)))
         return -1;
 
-    if (ctx->opts.get_opt ().is_prune_filters_set ()
-        && ctx->matcher->set_pruning_types_w_spec (ctx->matcher->dom_subsystem (),
-                                                   ctx->opts.get_opt ().get_prune_filters ())
+    if (prune_filters
+        && ctx->matcher->set_pruning_types_w_spec (ctx->matcher->dom_subsystem (), *prune_filters)
                < 0) {
         flux_log (ctx->h,
                   LOG_ERR,
                   "%s: error setting pruning types with: %s",
                   __FUNCTION__,
-                  ctx->opts.get_opt ().get_prune_filters ().c_str ());
+                  prune_filters ? prune_filters->c_str () : "(unset)");
         return -1;
     }
 

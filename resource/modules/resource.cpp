@@ -1207,7 +1207,7 @@ static void notify_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
             flux_log_error (h, "%s: flux_msg_route_first", __FUNCTION__);
             goto error;
         }
-        if (ctx->opts.get_opt ().is_load_file_set ()) {
+        if (ctx->opts.get_opt ().get_load_file ()) {
             errno = ENODATA;
             // Since m_acquired_resources is null,
             flux_log_error (ctx->h, "%s: cannot notify when load-file set", __FUNCTION__);
@@ -1353,13 +1353,15 @@ static void status_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
     json_t *R_alloc = nullptr;
     std::chrono::time_point<std::chrono::system_clock> now;
     std::chrono::duration<double> elapsed;
+    std::optional<int> update_interval;
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
 
     now = std::chrono::system_clock::now ();
     elapsed = now - ctx->m_resources_alloc_updated;
+    update_interval = ctx->opts.get_opt ().get_update_interval ();
     // Get R alloc whenever m_resources_alloc_updated or
     // the elapsed time is greater than configured limit
-    if ((elapsed.count () > static_cast<double> (ctx->opts.get_opt ().get_update_interval ()))
+    if (update_interval && (elapsed.count () > static_cast<double> (*update_interval))
         || ctx->m_resources_updated) {
         if (run_find (ctx, "sched-now=allocated", "rv1_nosched", &R_alloc) < 0)
             goto error;
@@ -1564,44 +1566,53 @@ error:
 static int init_resource_graph (std::shared_ptr<resource_ctx_t> &ctx)
 {
     int rc = 0;
+    std::optional<std::string> traverser_policy = ctx->opts.get_opt ().get_traverser_policy ();
+    std::optional<std::string> match_policy = ctx->opts.get_opt ().get_match_policy ();
+    std::optional<std::string> match_subsystems = ctx->opts.get_opt ().get_match_subsystems ();
+    std::optional<std::string> match_format = ctx->opts.get_opt ().get_match_format ();
+    std::optional<std::string> prune_filters = ctx->opts.get_opt ().get_prune_filters ();
 
     // Select the appropriate traverser based on CLI policy.
-    ctx->traverser =
-        std::make_shared<dfu_traverser_t> (ctx->opts.get_opt ().get_traverser_policy ());
+    if (traverser_policy)
+        ctx->traverser = std::make_shared<dfu_traverser_t> (*traverser_policy);
 
     // Select the appropriate matcher based on CLI policy.
-    if (!(ctx->matcher = create_match_cb (ctx->opts.get_opt ().get_match_policy ()))) {
-        flux_log (ctx->h, LOG_ERR, "%s: can't create match callback", __FUNCTION__);
+    if (match_policy
+        && !(ctx->matcher = create_match_cb (*ctx->opts.get_opt ().get_match_policy ()))) {
+        flux_log (ctx->h,
+                  LOG_ERR,
+                  "%s: can't create match callback for policy %s",
+                  __FUNCTION__,
+                  match_policy ? match_policy->c_str () : "(unset)");
         return -1;
     }
     if ((rc = populate_resource_db (ctx)) != 0) {
         flux_log (ctx->h, LOG_ERR, "%s: can't populate graph resource database", __FUNCTION__);
         return rc;
     }
-    if ((rc = select_subsystems (ctx)) != 0) {
+    if (match_subsystems && (rc = select_subsystems (ctx, *match_subsystems)) != 0) {
         flux_log (ctx->h,
                   LOG_ERR,
                   "%s: error processing subsystems %s",
                   __FUNCTION__,
-                  ctx->opts.get_opt ().get_match_subsystems ().c_str ());
+                  match_subsystems ? match_subsystems->c_str () : "(unset)");
         return rc;
     }
 
-    // Create a writers object for matched vertices and edges
-    match_format_t format =
-        match_writers_factory_t::get_writers_type (ctx->opts.get_opt ().get_match_format ());
+    // Create a writers object for matched vertices and edges.
+    // Passing "" when match_format is unset gets the default value.
+    match_format_t format = match_writers_factory_t::get_writers_type (match_format.value_or (""));
     if (!(ctx->writers = match_writers_factory_t::create (format)))
         return -1;
 
-    if (ctx->opts.get_opt ().is_prune_filters_set ()
-        && ctx->matcher->set_pruning_types_w_spec (ctx->matcher->dom_subsystem (),
-                                                   ctx->opts.get_opt ().get_prune_filters ())
+    if (prune_filters
+        && ctx->matcher->set_pruning_types_w_spec (ctx->matcher->dom_subsystem (), *prune_filters)
                < 0) {
         flux_log (ctx->h,
                   LOG_ERR,
                   "%s: error setting pruning types with: %s",
                   __FUNCTION__,
-                  ctx->opts.get_opt ().get_prune_filters ().c_str ());
+                  prune_filters ? prune_filters->c_str () : "(unset)");
         return -1;
     }
 
