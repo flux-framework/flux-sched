@@ -207,6 +207,15 @@ int reapi_cli_stat (reapi_cli_ctx_t *ctx,
                     double *max,
                     double *avg);
 
+/*! Find a subgraph based on input criteria.
+ *
+ *  \param ctx       reapi_cli_ctx_t context object
+ *  \param criteria  input string of criteria to match.
+ *  \param out       return string
+ *  \return          0 on success; -1 on error.
+ */
+int reapi_cli_find (reapi_cli_ctx_t *ctx, const char *criteria, char **out);
+
 /*! Get the reapi cli error message.
  *
  *  \param ctx       reapi_cli_ctx_t context object
