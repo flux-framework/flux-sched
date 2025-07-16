@@ -1,0 +1,5 @@
+add_executable(reapi_cli_test reapi_cli_test.cpp)
+add_sanitizers(reapi_cli_test)
+target_link_libraries(reapi_cli_test PRIVATE resource reapi_cli Catch2::Catch2WithMain intern)
+flux_add_test(NAME reapi_cli_test COMMAND reapi_cli_test)
+set_property(TEST reapi_cli_test APPEND PROPERTY ENVIRONMENT "TESTRESRC_INPUT_FILE=$(CMAKE_SOURCE_DIR)/conf/hype.lua")
