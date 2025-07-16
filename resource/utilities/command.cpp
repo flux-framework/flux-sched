@@ -146,10 +146,11 @@ static int do_partial_remove (std::shared_ptr<detail::resource_query_t> &ctx,
 static void print_sat_info (std::shared_ptr<detail::resource_query_t> &ctx,
                             std::ostream &out,
                             bool sat,
-                            double elapse,
-                            unsigned int pre,
-                            unsigned int post)
+                            double elapse)
 {
+    unsigned int pre = ctx->preorder_count ();
+    unsigned int post = ctx->postorder_count ();
+
     std::string satstr = sat ? "Satisfiable" : "Unsatisfiable";
     out << "INFO:"
         << " =============================" << std::endl;
@@ -173,10 +174,11 @@ static void print_schedule_info (std::shared_ptr<detail::resource_query_t> &ctx,
                                  bool matched,
                                  int64_t at,
                                  bool sat,
-                                 double elapse,
-                                 unsigned int pre,
-                                 unsigned int post)
+                                 double elapse)
 {
+    unsigned int pre = ctx->preorder_count ();
+    unsigned int post = ctx->postorder_count ();
+
     if (matched) {
         job_lifecycle_t st;
         std::string mode = (at == 0) ? "ALLOCATED" : "RESERVED";
@@ -227,7 +229,6 @@ static void print_schedule_info (std::shared_ptr<detail::resource_query_t> &ctx,
         out << "INFO:"
             << " =============================" << std::endl;
     }
-    ctx->jobid_counter++;
 }
 
 static void update_match_perf (std::shared_ptr<detail::resource_query_t> &ctx, double elapse)
@@ -246,126 +247,84 @@ double get_elapse_time (timeval &st, timeval &et)
 
 static int run_match (std::shared_ptr<detail::resource_query_t> &ctx,
                       int64_t jobid,
-                      const std::string cmd,
+                      const match_op_t match_op,
                       const std::string &jobspec_fn,
-                      Flux::Jobspec::Jobspec &job,
                       std::ostream &out)
 {
     int rc = 0;
-    int rc2 = 0;
-    bool sat = true;
     int64_t at = 0;
-    std::stringstream o;
-    double elapse = 0.0f;
-    unsigned int preorder_count = 0;
-    unsigned int postorder_count = 0;
-    struct timeval st, et;
+    bool reserved = false;
+    bool sat = true;
+    bool matched = true;
+    double ov = 0.0;
+    std::string R = "";
 
-    if ((rc = gettimeofday (&st, NULL)) < 0) {
-        std::cerr << "ERROR: gettimeofday: " << strerror (errno) << std::endl;
-        goto done;
+    std::ifstream jobspec_in (jobspec_fn);
+    if (!jobspec_in) {
+        std::cerr << "ERROR: can't open " << jobspec_fn << std::endl;
+        return 0;
+    }
+    std::string jobspec ((std::istreambuf_iterator<char> (jobspec_in)),
+                         (std::istreambuf_iterator<char> ()));
+
+    jobspec_in.close ();
+
+    detail::reapi_cli_t::match_allocate (ctx.get (), match_op, jobspec, jobid, reserved, R, at, ov);
+
+    // check for match success
+    if ((errno == ENODEV) || (errno == EBUSY) || (errno == EINVAL) || (errno == ENOENT)) {
+        matched = false;
+        rc = -1;
     }
 
-    if (cmd == "allocate")
-        rc2 = ctx->traverser->run (job,
-                                   ctx->writers,
-                                   match_op_t::MATCH_ALLOCATE,
-                                   (int64_t)jobid,
-                                   &at);
-    else if (cmd == "allocate_with_satisfiability")
-        rc2 = ctx->traverser->run (job,
-                                   ctx->writers,
-                                   match_op_t::MATCH_ALLOCATE_W_SATISFIABILITY,
-                                   (int64_t)jobid,
-                                   &at);
-    else if (cmd == "allocate_orelse_reserve")
-        rc2 = ctx->traverser->run (job,
-                                   ctx->writers,
-                                   match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE,
-                                   (int64_t)jobid,
-                                   &at);
-    else if (cmd == "satisfiability")
-        rc2 = ctx->traverser->run (job,
-                                   ctx->writers,
-                                   match_op_t::MATCH_SATISFIABILITY,
-                                   (int64_t)jobid,
-                                   &at);
-    else
-        goto done;
-
-    if ((rc2 != 0) && (errno == ENODEV))
+    // check for satisfiability
+    if (errno == ENODEV || (errno == ENOENT))
         sat = false;
 
-    if (ctx->traverser->err_message () != "") {
-        std::cerr << "ERROR: " << ctx->traverser->err_message ();
-    }
-    if ((rc = ctx->writers->emit (o)) < 0) {
-        std::cerr << "ERROR: match writer emit: " << strerror (errno) << std::endl;
-        goto done;
+    if (detail::reapi_cli_t::get_err_message () != "") {
+        std::cerr << detail::reapi_cli_t::get_err_message ();
+        detail::reapi_cli_t::clear_err_message ();
     }
 
-    out << o.str ();
+    out << R;
 
-    if ((rc = gettimeofday (&et, NULL)) < 0) {
-        std::cerr << "ERROR: gettimeofday: " << strerror (errno) << std::endl;
-        goto done;
-    }
-
-    elapse = get_elapse_time (st, et);
-    preorder_count = ctx->traverser->get_total_preorder_count ();
-    postorder_count = ctx->traverser->get_total_postorder_count ();
-    update_match_perf (ctx, elapse);
-
-    if (cmd != "satisfiability")
-        print_schedule_info (ctx,
-                             out,
-                             jobid,
-                             jobspec_fn,
-                             rc2 == 0,
-                             at,
-                             sat,
-                             elapse,
-                             preorder_count,
-                             postorder_count);
+    if (match_op != match_op_t::MATCH_SATISFIABILITY)
+        print_schedule_info (ctx, out, jobid, jobspec_fn, matched, at, sat, ov);
     else
-        print_sat_info (ctx, out, sat, elapse, preorder_count, postorder_count);
+        print_sat_info (ctx, out, sat, ov);
 
-done:
-    return rc + rc2;
+    return rc;
 }
 
 int cmd_match (std::shared_ptr<detail::resource_query_t> &ctx,
                std::vector<std::string> &args,
                std::ostream &out)
 {
+    match_op_t match_op;
+
     if (args.size () != 3) {
         std::cerr << "ERROR: malformed command" << std::endl;
         return 0;
     }
     std::string subcmd = args[1];
-    if (!(subcmd == "allocate" || subcmd == "allocate_orelse_reserve"
-          || subcmd == "allocate_with_satisfiability" || subcmd == "satisfiability")) {
+    if (subcmd == "allocate") {
+        match_op = match_op_t::MATCH_ALLOCATE;
+    } else if (subcmd == "allocate_orelse_reserve") {
+        match_op = match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE;
+    } else if (subcmd == "allocate_with_satisfiability") {
+        match_op = match_op_t::MATCH_ALLOCATE_W_SATISFIABILITY;
+    } else if (subcmd == "satisfiability") {
+        match_op = match_op_t::MATCH_SATISFIABILITY;
+    } else {
         std::cerr << "ERROR: unknown subcmd " << args[1] << std::endl;
         return 0;
     }
 
-    try {
-        int64_t jobid = ctx->jobid_counter;
-        std::string &jobspec_fn = args[2];
-        std::ifstream jobspec_in (jobspec_fn);
-        if (!jobspec_in) {
-            std::cerr << "ERROR: can't open " << jobspec_fn << std::endl;
-            return 0;
-        }
-        Flux::Jobspec::Jobspec job{jobspec_in};
-        jobspec_in.close ();
+    uint64_t jobid = ctx->get_job_counter ();
+    std::string &jobspec_fn = args[2];
 
-        run_match (ctx, jobid, subcmd, jobspec_fn, job, out);
+    run_match (ctx, jobid, match_op, jobspec_fn, out);
 
-    } catch (parse_error &e) {
-        std::cerr << "ERROR: Jobspec error for " << ctx->jobid_counter << ": " << e.what ()
-                  << std::endl;
-    }
     return 0;
 }
 
@@ -373,37 +332,34 @@ int cmd_match_multi (std::shared_ptr<detail::resource_query_t> &ctx,
                      std::vector<std::string> &args,
                      std::ostream &out)
 {
+    int rc = 0;
     size_t i;
+    match_op_t match_op;
 
     if (args.size () <= 3) {
         std::cerr << "ERROR: malformed command" << std::endl;
         return 0;
     }
     std::string subcmd = args[1];
-    if (!(subcmd == "allocate" || subcmd == "allocate_orelse_reserve"
-          || subcmd == "allocate_with_satisfiability")) {
+    if (subcmd == "allocate") {
+        match_op = match_op_t::MATCH_ALLOCATE;
+    } else if (subcmd == "allocate_orelse_reserve") {
+        match_op = match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE;
+    } else if (subcmd == "allocate_with_satisfiability") {
+        match_op = match_op_t::MATCH_ALLOCATE_W_SATISFIABILITY;
+    } else if (subcmd == "satisfiability") {
+        match_op = match_op_t::MATCH_SATISFIABILITY;
+    } else {
         std::cerr << "ERROR: unknown subcmd " << args[1] << std::endl;
         return 0;
     }
 
-    try {
-        for (i = 2; i < args.size (); i++) {
-            int64_t jobid = ctx->jobid_counter;
-            std::string &jobspec_fn = args[i];
-            std::ifstream jobspec_in (jobspec_fn);
-            if (!jobspec_in) {
-                std::cerr << "ERROR: can't open " << jobspec_fn << std::endl;
-                return 0;
-            }
-            Flux::Jobspec::Jobspec job{jobspec_in};
-            jobspec_in.close ();
-
-            if (run_match (ctx, jobid, subcmd, jobspec_fn, job, out) < 0)
-                return 0;
-        }
-    } catch (parse_error &e) {
-        std::cerr << "ERROR: Jobspec error for " << ctx->jobid_counter << ": " << e.what ()
-                  << std::endl;
+    for (i = 2; i < args.size (); i++) {
+        int64_t jobid = ctx->jobid_counter;
+        std::string &jobspec_fn = args[i];
+        rc = run_match (ctx, jobid, match_op, jobspec_fn, out);
+        if (rc != 0)
+            break;
     }
     return 0;
 }
@@ -454,7 +410,8 @@ static int update_run (std::shared_ptr<detail::resource_query_t> &ctx,
     elapse = get_elapse_time (st, et);
     update_match_perf (ctx, elapse);
     ctx->jobid_counter = id;
-    print_schedule_info (ctx, out, id, fn, rc == 0, at, true, elapse, 0, 0);
+    print_schedule_info (ctx, out, id, fn, rc == 0, at, true, elapse);
+    ctx->jobid_counter++;
 
     return 0;
 }
