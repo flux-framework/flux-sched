@@ -111,6 +111,8 @@ class reapi_t {
      *                   allocate.
      *                   MATCH_ALLOCATE_W_SATISFIABILITY: try to allocate and run
      *                   satisfiability check if resources are not available.
+     *                   MATCH_WITHOUT_ALLOCATING: match and return resources
+     *                   but do not allocate or reserve them.
      *  \param jobspec   jobspec string.
      *  \param jobid     jobid of the uint64_t type.
      *  \param reserved  Boolean into which to return true if this job has been
@@ -153,6 +155,9 @@ class reapi_t {
      *                   MATCH_SATISFIABILITY: Do a satisfiablity check and do not
      *                   allocate.
      *                   MATCH_ALLOCATE_W_SATISFIABILITY: try to allocate and run
+     *                   satisfiability check if resources are not available.
+     *                   MATCH_WITHOUT_ALLOCATING: match and return resources
+     *                   but do not allocate or reserve them.
      *  \param jobs      JSON array of jobspecs.
      *  \param adapter   queue_adapter_base_t object that provides
      *                   a set of callback methods to be called each time
