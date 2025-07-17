@@ -182,25 +182,31 @@ int reapi_cli_t::match_allocate (void *h,
     ov = get_elapsed_time (start_time, end_time);
 
     if (matched) {
-        reserved = (at != 0) ? true : false;
-        st = (reserved) ? job_lifecycle_t::RESERVED : job_lifecycle_t::ALLOCATED;
-        if (reserved)
-            rq->set_reservation (jobid);
-        else
-            rq->set_allocation (jobid);
+        if (match_op == match_op_t::MATCH_WITHOUT_ALLOCATING) {
+            reserved = false;
+        } else {
+            reserved = (at != 0) ? true : false;
+            st = (reserved) ? job_lifecycle_t::RESERVED : job_lifecycle_t::ALLOCATED;
+            if (reserved)
+                rq->set_reservation (jobid);
+            else
+                rq->set_allocation (jobid);
 
-        try {
-            job_info = std::make_shared<job_info_t> (jobid, st, at, "", "", ov);
-        } catch (std::bad_alloc &e) {
-            errno = ENOMEM;
-            m_err_msg += __FUNCTION__;
-            m_err_msg += ": ERROR: can't allocate memory: " + std::string (strerror (errno)) + "\n";
-            return -1;
+            try {
+                job_info = std::make_shared<job_info_t> (jobid, st, at, "", "", ov);
+            } catch (std::bad_alloc &e) {
+                errno = ENOMEM;
+                m_err_msg += __FUNCTION__;
+                m_err_msg +=
+                    ": ERROR: can't allocate memory: " + std::string (strerror (errno)) + "\n";
+                return -1;
+            }
+            rq->set_job (jobid, job_info);
         }
-        rq->set_job (jobid, job_info);
     }
 
-    if (match_op != match_op_t::MATCH_SATISFIABILITY)
+    if (match_op != match_op_t::MATCH_SATISFIABILITY
+        && match_op != match_op_t::MATCH_WITHOUT_ALLOCATING)
         rq->incr_job_counter ();
 
     if (traverser_rc < 0) {
