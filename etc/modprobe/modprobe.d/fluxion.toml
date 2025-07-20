@@ -1,0 +1,23 @@
+[[modules]]
+name = "sched-fluxion-resource"
+args = ["load-allowlist=node,core,gpu"]
+ranks = "0"
+after = ["resource"]
+requires = ["resource"]
+
+[[modules]]
+name = "sched-fluxion-feasibility"
+args = ["load-allowlist=node,core,gpu"]
+provides = ["feasibility"]
+priority = 500
+ranks = "0"
+after = ["sched-fluxion-resource"]
+requires = ["sched-fluxion-resource"]
+
+[[modules]]
+name = "sched-fluxion-qmanager"
+provides = ["sched"]
+priority = 500
+ranks = "0"
+after = ["job-manager", "sched-fluxion-resource"]
+requires = ["sched-fluxion-resource", "job-manager"]
