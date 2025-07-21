@@ -11,11 +11,18 @@ test_under_flux 2
 
 flux setattr log-stderr-level 1
 export FLUX_URI_RESOLVE_LOCAL=t
+unset FLUX_MODPROBE_DISABLE
+
+test -z "$FLUX_RC_USE_MODPROBE" && test_set_prereq OLDRC
 
 dmesg_grep="flux python ${SHARNESS_TEST_SRCDIR}/scripts/dmesg-grep.py"
 
+test_expect_success 'current scheduler is sched-simple' '
+	flux module list | grep sched-simple
+'
+
 # Ensure fluxion modules are loaded under flux-alloc(1)
-test_expect_success 'set FLUX_RC_EXTRA so Fluxion modules are loaded under flux-alloc' '
+test_expect_success OLDRC 'set FLUX_RC_EXTRA so Fluxion modules are loaded under flux-alloc' '
 	mkdir rc1.d &&
 	cat <<-EOF >rc1.d/rc1-fluxion &&
 	flux module unload -f sched-simple
