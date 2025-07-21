@@ -5,7 +5,7 @@ test_description='Test fluxion does not block on R w/ no scheduling key
 '
 . `dirname $0`/sharness.sh
 
-export TEST_UNDER_FLUX_QUORUM=0
+export TEST_UNDER_FLUX_QUORUM=1
 export TEST_UNDER_FLUX_START_MODE=leader
 export FLUX_RC_EXTRA=${SHARNESS_TEST_SRCDIR}/../etc
 unset FLUXION_RESOURCE_RC_NOOP
