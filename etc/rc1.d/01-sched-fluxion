@@ -1,5 +1,6 @@
 #!/bin/sh -e
 
+test -z "$FLUX_RC_USE_MODPROBE" || exit 0
 test $(flux getattr rank) -eq 0 || exit 0
 
 if [ -z ${FLUXION_RESOURCE_RC_NOOP} ]; then
