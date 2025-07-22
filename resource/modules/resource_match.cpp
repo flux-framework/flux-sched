@@ -2202,7 +2202,7 @@ static void match_multi_request_cb (flux_t *h,
             goto error;
         }
         if (run_match (ctx, jobid, cmd, js_str, &now, &at, &overhead, R, NULL) < 0) {
-            if (errno != EBUSY && errno != ENODEV)
+            if (errno != EBUSY && errno != ENODEV && errno != ENOMEM)
                 flux_log_error (ctx->h,
                                 "%s: match failed due to match error (id=%jd)",
                                 __FUNCTION__,
