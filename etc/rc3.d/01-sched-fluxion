@@ -1,5 +1,6 @@
 #!/bin/sh
 
+test -z "$FLUX_RC_USE_MODPROBE" || exit 0
 test $(flux getattr rank) -eq 0 || exit 0
 
 flux module remove -f sched-fluxion-qmanager

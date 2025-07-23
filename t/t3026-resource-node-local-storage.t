@@ -39,7 +39,7 @@ test_expect_success "${corona_small_desc}" '
 '
 
 corona_LinuxDeviceID_desc="ensure LinuxDeviceID included in vertex and JGF 1"
-test_expect_success HAVE_JQ "${corona_LinuxDeviceID_desc}" '
+test_expect_success "${corona_LinuxDeviceID_desc}" '
     ${query} -d -L ${corona_xml} -f hwloc -W node,socket,core,gpu,storage \
 -S CA -P low -t corona-LinuxDeviceID.jgf.out -F jgf < corona_full_cmds &&
     extract_storage_ids corona-LinuxDeviceID.jgf.out \
@@ -69,7 +69,7 @@ test_expect_success "${lassen_small_desc}" '
 '
 
 lassen_LinuxDeviceID_desc="ensure LinuxDeviceID included in vertex and JGF 2"
-test_expect_success HAVE_JQ "${lassen_LinuxDeviceID_desc}" '
+test_expect_success "${lassen_LinuxDeviceID_desc}" '
     ${query} -d -L ${lassen_xml} -f hwloc -W node,socket,core,gpu,storage \
 -S CA -P low -t lassen-LinuxDeviceID.jgf.out -F jgf < lassen_full_cmds &&
     extract_storage_ids lassen-LinuxDeviceID.jgf.out \
@@ -99,7 +99,7 @@ test_expect_success "${catalyst_small_desc}" '
 '
 
 catalyst_LinuxDeviceID_desc="ensure LinuxDeviceID included in vertex and JGF 3"
-test_expect_success HAVE_JQ "${catalyst_LinuxDeviceID_desc}" '
+test_expect_success "${catalyst_LinuxDeviceID_desc}" '
     ${query} -d -L ${catalyst_xml} -f hwloc -W node,socket,core,gpu,storage \
 -S CA -P low -t catalyst-LinuxDeviceID.jgf.out -F jgf < catalyst_full_cmds &&
     extract_storage_ids catalyst-LinuxDeviceID.jgf.out \

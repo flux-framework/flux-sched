@@ -54,7 +54,7 @@ ${jgf_4core} > bad_edges.json
     jq ' del(.graph.nodes[1].metadata.paths) ' ${jgf_4core} > bad_paths.json
 }
 
-test_expect_success HAVE_JQ 'generate bad JGF files' '
+test_expect_success 'generate bad JGF files' '
     create_bad_jgfs
 '
 
