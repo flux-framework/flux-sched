@@ -37,14 +37,14 @@ command_t commands[] =
       cmd_match,
       "Allocate or reserve matching resources (subcmd: "
       "allocate | allocate_with_satisfiability | allocate_orelse_reserve) | "
-      "satisfiability: "
+      "satisfiability | grow_allocation: "
       "resource-query> match allocate jobspec"},
      {"multi-match",
       "M",
       cmd_match_multi,
       "Allocate or reserve for "
       "multiple jobspecs (subcmd: allocate | allocate_with_satisfiability | "
-      "allocate_orelse_reserve): "
+      "allocate_orelse_reserve | grow_allocation): "
       "resource-query> multi-match allocate jobspec1 jobspec2 ..."},
      {"update",
       "u",
@@ -284,6 +284,12 @@ static int run_match (std::shared_ptr<resource_context_t> &ctx,
                                    match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE,
                                    (int64_t)jobid,
                                    &at);
+    else if (cmd == "grow_allocation")
+        rc2 = ctx->traverser->run (job,
+                                   ctx->writers,
+                                   match_op_t::MATCH_GROW_ALLOCATION,
+                                   (int64_t)jobid,
+                                   &at);
     else if (cmd == "satisfiability")
         rc2 = ctx->traverser->run (job,
                                    ctx->writers,
@@ -336,19 +342,29 @@ done:
 
 int cmd_match (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
 {
-    if (args.size () != 3) {
+    if (args.size () < 3 || args.size () > 4) {
         std::cerr << "ERROR: malformed command" << std::endl;
         return 0;
     }
     std::string subcmd = args[1];
     if (!(subcmd == "allocate" || subcmd == "allocate_orelse_reserve"
-          || subcmd == "allocate_with_satisfiability" || subcmd == "satisfiability")) {
+          || subcmd == "allocate_with_satisfiability" || subcmd == "satisfiability"
+          || subcmd == "grow_allocation")) {
         std::cerr << "ERROR: unknown subcmd " << args[1] << std::endl;
         return 0;
     }
 
+    int64_t jobid = 0;
     try {
-        int64_t jobid = ctx->jobid_counter;
+        if (subcmd != "grow_allocation") {
+            jobid = ctx->jobid_counter;
+        } else {
+            jobid = static_cast<int64_t> (std::strtoll (args[3].c_str (), NULL, 10));
+            if (!ctx->jobs.contains (jobid)) {
+                std::cerr << "ERROR: nonexistent jobid " << jobid << std::endl;
+                return 0;
+            }
+        }
         std::string &jobspec_fn = args[2];
         std::ifstream jobspec_in (jobspec_fn);
         if (!jobspec_in) {

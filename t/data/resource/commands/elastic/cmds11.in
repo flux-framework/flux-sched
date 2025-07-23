@@ -1,0 +1,11 @@
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test006.yaml
+find sched-now=allocated
+match grow_allocation @TEST_SRCDIR@/data/resource/jobspecs/basics/test006.yaml 1
+find sched-now=allocated
+attach @TEST_SRCDIR@/data/resource/jgfs/elastic/node-add-test.json
+find status=up
+match grow_allocation @TEST_SRCDIR@/data/resource/jobspecs/basics/test006.yaml 1
+match grow_allocation @TEST_SRCDIR@/data/resource/jobspecs/basics/test006.yaml 1
+match grow_allocation @TEST_SRCDIR@/data/resource/jobspecs/basics/test006.yaml 1
+find sched-now=allocated
+quit

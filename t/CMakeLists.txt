@@ -85,6 +85,7 @@ set(ALL_TESTS
   t4011-match-duration.t
   t4012-set-status.t
   t4013-unreservable.sh
+  t4014-match-grow.t
   t5000-valgrind.t
   t5100-issues-test-driver.t
   t6000-graph-size.t

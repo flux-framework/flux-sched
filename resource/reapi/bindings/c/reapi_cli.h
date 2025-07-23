@@ -56,6 +56,8 @@ int reapi_cli_initialize (reapi_cli_ctx_t *ctx, const char *rgraph, const char *
  *                   allocate.
  *                   MATCH_ALLOCATE_W_SATISFIABILITY: try to allocate and run
  *                   satisfiability check if resources are not available.
+ *                   MATCH_GROW_ALLOCATION: try to grow an existing allocation
+ *                   now and fail if resources aren't available.
  *  \param jobspec   jobspec string.
  *  \param jobid     jobid of the uint64_t type.
  *  \param reserved  Boolean into which to return true if this job has been

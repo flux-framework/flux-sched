@@ -56,7 +56,7 @@ command_t commands[] = {{"match",
                          match,
                          "Allocate or reserve matching resources (subcmd: "
                          "allocate | allocate_with_satisfiability | allocate_orelse_reserve) | "
-                         "satisfiability: "
+                         "satisfiability | grow_allocation: "
                          "resource-query> match allocate jobspec"},
                         {"info", "i", info, "Print info on a jobid: resource-query> info jobid"},
                         {"cancel",
@@ -358,13 +358,14 @@ int match (resource_query_t &ctx, std::vector<std::string> &args, json_t *params
     double ov = 0.0;
     std::stringstream o;
     struct timeval st, et;
+    uint64_t jobid = 0;
 
     if ((gettimeofday (&st, NULL)) < 0) {
         std::cerr << "ERROR: gettimeofday: " << strerror (errno) << std::endl;
         return 0;
     }
 
-    if (args.size () != 3) {
+    if (args.size () < 3 || args.size () > 4) {
         std::cerr << "ERROR: malformed command" << std::endl;
         return 0;
     }
@@ -373,6 +374,8 @@ int match (resource_query_t &ctx, std::vector<std::string> &args, json_t *params
         match_op = match_op_t::MATCH_ALLOCATE;
     } else if (subcmd == "allocate_orelse_reserve") {
         match_op = match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE;
+    } else if (subcmd == "grow_allocation") {
+        match_op = match_op_t::MATCH_GROW_ALLOCATION;
     } else if (subcmd == "allocate_with_satisfiability") {
         match_op = match_op_t::MATCH_ALLOCATE_W_SATISFIABILITY;
     } else if (subcmd == "satisfiability") {
@@ -382,7 +385,11 @@ int match (resource_query_t &ctx, std::vector<std::string> &args, json_t *params
         return 0;
     }
 
-    uint64_t jobid = ctx.get_job_counter ();
+    if (subcmd != "grow_allocation") {
+        jobid = ctx.get_job_counter ();
+    } else {
+        jobid = static_cast<uint64_t> (std::strtoull (args[3].c_str (), NULL, 10));
+    }
     std::string &jobspec_fn = args[2];
     std::ifstream jobspec_in (jobspec_fn);
     if (!jobspec_in) {
