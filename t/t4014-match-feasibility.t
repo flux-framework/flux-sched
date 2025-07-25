@@ -100,9 +100,38 @@ test_expect_success 'loading feasibility from non-load-file resource module work
     test -z "$(flux dmesg -c | grep -q err)"
 '
 
+test_expect_success 'loading job-validator conf works' '
+{ cat >conf.tmp << 'EOF'
+[ingest.validator]
+plugins = ["jobspec", "feasibility"]
+EOF
+} &&
+    flux config load conf.tmp && rm conf.tmp &&
+    flux config get | grep feasibility &&
+    flux job-validator --list-plugins | grep feasibility
+'
+
+test_expect_success 'job-validator correctly returns unsatisfiable' '
+    flux submit -N99999 --dry-run sleep inf |\
+    flux job-validator --plugins=feasibility --jobspec-only |\
+    grep "{\"errnum\": 19, \"errstr\": \"Unsatisfiable request\"}"
+'
+
+test_expect_success 'job-validator correctly returns satisfiable' '
+    flux run -n1 --dry-run sleep inf |\
+    flux job-validator --plugins=feasibility --jobspec-only |\
+    grep "{\"errnum\": 0}"
+'
+
 test_expect_success 'removing resource works and removes feasibility' '
     remove_resource &&
     flux dmesg -c | grep -q "exiting due to sched-fluxion-resource.notify failure"
+'
+
+test_expect_success 'job-validator returns satisfiable without the feas module' '
+    flux submit -N99999 --dry-run sleep inf |\
+    flux job-validator --plugins=feasibility --jobspec-only |\
+    grep "{\"errnum\": 0}"
 '
 
 export FLUX_SCHED_MODULE=none
@@ -110,7 +139,8 @@ export FLUX_SCHED_MODULE=none
 test_expect_success 'loading feasibility with its own config works' '
     flux broker --config-path=${conf_base}/01-default bash -c \
 "flux module reload -f sched-fluxion-resource && "\
-"flux module reload -f sched-fluxion-feasibility"
+"flux module reload -f sched-fluxion-feasibility && "\
+"flux module reload -f sched-fluxion-qmanager"
 '
 
 test_done
