@@ -387,7 +387,8 @@ static void match_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t
         goto error;
     }
 
-    if (std::string ("without_allocating") == cmd) {
+    if (std::string ("without_allocating") == cmd
+        || std::string ("without_allocating_extend") == cmd) {
         status = "MATCHED";
     } else {
         // "ALLOCATED" or "RESERVED"
