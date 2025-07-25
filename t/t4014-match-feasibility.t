@@ -123,6 +123,10 @@ test_expect_success 'job-validator correctly returns satisfiable' '
     grep "{\"errnum\": 0}"
 '
 
+test_expect_success 'job-validator rejects many unsatisfiable jobs' '
+    test $(flux submit --cc=1-16 -N99999 hostname 2>&1 | grep Unsatisfiable | wc -l) -eq 16
+'
+
 test_expect_success 'removing resource works and removes feasibility' '
     remove_resource &&
     flux dmesg -c | grep -q "exiting due to sched-fluxion-resource.notify failure"
