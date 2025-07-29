@@ -351,7 +351,17 @@ int dfu_traverser_t::initialize (std::shared_ptr<resource_graph_db_t> db,
 }
 
 int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
-                          std::shared_ptr<match_writers_t> &writers,
+                          std::shared_ptr<match_writers_t> &writer,
+                          match_op_t op,
+                          int64_t jobid,
+                          int64_t *at)
+{
+    std::vector<std::shared_ptr<match_writers_t>> writers = {writer};
+    return run (jobspec, writers, op, jobid, at);
+}
+
+int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
+                          std::vector<std::shared_ptr<match_writers_t>> &writers,
                           match_op_t op,
                           int64_t jobid,
                           int64_t *at)
@@ -449,7 +459,14 @@ int dfu_traverser_t::run (const std::string &str,
     return traverser->update (root, writers, str, reader, meta);
 }
 
-int dfu_traverser_t::find (std::shared_ptr<match_writers_t> &writers, const std::string &criteria)
+int dfu_traverser_t::find (std::shared_ptr<match_writers_t> &writer, const std::string &criteria)
+{
+    std::vector<std::shared_ptr<match_writers_t>> writers = {writer};
+    return find (writers, criteria);
+}
+
+int dfu_traverser_t::find (std::vector<std::shared_ptr<match_writers_t>> &writers,
+                           const std::string &criteria)
 {
     // Clear the error message to disambiguate errors
     clear_err_message ();

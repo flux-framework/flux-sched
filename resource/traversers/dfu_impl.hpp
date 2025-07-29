@@ -245,7 +245,7 @@ class dfu_impl_t {
      *                   ignored.
      *  \return          0 on success; -1 on error.
      */
-    int find (std::shared_ptr<match_writers_t> &writers, const std::string &criteria);
+    int find (std::vector<std::shared_ptr<match_writers_t>> &writers, const std::string &criteria);
 
     /*! Update the resource state based on the previous select invocation
      *  and emit the allocation/reservation information.
@@ -258,7 +258,9 @@ class dfu_impl_t {
      *  \return          0 on success; -1 on error -- call err_message ()
      *                   for detail.
      */
-    int update (vtx_t root, std::shared_ptr<match_writers_t> &writers, jobmeta_t &meta);
+    int update (vtx_t root,
+                std::vector<std::shared_ptr<match_writers_t>> &writers,
+                jobmeta_t &meta);
 
     /*! Update the resource state based on the allocation data (str)
      *  as deserialized by reader and meta.
@@ -501,13 +503,13 @@ class dfu_impl_t {
                  bool pristine,
                  bool *excl,
                  scoring_api_t &to_parent);
-    int dom_find_dfv (std::shared_ptr<match_writers_t> &writers,
+    int dom_find_dfv (std::vector<std::shared_ptr<match_writers_t>> &writers,
                       const std::string &criteria,
                       vtx_t u,
                       const vtx_predicates_override_t &p,
                       const uint64_t jobid,
                       const bool agfilter);
-    int aux_find_upv (std::shared_ptr<match_writers_t> &writers,
+    int aux_find_upv (std::vector<std::shared_ptr<match_writers_t>> &writers,
                       const std::string &criteria,
                       vtx_t u,
                       subsystem_t aux,
@@ -573,7 +575,7 @@ class dfu_impl_t {
                   const std::map<resource_type_t, int64_t> &dfu,
                   std::map<resource_type_t, int64_t> &to_parent);
     int upd_sched (vtx_t u,
-                   std::shared_ptr<match_writers_t> &writers,
+                   std::vector<std::shared_ptr<match_writers_t>> &writers,
                    subsystem_t s,
                    unsigned int needs,
                    bool excl,
@@ -583,7 +585,7 @@ class dfu_impl_t {
                    const std::map<resource_type_t, int64_t> &dfu,
                    std::map<resource_type_t, int64_t> &to_parent);
     int upd_upv (vtx_t u,
-                 std::shared_ptr<match_writers_t> &writers,
+                 std::vector<std::shared_ptr<match_writers_t>> &writers,
                  subsystem_t subsystem,
                  unsigned int needs,
                  bool excl,
@@ -591,7 +593,7 @@ class dfu_impl_t {
                  bool full,
                  std::map<resource_type_t, int64_t> &to_parent);
     int upd_dfv (vtx_t u,
-                 std::shared_ptr<match_writers_t> &writers,
+                 std::vector<std::shared_ptr<match_writers_t>> &writers,
                  unsigned int needs,
                  bool excl,
                  const jobmeta_t &jobmeta,

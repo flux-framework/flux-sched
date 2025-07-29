@@ -248,7 +248,7 @@ done:
 }
 
 int dfu_impl_t::upd_sched (vtx_t u,
-                           std::shared_ptr<match_writers_t> &writers,
+                           std::vector<std::shared_ptr<match_writers_t>> &writers,
                            subsystem_t s,
                            unsigned int needs,
                            bool excl,
@@ -265,9 +265,11 @@ int dfu_impl_t::upd_sched (vtx_t u,
         goto done;
     }
     if (n > 0) {
-        if ((rc = emit_vtx (u, writers, needs, excl)) == -1) {
-            m_err_msg += __FUNCTION__;
-            m_err_msg += ": emit_vtx returned -1.\n";
+        for (auto writer = writers.begin (); writer != writers.end (); ++writer) {
+            if ((rc = emit_vtx (u, *writer, needs, excl)) == -1) {
+                m_err_msg += __FUNCTION__;
+                m_err_msg += ": emit_vtx returned -1.\n";
+            }
         }
     }
     m_trav_level--;
@@ -277,7 +279,7 @@ done:
 }
 
 int dfu_impl_t::upd_upv (vtx_t u,
-                         std::shared_ptr<match_writers_t> &writers,
+                         std::vector<std::shared_ptr<match_writers_t>> &writers,
                          subsystem_t subsystem,
                          unsigned int needs,
                          bool excl,
@@ -312,7 +314,7 @@ unsigned dfu_impl_t::get_eff_needs (unsigned needs, unsigned size, bool mod_trav
 }
 
 int dfu_impl_t::upd_dfv (vtx_t u,
-                         std::shared_ptr<match_writers_t> &writers,
+                         std::vector<std::shared_ptr<match_writers_t>> &writers,
                          unsigned int needs,
                          bool excl,
                          const jobmeta_t &jobmeta,
@@ -354,9 +356,11 @@ int dfu_impl_t::upd_dfv (vtx_t u,
                     m_err_msg += __FUNCTION__;
                     m_err_msg += ": upd_by_outedges returned -1.\n";
                 }
-                if (emit_edg (*ei, writers) == -1) {
-                    m_err_msg += __FUNCTION__;
-                    m_err_msg += ": emit_edg returned -1.\n";
+                for (auto writer = writers.begin (); writer != writers.end (); ++writer) {
+                    if (emit_edg (*ei, *writer) == -1) {
+                        m_err_msg += __FUNCTION__;
+                        m_err_msg += ": emit_edg returned -1.\n";
+                    }
                 }
                 n_plans += n_plan_sub;
             }
@@ -832,7 +836,9 @@ int dfu_impl_t::remove_subgraph (const std::vector<vtx_t> &roots, std::set<vtx_t
 // DFU Traverser Implementation Update API
 ////////////////////////////////////////////////////////////////////////////////
 
-int dfu_impl_t::update (vtx_t root, std::shared_ptr<match_writers_t> &writers, jobmeta_t &jobmeta)
+int dfu_impl_t::update (vtx_t root,
+                        std::vector<std::shared_ptr<match_writers_t>> &writers,
+                        jobmeta_t &jobmeta)
 {
     int rc = -1;
     std::map<resource_type_t, int64_t> dfu;
@@ -853,14 +859,16 @@ int dfu_impl_t::update (vtx_t root, std::shared_ptr<match_writers_t> &writers, j
     if ((rc = upd_dfv (root, writers, needs, x, jobmeta, true, dfu, emit_shadow)) > 0) {
         uint64_t starttime = jobmeta.at;
         uint64_t endtime = jobmeta.at + jobmeta.duration;
-        if (writers->emit_tm (starttime, endtime) == -1) {
-            m_err_msg += __FUNCTION__;
-            m_err_msg += ": emit_tm returned -1.\n";
-        }
-        if (jobmeta.is_queue_set ()) {
-            if (writers->emit_attrs ("queue", jobmeta.get_queue ()) == -1) {
+        for (auto writer = writers.begin (); writer != writers.end (); ++writer) {
+            if ((*writer)->emit_tm (starttime, endtime) == -1) {
                 m_err_msg += __FUNCTION__;
-                m_err_msg += ": emit_attrs returned -1.\n";
+                m_err_msg += ": emit_tm returned -1.\n";
+            }
+            if (jobmeta.is_queue_set ()) {
+                if ((*writer)->emit_attrs ("queue", jobmeta.get_queue ()) == -1) {
+                    m_err_msg += __FUNCTION__;
+                    m_err_msg += ": emit_attrs returned -1.\n";
+                }
             }
         }
     }
@@ -915,7 +923,8 @@ int dfu_impl_t::update (vtx_t root,
     needs = static_cast<unsigned int> (m_graph_db->metadata.v_rt_edges[dom].get_needs ());
     m_color.reset ();
     bool emit_shadow = modify_traversal (root, false);
-    if ((rc = upd_dfv (root, writers, needs, x, jobmeta, false, dfu, emit_shadow)) > 0) {
+    std::vector<std::shared_ptr<match_writers_t>> writersvec = {writers};
+    if ((rc = upd_dfv (root, writersvec, needs, x, jobmeta, false, dfu, emit_shadow)) > 0) {
         uint64_t starttime = jobmeta.at;
         uint64_t endtime = jobmeta.at + jobmeta.duration;
         if (writers->emit_tm (starttime, endtime) == -1) {

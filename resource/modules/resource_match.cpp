@@ -1423,6 +1423,7 @@ static int run (std::shared_ptr<resource_ctx_t> &ctx,
                 flux_error_t *errp)
 {
     int rc = -1;
+    std::vector<std::shared_ptr<match_writers_t>> writers = {ctx->writers};
     try {
         Flux::Jobspec::Jobspec j{jstr};
         rc = ctx->traverser->run (j, ctx->writers, op, jobid, at);

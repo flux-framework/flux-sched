@@ -113,6 +113,11 @@ class dfu_traverser_t {
              match_op_t op,
              int64_t id,
              int64_t *at);
+    int run (Jobspec::Jobspec &jobspec,
+             std::vector<std::shared_ptr<match_writers_t>> &writers,
+             match_op_t op,
+             int64_t id,
+             int64_t *at);
 
     /*! Read str which is a serialized allocation data (e.g., written in JGF)
      *  with rd, and traverse the resource graph to update it with this data.
@@ -158,6 +163,7 @@ class dfu_traverser_t {
      *  \return          0 on success; -1 on error.
      */
     int find (std::shared_ptr<match_writers_t> &writers, const std::string &criteria);
+    int find (std::vector<std::shared_ptr<match_writers_t>> &writers, const std::string &criteria);
 
     /*! Remove the allocation/reservation referred to by jobid and update
      *  the resource state.
