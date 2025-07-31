@@ -19,15 +19,6 @@ target_link_libraries(resource-query
   PkgConfig::UUID
   Boost::headers
   )
-add_executable(rq2
-  rq2.cpp
-  rq2.hpp
-  )
-add_sanitizers(rq2)
-target_link_libraries(rq2
-  resource
-  PkgConfig::LIBEDIT
-  )
 
 add_subdirectory(test)
 

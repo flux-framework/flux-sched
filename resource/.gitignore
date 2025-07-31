@@ -6,4 +6,3 @@ schema/test/schema_test01
 schema/test/schema_test02
 utilities/grug2dot
 utilities/resource-query
-utilities/rq2
