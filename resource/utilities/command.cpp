@@ -110,20 +110,6 @@ command_t commands[] =
      {"quit", "q", cmd_quit, "Quit the session: resource-query> quit"},
      {"NA", "NA", (cmd_func_f *)NULL, "NA"}};
 
-static int do_remove (std::shared_ptr<detail::resource_query_t> &ctx, int64_t jobid)
-{
-    int rc = -1;
-    if ((rc = ctx->traverser->remove ((int64_t)jobid)) == 0) {
-        if (ctx->jobs.find (jobid) != ctx->jobs.end ()) {
-            std::shared_ptr<job_info_t> info = ctx->jobs[jobid];
-            info->state = job_lifecycle_t::CANCELED;
-        }
-    } else {
-        std::cout << ctx->traverser->err_message ();
-    }
-    return rc;
-}
-
 static int do_partial_remove (std::shared_ptr<detail::resource_query_t> &ctx,
                               std::shared_ptr<resource_reader_base_t> &reader,
                               int64_t jobid,
@@ -672,24 +658,15 @@ int cmd_cancel (std::shared_ptr<detail::resource_query_t> &ctx,
         stats = args[2];
     }
 
-    if (ctx->allocations.find (jobid) != ctx->allocations.end ()) {
-        if ((rc = do_remove (ctx, jobid)) == 0)
-            ctx->allocations.erase (jobid);
-    } else if (ctx->reservations.find (jobid) != ctx->reservations.end ()) {
-        if ((rc = do_remove (ctx, jobid)) == 0)
-            ctx->reservations.erase (jobid);
-    } else {
-        std::cerr << "ERROR: nonexistent job " << jobid << std::endl;
-        goto done;
-    }
-
-    if (rc != 0) {
-        std::cerr << "ERROR: error encountered while removing job " << jobid << std::endl;
+    if (detail::reapi_cli_t::cancel (ctx.get (), jobid, false) != 0) {
+        std::cerr << detail::reapi_cli_t::get_err_message ();
+        detail::reapi_cli_t::clear_err_message ();
+        return 0;
     }
 
     if (stats == "stats") {
-        preorder_count = ctx->traverser->get_total_preorder_count ();
-        postorder_count = ctx->traverser->get_total_postorder_count ();
+        preorder_count = detail::reapi_cli_t::preorder_count (ctx.get ());
+        postorder_count = detail::reapi_cli_t::postorder_count (ctx.get ());
         out << "INFO:"
             << " =============================" << std::endl;
         out << "INFO:"
