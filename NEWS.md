@@ -1,3 +1,15 @@
+flux-sched version 0.46.0 - 2025-08-05
+--------------------------------------
+
+### New Features
+ * rq2: info, find, and cancel (#1376)
+ * resource: Add all leaf types to the cluster vertex aggregate pruning
+   filter (#1382)
+
+### Fixes
+ * agfilter: fix output in find (#1378)
+
+
 flux-sched version 0.45.0 - 2025-05-08
 --------------------------------------
 
