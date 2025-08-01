@@ -1132,15 +1132,21 @@ int dfu_impl_t::prime_pruning_filter (subsystem_t s,
     std::vector<uint64_t> avail;
     std::vector<const char *> types;
     std::map<resource_type_t, int64_t> dfv;
-    resource_type_t type = (*m_graph)[u].type;
+    resource_type_t resource_type = (*m_graph)[u].type;
     std::vector<resource_type_t> out_prune_types;
 
     (*m_graph)[u].idata.colors[s] = m_color.gray ();
-    accum_if (s, type, (*m_graph)[u].size, to_parent);
+    accum_if (s, resource_type, (*m_graph)[u].size, to_parent);
 
     // Don't create and prime a pruning filter if this is
     // a leaf vertex
     if (out_degree (u, *m_graph) == 0) {
+        if (!m_match->is_pruning_type (s, resource_type)) {
+            // Add the leaf type to the pruning types and
+            // accumulate the size to the parent
+            m_match->set_pruning_type (s, cluster_rt, resource_type);
+            accum_if (s, resource_type, (*m_graph)[u].size, to_parent);
+        }
         rc = 0;
         goto done;
     }
@@ -1151,11 +1157,11 @@ int dfu_impl_t::prime_pruning_filter (subsystem_t s,
     for (auto &aggr : dfv)
         accum_if (s, aggr.first, aggr.second, to_parent);
 
-    if (m_match->get_my_pruning_types (s, (*m_graph)[u].type, out_prune_types)) {
-        for (auto &type : out_prune_types) {
-            types.push_back (type.c_str ());
-            if (dfv.find (type) != dfv.end ())
-                avail.push_back (dfv.at (type));
+    if (m_match->get_my_pruning_types (s, resource_type, out_prune_types)) {
+        for (auto &rtype : out_prune_types) {
+            types.push_back (rtype.c_str ());
+            if (dfv.find (rtype) != dfv.end ())
+                avail.push_back (dfv.at (rtype));
             else
                 avail.push_back (0);
         }
