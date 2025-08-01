@@ -403,7 +403,7 @@ int resource_query_t::set_resource_ctx_params (const std::string &options)
     perf.max = 0.0f;
     perf.accum = 0.0f;
     params.load_file = "conf/default";
-    params.load_format = "jgf";
+    params.load_format = "grug";
     params.load_allowlist = "";
     params.matcher_name = "CA";
     params.matcher_policy = "first";
@@ -488,6 +488,9 @@ int resource_query_t::set_resource_ctx_params (const std::string &options)
     if ((tmp_json = json_object_get (opt_json, "reserve_vtx_vec")))
         // No need for check here; returns 0 on failure
         params.reserve_vtx_vec = json_integer_value (tmp_json);
+    if ((tmp_json = json_object_get (opt_json, "elapse_time")))
+        // No need for check here; returns 0 on failure
+        params.elapse_time = json_boolean_value (tmp_json);
 
     rc = 0;
 
@@ -584,6 +587,8 @@ resource_query_t::resource_query_t (const std::string &rgraph, const std::string
         throw std::runtime_error (tmp_err);
     }
 
+    subsystem_t::storage_t::finalize ();
+    resource_type_t::storage_t::finalize ();
     return;
 }
 

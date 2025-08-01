@@ -99,10 +99,11 @@ class resource_query_t {
     // a private member function
     std::shared_ptr<match_writers_t> writers; /* Vertex/Edge writers */
 
-   private:
+    // must be public for use resource query, will eventually be public
+    // private:
     /************************************************************************
      *                                                                      *
-     *                     Private Member Data                              *
+     *        (eventually) Private Member Data                              *
      *                                                                      *
      ************************************************************************/
 

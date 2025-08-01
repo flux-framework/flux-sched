@@ -32,6 +32,8 @@ extern "C" {
 #include "resource/utilities/command.hpp"
 #include "resource/store/resource_graph_store.hpp"
 #include "resource/policies/dfu_match_policy_factory.hpp"
+#include "resource/reapi/bindings/c++/reapi_cli.hpp"
+#include "resource/reapi/bindings/c++/reapi_cli_impl.hpp"
 
 namespace fs = std::filesystem;
 using namespace Flux::resource_model;
@@ -232,44 +234,26 @@ class edg_label_writer_t {
 
 }  // namespace Flux::resource_model
 
-static void set_default_params (std::shared_ptr<resource_context_t> &ctx)
-{
-    ctx->params.load_file = "conf/default";
-    ctx->params.load_format = "grug";
-    ctx->params.load_allowlist = "";
-    ctx->params.matcher_name = "CA";
-    ctx->params.matcher_policy = "first";
-    ctx->params.o_fname = "";
-    ctx->params.r_fname = "";
-    ctx->params.o_fext = "dot";
-    ctx->params.match_format = "simple";
-    ctx->params.o_format = emit_format_t::GRAPHVIZ_DOT;
-    ctx->params.prune_filters = "ALL:core,ALL:node";
-    ctx->params.reserve_vtx_vec = 0;
-    ctx->params.elapse_time = false;
-    ctx->params.disable_prompt = false;
-}
-
-static int string_to_graph_format (std::string st, emit_format_t &format)
+static int string_to_graph_format (std::string st, detail::emit_format_t &format)
 {
     int rc = 0;
     if (boost::iequals (st, std::string ("dot")))
-        format = emit_format_t::GRAPHVIZ_DOT;
+        format = detail::emit_format_t::GRAPHVIZ_DOT;
     else if (boost::iequals (st, std::string ("graphml")))
-        format = emit_format_t::GRAPH_ML;
+        format = detail::emit_format_t::GRAPH_ML;
     else
         rc = -1;
     return rc;
 }
 
-static int graph_format_to_ext (emit_format_t format, std::string &st)
+static int graph_format_to_ext (detail::emit_format_t format, std::string &st)
 {
     int rc = 0;
     switch (format) {
-        case emit_format_t::GRAPHVIZ_DOT:
+        case detail::emit_format_t::GRAPHVIZ_DOT:
             st = "dot";
             break;
-        case emit_format_t::GRAPH_ML:
+        case detail::emit_format_t::GRAPH_ML:
             st = "graphml";
             break;
         default:
@@ -278,7 +262,7 @@ static int graph_format_to_ext (emit_format_t format, std::string &st)
     return rc;
 }
 
-static int subsystem_exist (std::shared_ptr<resource_context_t> &ctx, subsystem_t n)
+static int subsystem_exist (std::shared_ptr<detail::resource_query_t> &ctx, subsystem_t n)
 {
     int rc = 0;
     if (ctx->db->metadata.roots.find (n) == ctx->db->metadata.roots.end ())
@@ -286,7 +270,7 @@ static int subsystem_exist (std::shared_ptr<resource_context_t> &ctx, subsystem_
     return rc;
 }
 
-static int set_subsystems_use (std::shared_ptr<resource_context_t> &ctx, std::string n)
+static int set_subsystems_use (std::shared_ptr<detail::resource_query_t> &ctx, std::string n)
 {
     int rc = 0;
     ctx->matcher->set_matcher_name (n);
@@ -421,7 +405,7 @@ static void write_to_graphml (resource_graph_t &fg, std::fstream &o)
     write_graphml (o, fg, dp, true);
 }
 
-static void write_to_graph (std::shared_ptr<resource_context_t> &ctx)
+static void write_to_graph (std::shared_ptr<detail::resource_query_t> &ctx)
 {
     std::fstream o;
     std::string fn, mn;
@@ -432,10 +416,10 @@ static void write_to_graph (std::shared_ptr<resource_context_t> &ctx)
     o.open (fn, std::fstream::out);
 
     switch (ctx->params.o_format) {
-        case emit_format_t::GRAPHVIZ_DOT:
+        case detail::emit_format_t::GRAPHVIZ_DOT:
             write_to_graphviz (ctx->db->resource_graph, ctx->matcher->dom_subsystem (), o);
             break;
-        case emit_format_t::GRAPH_ML:
+        case detail::emit_format_t::GRAPH_ML:
             write_to_graphml (ctx->db->resource_graph, o);
             break;
         default:
@@ -449,11 +433,14 @@ static void write_to_graph (std::shared_ptr<resource_context_t> &ctx)
     o.close ();
 }
 
-static void control_loop (std::shared_ptr<resource_context_t> &ctx)
+static void control_loop (std::shared_ptr<detail::resource_query_t> ctx,
+                          json_t *params,
+                          std::ostream &out)
 {
     cmd_func_f *cmd = NULL;
     while (1) {
-        char *line = ctx->params.disable_prompt ? readline ("") : readline ("resource-query> ");
+        char *line = json_object_get (params, "disable_prompt") ? readline ("")
+                                                                : readline ("resource-query> ");
         if (line == NULL)
             continue;
         else if (*line)
@@ -471,155 +458,41 @@ static void control_loop (std::shared_ptr<resource_context_t> &ctx)
         std::string &cmd_str = tokens[0];
         if (!(cmd = find_cmd (cmd_str)))
             continue;
-        if (cmd (ctx, tokens) != 0)
+        if (cmd (ctx, tokens, out) != 0)
             break;
     }
 }
 
-static int populate_resource_db (std::shared_ptr<resource_context_t> &ctx)
-{
-    int rc = -1;
-    double elapse;
-    std::ifstream in_file;
-    struct timeval st, et;
-    std::stringstream buffer{};
-    std::shared_ptr<resource_reader_base_t> rd;
-
-    if (ctx->params.reserve_vtx_vec != 0)
-        ctx->db->resource_graph.m_vertices.reserve (ctx->params.reserve_vtx_vec);
-    if ((rd = create_resource_reader (ctx->params.load_format)) == nullptr) {
-        std::cerr << "ERROR: Can't create load reader " << std::endl;
-        goto done;
-    }
-    if (ctx->params.load_allowlist != "") {
-        if (rd->set_allowlist (ctx->params.load_allowlist) < 0)
-            std::cerr << "ERROR: Can't set allowlist" << std::endl;
-        if (!rd->is_allowlist_supported ())
-            std::cout << "WARN: allowlist unsupported" << std::endl;
-    }
-
-    in_file.open (ctx->params.load_file.c_str (), std::ifstream::in);
-    if (!in_file.good ()) {
-        std::cerr << "ERROR: Can't open " << ctx->params.load_file << std::endl;
-        goto done;
-    }
-    buffer << in_file.rdbuf ();
-    in_file.close ();
-
-    gettimeofday (&st, NULL);
-    if ((rc = ctx->db->load (buffer.str (), rd)) != 0) {
-        std::cerr << "ERROR: " << rd->err_message () << std::endl;
-        std::cerr << "ERROR: error in generating resources" << std::endl;
-        goto done;
-    }
-    gettimeofday (&et, NULL);
-
-    elapse = get_elapse_time (st, et);
-    if (ctx->params.elapse_time) {
-        resource_graph_t &g = ctx->db->resource_graph;
-        std::cout << "INFO: Graph Load Time: " << elapse << std::endl;
-        std::cout << "INFO: Vertex Count: " << num_vertices (g) << std::endl;
-        std::cout << "INFO: Edge Count: " << num_edges (g) << std::endl;
-        std::cout << "INFO: by_type Key-Value Pairs: " << ctx->db->metadata.by_type.size ()
-                  << std::endl;
-        std::cout << "INFO: by_name Key-Value Pairs: " << ctx->db->metadata.by_name.size ()
-                  << std::endl;
-        std::cout << "INFO: by_path Key-Value Pairs: " << ctx->db->metadata.by_path.size ()
-                  << std::endl;
-        for (auto it = ctx->db->metadata.by_rank.begin (); it != ctx->db->metadata.by_rank.end ();
-             ++it) {
-            std::cout << "INFO: number of vertices with rank " << it->first << ": "
-                      << it->second.size () << "\n";
-        }
-    }
-
-done:
-    return rc;
-}
-
-static int init_resource_graph (std::shared_ptr<resource_context_t> &ctx)
-{
-    int rc = 0;
-
-    if ((rc = populate_resource_db (ctx)) != 0) {
-        std::cerr << "ERROR: can't populate graph resource database" << std::endl;
-        return rc;
-    }
-
-    resource_graph_t &g = ctx->db->resource_graph;
-    // Configure the matcher and its subsystem selector
-    std::cout << "INFO: Loading a matcher: " << ctx->params.matcher_name << std::endl;
-    if ((rc = set_subsystems_use (ctx, ctx->params.matcher_name)) != 0) {
-        std::cerr << "ERROR: Not all subsystems found" << std::endl;
-        return rc;
-    }
-
-    ctx->jobid_counter = 1;
-    if (ctx->params.prune_filters != ""
-        && ctx->matcher->set_pruning_types_w_spec (ctx->matcher->dom_subsystem (),
-                                                   ctx->params.prune_filters)
-               < 0) {
-        std::cerr << "ERROR: setting pruning filters with ctx->params.prune_filters: "
-                  << ctx->params.prune_filters << std::endl;
-        return -1;
-    }
-
-    if (ctx->params.r_fname != "") {
-        ctx->params.r_out.exceptions (std::ofstream::failbit | std::ofstream::badbit);
-        ctx->params.r_out.open (ctx->params.r_fname);
-    }
-
-    try {
-        ctx->traverser = std::make_shared<dfu_traverser_t> ();
-    } catch (std::bad_alloc &e) {
-        errno = ENOMEM;
-        std::cerr << "ERROR: out of memory allocating traverser" << std::endl;
-        return -1;
-    }
-
-    if ((rc = ctx->traverser->initialize (ctx->db, ctx->matcher)) != 0) {
-        std::cerr << "ERROR: initializing traverser" << std::endl;
-        return -1;
-    }
-    match_format_t format = match_writers_factory_t::get_writers_type (ctx->params.match_format);
-    if (!(ctx->writers = match_writers_factory_t::create (format))) {
-        std::cerr << "ERROR: out of memory allocating traverser" << std::endl;
-        return -1;
-    }
-
-    // prevent users from consuming unbounded memory with arbitrary resource types
-    subsystem_t::storage_t::finalize ();
-    resource_type_t::storage_t::finalize ();
-    return rc;
-}
-
-static void process_args (std::shared_ptr<resource_context_t> &ctx, int argc, char *argv[])
+static void process_args (json_t *options, int argc, char *argv[])
 {
     int rc = 0;
     int ch = 0;
     std::string token;
+    Flux::resource_model::detail::emit_format_t format;
 
-    bool reset_prune = true;
+    /* set defaults specific for resource query */
+    json_object_set_new (options, "match_format", json_string ("simple"));
+
     while ((ch = getopt_long (argc, argv, OPTIONS, longopts, NULL)) != -1) {
         switch (ch) {
             case 'h': /* --help */
                 usage (0);
                 break;
             case 'L': /* --load-file */
-                ctx->params.load_file = optarg;
-                if (!fs::exists (ctx->params.load_file)) {
+                json_object_set_new (options, "load_file", json_string (optarg));
+                if (!fs::exists (optarg)) {
                     std::cerr << "[ERROR] file does not exist for --load-file: ";
                     std::cerr << optarg << std::endl;
                     usage (1);
-                } else if (fs::is_directory (ctx->params.load_file)) {
+                } else if (fs::is_directory (optarg)) {
                     std::cerr << "[ERROR] path passed to --load-file is a directory: ";
                     std::cerr << optarg << std::endl;
                     usage (1);
                 }
                 break;
             case 'f': /* --load-format */
-                ctx->params.load_format = optarg;
-                if (!known_resource_reader (ctx->params.load_format)) {
+                json_object_set_new (options, "load_format", json_string (optarg));
+                if (!known_resource_reader (optarg)) {
                     std::cerr << "[ERROR] unknown format for --load-format: ";
                     std::cerr << optarg << std::endl;
                     usage (1);
@@ -628,66 +501,78 @@ static void process_args (std::shared_ptr<resource_context_t> &ctx, int argc, ch
             case 'W': /* --hwloc-allowlist */
                 token = optarg;
                 if (token.find_first_not_of (' ') != std::string::npos) {
-                    ctx->params.load_allowlist += "cluster,";
-                    ctx->params.load_allowlist += token;
+                    if (!json_object_get (options, "load_allowlist")) {
+                        json_object_set_new (options, "load_allowlist", json_string (""));
+                    }
+                    json_object_set_new (options,
+                                         "load_allowlist",
+                                         json_pack ("s++",
+                                                    json_object_get (options, "load_allowlist"),
+                                                    "cluster,",
+                                                    token.c_str ()));
                 }
                 break;
             case 'S': /* --match-subsystems */
-                ctx->params.matcher_name = optarg;
+                json_object_set_new (options, "matcher_name", json_string (optarg));
                 break;
             case 'P': /* --match-policy */
-                ctx->params.matcher_policy = optarg;
+                json_object_set_new (options, "matcher_policy", json_string (optarg));
                 break;
             case 'F': /* --match-format */
-                ctx->params.match_format = optarg;
-                if (!known_match_format (ctx->params.match_format)) {
+                json_object_set_new (options, "match_format", json_string (optarg));
+                if (!known_match_format (optarg)) {
                     std::cerr << "[ERROR] unknown format for --match-format: ";
                     std::cerr << optarg << std::endl;
                     usage (1);
                 }
                 break;
             case 'g': /* --graph-format */
-                rc = string_to_graph_format (optarg, ctx->params.o_format);
+                rc = string_to_graph_format (optarg, format);
                 if (rc != 0) {
                     std::cerr << "[ERROR] unknown format for --graph-format: ";
                     std::cerr << optarg << std::endl;
                     usage (1);
                 }
-                graph_format_to_ext (ctx->params.o_format, ctx->params.o_fext);
+                graph_format_to_ext (format, token);
+                json_object_set_new (options, "o_fext", json_string (token.c_str ()));
                 break;
             case 'o': /* --graph-output */
-                ctx->params.o_fname = optarg;
+                json_object_set_new (options, "o_fname", json_string (optarg));
                 break;
             case 'p': /* --prune-filters */
-                // If specifying prune-filter, clear default if spec is non-null
-                if (reset_prune) {
-                    if (strcmp (optarg, "") != 0)
-                        ctx->params.prune_filters = optarg;
-                    reset_prune = false;
-                }
                 token = optarg;
                 if (token.find_first_not_of (' ') != std::string::npos) {
-                    ctx->params.prune_filters += ",";
-                    ctx->params.prune_filters += token;
+                    if (!json_object_get (options, "prune_filters")) {
+                        json_object_set_new (options,
+                                             "prune_filters",
+                                             json_string (token.c_str ()));
+                    } else {
+                        json_object_set_new (options,
+                                             "prune_filters",
+                                             json_pack ("s++",
+                                                        json_object_get (options, "prune_filters"),
+                                                        ",",
+                                                        token.c_str ()));
+                    }
                 }
                 break;
             case 't': /* --test-output */
-                ctx->params.r_fname = optarg;
+                json_object_set_new (options, "r_fname", json_string (optarg));
                 break;
             case 'r': /* --reserve-vtx-vec */
                 // If atoi fails, it defaults to 0, which is fine for us
-                ctx->params.reserve_vtx_vec = atoi (optarg);
-                if ((ctx->params.reserve_vtx_vec < 0) || (ctx->params.reserve_vtx_vec > 2000000)) {
-                    ctx->params.reserve_vtx_vec = 0;
+                json_object_set_new (options, "reserve_vtx_vec", json_integer (atoi (optarg)));
+                if ((atoi (optarg) < 0) || (atoi (optarg) > 2000000)) {
+                    json_object_set_new (options, "reserve_vtx_vec", json_integer (0));
                     std::cerr << "WARN: out of range specified for --reserve-vtx-vec: ";
                     std::cerr << optarg << std::endl;
                 }
                 break;
             case 'e': /* --elapse-time */
-                ctx->params.elapse_time = true;
+                json_object_set_new (options, "elapse_time", json_true ());
                 break;
             case 'd': /* --disable-prompt */
-                ctx->params.disable_prompt = true;
+                json_object_set_new (options, "disable_prompt", json_true ());
                 break;
             default:
                 usage (1);
@@ -699,39 +584,36 @@ static void process_args (std::shared_ptr<resource_context_t> &ctx, int argc, ch
         usage (1);
 }
 
-static std::shared_ptr<resource_context_t> init_resource_query (int c, char *v[])
+bool r_fname_set (json_t *params)
 {
-    std::shared_ptr<resource_context_t> ctx = nullptr;
-
-    try {
-        ctx = std::make_shared<resource_context_t> ();
-        ctx->db = std::make_shared<resource_graph_db_t> ();
-    } catch (std::bad_alloc &e) {
-        std::cerr << "ERROR: out of memory allocating resource context" << std::endl;
-        errno = ENOMEM;
-        goto done;
-    }
-
-    set_default_params (ctx);
-    process_args (ctx, c, v);
-    ctx->perf.min = std::numeric_limits<double>::max ();
-    ctx->perf.max = 0.0f;
-    ctx->perf.accum = 0.0f;
-    if (!(ctx->matcher = create_match_cb (ctx->params.matcher_policy))) {
-        std::cerr << "ERROR: unknown match policy " << std::endl;
-        std::cerr << "ERROR: " << ctx->params.matcher_policy << std::endl;
-        ctx = nullptr;
-    }
-    if (init_resource_graph (ctx) != 0) {
-        std::cerr << "ERROR: resource graph initialization" << std::endl;
-        ctx = nullptr;
-    }
-
-done:
-    return ctx;
+    return (json_object_get (params, "r_fname") != NULL);
 }
 
-static void fini_resource_query (std::shared_ptr<resource_context_t> &ctx)
+std::ofstream open_fs (json_t *params)
+{
+    std::string r_fname = json_string_value (json_object_get (params, "r_fname"));
+    std::ofstream r_out;
+
+    r_out.exceptions (std::ofstream::failbit | std::ofstream::badbit);
+
+    r_out.open (r_fname);
+
+    return r_out;
+}
+
+void get_rgraph (std::string &rgraph, json_t *options)
+{
+    const char *load_file = json_string_value (json_object_get (options, "load_file"));
+    if (load_file == NULL) {
+        load_file = "conf/default";
+    }
+    std::ifstream ifs (load_file);
+    rgraph =
+        std::string ((std::istreambuf_iterator<char> (ifs)), (std::istreambuf_iterator<char> ()));
+    ifs.close ();
+}
+
+static void fini_resource_query (std::shared_ptr<detail::resource_query_t> &ctx)
 {
     if (ctx->params.r_fname != "")
         ctx->params.r_out.close ();
@@ -739,17 +621,67 @@ static void fini_resource_query (std::shared_ptr<resource_context_t> &ctx)
         write_to_graph (ctx);
 }
 
+static void print_elapse_time (std::shared_ptr<detail::resource_query_t> &ctx, double elapse)
+{
+    resource_graph_t &g = ctx->db->resource_graph;
+    std::cout << "INFO: Graph Load Time: " << elapse << std::endl;
+    std::cout << "INFO: Vertex Count: " << num_vertices (g) << std::endl;
+    std::cout << "INFO: Edge Count: " << num_edges (g) << std::endl;
+    std::cout << "INFO: by_type Key-Value Pairs: " << ctx->db->metadata.by_type.size ()
+              << std::endl;
+    std::cout << "INFO: by_name Key-Value Pairs: " << ctx->db->metadata.by_name.size ()
+              << std::endl;
+    std::cout << "INFO: by_path Key-Value Pairs: " << ctx->db->metadata.by_path.size ()
+              << std::endl;
+    for (auto it = ctx->db->metadata.by_rank.begin (); it != ctx->db->metadata.by_rank.end ();
+         ++it) {
+        std::cout << "INFO: number of vertices with rank " << it->first << ": "
+                  << it->second.size () << "\n";
+    }
+}
+
 int main (int argc, char *argv[])
 {
-    std::shared_ptr<resource_context_t> ctx = nullptr;
-    if (!(ctx = init_resource_query (argc, argv))) {
-        std::cerr << "ERROR: resource query initialization" << std::endl;
+    json_t *json_options = json_object ();
+    std::string rgraph;
+    std::shared_ptr<detail::resource_query_t> ctx = nullptr;
+    int match_out, info_out = 0;
+    std::string options;
+    double elapse;
+    struct timeval st, et;
+
+    process_args (json_options, argc, argv);
+    get_rgraph (rgraph, json_options);
+    options = json_dumps (json_options, JSON_COMPACT);
+
+    try {
+        gettimeofday (&st, NULL);
+        ctx = std::make_shared<detail::resource_query_t> (rgraph, options);
+        gettimeofday (&et, NULL);
+    } catch (std::bad_alloc &e) {
+        errno = ENOMEM;
+        std::cerr << "Memory error\n";
+        return EXIT_FAILURE;
+    } catch (std::runtime_error &e) {
+        errno = EPROTO;
+        std::cerr << ": Runtime error: " + std::string (e.what ()) + "\n";
         return EXIT_FAILURE;
     }
 
-    control_loop (ctx);
+    elapse = get_elapse_time (st, et);
+    if (ctx->params.elapse_time) {
+        print_elapse_time (ctx, elapse);
+    }
 
-    fini_resource_query (ctx);
+    std::ofstream out_file;
+
+    if (r_fname_set (json_options)) {
+        out_file = open_fs (json_options);
+    }
+
+    std::ostream &out = (r_fname_set (json_options)) ? out_file : std::cout;
+
+    control_loop (ctx, json_options, out);
 
     return EXIT_SUCCESS;
 }

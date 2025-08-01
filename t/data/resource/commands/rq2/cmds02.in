@@ -1,7 +1,0 @@
-match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/basics/test001.yaml
-match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/basics/test001.yaml
-match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/basics/test001.yaml
-match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/basics/test001.yaml
-match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/basics/test001.yaml
-match allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test001.yaml
-quit
