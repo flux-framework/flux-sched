@@ -17,7 +17,7 @@
 namespace Flux {
 namespace resource_model {
 
-enum class job_lifecycle_t { INIT, ALLOCATED, RESERVED, CANCELED, ERROR };
+enum class job_lifecycle_t { INIT, ALLOCATED, RESERVED, MATCHED, CANCELED, ERROR };
 
 struct job_info_t {
     job_info_t (uint64_t j,
