@@ -44,6 +44,11 @@ export FLUX_LUA_PATH_PREPEND
 export LUA_PATH
 export LUA_CPATH
 
+# Only enable modprobe if this version of flux has working modprobe command
+if flux modprobe show sched-fluxion-resource >/dev/null 2>&1; then
+    export FLUX_RC_USE_MODPROBE=t
+fi
+
 if test "$TEST_LONG" = "t"; then
     test_set_prereq LONGTEST
 fi
