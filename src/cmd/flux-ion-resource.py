@@ -44,6 +44,10 @@ class ResourceModuleInterface:
         payload = {"cmd": "allocate", "jobid": jobid, "jobspec": jobspec_str}
         return self.handle.rpc("sched-fluxion-resource.match", payload).get()
 
+    def rpc_match_grow(self, jobid, jobspec_str):
+        payload = {"cmd": "grow_allocation", "jobid": jobid, "jobspec": jobspec_str}
+        return self.handle.rpc("sched-fluxion-resource.match", payload).get()
+
     def rpc_update(self, jobid, Res):
         payload = {"jobid": jobid, "R": Res}
         return self.handle.rpc("sched-fluxion-resource.update", payload).get()
@@ -128,6 +132,23 @@ def match_alloc_action(args):
         jobspec_str = yaml.dump(yaml.safe_load(stream))
         rmormod = ResourceModuleInterface()
         resp = rmormod.rpc_allocate(rmormod.rpc_next_jobid(), jobspec_str)
+        print(heading())
+        print(body(resp["jobid"], resp["status"], resp["at"], resp["overhead"]))
+        print("=" * width())
+        print("MATCHED RESOURCES:")
+        print(resp["R"])
+
+
+def match_grow_action(args):
+    """
+    Action for match grow sub-command
+    """
+
+    with open(args.jobspec, "r") as stream:
+        jobspec_str = yaml.dump(yaml.safe_load(stream))
+        jobid = args.jobid
+        rmormod = ResourceModuleInterface()
+        resp = rmormod.rpc_match_grow(jobid, jobspec_str)
         print(heading())
         print(body(resp["jobid"], resp["status"], resp["at"], resp["overhead"]))
         print("=" * width())
@@ -430,6 +451,10 @@ def parse_match(parser_m: argparse.ArgumentParser):
     parser_ma = subparsers_m.add_parser(
         "allocate", help="Allocate the best matching resources if found."
     )
+    parser_mg = subparsers_m.add_parser(
+        "grow_allocation",
+        help="Grow allocation with the best matching resources if found.",
+    )
     parser_ms = subparsers_m.add_parser(
         "allocate_with_satisfiability",
         help=(
@@ -451,12 +476,15 @@ def parse_match(parser_m: argparse.ArgumentParser):
     #
     # Jobspec positional argument for all match sub-commands
     #
-    for subparser in parser_ma, parser_ms, parser_mr, parser_fe:
+    for subparser in parser_ma, parser_mg, parser_ms, parser_mr, parser_fe:
         subparser.add_argument(
             "jobspec", metavar="Jobspec", type=str, help="Jobspec file name"
         )
+    # Add jobid positional argument for match grow
+    parser_mg.add_argument("jobid", metavar="Jobid", type=JobID, help="Jobid")
 
     parser_ma.set_defaults(func=match_alloc_action)
+    parser_mg.set_defaults(func=match_grow_action)
     parser_ms.set_defaults(func=match_alloc_sat_action)
     parser_mr.set_defaults(func=match_reserve_action)
     parser_fe.set_defaults(func=satisfiability_action)
