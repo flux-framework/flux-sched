@@ -335,7 +335,7 @@ static void update_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
     }
 
     if (!status)
-        status = get_status_string (at, at);
+        status = get_status_string ("update", at, at);
 
     if (flux_respond_pack (h,
                            msg,
@@ -383,7 +383,10 @@ static void match_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t
                              &js_str)
         < 0)
         goto error;
-    if (is_existent_jobid (ctx, jobid)) {
+    if (std::string ("without_allocating") == cmd
+        || std::string ("without_allocating_future") == cmd) {
+        jobid = -1;
+    } else if (is_existent_jobid (ctx, jobid)) {
         errno = EINVAL;
         flux_log_error (h, "%s: existent job (%jd).", __FUNCTION__, (intmax_t)jobid);
         goto error;
@@ -402,7 +405,7 @@ static void match_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t
         goto error;
     }
 
-    status = get_status_string (now, at);
+    status = get_status_string (cmd, now, at);
     if (flux_respond_pack (h,
                            msg,
                            "{s:I s:s s:f s:s s:I}",
@@ -438,6 +441,7 @@ static void match_multi_request_cb (flux_t *h,
     uint64_t jobid = 0;
     std::string errmsg;
     const char *cmd = nullptr;
+    const char *status = nullptr;
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
 
     if (!flux_msg_is_streaming (msg)) {
@@ -490,13 +494,14 @@ static void match_multi_request_cb (flux_t *h,
         }
 
         free (jobspec_str);
+        status = get_status_string (cmd, now, at);
         if (flux_respond_pack (h,
                                msg,
                                "{s:I s:s s:f s:s s:I}",
                                "jobid",
                                jobid,
                                "status",
-                               get_status_string (now, at),
+                               status,
                                "overhead",
                                overhead,
                                "R",
