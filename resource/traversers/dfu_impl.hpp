@@ -38,7 +38,8 @@ struct jobmeta_t {
     enum class alloc_type_t : int {
         AT_ALLOC = 0,
         AT_ALLOC_ORELSE_RESERVE = 1,
-        AT_SATISFIABILITY = 2
+        AT_SATISFIABILITY = 2,
+        AT_NO_ALLOC = 3
     };
 
     alloc_type_t alloc_type = alloc_type_t::AT_ALLOC;
