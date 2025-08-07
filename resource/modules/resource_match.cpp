@@ -1262,6 +1262,7 @@ static void update_match_perf (double elapsed, int64_t jobid, bool match_success
 static int track_schedule_info (std::shared_ptr<resource_ctx_t> &ctx,
                                 int64_t id,
                                 bool reserved,
+                                bool allocated,
                                 int64_t at,
                                 const std::string &jspec,
                                 const std::stringstream &R,
@@ -1272,13 +1273,17 @@ static int track_schedule_info (std::shared_ptr<resource_ctx_t> &ctx,
         return -1;
     }
     try {
-        job_lifecycle_t state =
-            (!reserved) ? job_lifecycle_t::ALLOCATED : job_lifecycle_t::RESERVED;
-        ctx->jobs[id] = std::make_shared<job_info_t> (id, state, at, "", jspec, R.str (), elapse);
-        if (!reserved)
-            ctx->allocations[id] = id;
+        job_lifecycle_t state;
+        if (allocated)
+            state = (!reserved) ? job_lifecycle_t::ALLOCATED : job_lifecycle_t::RESERVED;
         else
-            ctx->reservations[id] = id;
+            state = job_lifecycle_t::MATCHED;
+        ctx->jobs[id] = std::make_shared<job_info_t> (id, state, at, "", jspec, R.str (), elapse);
+        if (allocated)
+            if (reserved)
+                ctx->reservations[id] = id;
+            else
+                ctx->allocations[id] = id;
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;
         return -1;
@@ -1529,8 +1534,16 @@ int run_match (std::shared_ptr<resource_ctx_t> &ctx,
     *overhead = elapsed.count ();
     update_match_perf (*overhead, jobid, true);
 
-    if (cmd != std::string ("satisfiability")) {
-        if ((rc = track_schedule_info (ctx, jobid, rsv, *at, jstr, o, *overhead)) != 0) {
+    if (op != match_op_t::MATCH_SATISFIABILITY) {
+        if ((rc = track_schedule_info (ctx,
+                                       jobid,
+                                       rsv,
+                                       op != match_op_t::MATCH_WITHOUT_ALLOCATING,
+                                       *at,
+                                       jstr,
+                                       o,
+                                       *overhead))
+            != 0) {
             flux_log_error (ctx->h,
                             "%s: can't add job info (id=%jd)",
                             __FUNCTION__,
@@ -1576,7 +1589,7 @@ int run_update (std::shared_ptr<resource_ctx_t> &ctx,
     elapsed = std::chrono::system_clock::now () - start;
     overhead = elapsed.count ();
     update_match_perf (overhead, jobid, true);
-    if ((rc = track_schedule_info (ctx, jobid, false, at, "", o, overhead)) != 0) {
+    if ((rc = track_schedule_info (ctx, jobid, false, true, at, "", o, overhead)) != 0) {
         flux_log_error (ctx->h, "%s: can't add job info (id=%jd)", __FUNCTION__, (intmax_t)jobid);
         goto done;
     }
