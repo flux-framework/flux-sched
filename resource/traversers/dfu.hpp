@@ -96,7 +96,7 @@ class dfu_traverser_t {
      *  \param op        schedule operation:
      *                       allocate, allocate_with_satisfiability,
      *                       allocate_orelse_reserve, satisfiability,
-     *                       without_allocating.
+     *                       without_allocating, or without_allocating_future.
      *  \param id        job ID to use for the schedule operation.
      *  \param at[out]   when the job is scheduled if reserved.
      *  \return          0 on success; -1 on error.

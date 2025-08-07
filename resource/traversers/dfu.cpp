@@ -78,7 +78,8 @@ int dfu_traverser_t::request_feasible (detail::jobmeta_t const &meta,
     // check if there are enough nodes up at all
     if (target_nodes > get_graph_db ()->metadata.nodes_up) {
         if (op == match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE || op == match_op_t::MATCH_ALLOCATE
-            || op == match_op_t::MATCH_WITHOUT_ALLOCATING) {
+            || op == match_op_t::MATCH_WITHOUT_ALLOCATING
+            || op == match_op_t::MATCH_WITHOUT_ALLOCATING_FUTURE) {
             errno = EBUSY;
             return -1;
         }
@@ -124,7 +125,8 @@ int dfu_traverser_t::request_feasible (detail::jobmeta_t const &meta,
     if (feasible_nodes < target_nodes) {
         // no chance, don't even try
         if (op == match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE || op == match_op_t::MATCH_ALLOCATE
-            || op == match_op_t::MATCH_WITHOUT_ALLOCATING) {
+            || op == match_op_t::MATCH_WITHOUT_ALLOCATING
+            || op == match_op_t::MATCH_WITHOUT_ALLOCATING_FUTURE) {
             errno = EBUSY;
             return -1;
         }
@@ -193,6 +195,10 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
         case match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE: {
             /* Or else reserve */
             meta.alloc_type = jobmeta_t::alloc_type_t::AT_ALLOC_ORELSE_RESERVE;
+        }
+            [[fallthrough]];
+        case match_op_t::MATCH_WITHOUT_ALLOCATING_FUTURE: {
+            /* Seek to first successful match */
             t = meta.at + 1;
             p = (*get_graph ())[root].idata.subplans.at (dom);
             len = planner_multi_resources_len (p);
@@ -395,7 +401,8 @@ int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
         return -1;
 
     // If matching without allocation, set alloc_type to prevent allocation in update
-    if (op == match_op_t::MATCH_WITHOUT_ALLOCATING)
+    if (op == match_op_t::MATCH_WITHOUT_ALLOCATING
+        || op == match_op_t::MATCH_WITHOUT_ALLOCATING_FUTURE)
         meta.alloc_type = jobmeta_t::alloc_type_t::AT_NO_ALLOC;
 
     if (op == match_op_t::MATCH_SATISFIABILITY) {
