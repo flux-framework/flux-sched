@@ -260,10 +260,17 @@ int dfu_impl_t::upd_sched (vtx_t u,
                            bool excl_parent)
 {
     int rc = -1;
-    if ((rc = upd_plan (u, s, needs, excl, jobmeta, full, n)) == -1)
-        goto done;
-    if ((rc = upd_meta (u, s, needs, excl, n, jobmeta, dfu, to_parent)) == -1) {
-        goto done;
+
+    // No need to update scheduling if NO_ALLOC is set; count exclusive vertices
+    if (jobmeta.alloc_type == jobmeta_t::alloc_type_t::AT_NO_ALLOC) {
+        if (excl)
+            n++;
+    } else {
+        if ((rc = upd_plan (u, s, needs, excl, jobmeta, full, n)) == -1)
+            goto done;
+        if ((rc = upd_meta (u, s, needs, excl, n, jobmeta, dfu, to_parent)) == -1) {
+            goto done;
+        }
     }
     // emit vertex if writer emits exclusive subtrees, or if the parent vertex is
     // not exclusive
