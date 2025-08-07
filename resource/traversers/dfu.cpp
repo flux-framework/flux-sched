@@ -76,7 +76,8 @@ int dfu_traverser_t::request_feasible (detail::jobmeta_t const &meta,
 
     // check if there are enough nodes up at all
     if (target_nodes > get_graph_db ()->metadata.nodes_up) {
-        if (op == match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE || op == match_op_t::MATCH_ALLOCATE) {
+        if (op == match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE || op == match_op_t::MATCH_ALLOCATE
+            || op == match_op_t::MATCH_WITHOUT_ALLOCATING) {
             errno = EBUSY;
             return -1;
         }
@@ -99,7 +100,10 @@ int dfu_traverser_t::request_feasible (detail::jobmeta_t const &meta,
             get_graph_db ()->metadata.graph_duration.graph_end.time_since_epoch ())
             .count ();
     // only the initial time matters for allocate
-    const int64_t target_time = op == match_op_t::MATCH_ALLOCATE ? meta.at : graph_end - 1;
+    const int64_t target_time =
+        op == match_op_t::MATCH_ALLOCATE || op == match_op_t::MATCH_WITHOUT_ALLOCATING
+            ? meta.at
+            : graph_end - 1;
     int feasible_nodes = 0;
     for (auto const &node_vtx : all_nodes) {
         auto const &node = g[node_vtx];
@@ -118,7 +122,8 @@ int dfu_traverser_t::request_feasible (detail::jobmeta_t const &meta,
     }
     if (feasible_nodes < target_nodes) {
         // no chance, don't even try
-        if (op == match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE || op == match_op_t::MATCH_ALLOCATE) {
+        if (op == match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE || op == match_op_t::MATCH_ALLOCATE
+            || op == match_op_t::MATCH_WITHOUT_ALLOCATING) {
             errno = EBUSY;
             return -1;
         }
@@ -217,6 +222,9 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
             break;
         }
         case match_op_t::MATCH_ALLOCATE:
+            errno = EBUSY;
+            break;
+        case match_op_t::MATCH_WITHOUT_ALLOCATING:
             errno = EBUSY;
             break;
         default:
@@ -375,6 +383,10 @@ int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
     if (meta.build (jobspec, detail::jobmeta_t::alloc_type_t::AT_ALLOC, jobid, *at, graph_duration)
         < 0)
         return -1;
+
+    // If matching without allocation, set meta.AT to prevent allocation in update
+    if (op == match_op_t::MATCH_WITHOUT_ALLOCATING)
+        meta.alloc_type = jobmeta_t::alloc_type_t::AT_NO_ALLOC;
 
     if ((op == match_op_t::MATCH_SATISFIABILITY)
         && (rc = is_satisfiable (jobspec, meta, x, root, dfv)) == 0) {
