@@ -122,9 +122,13 @@ struct resource_ctx_t : public resource_interface_t {
 // Request Handler Routines
 ////////////////////////////////////////////////////////////////////////////////
 
-inline std::string get_status_string (int64_t now, int64_t at)
+inline std::string get_status_string (std::string cmd, int64_t now, int64_t at)
 {
-    return (at == now) ? "ALLOCATED" : "RESERVED";
+    if (cmd == std::string ("without_allocating")
+        || cmd == std::string ("without_allocating_future"))
+        return "MATCHED";
+    else
+        return (at == now) ? "ALLOCATED" : "RESERVED";
 }
 
 inline bool is_existent_jobid (const std::shared_ptr<resource_ctx_t> &ctx, uint64_t jobid)

@@ -1530,7 +1530,8 @@ int run_match (std::shared_ptr<resource_ctx_t> &ctx,
     *overhead = elapsed.count ();
     update_match_perf (*overhead, jobid, true);
 
-    if (cmd != std::string ("satisfiability")) {
+    if (op != match_op_t::MATCH_SATISFIABILITY && op != match_op_t::MATCH_WITHOUT_ALLOCATING
+        && op != match_op_t::MATCH_WITHOUT_ALLOCATING_FUTURE) {
         if ((rc = track_schedule_info (ctx, jobid, rsv, *at, jstr, o, *overhead)) != 0) {
             flux_log_error (ctx->h,
                             "%s: can't add job info (id=%jd)",
