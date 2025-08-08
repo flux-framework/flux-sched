@@ -177,6 +177,23 @@ int64_t planner_avail_resources_during (planner_t *ctx, int64_t at, uint64_t dur
  */
 int64_t planner_avail_resources_at (planner_t *ctx, int64_t at);
 
+/*! Find and return the earliest point in integer time when the requested resources
+ *  become unavailable.
+ *
+ *  Please see note on semantics for planner_avail_time_first.
+ *  TLDR: This function returns the time at which the state changes.
+ *
+ *  \param ctx          opaque planner context returned from planner_new.
+ *  \param on_or_after  unavailable on or after the specified time.
+ *  \param request      resource count request.
+ *  \return             earliest time at which the request cannot be satisfied;
+ *                      -1 on an error with errno set as follows:
+ *                          EINVAL: invalid argument.
+ *                          ERANGE: request is an out-of-range value.
+ *                          ENOENT: no scheduleable point
+ */
+int64_t planner_unavail_time_first (planner_t *ctx, int64_t on_or_after, uint64_t request);
+
 /*! Add a new span to the planner and update the planner's resource/time state.
  *  Reset the planner's iterator so that planner_avail_time_next will be made
  *  to return the earliest schedulable point.
