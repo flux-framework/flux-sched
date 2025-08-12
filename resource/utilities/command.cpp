@@ -110,21 +110,7 @@ command_t commands[] =
      {"quit", "q", cmd_quit, "Quit the session: resource-query> quit"},
      {"NA", "NA", (cmd_func_f *)NULL, "NA"}};
 
-static int do_remove (std::shared_ptr<resource_context_t> &ctx, int64_t jobid)
-{
-    int rc = -1;
-    if ((rc = ctx->traverser->remove ((int64_t)jobid)) == 0) {
-        if (ctx->jobs.find (jobid) != ctx->jobs.end ()) {
-            std::shared_ptr<job_info_t> info = ctx->jobs[jobid];
-            info->state = job_lifecycle_t::CANCELED;
-        }
-    } else {
-        std::cout << ctx->traverser->err_message ();
-    }
-    return rc;
-}
-
-static int do_partial_remove (std::shared_ptr<resource_context_t> &ctx,
+static int do_partial_remove (std::shared_ptr<detail::resource_query_t> &ctx,
                               std::shared_ptr<resource_reader_base_t> &reader,
                               int64_t jobid,
                               const std::string &R_cancel,
@@ -143,13 +129,14 @@ static int do_partial_remove (std::shared_ptr<resource_context_t> &ctx,
     return rc;
 }
 
-static void print_sat_info (std::shared_ptr<resource_context_t> &ctx,
+static void print_sat_info (std::shared_ptr<detail::resource_query_t> &ctx,
                             std::ostream &out,
                             bool sat,
-                            double elapse,
-                            unsigned int pre,
-                            unsigned int post)
+                            double elapse)
 {
+    unsigned int pre = ctx->preorder_count ();
+    unsigned int post = ctx->postorder_count ();
+
     std::string satstr = sat ? "Satisfiable" : "Unsatisfiable";
     out << "INFO:"
         << " =============================" << std::endl;
@@ -166,17 +153,18 @@ static void print_sat_info (std::shared_ptr<resource_context_t> &ctx,
     }
 }
 
-static void print_schedule_info (std::shared_ptr<resource_context_t> &ctx,
+static void print_schedule_info (std::shared_ptr<detail::resource_query_t> &ctx,
                                  std::ostream &out,
                                  uint64_t jobid,
                                  const std::string &jobspec_fn,
                                  bool matched,
                                  int64_t at,
                                  bool sat,
-                                 double elapse,
-                                 unsigned int pre,
-                                 unsigned int post)
+                                 double elapse)
 {
+    unsigned int pre = ctx->preorder_count ();
+    unsigned int post = ctx->postorder_count ();
+
     if (matched) {
         job_lifecycle_t st;
         std::string mode = (at == 0) ? "ALLOCATED" : "RESERVED";
@@ -227,10 +215,9 @@ static void print_schedule_info (std::shared_ptr<resource_context_t> &ctx,
         out << "INFO:"
             << " =============================" << std::endl;
     }
-    ctx->jobid_counter++;
 }
 
-static void update_match_perf (std::shared_ptr<resource_context_t> &ctx, double elapse)
+static void update_match_perf (std::shared_ptr<detail::resource_query_t> &ctx, double elapse)
 {
     ctx->perf.min = (ctx->perf.min > elapse) ? elapse : ctx->perf.min;
     ctx->perf.max = (ctx->perf.max < elapse) ? elapse : ctx->perf.max;
@@ -244,173 +231,133 @@ double get_elapse_time (timeval &st, timeval &et)
     return ts2 - ts1;
 }
 
-static int run_match (std::shared_ptr<resource_context_t> &ctx,
+static int run_match (std::shared_ptr<detail::resource_query_t> &ctx,
                       int64_t jobid,
-                      const std::string cmd,
+                      const match_op_t match_op,
                       const std::string &jobspec_fn,
-                      Flux::Jobspec::Jobspec &job)
+                      std::ostream &out)
 {
     int rc = 0;
-    int rc2 = 0;
-    bool sat = true;
     int64_t at = 0;
-    std::stringstream o;
-    double elapse = 0.0f;
-    unsigned int preorder_count = 0;
-    unsigned int postorder_count = 0;
-    struct timeval st, et;
-    std::ostream &out = (ctx->params.r_fname != "") ? ctx->params.r_out : std::cout;
+    bool reserved = false;
+    bool sat = true;
+    bool matched = true;
+    double ov = 0.0;
+    std::string R = "";
 
-    if ((rc = gettimeofday (&st, NULL)) < 0) {
-        std::cerr << "ERROR: gettimeofday: " << strerror (errno) << std::endl;
-        goto done;
+    std::ifstream jobspec_in (jobspec_fn);
+    if (!jobspec_in) {
+        std::cerr << "ERROR: can't open " << jobspec_fn << std::endl;
+        return 0;
+    }
+    std::string jobspec ((std::istreambuf_iterator<char> (jobspec_in)),
+                         (std::istreambuf_iterator<char> ()));
+
+    jobspec_in.close ();
+
+    detail::reapi_cli_t::match_allocate (ctx.get (), match_op, jobspec, jobid, reserved, R, at, ov);
+
+    // check for match success
+    if ((errno == ENODEV) || (errno == EBUSY) || (errno == EINVAL) || (errno == ENOENT)) {
+        matched = false;
+        rc = -1;
     }
 
-    if (cmd == "allocate")
-        rc2 = ctx->traverser->run (job,
-                                   ctx->writers,
-                                   match_op_t::MATCH_ALLOCATE,
-                                   (int64_t)jobid,
-                                   &at);
-    else if (cmd == "allocate_with_satisfiability")
-        rc2 = ctx->traverser->run (job,
-                                   ctx->writers,
-                                   match_op_t::MATCH_ALLOCATE_W_SATISFIABILITY,
-                                   (int64_t)jobid,
-                                   &at);
-    else if (cmd == "allocate_orelse_reserve")
-        rc2 = ctx->traverser->run (job,
-                                   ctx->writers,
-                                   match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE,
-                                   (int64_t)jobid,
-                                   &at);
-    else if (cmd == "satisfiability")
-        rc2 = ctx->traverser->run (job,
-                                   ctx->writers,
-                                   match_op_t::MATCH_SATISFIABILITY,
-                                   (int64_t)jobid,
-                                   &at);
-    else
-        goto done;
-
-    if ((rc2 != 0) && (errno == ENODEV))
+    // check for satisfiability
+    if (errno == ENODEV || (errno == ENOENT))
         sat = false;
 
-    if (ctx->traverser->err_message () != "") {
-        std::cerr << "ERROR: " << ctx->traverser->err_message ();
-    }
-    if ((rc = ctx->writers->emit (o)) < 0) {
-        std::cerr << "ERROR: match writer emit: " << strerror (errno) << std::endl;
-        goto done;
+    if (detail::reapi_cli_t::get_err_message () != "") {
+        std::cerr << detail::reapi_cli_t::get_err_message ();
+        detail::reapi_cli_t::clear_err_message ();
     }
 
-    out << o.str ();
+    out << R;
 
-    if ((rc = gettimeofday (&et, NULL)) < 0) {
-        std::cerr << "ERROR: gettimeofday: " << strerror (errno) << std::endl;
-        goto done;
-    }
-
-    elapse = get_elapse_time (st, et);
-    preorder_count = ctx->traverser->get_total_preorder_count ();
-    postorder_count = ctx->traverser->get_total_postorder_count ();
-    update_match_perf (ctx, elapse);
-
-    if (cmd != "satisfiability")
-        print_schedule_info (ctx,
-                             out,
-                             jobid,
-                             jobspec_fn,
-                             rc2 == 0,
-                             at,
-                             sat,
-                             elapse,
-                             preorder_count,
-                             postorder_count);
+    if (match_op != match_op_t::MATCH_SATISFIABILITY)
+        print_schedule_info (ctx, out, jobid, jobspec_fn, matched, at, sat, ov);
     else
-        print_sat_info (ctx, out, sat, elapse, preorder_count, postorder_count);
+        print_sat_info (ctx, out, sat, ov);
 
-done:
-    return rc + rc2;
+    return rc;
 }
 
-int cmd_match (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+int cmd_match (std::shared_ptr<detail::resource_query_t> &ctx,
+               std::vector<std::string> &args,
+               std::ostream &out)
 {
+    match_op_t match_op;
+
     if (args.size () != 3) {
         std::cerr << "ERROR: malformed command" << std::endl;
         return 0;
     }
     std::string subcmd = args[1];
-    if (!(subcmd == "allocate" || subcmd == "allocate_orelse_reserve"
-          || subcmd == "allocate_with_satisfiability" || subcmd == "satisfiability")) {
+    if (subcmd == "allocate") {
+        match_op = match_op_t::MATCH_ALLOCATE;
+    } else if (subcmd == "allocate_orelse_reserve") {
+        match_op = match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE;
+    } else if (subcmd == "allocate_with_satisfiability") {
+        match_op = match_op_t::MATCH_ALLOCATE_W_SATISFIABILITY;
+    } else if (subcmd == "satisfiability") {
+        match_op = match_op_t::MATCH_SATISFIABILITY;
+    } else {
         std::cerr << "ERROR: unknown subcmd " << args[1] << std::endl;
         return 0;
     }
 
-    try {
-        int64_t jobid = ctx->jobid_counter;
-        std::string &jobspec_fn = args[2];
-        std::ifstream jobspec_in (jobspec_fn);
-        if (!jobspec_in) {
-            std::cerr << "ERROR: can't open " << jobspec_fn << std::endl;
-            return 0;
-        }
-        Flux::Jobspec::Jobspec job{jobspec_in};
-        jobspec_in.close ();
+    uint64_t jobid = ctx->get_job_counter ();
+    std::string &jobspec_fn = args[2];
 
-        run_match (ctx, jobid, subcmd, jobspec_fn, job);
+    run_match (ctx, jobid, match_op, jobspec_fn, out);
 
-    } catch (parse_error &e) {
-        std::cerr << "ERROR: Jobspec error for " << ctx->jobid_counter << ": " << e.what ()
-                  << std::endl;
-    }
     return 0;
 }
 
-int cmd_match_multi (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+int cmd_match_multi (std::shared_ptr<detail::resource_query_t> &ctx,
+                     std::vector<std::string> &args,
+                     std::ostream &out)
 {
+    int rc = 0;
     size_t i;
+    match_op_t match_op;
 
     if (args.size () <= 3) {
         std::cerr << "ERROR: malformed command" << std::endl;
         return 0;
     }
     std::string subcmd = args[1];
-    if (!(subcmd == "allocate" || subcmd == "allocate_orelse_reserve"
-          || subcmd == "allocate_with_satisfiability")) {
+    if (subcmd == "allocate") {
+        match_op = match_op_t::MATCH_ALLOCATE;
+    } else if (subcmd == "allocate_orelse_reserve") {
+        match_op = match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE;
+    } else if (subcmd == "allocate_with_satisfiability") {
+        match_op = match_op_t::MATCH_ALLOCATE_W_SATISFIABILITY;
+    } else if (subcmd == "satisfiability") {
+        match_op = match_op_t::MATCH_SATISFIABILITY;
+    } else {
         std::cerr << "ERROR: unknown subcmd " << args[1] << std::endl;
         return 0;
     }
 
-    try {
-        for (i = 2; i < args.size (); i++) {
-            int64_t jobid = ctx->jobid_counter;
-            std::string &jobspec_fn = args[i];
-            std::ifstream jobspec_in (jobspec_fn);
-            if (!jobspec_in) {
-                std::cerr << "ERROR: can't open " << jobspec_fn << std::endl;
-                return 0;
-            }
-            Flux::Jobspec::Jobspec job{jobspec_in};
-            jobspec_in.close ();
-
-            if (run_match (ctx, jobid, subcmd, jobspec_fn, job) < 0)
-                return 0;
-        }
-    } catch (parse_error &e) {
-        std::cerr << "ERROR: Jobspec error for " << ctx->jobid_counter << ": " << e.what ()
-                  << std::endl;
+    for (i = 2; i < args.size (); i++) {
+        int64_t jobid = ctx->jobid_counter;
+        std::string &jobspec_fn = args[i];
+        rc = run_match (ctx, jobid, match_op, jobspec_fn, out);
+        if (rc != 0)
+            break;
     }
     return 0;
 }
 
-static int update_run (std::shared_ptr<resource_context_t> &ctx,
+static int update_run (std::shared_ptr<detail::resource_query_t> &ctx,
                        const std::string &fn,
                        const std::string &str,
                        int64_t id,
                        int64_t at,
                        uint64_t d,
-                       const std::string &reader)
+                       const std::string &reader,
+                       std::ostream &out)
 {
     int rc = -1;
     double elapse = 0.0f;
@@ -443,19 +390,21 @@ static int update_run (std::shared_ptr<resource_context_t> &ctx,
     }
 
     ctx->writers->emit (o);
-    std::ostream &out = (ctx->params.r_fname != "") ? ctx->params.r_out : std::cout;
     out << o.str ();
     gettimeofday (&et, NULL);
 
     elapse = get_elapse_time (st, et);
     update_match_perf (ctx, elapse);
     ctx->jobid_counter = id;
-    print_schedule_info (ctx, out, id, fn, rc == 0, at, true, elapse, 0, 0);
+    print_schedule_info (ctx, out, id, fn, rc == 0, at, true, elapse);
+    ctx->jobid_counter++;
 
     return 0;
 }
 
-static int update (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+static int update (std::shared_ptr<detail::resource_query_t> &ctx,
+                   std::vector<std::string> &args,
+                   std::ostream &out)
 {
     uint64_t d = 0;
     int64_t at = 0;
@@ -494,17 +443,19 @@ static int update (std::shared_ptr<resource_context_t> &ctx, std::vector<std::st
     buffer << jgf_file.rdbuf ();
     jgf_file.close ();
 
-    return update_run (ctx, args[3], buffer.str (), jobid, at, d, reader);
+    return update_run (ctx, args[3], buffer.str (), jobid, at, d, reader, out);
 }
 
-int cmd_update (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+int cmd_update (std::shared_ptr<detail::resource_query_t> &ctx,
+                std::vector<std::string> &args,
+                std::ostream &out)
 {
     try {
         if (args.size () != 7) {
             std::cerr << "ERROR: malformed command" << std::endl;
             return 0;
         }
-        update (ctx, args);
+        update (ctx, args, out);
 
     } catch (std::ifstream::failure &e) {
         std::cerr << "ERROR: file I/O exception: " << e.what () << std::endl;
@@ -514,7 +465,9 @@ int cmd_update (std::shared_ptr<resource_context_t> &ctx, std::vector<std::strin
     return 0;
 }
 
-static int attach (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+static int attach (std::shared_ptr<detail::resource_query_t> &ctx,
+                   std::vector<std::string> &args,
+                   std::ostream &out)
 {
     std::stringstream buffer{};
     std::shared_ptr<resource_reader_base_t> rd;
@@ -548,7 +501,10 @@ static int attach (std::shared_ptr<resource_context_t> &ctx, std::vector<std::st
     return 0;
 }
 
-static int remove (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+static int remove (std::shared_ptr<detail::resource_query_t> &ctx,
+                   std::vector<std::string> &args,
+
+                   std::ostream &out)
 {
     const std::string target = args[1];
     const std::string is_path = args[2];
@@ -596,14 +552,16 @@ static int remove (std::shared_ptr<resource_context_t> &ctx, std::vector<std::st
     return 0;
 }
 
-int cmd_attach (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+int cmd_attach (std::shared_ptr<detail::resource_query_t> &ctx,
+                std::vector<std::string> &args,
+                std::ostream &out)
 {
     try {
         if (args.size () != 2) {
             std::cerr << "ERROR: malformed command" << std::endl;
             return 0;
         }
-        attach (ctx, args);
+        attach (ctx, args, out);
 
     } catch (std::ifstream::failure &e) {
         std::cerr << "ERROR: file I/O exception: " << e.what () << std::endl;
@@ -613,14 +571,16 @@ int cmd_attach (std::shared_ptr<resource_context_t> &ctx, std::vector<std::strin
     return 0;
 }
 
-int cmd_remove (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+int cmd_remove (std::shared_ptr<detail::resource_query_t> &ctx,
+                std::vector<std::string> &args,
+                std::ostream &out)
 {
     try {
         if (args.size () != 3) {
             std::cerr << "ERROR: malformed command" << std::endl;
             return 0;
         }
-        remove (ctx, args);
+        remove (ctx, args, out);
 
     } catch (std::ifstream::failure &e) {
         std::cerr << "ERROR: file I/O exception: " << e.what () << std::endl;
@@ -630,7 +590,9 @@ int cmd_remove (std::shared_ptr<resource_context_t> &ctx, std::vector<std::strin
     return 0;
 }
 
-int cmd_find (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+int cmd_find (std::shared_ptr<detail::resource_query_t> &ctx,
+              std::vector<std::string> &args,
+              std::ostream &out)
 {
     int rc = -1;
     int i = 0;
@@ -641,18 +603,14 @@ int cmd_find (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string>
         std::cerr << "ERROR: malformed command: " << std::endl;
         return 0;
     }
-    std::ostream &out = (ctx->params.r_fname != "") ? ctx->params.r_out : std::cout;
     std::string criteria = args[1];
     for (int i = 2; i < static_cast<int> (args.size ()); ++i)
         criteria += " " + args[i];
-    if ((rc = ctx->traverser->find (ctx->writers, criteria)) < 0) {
-        if (ctx->traverser->err_message () != "") {
-            std::cerr << "ERROR: " << ctx->traverser->err_message ();
+    if ((rc = detail::reapi_cli_t::find (ctx.get (), criteria, o)) < 0) {
+        if (detail::reapi_cli_t::get_err_message () != "") {
+            std::cerr << detail::reapi_cli_t::get_err_message ();
+            detail::reapi_cli_t::clear_err_message ();
         }
-        goto done;
-    }
-    if (ctx->writers->emit_json (&o) < 0) {
-        std::cerr << "ERROR: writer emit: " << strerror (errno) << std::endl;
         goto done;
     }
     if (o) {
@@ -680,7 +638,9 @@ done:
     return 0;
 }
 
-int cmd_cancel (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+int cmd_cancel (std::shared_ptr<detail::resource_query_t> &ctx,
+                std::vector<std::string> &args,
+                std::ostream &out)
 {
     if (args.size () < 2 || args.size () > 3) {
         std::cerr << "ERROR: malformed command" << std::endl;
@@ -693,30 +653,20 @@ int cmd_cancel (std::shared_ptr<resource_context_t> &ctx, std::vector<std::strin
     std::string stats = "";
     unsigned int preorder_count = 0;
     unsigned int postorder_count = 0;
-    std::ostream &out = (ctx->params.r_fname != "") ? ctx->params.r_out : std::cout;
 
     if (args.size () == 3) {
         stats = args[2];
     }
 
-    if (ctx->allocations.find (jobid) != ctx->allocations.end ()) {
-        if ((rc = do_remove (ctx, jobid)) == 0)
-            ctx->allocations.erase (jobid);
-    } else if (ctx->reservations.find (jobid) != ctx->reservations.end ()) {
-        if ((rc = do_remove (ctx, jobid)) == 0)
-            ctx->reservations.erase (jobid);
-    } else {
-        std::cerr << "ERROR: nonexistent job " << jobid << std::endl;
-        goto done;
-    }
-
-    if (rc != 0) {
-        std::cerr << "ERROR: error encountered while removing job " << jobid << std::endl;
+    if (detail::reapi_cli_t::cancel (ctx.get (), jobid, false) != 0) {
+        std::cerr << detail::reapi_cli_t::get_err_message ();
+        detail::reapi_cli_t::clear_err_message ();
+        return 0;
     }
 
     if (stats == "stats") {
-        preorder_count = ctx->traverser->get_total_preorder_count ();
-        postorder_count = ctx->traverser->get_total_postorder_count ();
+        preorder_count = detail::reapi_cli_t::preorder_count (ctx.get ());
+        postorder_count = detail::reapi_cli_t::postorder_count (ctx.get ());
         out << "INFO:"
             << " =============================" << std::endl;
         out << "INFO:"
@@ -731,7 +681,9 @@ done:
     return 0;
 }
 
-int cmd_partial_cancel (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+int cmd_partial_cancel (std::shared_ptr<detail::resource_query_t> &ctx,
+                        std::vector<std::string> &args,
+                        std::ostream &out)
 {
     int rc = -1;
     std::stringstream buffer{};
@@ -750,7 +702,6 @@ int cmd_partial_cancel (std::shared_ptr<resource_context_t> &ctx, std::vector<st
     std::string stats = "";
     unsigned int preorder_count = 0;
     unsigned int postorder_count = 0;
-    std::ostream &out = (ctx->params.r_fname != "") ? ctx->params.r_out : std::cout;
 
     if (args.size () == 5) {
         stats = args[4];
@@ -814,7 +765,9 @@ done:
     return 0;
 }
 
-int cmd_set_property (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+int cmd_set_property (std::shared_ptr<detail::resource_query_t> &ctx,
+                      std::vector<std::string> &args,
+                      std::ostream &out)
 {
     if (args.size () != 3) {
         std::cerr << "ERROR: malformed command" << std::endl;
@@ -823,7 +776,6 @@ int cmd_set_property (std::shared_ptr<resource_context_t> &ctx, std::vector<std:
 
     std::string resource_path = args[1];
     std::string property_key, property_value;
-    std::ostream &out = (ctx->params.r_fname != "") ? ctx->params.r_out : std::cout;
     size_t pos = args[2].find ('=');
 
     if (pos == 0 || (pos == args[2].size () - 1) || pos == std::string::npos) {
@@ -857,7 +809,9 @@ int cmd_set_property (std::shared_ptr<resource_context_t> &ctx, std::vector<std:
     return 0;
 }
 
-int cmd_get_property (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+int cmd_get_property (std::shared_ptr<detail::resource_query_t> &ctx,
+                      std::vector<std::string> &args,
+                      std::ostream &out)
 {
     if (args.size () != 2) {
         std::cerr << "ERROR: malformed command" << std::endl;
@@ -865,7 +819,6 @@ int cmd_get_property (std::shared_ptr<resource_context_t> &ctx, std::vector<std:
     }
 
     std::string resource_path = args[1];
-    std::ostream &out = (ctx->params.r_fname != "") ? ctx->params.r_out : std::cout;
 
     std::map<std::string, std::vector<vtx_t>>::const_iterator it =
         ctx->db->metadata.by_path.find (resource_path);
@@ -890,7 +843,9 @@ int cmd_get_property (std::shared_ptr<resource_context_t> &ctx, std::vector<std:
     return 0;
 }
 
-int cmd_set_status (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+int cmd_set_status (std::shared_ptr<detail::resource_query_t> &ctx,
+                    std::vector<std::string> &args,
+                    std::ostream &out)
 {
     if (args.size () != 3) {
         std::cerr << "ERROR: malformed command" << std::endl;
@@ -901,8 +856,6 @@ int cmd_set_status (std::shared_ptr<resource_context_t> &ctx, std::vector<std::s
     std::map<std::string, std::vector<vtx_t>>::const_iterator it =
         ctx->db->metadata.by_path.find (vtx_path);
     resource_pool_t::string_to_status sts = resource_pool_t::str_to_status;
-
-    std::ostream &out = (ctx->params.r_fname != "") ? ctx->params.r_out : std::cout;
 
     if (it == ctx->db->metadata.by_path.end ()) {
         out << "Could not find path " << vtx_path << " in resource graph." << std::endl;
@@ -918,7 +871,9 @@ int cmd_set_status (std::shared_ptr<resource_context_t> &ctx, std::vector<std::s
     return ctx->traverser->mark (vtx_path, status_it->second);
 }
 
-int cmd_get_status (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+int cmd_get_status (std::shared_ptr<detail::resource_query_t> &ctx,
+                    std::vector<std::string> &args,
+                    std::ostream &out)
 {
     if (args.size () != 2) {
         std::cerr << "ERROR: malformed command" << std::endl;
@@ -929,8 +884,6 @@ int cmd_get_status (std::shared_ptr<resource_context_t> &ctx, std::vector<std::s
         ctx->db->metadata.by_path.find (vtx_path);
     resource_pool_t::string_to_status sts = resource_pool_t::str_to_status;
     std::string status = "";
-
-    std::ostream &out = (ctx->params.r_fname != "") ? ctx->params.r_out : std::cout;
 
     if (it == ctx->db->metadata.by_path.end ()) {
         out << "Could not find path " << vtx_path << " in resource graph." << std::endl;
@@ -958,7 +911,9 @@ int cmd_get_status (std::shared_ptr<resource_context_t> &ctx, std::vector<std::s
     return 0;
 }
 
-int cmd_list (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+int cmd_list (std::shared_ptr<detail::resource_query_t> &ctx,
+              std::vector<std::string> &args,
+              std::ostream &out)
 {
     for (auto &kv : ctx->jobs) {
         std::shared_ptr<job_info_t> info = kv.second;
@@ -970,26 +925,34 @@ int cmd_list (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string>
     return 0;
 }
 
-int cmd_info (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+int cmd_info (std::shared_ptr<detail::resource_query_t> &ctx,
+              std::vector<std::string> &args,
+              std::ostream &out)
 {
+    std::shared_ptr<job_info_t> info = nullptr;
+    std::string mode;
+
     if (args.size () != 2) {
         std::cerr << "ERROR: malformed command" << std::endl;
         return 0;
     }
     uint64_t jobid = (uint64_t)std::atoll (args[1].c_str ());
-    if (ctx->jobs.find (jobid) == ctx->jobs.end ()) {
-        std::cout << "ERROR: jobid doesn't exist: " << args[1] << std::endl;
+
+    if (detail::reapi_cli_t::info (ctx.get (), jobid, info) != 0) {
+        std::cerr << detail::reapi_cli_t::get_err_message ();
+        detail::reapi_cli_t::clear_err_message ();
         return 0;
     }
-    std::string mode;
-    std::shared_ptr<job_info_t> info = ctx->jobs[jobid];
+
     get_jobstate_str (info->state, mode);
     std::cout << "INFO: " << info->jobid << ", " << mode << ", " << info->scheduled_at << ", "
               << info->jobspec_fn << ", " << info->overhead << std::endl;
     return 0;
 }
 
-int cmd_stat (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+int cmd_stat (std::shared_ptr<detail::resource_query_t> &ctx,
+              std::vector<std::string> &args,
+              std::ostream &out)
 {
     if (args.size () != 1) {
         std::cerr << "ERROR: malformed command" << std::endl;
@@ -1009,7 +972,9 @@ int cmd_stat (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string>
     return 0;
 }
 
-int cmd_cat (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+int cmd_cat (std::shared_ptr<detail::resource_query_t> &ctx,
+             std::vector<std::string> &args,
+             std::ostream &out)
 {
     std::string &jspec_filename = args[1];
     std::ifstream jspec_in;
@@ -1023,7 +988,9 @@ int cmd_cat (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> 
     return 0;
 }
 
-int cmd_help (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+int cmd_help (std::shared_ptr<detail::resource_query_t> &ctx,
+              std::vector<std::string> &args,
+              std::ostream &out)
 {
     bool multi = true;
     bool found = false;
@@ -1047,7 +1014,9 @@ int cmd_help (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string>
     return 0;
 }
 
-int cmd_quit (std::shared_ptr<resource_context_t> &ctx, std::vector<std::string> &args)
+int cmd_quit (std::shared_ptr<detail::resource_query_t> &ctx,
+              std::vector<std::string> &args,
+              std::ostream &out)
 {
     return -1;
 }
