@@ -15,9 +15,10 @@ test_expect_success 'feasibility: loading test resources works' '
     load_test_resources ${excl_1N1B}
 '
 
-test_expect_success 'feasibility: loading resource and qmanager modules works' '
+test_expect_success 'feasibility: loading resource, feasibility, and qmanager modules works' '
     flux module load sched-fluxion-resource prune-filters=ALL:core \
 subsystems=containment policy=low &&
+    load_feasibility &&
     load_qmanager
 '
 
@@ -73,8 +74,9 @@ test_expect_success 'feasibility: cleanup active jobs' '
     cleanup_active_jobs
 '
 
-test_expect_success 'feasibility: removing resource and qmanager modules' '
+test_expect_success 'feasibility: removing resource, feasibility, and qmanager modules' '
     remove_qmanager &&
+    remove_feasibility &&
     remove_resource
 '
 

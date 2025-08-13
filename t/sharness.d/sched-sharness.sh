@@ -67,6 +67,10 @@ load_resource () {
     flux module load sched-fluxion-resource "$@"
 }
 
+load_feasibility () {
+    flux module load sched-fluxion-feasibility "$@"
+}
+
 reload_qmanager () {
     flux module reload -f sched-fluxion-qmanager "$@"
 }
@@ -84,12 +88,20 @@ reload_resource () {
     flux module reload -f sched-fluxion-resource "$@"
 }
 
+reload_feasibility () {
+    flux module reload -f sched-fluxion-feasibility "$@"
+}
+
 remove_qmanager () {
     flux module remove sched-fluxion-qmanager "$@"
 }
 
 remove_resource () {
     flux module remove sched-fluxion-resource "$@"
+}
+
+remove_feasibility () {
+    flux module remove sched-fluxion-feasibility "$@"
 }
 
 # Usage: load_test_resources hwloc-dir
