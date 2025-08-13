@@ -22,7 +22,7 @@ for entry in matrix["include"]:
 tags = {k: v for k, v in tags.items() if len(v) > 1}
 
 for image in tags.keys():
-    tag = f"fluxrm/flux-core:{image}"
+    tag = f"fluxrm/flux-sched:{image}"
     print(f"docker manifest create {tag} ", *tags[image])
     subprocess.run(["docker", "manifest", "create", tag, *tags[image]])
     print(f"docker manifest push {tag} ")
