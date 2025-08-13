@@ -15,6 +15,7 @@ export TEST_UNDER_FLUX_START_MODE=leader
 export FLUX_RC_EXTRA=${SHARNESS_TEST_SRCDIR}/../etc
 unset FLUXION_RESOURCE_RC_NOOP
 unset FLUXION_QMANAGER_RC_NOOP
+unset FLUX_MODPROBE_DISABLE
 TEST_UNDER_FLUX_AUGMENT_R=t
 
 test_under_flux 2 system
@@ -37,7 +38,7 @@ test_expect_success 'broker.quorum was set to 0 by system test personality' '
 	flux getattr broker.quorum >quorum.out &&
 	test_cmp quorum.exp quorum.out
 '
-test_expect_success HAVE_JQ 'startctl shows rank 1 pids as -1' '
+test_expect_success 'startctl shows rank 1 pids as -1' '
 	test $($startctl status | jq -r ".procs[1].pid") = "-1"
 '
 
@@ -70,7 +71,7 @@ test_expect_success 'start rank 1' '
 	$startctl run 1
 '
 
-test_expect_success HAVE_JQ 'startctl shows rank 1 pid not -1' '
+test_expect_success 'startctl shows rank 1 pid not -1' '
 	test $($startctl status | jq -r ".procs[1].pid") != "-1"
 '
 

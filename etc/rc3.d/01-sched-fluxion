@@ -1,5 +1,7 @@
 #!/bin/sh
 
+test -z "$FLUX_RC_USE_MODPROBE" || exit 0
+
 # Can be loaded on multiple ranks
 flux module remove -f sched-fluxion-feasibility
 

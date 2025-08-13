@@ -67,7 +67,7 @@ test_expect_success LONGTEST "${test004_desc}" '
 
 cmds005="${cmd_dir}/cmds05.in"
 test005_desc="Resource labels in jobspec carry through to JGF R"
-test_expect_success HAVE_JQ "${test005_desc}" '
+test_expect_success "${test005_desc}" '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds005} > cmds005 &&
     ${query} -d -L ${disag} -F jgf -S CA -P low -t 005.R.out \
 -r 400000 < cmds005 &&

@@ -2,8 +2,11 @@
 #
 # project-local sharness code for flux-sched
 #
+
 FLUXION_RESOURCE_RC_NOOP=1
 FLUXION_QMANAGER_RC_NOOP=1
+FLUX_MODPROBE_DISABLE=sched-fluxion-resource,sched-fluxion-qmanager
+
 if test -n "$FLUX_SCHED_TEST_INSTALLED"; then
   # Test against installed flux-sched, installed under same prefix as
   #   flux-core.
@@ -18,6 +21,7 @@ else
   FLUX_MODULE_PATH_PREPEND="${SHARNESS_BUILD_DIRECTORY}/qmanager/modules/:${FLUX_MODULE_PATH_PREPEND}"
   FLUX_EXEC_PATH_PREPEND="${SHARNESS_TEST_SRCDIR}/scripts":"${SHARNESS_TEST_SRCDIR}/../src/cmd"
   export PYTHONPATH="${SHARNESS_TEST_SRCDIR}/../src/python${PYTHONPATH:+:${PYTHONPATH}}"
+  export FLUX_MODPROBE_PATH="${SHARNESS_TEST_SRCDIR}/../etc/modprobe"
 fi
 
 # Setup FLUX_SOURCE_DIR for use in flux-sharness.sh
@@ -31,6 +35,7 @@ eval $(flux env)
 export FLUX_EXEC_PATH_PREPEND
 export FLUXION_RESOURCE_RC_NOOP
 export FLUXION_QMANAGER_RC_NOOP
+export FLUX_MODPROBE_DISABLE
 export FLUXION_RESOURCE_RC_PATH
 export FLUX_SCHED_CO_INST
 export FLUX_MODULE_PATH_PREPEND
@@ -38,6 +43,11 @@ export FLUX_LUA_CPATH_PREPEND
 export FLUX_LUA_PATH_PREPEND
 export LUA_PATH
 export LUA_CPATH
+
+# Only enable modprobe if this version of flux has working modprobe command
+if flux modprobe show sched-fluxion-resource >/dev/null 2>&1; then
+    export FLUX_RC_USE_MODPROBE=t
+fi
 
 if test "$TEST_LONG" = "t"; then
     test_set_prereq LONGTEST
