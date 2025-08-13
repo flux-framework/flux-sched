@@ -101,11 +101,10 @@ test_expect_success 'loading feasibility from non-load-file resource module work
 '
 
 test_expect_success 'loading job-validator conf works' '
-{ cat >conf.tmp << 'EOF'
-[ingest.validator]
-plugins = ["jobspec", "feasibility"]
-EOF
-} &&
+	cat <<-'EOF' >conf.tmp &&
+	[ingest.validator]
+	plugins = ["jobspec", "feasibility"]
+	EOF
     flux config load conf.tmp && rm conf.tmp &&
     flux config get | grep feasibility &&
     flux job-validator --list-plugins | grep feasibility
