@@ -10,7 +10,7 @@ fi
 
 PM=""
 case "$ID" in
-	ubuntu|debian)
+	ubuntu|debian|pop)
 		PM=apt
 		DEV_SUFFIX="-dev"
 		DEV_SUFFIX_APT="-dev"
