@@ -20,6 +20,7 @@ if test -n "$FLUX_RC_USE_MODPROBE"; then
     # below.
     test_expect_success 'fluxion immediately fails to be loaded with hwloc (modprobe)' '
 	test_must_fail flux start -Slog-stderr-level=7 \
+		-Sbroker.module-nopanic=1 \
 		flux module stats sched-fluxion-resource \
 		>modprobe.out 2>&1 &&
 	test_debug "cat modprobe.out" &&
@@ -30,7 +31,7 @@ else
     # Comment in the following to generated scheduling key to R
     # TEST_UNDER_FLUX_AUGMENT_R=t
 
-    test_under_flux 2 system
+    test_under_flux 2 system -Sbroker.module-nopanic=1
 
     SCHED_MODULE=$(flux module list | awk '$NF == "sched" {print $1}')
 

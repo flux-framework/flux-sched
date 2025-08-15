@@ -5,7 +5,7 @@ test_description='Test Synchronization Requirements for Fluxion modules'
 . `dirname $0`/sharness.sh
 
 export FLUX_SCHED_MODULE=none
-test_under_flux 1
+test_under_flux 1 full -Sbroker.module-nopanic=1
 
 # sched-simple acquires "exclusive" access to resource.
 
