@@ -36,6 +36,7 @@ class resource_prop_t {
     const std::string &get_prune_filters () const;
     const resource_prop_t &get_resource_prop () const;
     const int get_update_interval () const;
+    const std::string &get_traverser_policy () const;
 
     void set_load_file (const std::string &o);
     bool set_load_format (const std::string &o);
@@ -47,6 +48,7 @@ class resource_prop_t {
     void set_prune_filters (const std::string &o);
     void add_to_prune_filters (const std::string &o);
     void set_update_interval (const int i);
+    bool set_traverser_policy (const std::string &o);
 
     bool is_load_file_set () const;
     bool is_load_format_set () const;
@@ -57,6 +59,7 @@ class resource_prop_t {
     bool is_reserve_vtx_vec_set () const;
     bool is_prune_filters_set () const;
     bool is_update_interval_set () const;
+    bool is_traverser_policy_set () const;
 
     json_t *jsonify () const;
 
@@ -70,6 +73,7 @@ class resource_prop_t {
     int m_reserve_vtx_vec = 0;
     std::string m_prune_filters = RESOURCE_OPTS_UNSET_STR;
     int m_update_interval = 0;
+    std::string m_traverser_policy = RESOURCE_OPTS_UNSET_STR;
 };
 
 /*! resource match option set class
@@ -86,6 +90,7 @@ class resource_opts_t : public optmgr_parse_t {
         RESERVE_VTX_VEC = 60,   // reserve-vtx-vec
         PRUNE_FILTERS = 70,     // prune-filter
         UPDATE_INTERVAL = 80,   // update-interval
+        TRAVERSER_POLICY = 90,  // traverser
         UNKNOWN = 5000
     };
 
@@ -107,6 +112,7 @@ class resource_opts_t : public optmgr_parse_t {
     const std::string &get_prune_filters () const;
     const resource_prop_t &get_resource_prop () const;
     const int get_update_interval () const;
+    const std::string &get_traverser_policy () const;
 
     void set_load_file (const std::string &o);
     bool set_load_format (const std::string &o);
@@ -117,6 +123,7 @@ class resource_opts_t : public optmgr_parse_t {
     void set_reserve_vtx_vec (const int i);
     void set_prune_filters (const std::string &o);
     void set_update_interval (const int i);
+    bool set_traverser_policy (const std::string &o);
 
     bool is_load_file_set () const;
     bool is_load_format_set () const;
@@ -127,6 +134,7 @@ class resource_opts_t : public optmgr_parse_t {
     bool is_reserve_vtx_vec_set () const;
     bool is_prune_filters_set () const;
     bool is_update_interval_set () const;
+    bool is_traverser_policy_set () const;
 
     /*! Canonicalize the option set -- apply the general resource properties
      */
