@@ -15,7 +15,7 @@ jobspec1="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/basics/test001.yaml"
 export FLUX_URI_RESOLVE_LOCAL=t
 export FLUX_SCHED_MODULE=sched-simple
 
-test_under_flux 1
+test_under_flux 1 full -Sbroker.module-nopanic=1
 
 test_debug '
     echo ${grug} &&

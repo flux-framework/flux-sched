@@ -33,7 +33,7 @@ test_expect_success 'load fluxion' '
 	flux module load sched-fluxion-feasibility
 '
 test_expect_success 'submit a resilient job using all ranks' '
-	jobid=$(flux alloc --bg -xN4 -o exit-timeout=none --conf=tbon.topo=kary:0) &&
+	jobid=$(flux alloc --broker-opts=-Sbroker.module-nopanic=1 --bg -xN4 -o exit-timeout=none --conf=tbon.topo=kary:0) &&
 	flux proxy $jobid flux overlay status
 '
 test_expect_success 'a job on all ranks is satisfiable' '

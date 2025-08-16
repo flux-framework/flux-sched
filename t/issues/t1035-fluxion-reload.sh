@@ -11,7 +11,7 @@ run_timeout() {
 if test -z "$ISSUE_1035_TEST_ACTIVE"; then
     export ISSUE_1035_TEST_ACTIVE=t
     log "relaunching under test instance of size 4..."
-    exec flux start -s 4 $0 "$@"
+    exec flux start -Sbroker.module-nopanic=1 -s 4 $0 "$@"
 fi
 test $(flux resource list -no {nnodes}) -eq 4 || die "test requires 4 nodes"
 

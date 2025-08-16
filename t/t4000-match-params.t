@@ -13,7 +13,7 @@ ne_xml="${SHARNESS_TEST_SRCDIR}/data/hwloc-data/001N/exclusive/ne/0.xml"
 # test_under_flux is under sharness.d/
 #
 export FLUX_SCHED_MODULE=none
-test_under_flux 1
+test_under_flux 1 full -Sbroker.module-nopanic=1
 
 #
 # print only with --debug

@@ -9,7 +9,7 @@ log() { printf "issue#1182: $@\n" >&2; }
 if test "$ISSUE_1182_ACTIVE" != "t"; then
     export ISSUE_1182_ACTIVE=t
     log "Re-launching test script under flux-start"
-    exec flux start -s 4 $0
+    exec flux start -Sbroker.module-nopanic=1 -s 4 $0
 fi
 
 cat <<'EOF' >rcheck.py
