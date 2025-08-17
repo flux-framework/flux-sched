@@ -19,7 +19,7 @@ fi
 flux bulksubmit -n1 -o pty --job-name={./%} -t 10m \
 	--flags=waitable \
 	--quiet --watch  \
-	flux start {} \
+	flux start -Sbroker.module-nopanic=1 {} \
 	::: ${SHARNESS_TEST_SRCDIR}/issues/${T5100_ISSUES_GLOB}
 
 for id in $(flux jobs -ano {id}); do
