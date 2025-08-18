@@ -47,7 +47,7 @@ int reapi_cli_initialize (reapi_cli_ctx_t *ctx, const char *rgraph, const char *
  *
  *  \param ctx       reapi_cli_ctx_t context object
  *  \param match_op  match_op_t: set to specify the specific match option
- *                   from 1 of 4 choices:
+ *                   from 1 of 6 choices:
  *                   MATCH_ALLOCATE: try to allocate now and fail if resources
  *                   aren't available.
  *                   MATCH_ALLOCATE_ORELSE_RESERVE : Try to allocate and reserve
@@ -58,6 +58,11 @@ int reapi_cli_initialize (reapi_cli_ctx_t *ctx, const char *rgraph, const char *
  *                   satisfiability check if resources are not available.
  *                   MATCH_WITHOUT_ALLOCATING: match and return resources
  *                   but do not allocate or reserve them.
+ *                   MATCH_WITHOUT_ALLOCATING_EXTEND: match and return resources
+ *                   but do not allocate or reserve them. If the matched
+ *                   resources are available after the job would end, report
+ *                   the longest duration for which the job could keep running on
+ *                   those resources before the next scheduled job.
  *  \param jobspec   jobspec string.
  *  \param jobid     jobid of the uint64_t type.
  *  \param reserved  Boolean into which to return true if this job has been
