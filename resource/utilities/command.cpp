@@ -292,16 +292,8 @@ int cmd_match (std::shared_ptr<detail::resource_query_t> &ctx,
         std::cerr << "ERROR: malformed command" << std::endl;
         return 0;
     }
-    std::string subcmd = args[1];
-    if (subcmd == "allocate") {
-        match_op = match_op_t::MATCH_ALLOCATE;
-    } else if (subcmd == "allocate_orelse_reserve") {
-        match_op = match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE;
-    } else if (subcmd == "allocate_with_satisfiability") {
-        match_op = match_op_t::MATCH_ALLOCATE_W_SATISFIABILITY;
-    } else if (subcmd == "satisfiability") {
-        match_op = match_op_t::MATCH_SATISFIABILITY;
-    } else {
+    match_op = string_to_match_op ((args[1]).c_str ());
+    if (!match_op_valid (match_op)) {
         std::cerr << "ERROR: unknown subcmd " << args[1] << std::endl;
         return 0;
     }
@@ -326,16 +318,8 @@ int cmd_match_multi (std::shared_ptr<detail::resource_query_t> &ctx,
         std::cerr << "ERROR: malformed command" << std::endl;
         return 0;
     }
-    std::string subcmd = args[1];
-    if (subcmd == "allocate") {
-        match_op = match_op_t::MATCH_ALLOCATE;
-    } else if (subcmd == "allocate_orelse_reserve") {
-        match_op = match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE;
-    } else if (subcmd == "allocate_with_satisfiability") {
-        match_op = match_op_t::MATCH_ALLOCATE_W_SATISFIABILITY;
-    } else if (subcmd == "satisfiability") {
-        match_op = match_op_t::MATCH_SATISFIABILITY;
-    } else {
+    match_op = string_to_match_op ((args[1]).c_str ());
+    if (!match_op_valid (match_op)) {
         std::cerr << "ERROR: unknown subcmd " << args[1] << std::endl;
         return 0;
     }
