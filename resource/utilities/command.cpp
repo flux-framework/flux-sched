@@ -37,14 +37,14 @@ command_t commands[] =
       cmd_match,
       "Allocate or reserve matching resources (subcmd: "
       "allocate | allocate_with_satisfiability | allocate_orelse_reserve) | "
-      "satisfiability | without_allocating: "
+      "satisfiability | without_allocating | without_allocating_extend: "
       "resource-query> match allocate jobspec"},
      {"multi-match",
       "M",
       cmd_match_multi,
       "Allocate or reserve for "
       "multiple jobspecs (subcmd: allocate | allocate_with_satisfiability | "
-      "allocate_orelse_reserve | without_allocating): "
+      "allocate_orelse_reserve | without_allocating _ without_allocating_extend): "
       "resource-query> multi-match allocate jobspec1 jobspec2 ..."},
      {"update",
       "u",
@@ -292,7 +292,8 @@ static int run_match (std::shared_ptr<detail::resource_query_t> &ctx,
                              jobid,
                              jobspec_fn,
                              matched,
-                             match_op != match_op_t::MATCH_WITHOUT_ALLOCATING,
+                             match_op != match_op_t::MATCH_WITHOUT_ALLOCATING
+                                 && match_op != match_op_t::MATCH_WITHOUT_ALLOCATING_EXTEND,
                              at,
                              sat,
                              ov);
