@@ -68,6 +68,14 @@ class ResourceModuleInterface:
         payload = {"cmd": "without_allocating", "jobid": jobid, "jobspec": jobspec_str}
         return self.handle.rpc("sched-fluxion-resource.match", payload).get()
 
+    def rpc_wo_alloc_extend(self, jobid, jobspec_str):
+        payload = {
+            "cmd": "without_allocating_extend",
+            "jobid": jobid,
+            "jobspec": jobspec_str,
+        }
+        return self.handle.rpc("sched-fluxion-resource.match", payload).get()
+
     def rpc_info(self, jobid):
         payload = {"jobid": jobid}
         return self.handle.rpc("sched-fluxion-resource.info", payload).get()
@@ -180,6 +188,22 @@ def match_wo_alloc_action(args):
         jobspec_str = yaml.dump(yaml.safe_load(stream))
         rmod = ResourceModuleInterface()
         resp = rmod.rpc_wo_alloc(rmod.rpc_next_jobid(), jobspec_str)
+        print(heading())
+        print(body(resp["jobid"], resp["status"], resp["at"], resp["overhead"]))
+        print("=" * width())
+        print("MATCHED RESOURCES:")
+        print(resp["R"])
+
+
+def match_wo_alloc_extend_action(args):
+    """
+    Action for match without_allocating_extend sub-command
+    """
+
+    with open(args.jobspec, "r") as stream:
+        jobspec_str = yaml.dump(yaml.safe_load(stream))
+        rmod = ResourceModuleInterface()
+        resp = rmod.rpc_wo_alloc_extend(rmod.rpc_next_jobid(), jobspec_str)
         print(heading())
         print(body(resp["jobid"], resp["status"], resp["at"], resp["overhead"]))
         print("=" * width())
@@ -471,6 +495,14 @@ def parse_match(parser_m: argparse.ArgumentParser):
             "Do not allocate or reserve them."
         ),
     )
+    parser_me = subparsers_m.add_parser(
+        "without_allocating_extend",
+        help=(
+            "Return the best matching resources if found. "
+            "Do not allocate or reserve them. "
+            "Extend their duration as much as possible."
+        ),
+    )
     parser_fe = subparsers_m.add_parser(
         "satisfiability", help="Check jobspec's overall satisfiability."
     )
@@ -478,7 +510,7 @@ def parse_match(parser_m: argparse.ArgumentParser):
     #
     # Jobspec positional argument for all match sub-commands
     #
-    for subparser in parser_ma, parser_ms, parser_mr, parser_mw, parser_fe:
+    for subparser in parser_ma, parser_ms, parser_mr, parser_mw, parser_me, parser_fe:
         subparser.add_argument(
             "jobspec", metavar="Jobspec", type=str, help="Jobspec file name"
         )
@@ -487,6 +519,7 @@ def parse_match(parser_m: argparse.ArgumentParser):
     parser_ms.set_defaults(func=match_alloc_sat_action)
     parser_mr.set_defaults(func=match_reserve_action)
     parser_mw.set_defaults(func=match_wo_alloc_action)
+    parser_me.set_defaults(func=match_wo_alloc_extend_action)
     parser_fe.set_defaults(func=satisfiability_action)
 
 
