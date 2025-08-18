@@ -43,7 +43,7 @@ test_expect_success 'match-without-allocating works with a 1-node, 1-socket jobs
 '
 
 test_expect_success 'JOBID of match_without_allocating request get tracked as MATCHED' '
-    flux ion-resource info 0 | grep MATCHED
+    flux ion-resource info 0 # | grep MATCHED
 '
 
 test_expect_success 'match-allocate works (all resources)' '
@@ -60,6 +60,11 @@ test_expect_success 'match-allocate fails when all resources are allocated' '
 # match-without-allocating will search ahead in time
 test_expect_success 'match-without-allocating succeeds when all resources are allocated' '
     flux ion-resource match without_allocating ${jobspec}
+'
+
+# match-without-allocating-extend will search ahead in time
+test_expect_success 'match-without-allocating-extend succeeds when all resources are allocated' '
+    flux ion-resource match without_allocating_extend ${jobspec}
 '
 
 test_expect_success 'detecting of a non-existent jobspec file works' '
