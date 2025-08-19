@@ -4,7 +4,7 @@ test_description='Test Id Namespace Remapping for Nested Instances'
 
 . `dirname $0`/sharness.sh
 
-hwloc_basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/hwloc-data`
+hwloc_basepath=`readlink -f ${SHARNESS_TEST_SRCDIR}/data/hwloc-data`
 # 1 brokers: 1 node, 2 sockets, 44 cores 4 gpus
 excl_1N1B="${hwloc_basepath}/001N/exclusive/01-brokers-sierra2"
 
