@@ -4,8 +4,8 @@ test_description='Test Resource Find and Status with Fluxion Modules'
 
 . `dirname $0`/sharness.sh
 
-hwloc_basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/hwloc-data`
-expected_basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/resource/expected/find-format`
+hwloc_basepath=`readlink -f ${SHARNESS_TEST_SRCDIR}/data/hwloc-data`
+expected_basepath=`readlink -f ${SHARNESS_TEST_SRCDIR}/data/resource/expected/find-format`
 excl_1N1B="${hwloc_basepath}/001N/exclusive/01-brokers/"
 query="../../resource/utilities/resource-query"
 

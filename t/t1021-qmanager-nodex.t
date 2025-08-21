@@ -4,7 +4,7 @@ test_description='Test Node Exclusive Scheduling w/ qmanager'
 
 . `dirname $0`/sharness.sh
 
-hwloc_basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/hwloc-data`
+hwloc_basepath=`readlink -f ${SHARNESS_TEST_SRCDIR}/data/hwloc-data`
 # 4 brokers: 1 node, 2 sockets, 44 cores 4 gpus
 excl_4N4B="${hwloc_basepath}/004N/exclusive/04-brokers-sierra2"
 

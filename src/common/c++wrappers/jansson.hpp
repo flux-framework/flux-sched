@@ -4,7 +4,6 @@
 
 #ifndef JANSONN_HPP
 #define JANSONN_HPP
-#include <boost/icl/detail/map_algo.hpp>
 
 extern "C" {
 #include <jansson.h>
