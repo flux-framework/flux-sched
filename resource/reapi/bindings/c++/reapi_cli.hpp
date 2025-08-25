@@ -44,17 +44,18 @@ struct match_perf_t {
 };
 
 struct resource_params_t {
-    std::string load_file;      /* load file name */
-    std::string load_format;    /* load reader format */
-    std::string load_allowlist; /* load resource allowlist */
-    std::string matcher_name;   /* Matcher name */
-    std::string matcher_policy; /* Matcher policy name */
-    std::string o_fname;        /* Output file to dump the filtered graph */
-    std::ofstream r_out;        /* Output file stream for emitted R */
-    std::string r_fname;        /* Output file to dump the emitted R */
-    std::string o_fext;         /* File extension */
-    std::string prune_filters;  /* Raw prune-filter specification */
-    std::string match_format;   /* Format to emit a matched resources */
+    std::string load_file;        /* load file name */
+    std::string load_format;      /* load reader format */
+    std::string load_allowlist;   /* load resource allowlist */
+    std::string matcher_name;     /* Matcher name */
+    std::string matcher_policy;   /* Matcher policy name */
+    std::string traverser_policy; /* Traverser policy name */
+    std::string o_fname;          /* Output file to dump the filtered graph */
+    std::ofstream r_out;          /* Output file stream for emitted R */
+    std::string r_fname;          /* Output file to dump the emitted R */
+    std::string o_fext;           /* File extension */
+    std::string prune_filters;    /* Raw prune-filter specification */
+    std::string match_format;     /* Format to emit a matched resources */
     emit_format_t o_format;
     bool elapse_time;       /* Print elapse time */
     bool disable_prompt;    /* Disable resource-query> prompt */
