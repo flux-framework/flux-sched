@@ -84,7 +84,7 @@ class matcher_data_t {
 class matcher_util_api_t {
    public:
     /*! Calculate the count that should be allocated, which is a function
-     *  of the number of qualifed available resources, minimum/maximum/operator
+     *  of the number of qualified available resources, minimum/maximum/operator
      *  requirement of the jobspec.
      *
      *  \param resource  resource section of the jobspec.

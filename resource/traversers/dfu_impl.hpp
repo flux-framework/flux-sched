@@ -401,7 +401,7 @@ class dfu_impl_t {
     bool slot_match (vtx_t u, const Jobspec::Resource *slot_resource);
     const std::vector<Jobspec::Resource> &test (vtx_t u,
                                                 const std::vector<Jobspec::Resource> &resources,
-                                                bool &prestine,
+                                                bool &pristine,
                                                 unsigned int &nslots,
                                                 match_kind_t &ko);
     bool is_pconstraint_matched (vtx_t u, const std::string &property);
@@ -428,7 +428,7 @@ class dfu_impl_t {
                  vtx_t u,
                  subsystem_t subsystem,
                  const std::vector<Jobspec::Resource> &resources,
-                 bool prestine,
+                 bool pristine,
                  bool *excl,
                  visit_t direction,
                  scoring_api_t &dfu,
@@ -437,7 +437,7 @@ class dfu_impl_t {
                             vtx_t u,
                             subsystem_t subsystem,
                             const std::vector<Jobspec::Resource> &resources,
-                            bool prestine,
+                            bool pristine,
                             bool *excl,
                             visit_t direction,
                             scoring_api_t &dfu);
@@ -445,7 +445,7 @@ class dfu_impl_t {
                              vtx_t u,
                              subsystem_t subsystem,
                              const std::vector<Jobspec::Resource> &resources,
-                             bool prestine,
+                             bool pristine,
                              bool *excl,
                              visit_t direction,
                              scoring_api_t &dfu,
@@ -464,7 +464,7 @@ class dfu_impl_t {
                  vtx_t u,
                  subsystem_t subsystem,
                  const std::vector<Jobspec::Resource> &resources,
-                 bool prestine,
+                 bool pristine,
                  bool *excl,
                  scoring_api_t &to_parent);
     int cnt_slot (const std::vector<Jobspec::Resource> &slot_shape, scoring_api_t &dfu_slot);
@@ -472,19 +472,19 @@ class dfu_impl_t {
                   vtx_t u,
                   const std::vector<Jobspec::Resource> &resources,
                   unsigned int nslots,
-                  bool prestine,
+                  bool pristine,
                   bool *excl,
                   scoring_api_t &dfu);
     int dom_exp (const jobmeta_t &meta,
                  vtx_t u,
                  const std::vector<Jobspec::Resource> &resources,
-                 bool prestine,
+                 bool pristine,
                  bool *excl,
                  scoring_api_t &to_parent);
     int dom_dfv (const jobmeta_t &meta,
                  vtx_t u,
                  const std::vector<Jobspec::Resource> &resources,
-                 bool prestine,
+                 bool pristine,
                  bool *excl,
                  scoring_api_t &to_parent);
     int dom_find_dfv (std::shared_ptr<match_writers_t> &writers,

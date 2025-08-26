@@ -626,7 +626,7 @@ int dfu_impl_t::cnt_slot (const std::vector<Resource> &slot_shape, scoring_api_t
     unsigned int qual_num_slots = UINT_MAX;
     subsystem_t dom = m_match->dom_subsystem ();
 
-    // qualifed slot count is determined by the most constrained resource type
+    // qualified slot count is determined by the most constrained resource type
     // both in terms of the amounts available as well as the number of edges into
     // that resource because that represent the match granularity.
     // Say you have 128 units of memory available across two memory resource

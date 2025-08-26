@@ -721,7 +721,7 @@ class queue_policy_base_t : public resource_model::queue_adapter_base_t {
      *  \param id        jobid of flux_jobid_t type.
      *  \param R         Resource set for partial cancel
      *  \param noent_ok  don't return an error on nonexistent jobid
-     *  \param full_removal  bool indictating whether the job is fully canceled
+     *  \param full_removal  bool indicating whether the job is fully canceled
      *  \return          0 on success; -1 on error.
      *                       ENOENT: unknown id.
      */
