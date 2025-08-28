@@ -101,11 +101,16 @@ int reapi_cli_t::match_allocate (void *h,
         goto out;
     }
 
-    if ((rc != 0) && (errno == ENOMEM)) {
-        m_err_msg += __FUNCTION__;
-        m_err_msg += ": ERROR: Memory error for " + std::to_string (rq->get_job_counter ());
+    if (rc != 0) {
         rc = -1;
-        goto out;
+
+        if (errno == ENOMEM) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": ERROR: Memory error for " + std::to_string (rq->get_job_counter ());
+            goto out;
+        } else {
+            goto incrout;  // Generic failures must increment jobid
+        }
     }
 
     // Check for an unsuccessful match
@@ -149,6 +154,7 @@ int reapi_cli_t::match_allocate (void *h,
         rq->set_job (jobid, job_info);
     }
 
+incrout:
     if (match_op != match_op_t::MATCH_SATISFIABILITY)
         rq->incr_job_counter ();
 
