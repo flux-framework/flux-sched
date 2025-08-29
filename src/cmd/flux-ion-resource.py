@@ -30,6 +30,14 @@ def width():
     return 20 + 20 + 20 + 20
 
 
+def parse_fsd_else_infinity(candidate_fsd):
+    try:
+        fsd = int(flux.util.parse_fsd(candidate_fsd))
+    except ValueError:
+        fsd = -1
+    return fsd
+
+
 class ResourceModuleInterface:
     """Class to interface with the sched-fluxion-resource module with RPC"""
 
@@ -40,32 +48,44 @@ class ResourceModuleInterface:
         resp = self.handle.rpc("sched-fluxion-resource.next_jobid").get()
         return resp["jobid"]
 
-    def rpc_allocate(self, jobid, jobspec_str):
-        payload = {"cmd": "allocate", "jobid": jobid, "jobspec": jobspec_str}
+    def rpc_allocate(self, jobid, jobspec_str, within):
+        payload = {
+            "cmd": "allocate",
+            "jobid": jobid,
+            "jobspec": jobspec_str,
+            "within": within,
+        }
         return self.handle.rpc("sched-fluxion-resource.match", payload).get()
 
     def rpc_update(self, jobid, Res):
         payload = {"jobid": jobid, "R": Res}
         return self.handle.rpc("sched-fluxion-resource.update", payload).get()
 
-    def rpc_allocate_with_sat(self, jobid, jobspec_str):
+    def rpc_allocate_with_sat(self, jobid, jobspec_str, within):
         payload = {
             "cmd": "allocate_with_satisfiability",
             "jobid": jobid,
             "jobspec": jobspec_str,
+            "within": within,
         }
         return self.handle.rpc("sched-fluxion-resource.match", payload).get()
 
-    def rpc_reserve(self, jobid, jobspec_str):
+    def rpc_reserve(self, jobid, jobspec_str, within):
         payload = {
             "cmd": "allocate_orelse_reserve",
             "jobid": jobid,
             "jobspec": jobspec_str,
+            "within": within,
         }
         return self.handle.rpc("sched-fluxion-resource.match", payload).get()
 
-    def rpc_wo_alloc(self, jobid, jobspec_str):
-        payload = {"cmd": "without_allocating", "jobid": jobid, "jobspec": jobspec_str}
+    def rpc_wo_alloc(self, jobid, jobspec_str, within):
+        payload = {
+            "cmd": "without_allocating",
+            "jobid": jobid,
+            "jobspec": jobspec_str,
+            "within": within,
+        }
         return self.handle.rpc("sched-fluxion-resource.match", payload).get()
 
     def rpc_info(self, jobid):
@@ -130,8 +150,9 @@ def match_alloc_action(args):
 
     with open(args.jobspec, "r") as stream:
         jobspec_str = yaml.dump(yaml.safe_load(stream))
+        within = parse_fsd_else_infinity(args.within)
         rmormod = ResourceModuleInterface()
-        resp = rmormod.rpc_allocate(rmormod.rpc_next_jobid(), jobspec_str)
+        resp = rmormod.rpc_allocate(rmormod.rpc_next_jobid(), jobspec_str, within)
         print(heading())
         print(body(resp["jobid"], resp["status"], resp["at"], resp["overhead"]))
         print("=" * width())
@@ -146,8 +167,9 @@ def match_alloc_sat_action(args):
 
     with open(args.jobspec, "r") as stream:
         jobspec_str = yaml.dump(yaml.safe_load(stream))
+        within = parse_fsd_else_infinity(args.within)
         rmod = ResourceModuleInterface()
-        resp = rmod.rpc_allocate_with_sat(rmod.rpc_next_jobid(), jobspec_str)
+        resp = rmod.rpc_allocate_with_sat(rmod.rpc_next_jobid(), jobspec_str, within)
         print(heading())
         print(body(resp["jobid"], resp["status"], resp["at"], resp["overhead"]))
         print("=" * width())
@@ -162,8 +184,9 @@ def match_reserve_action(args):
 
     with open(args.jobspec, "r") as stream:
         jobspec_str = yaml.dump(yaml.safe_load(stream))
+        within = parse_fsd_else_infinity(args.within)
         rmod = ResourceModuleInterface()
-        resp = rmod.rpc_reserve(rmod.rpc_next_jobid(), jobspec_str)
+        resp = rmod.rpc_reserve(rmod.rpc_next_jobid(), jobspec_str, within)
         print(heading())
         print(body(resp["jobid"], resp["status"], resp["at"], resp["overhead"]))
         print("=" * width())
@@ -178,8 +201,9 @@ def match_wo_alloc_action(args):
 
     with open(args.jobspec, "r") as stream:
         jobspec_str = yaml.dump(yaml.safe_load(stream))
+        within = parse_fsd_else_infinity(args.within)
         rmod = ResourceModuleInterface()
-        resp = rmod.rpc_wo_alloc(rmod.rpc_next_jobid(), jobspec_str)
+        resp = rmod.rpc_wo_alloc(rmod.rpc_next_jobid(), jobspec_str, within)
         print(heading())
         print(body(resp["jobid"], resp["status"], resp["at"], resp["overhead"]))
         print("=" * width())
@@ -481,6 +505,14 @@ def parse_match(parser_m: argparse.ArgumentParser):
     for subparser in parser_ma, parser_ms, parser_mr, parser_mw, parser_fe:
         subparser.add_argument(
             "jobspec", metavar="Jobspec", type=str, help="Jobspec file name"
+        )
+        subparser.add_argument(
+            "-w",
+            "--within",
+            metavar="within",
+            type=str,
+            default="-1",
+            help="Return only matches that start within this duration (FSD)",
         )
 
     parser_ma.set_defaults(func=match_alloc_action)
