@@ -1419,13 +1419,14 @@ static int run (std::shared_ptr<resource_ctx_t> &ctx,
                 int64_t jobid,
                 match_op_t op,
                 const std::string &jstr,
+                int64_t latest,
                 int64_t *at,
                 flux_error_t *errp)
 {
     int rc = -1;
     try {
         Flux::Jobspec::Jobspec j{jstr};
-        rc = ctx->traverser->run (j, ctx->writers, op, jobid, at);
+        rc = ctx->traverser->run (j, ctx->writers, op, jobid, at, latest);
     } catch (const Flux::Jobspec::parse_error &e) {
         errno = EINVAL;
         if (errp && e.what ()) {
@@ -1495,6 +1496,7 @@ int run_match (std::shared_ptr<resource_ctx_t> &ctx,
                int64_t jobid,
                const char *cmd,
                const std::string &jstr,
+               int64_t within,
                int64_t *now,
                int64_t *at,
                double *overhead,
@@ -1502,6 +1504,7 @@ int run_match (std::shared_ptr<resource_ctx_t> &ctx,
                flux_error_t *errp)
 {
     int rc = 0;
+    int64_t latest;
     std::chrono::time_point<std::chrono::system_clock> start;
     std::chrono::duration<double> elapsed;
     std::chrono::duration<int64_t> epoch;
@@ -1518,7 +1521,13 @@ int run_match (std::shared_ptr<resource_ctx_t> &ctx,
 
     epoch = std::chrono::duration_cast<std::chrono::seconds> (start.time_since_epoch ());
     *at = *now = epoch.count ();
-    if ((rc = run (ctx, jobid, op, jstr, at, errp)) < 0) {
+
+    if (within < 0 || within > std::numeric_limits<int64_t>::max () - *now)
+        latest = std::numeric_limits<int64_t>::max ();
+    else
+        latest = *now + within;
+
+    if ((rc = run (ctx, jobid, op, jstr, latest, at, errp)) < 0) {
         elapsed = std::chrono::system_clock::now () - start;
         *overhead = elapsed.count ();
         update_match_perf (*overhead, jobid, false);
