@@ -368,19 +368,22 @@ static void match_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t
     const char *cmd = NULL;
     const char *js_str = NULL;
     const char *status = nullptr;
+    int64_t candidate_within = std::numeric_limits<int64_t>::min ();
     std::stringstream R;
     traverser_match_attrs attrs = default_match_attrs;
 
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
     if (flux_request_unpack (msg,
                              NULL,
-                             "{s:s s:I s:s}",
+                             "{s:s s:I s:s s?I}",
                              "cmd",
                              &cmd,
                              "jobid",
                              &jobid,
                              "jobspec",
-                             &js_str)
+                             &js_str,
+                             "within",
+                             &candidate_within)
         < 0)
         goto error;
     // Jobid -1 denotes that the matched resources do not belong to any particular job.
@@ -394,6 +397,8 @@ static void match_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t
         flux_log_error (h, "%s: existent job (%jd).", __FUNCTION__, (intmax_t)jobid);
         goto error;
     }
+    if (candidate_within != std::numeric_limits<int64_t>::min ())
+        attrs.match_within = candidate_within;
     if (run_match (ctx, jobid, cmd, js_str, &now, &at, R, &attrs, NULL) < 0) {
         if (errno != EBUSY && errno != ENODEV)
             flux_log_error (ctx->h,
