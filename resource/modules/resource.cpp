@@ -354,18 +354,21 @@ static void match_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t
     std::string status = "";
     const char *cmd = NULL;
     const char *js_str = NULL;
+    int64_t within = -1;
     std::stringstream R;
 
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
     if (flux_request_unpack (msg,
                              NULL,
-                             "{s:s s:I s:s}",
+                             "{s:s s:I s:s s?I}",
                              "cmd",
                              &cmd,
                              "jobid",
                              &jobid,
                              "jobspec",
-                             &js_str)
+                             &js_str,
+                             "within",
+                             &within)
         < 0)
         goto error;
     if (is_existent_jobid (ctx, jobid)) {
@@ -373,7 +376,7 @@ static void match_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t
         flux_log_error (h, "%s: existent job (%jd).", __FUNCTION__, (intmax_t)jobid);
         goto error;
     }
-    if (run_match (ctx, jobid, cmd, js_str, &now, &at, &overhead, R, NULL) < 0) {
+    if (run_match (ctx, jobid, cmd, js_str, within, &now, &at, &overhead, R, NULL) < 0) {
         if (errno != EBUSY && errno != ENODEV)
             flux_log_error (ctx->h,
                             "%s: match failed due to match error (id=%jd)",
@@ -461,7 +464,7 @@ static void match_multi_request_cb (flux_t *h,
                             static_cast<intmax_t> (jobid));
             goto error;
         }
-        if (run_match (ctx, jobid, cmd, js_str, &now, &at, &overhead, R, NULL) < 0) {
+        if (run_match (ctx, jobid, cmd, js_str, -1, &now, &at, &overhead, R, NULL) < 0) {
             if (errno != EBUSY && errno != ENODEV)
                 flux_log_error (ctx->h,
                                 "%s: match failed due to match error (id=%jd)",
