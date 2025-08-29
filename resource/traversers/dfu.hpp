@@ -101,7 +101,7 @@ class dfu_traverser_t : protected detail::dfu_impl_t {
      *                                match callback uses.
      *                       EBUSY: cannot match because resources/devices
      *                              are currently in use.
-     *                       ENODEV: unsatifiable jobspec because no
+     *                       ENODEV: unsatisfiable jobspec because no
      *                               resources/devices can satisfy the request.
      */
     int run (Jobspec::Jobspec &jobspec,

@@ -211,7 +211,7 @@ class reapi_t {
      *  \param jobid     jobid of the uint64_t type.
      *  \param R         R string to remove
      *  \param noent_ok  don't return an error on nonexistent jobid
-     *  \param full_removal  bool indictating whether the job is fully canceled
+     *  \param full_removal  bool indicating whether the job is fully canceled
      *  \return          0 on success; -1 on error.
      */
     static int cancel (void *h,

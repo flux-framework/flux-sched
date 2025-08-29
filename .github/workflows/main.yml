@@ -21,7 +21,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Check Spelling
-      uses: crate-ci/typos@bcafd462cb07ef7ba57e34abf458fe20767e808b # v1.19.0
+      uses: crate-ci/typos@v1.35.5
 
   python-format:
     name: code formatting

@@ -595,7 +595,7 @@ specification, `resource-query` will choose the highest-scored node at the
 You can implement a wide range of resource selection policy classes using the
 DFU traversal, in particular in combination with other mechanisms (e.g., choosing
 a different set and order of subsystems).  DFU, however, is a simple, one-pass
-traversal type and hence there are inherient limitations associated with DFU,
+traversal type and hence there are inherent limitations associated with DFU,
 which may preclude you from implementing certain policies.
 
 For example, DFU cannot currently handle the following job specification even
