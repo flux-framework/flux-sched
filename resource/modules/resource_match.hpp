@@ -26,6 +26,8 @@ extern "C" {
 #include <map>
 #include <cinttypes>
 #include <chrono>
+#include <boost/optional.hpp>
+#include <jansson.hpp>
 
 #include "resource_match.hpp"
 #include "resource/schema/resource_graph.hpp"
@@ -35,7 +37,6 @@ extern "C" {
 #include "resource/policies/dfu_match_policy_factory.hpp"
 #include "resource_match_opts.hpp"
 #include "resource/schema/perf_data.hpp"
-#include <jansson.hpp>
 
 using namespace Flux::resource_model;
 using namespace Flux::opts_manager;
@@ -146,7 +147,8 @@ int run_match (std::shared_ptr<resource_ctx_t> &ctx,
                int64_t *at,
                double *overhead,
                std::stringstream &o,
-               flux_error_t *errp);
+               flux_error_t *errp,
+               boost::optional<int64_t> within = boost::none);
 
 int run_update (std::shared_ptr<resource_ctx_t> &ctx,
                 int64_t jobid,
