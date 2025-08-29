@@ -170,6 +170,14 @@ void dfu_flexible_t::prime_jobspec (std::vector<Resource> &resources,
                         resource.count.min * aggregate.second,
                         to_parent);
             }
+            // If there are Or Slots that do not contain a resource type
+            // then we should not consider that resource type for pruning
+            for (const auto &aggregate : to_parent) {
+                if (resource.user_data.find (aggregate.first) == resource.user_data.end ()) {
+                    min_if (subsystem, aggregate.first, 0, to_parent);
+                }
+            }
+
         } else {
             for (const auto &aggregate : resource.user_data) {
                 accum_if (subsystem,
