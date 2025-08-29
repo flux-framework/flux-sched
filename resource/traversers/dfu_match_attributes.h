@@ -23,12 +23,17 @@ extern "C" {
  *    match_overhead     Double to store performance overhead in terms of
  *                       elapsed time needed to complete the match operation.
  *                       Not used by traverser.
+ *    match_within       Only return matches that start between now and now+within.
+ *                       If within < 0, don't apply this filter.  However, if
+ *                       within == INT64_MIN, also search for a 'within'
+ *                       value in the jobspec's user attributes dictionary.
  */
 struct traverser_match_attrs {
     double match_overhead;
+    int64_t match_within;
 };
 
-const struct traverser_match_attrs default_match_attrs = {0.0f};
+const struct traverser_match_attrs default_match_attrs = {0.0f, INT64_MIN};
 
 #ifdef __cplusplus
 }

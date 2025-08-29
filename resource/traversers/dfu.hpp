@@ -102,6 +102,7 @@ class dfu_traverser_t {
      *  \param at[out]   when the job is scheduled if reserved.
      *  \param attrs     optional attributes of the traversal:
      *    match_overhead     double into which to return performance overhead.
+     *    match_within       don't return matches starting after this duration.
      *  \return          0 on success; -1 on error.
      *                       EINVAL: graph, roots or match callback not set.
      *                       ENOTSUP: roots does not contain a subsystem the
