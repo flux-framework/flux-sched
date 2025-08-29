@@ -354,7 +354,8 @@ int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
                           std::shared_ptr<match_writers_t> &writers,
                           match_op_t op,
                           int64_t jobid,
-                          int64_t *at)
+                          int64_t *at,
+                          int64_t latest)
 {
     // Clear the error message to disambiguate errors
     clear_err_message ();
@@ -383,6 +384,9 @@ int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
         < 0)
         return -1;
 
+    if (latest < 0)
+        latest = std::numeric_limits<int64_t>::max ();
+
     // If matching without allocation, set meta.AT to prevent allocation in update
     if (op == match_op_t::MATCH_WITHOUT_ALLOCATING)
         meta.alloc_type = jobmeta_t::alloc_type_t::AT_NO_ALLOC;
@@ -392,7 +396,7 @@ int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
         traverser->update ();
     } else if ((rc = schedule (jobspec, meta, x, op, root, dfv)) == 0) {
         *at = meta.at;
-        if (*at == graph_end) {
+        if (*at == graph_end || *at > latest) {
             traverser->reset_exclusive_resource_types (exclusive_types);
             // no schedulable point found even at the end of the time, return EBUSY
             errno = EBUSY;

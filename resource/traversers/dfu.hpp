@@ -99,6 +99,7 @@ class dfu_traverser_t {
      *                       or without_allocating.
      *  \param id        job ID to use for the schedule operation.
      *  \param at[out]   when the job is scheduled if reserved.
+     *  \param latest    don't return matches that start later than this.
      *  \return          0 on success; -1 on error.
      *                       EINVAL: graph, roots or match callback not set.
      *                       ENOTSUP: roots does not contain a subsystem the
@@ -112,7 +113,8 @@ class dfu_traverser_t {
              std::shared_ptr<match_writers_t> &writers,
              match_op_t op,
              int64_t id,
-             int64_t *at);
+             int64_t *at,
+             int64_t latest = std::numeric_limits<int64_t>::max ());
 
     /*! Read str which is a serialized allocation data (e.g., written in JGF)
      *  with rd, and traverse the resource graph to update it with this data.
