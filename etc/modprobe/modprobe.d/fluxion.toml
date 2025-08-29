@@ -13,6 +13,7 @@ priority = 500
 ranks = "0"
 after = ["sched-fluxion-resource"]
 requires = ["sched-fluxion-resource"]
+needs = ["sched-fluxion-resource"]
 
 [[modules]]
 name = "sched-fluxion-qmanager"
@@ -21,3 +22,4 @@ priority = 500
 ranks = "0"
 after = ["job-manager", "sched-fluxion-resource"]
 requires = ["sched-fluxion-resource", "job-manager"]
+needs = ["sched-fluxion-resource"]
