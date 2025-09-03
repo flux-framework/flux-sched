@@ -799,7 +799,7 @@ int resource_reader_jgf_t::cancel_vtx (vtx_t vtx,
     int64_t span = -1;
     int64_t xspan = -1;
     int64_t sched_span = -1;
-    int64_t prev_avail = -1;
+    int64_t prev_occu = -1;
     planner_multi_t *subtree_plan = NULL;
     planner_t *x_checker = NULL;
     planner_t *plans = NULL;
@@ -808,8 +808,10 @@ int resource_reader_jgf_t::cancel_vtx (vtx_t vtx,
     auto &tags = g[vtx].idata.tags;
     std::map<int64_t, int64_t>::iterator span_it;
     std::map<int64_t, int64_t>::iterator xspan_it;
+    uint32_t path_len = 0;
+    std::unordered_map<int64_t, rank_data>::iterator rank_to_length_it;
 
-    static subsystem_t containment_sub{"containment"};
+    const subsystem_t containment_sub{"containment"};
     // remove from aggregate filter if present
     auto agg_span = job2span.find (update_data.jobid);
     if (agg_span != job2span.end ()) {
@@ -824,6 +826,10 @@ int resource_reader_jgf_t::cancel_vtx (vtx_t vtx,
     // remove from exclusive filter;
     xspan_it = x_spans.find (update_data.jobid);
     if (xspan_it == x_spans.end ()) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": can't find x_checker span for job ";
+        m_err_msg += std::to_string (update_data.jobid) + " in ";
+        m_err_msg += g[vtx].name + ".\n";
         errno = EINVAL;
         goto ret;
     }
@@ -832,6 +838,10 @@ int resource_reader_jgf_t::cancel_vtx (vtx_t vtx,
     g[vtx].idata.tags.erase (update_data.jobid);
     g[vtx].idata.x_spans.erase (update_data.jobid);
     if (planner_rem_span (x_checker, xspan) == -1) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": can't remove x_checker span for job ";
+        m_err_msg += std::to_string (update_data.jobid) + " in ";
+        m_err_msg += g[vtx].name + ".\n";
         errno = EINVAL;
         goto ret;
     }
@@ -841,19 +851,53 @@ int resource_reader_jgf_t::cancel_vtx (vtx_t vtx,
     if (span_it != g[vtx].schedule.allocations.end ()) {
         g[vtx].schedule.allocations.erase (update_data.jobid);
     } else {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": can't find allocation span for job ";
+        m_err_msg += std::to_string (update_data.jobid) + " in ";
+        m_err_msg += g[vtx].name + ".\n";
         errno = EINVAL;
         goto ret;
     }
     plans = g[vtx].schedule.plans;
-    prev_avail = planner_avail_resources_at (plans, 0);
+    if ((prev_occu = planner_span_resource_count (plans, sched_span)) < 0) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": planner_span_resource_count failed for job ";
+        m_err_msg += std::to_string (update_data.jobid) + " in ";
+        m_err_msg += g[vtx].name + ".\n";
+        errno = EINVAL;
+        return -1;
+    }
     if (planner_rem_span (plans, sched_span) == -1) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": can't remove allocation span for job ";
+        m_err_msg += std::to_string (update_data.jobid) + " in ";
+        m_err_msg += g[vtx].name + ".\n";
+        errno = EINVAL;
+        goto ret;
+    }
+    if (g[vtx].rank < 0) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": invalid rank for ";
+        m_err_msg += g[vtx].name + ".\n";
         errno = EINVAL;
         goto ret;
     }
     // Add the newly freed counts, Can't assume it freed everything.
-    update_data.type_to_count[g[vtx].type.c_str ()] +=
-        (planner_avail_resources_at (plans, 0) - prev_avail);
+    update_data.rank_to_data[g[vtx].rank].type_to_count[g[vtx].type] += prev_occu;
     update_data.ranks.insert (g[vtx].rank);
+    rank_to_length_it = update_data.rank_to_data.find (g[vtx].rank);
+    path_len = g[vtx].paths.at (containment_sub).length ();
+    if (rank_to_length_it == update_data.rank_to_data.end ()) {
+        update_data.rank_to_data[g[vtx].rank].length = path_len;
+        update_data.rank_to_data[g[vtx].rank].root = vtx;
+    } else {
+        if (rank_to_length_it->second.length > path_len) {
+            // This condition isn't met in current testing
+            // because the JGF subgraphs are pre-ordered
+            update_data.rank_to_data[g[vtx].rank].length = path_len;
+            update_data.rank_to_data[g[vtx].rank].root = vtx;
+        }
+    }
 
     rc = 0;
 
@@ -1328,14 +1372,16 @@ int resource_reader_jgf_t::partial_cancel (resource_graph_t &g,
     // Fill in updater data
     p_cancel_data.jobid = jobid;
     p_cancel_data.update = false;
-
     if ((rc = fetch_jgf (R, &jgf, &nodes, &edges, p_cancel_data)) != 0)
         goto done;
     if ((rc = update_vertices (g, m, vmap, nodes, p_cancel_data)) != 0)
         goto done;
 
-    mod_data.type_to_count = p_cancel_data.type_to_count;
-    mod_data.ranks_removed = p_cancel_data.ranks;
+    for (const auto &[rank, data] : p_cancel_data.rank_to_data) {
+        mod_data.rank_to_counts[rank] = data.type_to_count;
+        mod_data.ranks.insert (rank);
+        mod_data.rank_to_root[rank] = data.root;
+    }
 
 done:
     json_decref (jgf);
