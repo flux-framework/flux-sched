@@ -8,7 +8,7 @@ test_description='Test the functionality of match satisfiability after module re
 . `dirname $0`/sharness.sh
 
 conf_base=${SHARNESS_TEST_SRCDIR}/conf.d
-notify_base=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/satisfiability`
+notify_base=`readlink -f ${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/satisfiability`
 
 SIZE=4
 export FLUX_URI_RESOLVE_LOCAL=t

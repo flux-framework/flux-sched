@@ -24,19 +24,13 @@ extern "C" {
 #include <boost/algorithm/string.hpp>
 #include "resource/reapi/bindings/c++/reapi_cli.hpp"
 #include "resource/readers/resource_reader_factory.hpp"
+#include "src/common/c++wrappers/chrono.hpp"
 
 namespace Flux {
 namespace resource_model {
 namespace detail {
 
 const int NOT_YET_IMPLEMENTED = -1;
-
-static double get_elapsed_time (timeval &st, timeval &et)
-{
-    double ts1 = (double)st.tv_sec + (double)st.tv_usec / 1000000.0f;
-    double ts2 = (double)et.tv_sec + (double)et.tv_usec / 1000000.0f;
-    return ts2 - ts1;
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // REAPI CLI Class Private Definitions
@@ -63,7 +57,7 @@ int reapi_cli_t::match_allocate (void *h,
     ov = 0.0f;
     job_lifecycle_t st;
     std::shared_ptr<job_info_t> job_info = nullptr;
-    struct timeval start_time, end_time;
+    double start_time, end_time;
     std::stringstream o;
     bool matched = false;
 
@@ -78,11 +72,7 @@ int reapi_cli_t::match_allocate (void *h,
     try {
         Flux::Jobspec::Jobspec job{jobspec};
 
-        if ((rc = gettimeofday (&start_time, NULL)) < 0) {
-            m_err_msg += __FUNCTION__;
-            m_err_msg += ": ERROR: gettimeofday: " + std::string (strerror (errno)) + "\n";
-            goto out;
-        }
+        start_time = Flux::chrono::seconds_since_epoch ();
 
         rc = rq->traverser_run (job, match_op, (int64_t)jobid, at);
 
@@ -122,13 +112,9 @@ int reapi_cli_t::match_allocate (void *h,
 
     R = o.str ();
 
-    if ((rc = gettimeofday (&end_time, NULL)) < 0) {
-        m_err_msg += __FUNCTION__;
-        m_err_msg += ": ERROR: gettimeofday: " + std::string (strerror (errno)) + "\n";
-        goto out;
-    }
+    end_time = Flux::chrono::seconds_since_epoch ();
 
-    ov = get_elapsed_time (start_time, end_time);
+    ov = end_time - start_time;
 
     if (matched) {
         reserved = (at != 0) ? true : false;

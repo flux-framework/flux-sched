@@ -7,7 +7,7 @@ test_description='Fluxion takes into account urgency and t_submit'
 export TEST_UNDER_FLUX_QUORUM=1
 export TEST_UNDER_FLUX_START_MODE=leader
 
-hwloc_basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/hwloc-data`
+hwloc_basepath=`readlink -f ${SHARNESS_TEST_SRCDIR}/data/hwloc-data`
 # 1 node, 2 sockets, 44 cores (22 per socket), 4 gpus (2 per socket)
 excl_1N1B="${hwloc_basepath}/001N/exclusive/01-brokers-sierra2"
 

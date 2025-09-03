@@ -8,7 +8,7 @@ Ensure that the match (allocate) handler within the resource module works
 
 . `dirname $0`/sharness.sh
 
-jobspec_basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/`
+jobspec_basepath=`readlink -f ${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/`
 # slot[1]->core[1]
 jobspec_1core="${jobspec_basepath}/basics/test008.yaml"
 # node[1]->slot[2]->socket[1]
@@ -18,7 +18,7 @@ jobspec_2socket="${jobspec_basepath}/basics/test009.yaml"
 #                 ->gpu[2]
 jobspec_1socket_2gpu="${jobspec_basepath}/basics/test013.yaml"
 
-hwloc_basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/hwloc-data`
+hwloc_basepath=`readlink -f ${SHARNESS_TEST_SRCDIR}/data/hwloc-data`
 # 1 broker: 1 node, 1 socket, 4 cores
 hwloc_4core="${hwloc_basepath}/001N/exclusive/04-brokers/0.xml"
 # 4 brokers, each (exclusively) have: 1 node, 2 sockets, 16 cores (8 per socket)
