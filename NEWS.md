@@ -1,3 +1,22 @@
+flux-sched version 0.47.0 - 2025-09-03
+--------------------------------------
+
+### New Features
+ * modules: Move feasibility/satisfiability checking into a new module
+   (#1285)
+ * Integrate rq2 with resource query (#1379)
+
+### Build/Testsuite
+ * ci: update typo checker version (#1394)
+ * etc: add missing "needs" to modprobe config (#1395)
+ * testsuite: don't load deprecated barrier module (#1393)
+ * testsuite: set broker.module-nopanic=1 (#1390)
+ * add support for modprobe based startup and shutdown (#1380)
+ * ci: fix docker-manifest.py (#1389)
+ * ci: add debug tmate action and use `docker-manifest.py` in
+   generate-manifest step (#1388)
+
+
 flux-sched version 0.46.0 - 2025-08-05
 --------------------------------------
 
