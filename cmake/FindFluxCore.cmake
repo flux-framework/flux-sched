@@ -10,7 +10,7 @@ else()
     endif()
 endif()
 
-pkg_check_modules(FLUX_CORE REQUIRED IMPORTED_TARGET flux-core)
+pkg_check_modules(FLUX_CORE REQUIRED IMPORTED_TARGET flux-core>=0.77)
 set(FLUX_PREFIX ${FLUX_CORE_PREFIX})
 set(LIBFLUX_VERSION ${FLUX_CORE_VERSION})
 
