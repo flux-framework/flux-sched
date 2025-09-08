@@ -55,7 +55,8 @@ int reapi_cli_t::match_allocate (void *h,
                                  bool &reserved,
                                  std::string &R,
                                  int64_t &at,
-                                 double &ov)
+                                 double &ov,
+                                 int64_t within)
 {
     resource_query_t *rq = static_cast<resource_query_t *> (h);
     int rc = -1;
@@ -84,7 +85,7 @@ int reapi_cli_t::match_allocate (void *h,
             goto out;
         }
 
-        rc = rq->traverser_run (job, match_op, (int64_t)jobid, at);
+        rc = rq->traverser_run (job, match_op, (int64_t)jobid, at, within);
 
         if (rq->get_traverser_err_msg () != "") {
             m_err_msg += __FUNCTION__;
@@ -758,9 +759,10 @@ void resource_query_t::incr_job_counter ()
 int resource_query_t::traverser_run (Flux::Jobspec::Jobspec &job,
                                      match_op_t op,
                                      int64_t jobid,
-                                     int64_t &at)
+                                     int64_t &at,
+                                     int64_t within)
 {
-    return traverser->run (job, writers, op, jobid, &at);
+    return traverser->run (job, writers, op, jobid, &at, at + within);
 }
 
 int resource_query_t::traverser_find (std::string criteria)
