@@ -92,7 +92,8 @@ extern "C" int reapi_cli_match (reapi_cli_ctx_t *ctx,
                                 bool *reserved,
                                 char **R,
                                 int64_t *at,
-                                double *ov)
+                                double *ov,
+                                int64_t within)
 {
     int rc = -1;
     std::string R_buf = "";
@@ -105,8 +106,15 @@ extern "C" int reapi_cli_match (reapi_cli_ctx_t *ctx,
 
     *jobid = ctx->rqt->get_job_counter ();
 
-    if ((rc = reapi_cli_t::
-             match_allocate (ctx->rqt, match_op, jobspec, *jobid, *reserved, R_buf, *at, *ov))
+    if ((rc = reapi_cli_t::match_allocate (ctx->rqt,
+                                           match_op,
+                                           jobspec,
+                                           *jobid,
+                                           *reserved,
+                                           R_buf,
+                                           *at,
+                                           *ov,
+                                           within))
         < 0) {
         goto out;
     }
