@@ -54,7 +54,8 @@ extern "C" int reapi_module_match (reapi_module_ctx_t *ctx,
                                    bool *reserved,
                                    char **R,
                                    int64_t *at,
-                                   double *ov)
+                                   double *ov,
+                                   int64_t within)
 {
     int rc = -1;
     std::string R_buf = "";
@@ -65,7 +66,7 @@ extern "C" int reapi_module_match (reapi_module_ctx_t *ctx,
         goto out;
     }
     if ((rc = reapi_module_t::
-             match_allocate (ctx->h, match_op, jobspec, jobid, *reserved, R_buf, *at, *ov))
+             match_allocate (ctx->h, match_op, jobspec, jobid, *reserved, R_buf, *at, *ov, within))
         < 0) {
         goto out;
     }
