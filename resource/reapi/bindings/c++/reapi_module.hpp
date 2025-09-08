@@ -36,7 +36,8 @@ class reapi_module_t : public reapi_t {
                                bool &reserved,
                                std::string &R,
                                int64_t &at,
-                               double &ov);
+                               double &ov,
+                               int64_t within = -1);
     static int match_allocate (void *h,
                                bool orelse_reserve,
                                const std::string &jobspec,
@@ -44,7 +45,8 @@ class reapi_module_t : public reapi_t {
                                bool &reserved,
                                std::string &R,
                                int64_t &at,
-                               double &ov);
+                               double &ov,
+                               int64_t within = -1);
     static int match_allocate_multi (void *h,
                                      bool orelse_reserve,
                                      const char *jobs,
