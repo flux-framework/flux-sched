@@ -124,6 +124,8 @@ class reapi_t {
      *  \param ov        Double into which to return performance overhead
      *                   in terms of elapse time needed to complete
      *                   the match operation.
+     *  \param within    Return only matches that start between now and now+$within.
+     *                   If within == -1 or int64_t::max, don't apply this filter.
      *  \return          0 on success; -1 on error.
      */
     static int match_allocate (void *h,
@@ -133,7 +135,8 @@ class reapi_t {
                                bool &reserved,
                                std::string &R,
                                int64_t &at,
-                               double &ov)
+                               double &ov,
+                               int64_t within = -1)
     {
         return -1;
     }
