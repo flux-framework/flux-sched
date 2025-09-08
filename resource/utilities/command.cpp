@@ -245,7 +245,8 @@ static int run_match (std::shared_ptr<detail::resource_query_t> &ctx,
                       int64_t jobid,
                       const match_op_t match_op,
                       const std::string &jobspec_fn,
-                      std::ostream &out)
+                      std::ostream &out,
+                      int64_t within = -1)
 {
     int rc = 0;
     int64_t at = 0;
@@ -265,7 +266,15 @@ static int run_match (std::shared_ptr<detail::resource_query_t> &ctx,
 
     jobspec_in.close ();
 
-    detail::reapi_cli_t::match_allocate (ctx.get (), match_op, jobspec, jobid, reserved, R, at, ov);
+    detail::reapi_cli_t::match_allocate (ctx.get (),
+                                         match_op,
+                                         jobspec,
+                                         jobid,
+                                         reserved,
+                                         R,
+                                         at,
+                                         ov,
+                                         within);
 
     // check for match success
     if ((errno == ENODEV) || (errno == EBUSY) || (errno == EINVAL) || (errno == ENOENT)) {
@@ -306,7 +315,7 @@ int cmd_match (std::shared_ptr<detail::resource_query_t> &ctx,
 {
     match_op_t match_op;
 
-    if (args.size () != 3) {
+    if (args.size () < 3 || args.size () > 4) {
         std::cerr << "ERROR: malformed command" << std::endl;
         return 0;
     }
@@ -319,7 +328,17 @@ int cmd_match (std::shared_ptr<detail::resource_query_t> &ctx,
     uint64_t jobid = ctx->get_job_counter ();
     std::string &jobspec_fn = args[2];
 
-    run_match (ctx, jobid, match_op, jobspec_fn, out);
+    int64_t within = -1;
+    if (args.size () == 4) {
+        try {
+            within = std::stoi (args[3]);
+        } catch (...) {
+            std::cerr << "ERROR: invalid integer for 'within' param: " << args[3] << std::endl;
+            within = -1;
+        }
+    }
+
+    run_match (ctx, jobid, match_op, jobspec_fn, out, within);
 
     return 0;
 }
