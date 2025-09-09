@@ -50,88 +50,79 @@ TEST_CASE ("Match basic jobspec", "[match C++]")
     ctx = std::make_shared<resource_query_t> (rgraph, options);
     REQUIRE (ctx);
 
-    match_op_t match_op = match_op_t::MATCH_ALLOCATE;
-    bool reserved = false;
-    std::string R = "";
-    uint64_t jobid = 1;
-    double ov = 0.0;
-    int64_t at = 0;
+    SECTION ("MATCH_ALLOCATE")
+    {
+        match_op_t match_op = match_op_t::MATCH_ALLOCATE;
+        bool reserved = false;
+        std::string R = "";
+        uint64_t jobid = 1;
+        double ov = 0.0;
+        int64_t at = 0;
 
-    rc = detail::reapi_cli_t::match_allocate (ctx.get (),
-                                              match_op,
-                                              jobspec,
-                                              jobid,
-                                              reserved,
-                                              R,
-                                              at,
-                                              ov);
-    CHECK (rc == 0);
-    CHECK (reserved == false);
-    CHECK (at == 0);
-}
-
-TEST_CASE ("Match basic jobspec without allocating", "[match C++]")
-{
-    int rc = -1;
-    const std::string options = "{}";
-    std::stringstream gbuffer, jbuffer;
-    std::ifstream graphfile ("../../../t/data/resource/grugs/tiny.graphml");
-    std::ifstream jobspecfile ("../../../t/data/resource/jobspecs/basics/test006.yaml");
-
-    if (!graphfile.is_open ()) {
-        std::cerr << "Error opening file!" << std::endl;
+        rc =
+            reapi_cli_t::match_allocate (ctx.get (), match_op, jobspec, jobid, reserved, R, at, ov);
+        CHECK (reserved == false);
+        CHECK (at == 0);
+        CHECK (rc == 0);
     }
 
-    jbuffer << jobspecfile.rdbuf ();
-    std::string jobspec = jbuffer.str ();
+    SECTION ("MATCH_WITHOUT_ALLOCATING")
+    {
+        bool reserved = false;
+        std::string R = "";
+        uint64_t jobid = 1;
+        double ov = 0.0;
+        int64_t at = 0;
 
-    if (!jobspecfile.is_open ()) {
-        std::cerr << "Error opening file!" << std::endl;
-    }
+        match_op_t match_op = match_op_t::MATCH_WITHOUT_ALLOCATING;
 
-    gbuffer << graphfile.rdbuf ();
-    std::string rgraph = gbuffer.str ();
-
-    std::shared_ptr<resource_query_t> ctx = nullptr;
-    ctx = std::make_shared<resource_query_t> (rgraph, options);
-    REQUIRE (ctx);
-
-    bool reserved = false;
-    std::string R = "";
-    uint64_t jobid = 1;
-    double ov = 0.0;
-    int64_t at = 0;
-
-    match_op_t match_op = match_op_t::MATCH_WITHOUT_ALLOCATING;
-
-    rc = detail::reapi_cli_t::match_allocate (ctx.get (),
-                                              match_op,
-                                              jobspec,
-                                              jobid,
-                                              reserved,
-                                              R,
-                                              at,
-                                              ov);
-    REQUIRE (rc == 0);
-    REQUIRE (reserved == false);
-    REQUIRE (at == 0);
-
-    match_op = match_op_t::MATCH_ALLOCATE;
-
-    for (int i = 0; i < 4; i++) {
-        rc = detail::reapi_cli_t::match_allocate (ctx.get (),
-                                                  match_op,
-                                                  jobspec,
-                                                  jobid,
-                                                  reserved,
-                                                  R,
-                                                  at,
-                                                  ov);
+        rc =
+            reapi_cli_t::match_allocate (ctx.get (), match_op, jobspec, jobid, reserved, R, at, ov);
         CHECK (reserved == false);
         CHECK (at == 0);
         REQUIRE (rc == 0);
+
+        match_op = match_op_t::MATCH_ALLOCATE;
+
+        for (int i = 0; i < 4; i++) {
+            rc = detail::reapi_cli_t::match_allocate (ctx.get (),
+                                                      match_op,
+                                                      jobspec,
+                                                      jobid,
+                                                      reserved,
+                                                      R,
+                                                      at,
+                                                      ov);
+            CHECK (reserved == false);
+            CHECK (at == 0);
+            REQUIRE (rc == 0);
+            jobid++;
+        }
+        rc =
+            reapi_cli_t::match_allocate (ctx.get (), match_op, jobspec, jobid, reserved, R, at, ov);
+        REQUIRE (rc == -1);  // The tiny graph should be full
+
+        match_op = match_op_t::MATCH_WITHOUT_ALLOCATING;
+
+        rc =
+            reapi_cli_t::match_allocate (ctx.get (), match_op, jobspec, jobid, reserved, R, at, ov);
+        CHECK (reserved == false);
+        CHECK (at == 3600);  // MWOA should match the next available time
+        CHECK (rc == 0);
     }
-    rc = detail::reapi_cli_t::match_allocate (ctx.get (),
+
+    SECTION ("Match only within some duration")
+    {
+        bool reserved = false;
+        std::string R = "";
+        uint64_t jobid = 1;
+        double ov = 0.0;
+        int64_t at = 0;
+
+        match_op_t match_op = match_op_t::MATCH_ALLOCATE;
+
+        for (int i = 0; i < 4; i++) {
+            rc = reapi_cli_t::match_allocate (ctx.get (),
                                               match_op,
                                               jobspec,
                                               jobid,
@@ -139,21 +130,92 @@ TEST_CASE ("Match basic jobspec without allocating", "[match C++]")
                                               R,
                                               at,
                                               ov);
-    REQUIRE (rc == -1);  // The tiny graph should be full
+            CHECK (reserved == false);
+            CHECK (at == 0);
+            REQUIRE (rc == 0);
+            jobid++;
+        }
 
-    match_op = match_op_t::MATCH_WITHOUT_ALLOCATING;
+        // Fail to match within 3599 units (first avail at 3600)
+        match_op = match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE;
+        rc = reapi_cli_t::match_allocate (ctx.get (),
+                                          match_op,
+                                          jobspec,
+                                          jobid,
+                                          reserved,
+                                          R,
+                                          at,
+                                          ov,
+                                          3599);
+        REQUIRE (rc != 0);
+        match_op = match_op_t::MATCH_WITHOUT_ALLOCATING;
+        rc = reapi_cli_t::match_allocate (ctx.get (),
+                                          match_op,
+                                          jobspec,
+                                          jobid,
+                                          reserved,
+                                          R,
+                                          at,
+                                          ov,
+                                          3599);
+        REQUIRE (rc != 0);
 
-    rc = detail::reapi_cli_t::match_allocate (ctx.get (),
-                                              match_op,
-                                              jobspec,
-                                              jobid,
-                                              reserved,
-                                              R,
-                                              at,
-                                              ov);
-    CHECK (reserved == false);
-    CHECK (at == 3600);  // MWOA should match the next available time
-    CHECK (rc == 0);
+        // Successfully match within 3600 units (first avail at 3600)
+        match_op = match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE;
+        rc = reapi_cli_t::match_allocate (ctx.get (),
+                                          match_op,
+                                          jobspec,
+                                          jobid,
+                                          reserved,
+                                          R,
+                                          at,
+                                          ov,
+                                          3600);
+        CHECK (reserved == true);
+        CHECK (at == 3600);
+        REQUIRE (rc == 0);
+        match_op = match_op_t::MATCH_WITHOUT_ALLOCATING;
+        rc = reapi_cli_t::match_allocate (ctx.get (),
+                                          match_op,
+                                          jobspec,
+                                          jobid,
+                                          reserved,
+                                          R,
+                                          at,
+                                          ov,
+                                          3600);
+        CHECK (reserved == false);
+        CHECK (at == 3600);
+        REQUIRE (rc == 0);
+
+        // Successfully match within negative (infinite) units
+        match_op = match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE;
+        rc = reapi_cli_t::match_allocate (ctx.get (),
+                                          match_op,
+                                          jobspec,
+                                          jobid,
+                                          reserved,
+                                          R,
+                                          at,
+                                          ov,
+                                          -1);
+        CHECK (reserved == true);
+        CHECK (at == 3600);
+        REQUIRE (rc == 0);
+        match_op = match_op_t::MATCH_WITHOUT_ALLOCATING;
+        rc = reapi_cli_t::match_allocate (ctx.get (),
+                                          match_op,
+                                          jobspec,
+                                          jobid,
+                                          reserved,
+                                          R,
+                                          at,
+                                          ov,
+                                          -1);
+        CHECK (reserved == false);
+        CHECK (at == 3600);
+        REQUIRE (rc == 0);
+    }
 }
 
 }  // namespace Flux::resource_model::detail
