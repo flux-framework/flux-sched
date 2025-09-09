@@ -123,6 +123,110 @@ TEST_CASE ("Match basic jobspec", "[match C]")
         CHECK (jobid == -1);
         REQUIRE (rc == -1);
     }
+
+    SECTION ("Match only within some duration")
+    {
+        match_op_t match_op = match_op_t::MATCH_UNKNOWN;
+        bool reserved = false;
+        char *R;
+        uint64_t jobid = -1;
+        double ov = 0.0;
+        int64_t at = 0;
+        int64_t within = 0;
+
+        // Allocate all resources from 0 to 3600
+        match_op = match_op_t::MATCH_ALLOCATE;
+        for (int i = 1; i <= 4; i++) {
+            rc = reapi_cli_match_with_jobid_within (ctx,
+                                                    match_op,
+                                                    jobspec.c_str (),
+                                                    jobid,
+                                                    &reserved,
+                                                    &R,
+                                                    &at,
+                                                    &ov,
+                                                    within);
+            CAPTURE (i);
+            CHECK (reserved == false);
+            CHECK (at == 0);
+            REQUIRE (rc == 0);
+        }
+
+        // Fail to match within 3599 units (first avail at 3600)
+        within = 3599;
+        for (match_op_t match_op : {match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE,
+                                    match_op_t::MATCH_WITHOUT_ALLOCATING_FUTURE}) {
+            rc = reapi_cli_match_with_jobid_within (ctx,
+                                                    match_op,
+                                                    jobspec.c_str (),
+                                                    jobid,
+                                                    &reserved,
+                                                    &R,
+                                                    &at,
+                                                    &ov,
+                                                    within);
+            CAPTURE (match_op_to_string (match_op));
+            REQUIRE (rc != 0);
+        }
+
+        // Successfully match within 3600 units (first avail at 3600)
+        within = 3600;
+        match_op = match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE;
+        rc = reapi_cli_match_with_jobid_within (ctx,
+                                                match_op,
+                                                jobspec.c_str (),
+                                                jobid,
+                                                &reserved,
+                                                &R,
+                                                &at,
+                                                &ov,
+                                                within);
+        CHECK (reserved == true);
+        CHECK (at == 3600);
+        REQUIRE (rc == 0);
+        match_op = match_op_t::MATCH_WITHOUT_ALLOCATING_FUTURE;
+        rc = reapi_cli_match_with_jobid_within (ctx,
+                                                match_op,
+                                                jobspec.c_str (),
+                                                jobid,
+                                                &reserved,
+                                                &R,
+                                                &at,
+                                                &ov,
+                                                within);
+        CHECK (reserved == false);
+        CHECK (at == 3600);
+        REQUIRE (rc == 0);
+
+        // Successfully match within negative (infinite) units
+        within = -1;
+        match_op = match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE;
+        rc = reapi_cli_match_with_jobid_within (ctx,
+                                                match_op,
+                                                jobspec.c_str (),
+                                                jobid,
+                                                &reserved,
+                                                &R,
+                                                &at,
+                                                &ov,
+                                                within);
+        CHECK (reserved == true);
+        CHECK (at == 3600);
+        REQUIRE (rc == 0);
+        match_op = match_op_t::MATCH_WITHOUT_ALLOCATING_FUTURE;
+        rc = reapi_cli_match_with_jobid_within (ctx,
+                                                match_op,
+                                                jobspec.c_str (),
+                                                jobid,
+                                                &reserved,
+                                                &R,
+                                                &at,
+                                                &ov,
+                                                within);
+        CHECK (reserved == false);
+        CHECK (at == 3600);
+        REQUIRE (rc == 0);
+    }
 }
 
 TEST_CASE ("Initialize REAPI CLI and test match, satisfy, and cancel",
