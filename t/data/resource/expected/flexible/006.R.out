@@ -1,5 +1,1 @@
-INFO: =============================
-INFO: No matching resources found
-INFO: Unsatisfiable request
-INFO: JOBID=1
-INFO: =============================
+match_allocate: ERROR: Jobspec error for 1: Value of "type" must be a resource type known to fluxion

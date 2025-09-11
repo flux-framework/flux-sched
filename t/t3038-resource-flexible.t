@@ -53,7 +53,7 @@ cmds006="${cmd_dir}/cmds06.in"
 test006_desc="JGF: try to allocate pristine jobspec with resources that don't exist"
 test_expect_success "${test006_desc}" '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds006} > cmds006 &&
-    ${query} -L ${jgf} -f jgf -S CA -P high -T flexible -t 006.R.out < cmds006 &&
+    ${query} -L ${jgf} -f jgf -S CA -P high -T flexible < cmds006 2>  006.R.out &&
     test_cmp 006.R.out ${exp_dir}/006.R.out
 '
 
