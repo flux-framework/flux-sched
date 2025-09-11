@@ -1,6 +1,6 @@
 add_executable(reapi_cli_cxx_test reapi_cli_test_cxx.cpp)
 add_sanitizers(reapi_cli_cxx_test)
-target_link_libraries(reapi_cli_cxx_test PRIVATE reapi_cli intern Catch2::Catch2WithMain)
+target_link_libraries(reapi_cli_cxx_test PRIVATE reapi_cli intern Catch2::Catch2WithMain PkgConfig::JANSSON)
 flux_add_test(NAME reapi_cli_cxx_test COMMAND reapi_cli_cxx_test)
 set_property(TEST reapi_cli_cxx_test APPEND PROPERTY ENVIRONMENT "TESTRESRC_INPUT_FILE=$(CMAKE_SOURCE_DIR)/conf/hype.lua")
 
