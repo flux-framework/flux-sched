@@ -284,6 +284,8 @@ const char *planner_multi::get_resource_type_at (size_t i) const
 size_t planner_multi::get_resource_type_idx (const char *type) const
 {
     auto by_res = m_types_totals_planners.get<res_type> ().find (type);
+    if (by_res == m_types_totals_planners.get<res_type> ().end ())
+        return m_types_totals_planners.size ();
     auto curr_idx = m_types_totals_planners.get<idx> ().iterator_to (*by_res);
     return curr_idx - m_types_totals_planners.begin ();
 }
