@@ -1,0 +1,6 @@
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test001.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/match_extend/test001.json
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/match_extend/test001.json
+cancel 2
+match without_allocating_extend @TEST_SRCDIR@/data/resource/jobspecs/basics/test001.yaml
+quit
