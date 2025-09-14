@@ -969,7 +969,7 @@ int resource_reader_rv1exec_t::partial_cancel_internal (resource_graph_t &g,
     }
     rank = idset_first (r_ids);
     while (rank != IDSET_INVALID_ID) {
-        mod_data.ranks_removed.insert (rank);
+        mod_data.ranks.insert (rank);
         rank = idset_next (r_ids, rank);
     }
     rc = 0;
