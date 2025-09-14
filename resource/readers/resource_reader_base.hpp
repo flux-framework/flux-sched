@@ -26,8 +26,10 @@ enum class job_modify_t { CANCEL, PARTIAL_CANCEL, VTX_CANCEL };
 
 struct modify_data_t {
     job_modify_t mod_type = job_modify_t::PARTIAL_CANCEL;
-    std::unordered_set<int64_t> ranks_removed;
-    std::unordered_map<const char *, int64_t> type_to_count;
+    std::unordered_set<int64_t> ranks;
+    std::unordered_map<int64_t, vtx_t> rank_to_root;
+    std::unordered_map<int64_t, std::unordered_map<resource_type_t, int64_t>> rank_to_counts;
+    std::unordered_map<resource_type_t, int64_t> type_to_count;
 };
 
 /*!  Base resource reader class.
