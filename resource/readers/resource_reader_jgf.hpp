@@ -23,14 +23,23 @@ struct vmap_val_t;
 namespace Flux {
 namespace resource_model {
 
+struct rank_data {
+    // store counts of resources to be cancelled
+    std::unordered_map<resource_type_t, int64_t> type_to_count;
+    // store length of paths to determine subgraph roots
+    uint32_t length = std::numeric_limits<uint32_t>::max ();
+    // store root vertex of subgraph for this rank
+    vtx_t root = boost::graph_traits<resource_graph_t>::null_vertex ();
+};
+
 // Struct to track data for updates
 struct jgf_updater_data {
     int64_t jobid = 0;
     int64_t at = 0;
     uint64_t duration = 0;
     bool reserved = false;
-    // track counts of resources to be cancelled
-    std::unordered_map<const char *, int64_t> type_to_count;
+    // track data of resources to be cancelled
+    std::unordered_map<int64_t, rank_data> rank_to_data;
     // track count of rank vertices to determine if rank
     // should be removed from by_rank map
     std::unordered_set<int64_t> ranks;

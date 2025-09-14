@@ -807,6 +807,8 @@ int resource_reader_jgf_t::cancel_vtx (vtx_t vtx,
     auto &tags = g[vtx].idata.tags;
     std::map<int64_t, int64_t>::iterator span_it;
     std::map<int64_t, int64_t>::iterator xspan_it;
+    uint32_t path_len = 0;
+    rank_data *rdata = nullptr;
 
     static const subsystem_t containment_sub{"containment"};
     // remove from aggregate filter if present
@@ -864,8 +866,14 @@ int resource_reader_jgf_t::cancel_vtx (vtx_t vtx,
     }
     // Don't need to check if rank is invalid; check done in find_vtx ().
     // Add the newly freed counts, Can't assume it freed everything.
-    update_data.type_to_count[g[vtx].type.c_str ()] += prev_occu;
+    rdata = &(update_data.rank_to_data[g[vtx].rank]);
+    rdata->type_to_count[g[vtx].type] += prev_occu;
     update_data.ranks.insert (g[vtx].rank);
+    path_len = g[vtx].paths.at (containment_sub).length ();
+    if (rdata->length > path_len) {
+        rdata->length = path_len;
+        rdata->root = vtx;
+    }
 
     return 0;
 error:
@@ -1340,14 +1348,16 @@ int resource_reader_jgf_t::partial_cancel (resource_graph_t &g,
     // Fill in updater data
     p_cancel_data.jobid = jobid;
     p_cancel_data.update = false;
-
     if ((rc = fetch_jgf (R, &jgf, &nodes, &edges, p_cancel_data)) != 0)
         goto done;
     if ((rc = update_vertices (g, m, vmap, nodes, p_cancel_data)) != 0)
         goto done;
 
-    mod_data.type_to_count = p_cancel_data.type_to_count;
-    mod_data.ranks_removed = p_cancel_data.ranks;
+    for (const auto &[rank, data] : p_cancel_data.rank_to_data) {
+        mod_data.rank_to_counts[rank] = data.type_to_count;
+        mod_data.ranks.insert (rank);
+        mod_data.rank_to_root[rank] = data.root;
+    }
 
 done:
     json_decref (jgf);
