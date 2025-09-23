@@ -30,7 +30,7 @@ test_expect_success 'load test resources' '
 test_expect_success 'qmanager: loading resource and qmanager modules works' '
     flux module load sched-fluxion-resource prune-filters=ALL:core \
 subsystems=containment policy=low &&
-    load_qmanager
+    load_qmanager queue-policy=fifo
 '
 
 test_expect_success 'qmanager: basic job runs in simulated mode' '
@@ -83,9 +83,16 @@ test_expect_success 'qmanager: unsatisfiable jobspec rejected' '
     flux job wait-event -t 10 ${jobid} exception | grep "unsatisfiable"
 '
 
+test_expect_success 'qmanager: multiple unsatisfiable jobspecs rejected' '
+    flux run --dry-run -N 64 -n 64 hostname | exec_test > unsat.json &&
+    run_timeout 5 flux submit --cc=1-10 -N 5 --watch sleep 0 2>&1 | \
+        grep "unsatisfiable"
+    # NOTE: the stats check below verifies that all 10 are rejected
+'
+
 test_expect_success 'qmanager: check stats' '
     flux module stats sched-fluxion-qmanager | tee stats.json &&
-    jq -e ".queues.default.action_counts.rejected == 1" stats.json &&
+    jq -e ".queues.default.action_counts.rejected == 11" stats.json &&
     jq -e ".queues.default.action_counts.complete >= 4" stats.json
 '
 
