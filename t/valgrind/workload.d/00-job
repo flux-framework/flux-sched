@@ -7,7 +7,7 @@ NJOBS=${NJOBS:-10}
 
 echo Submitting $NJOBS jobs
 for i in `seq 1 $NJOBS`; do
-    flux submit /bin/true
+    flux submit true
 done
 echo Waiting jobs to complete
 flux queue drain

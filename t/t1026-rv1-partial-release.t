@@ -65,17 +65,17 @@ if flux dmesg | grep +partial-ok; then
 fi
 
 test_expect_success 'run a normal job, resources are free' '
-	flux run -vvv -xN4 /bin/true &&
+	flux run -vvv -xN4 true &&
 	test_debug "echo free=\$(fluxion_free ncores)" &&
 	test $(fluxion_free ncores) -eq $TOTAL_NCORES
 '
 test_expect_success 'run 4 single node jobs, resources are free' '
-	flux submit -v --cc=1-4 -xN1 --wait /bin/true &&
+	flux submit -v --cc=1-4 -xN1 --wait true &&
 	flux resource list -s free -no "total={ncores}" &&
 	test $(flux resource list -s free -no {ncores}) -eq $TOTAL_NCORES
 '
 test_expect_success 'run 16 single core jobs, resources are free' '
-	flux submit -v --cc=1-16 -n1 --wait /bin/true &&
+	flux submit -v --cc=1-16 -n1 --wait true &&
 	test_debug "echo free=\$(fluxion_free ncores)" &&
 	test $(fluxion_free ncores) -eq $TOTAL_NCORES
 '
@@ -108,7 +108,7 @@ test_expect_success 'enable housekeeping with immediate partial release' '
 	EOF
 '
 test_expect_success 'run a job across all nodes, wait for housekeeping' '
-	flux run -N4 -n4 /bin/true &&
+	flux run -N4 -n4 true &&
 	hk_wait_for_running 0
 '
 test_expect_success 'attempt to ensure dmesg buffer synchronized' '
