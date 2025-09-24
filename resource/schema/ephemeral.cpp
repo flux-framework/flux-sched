@@ -16,6 +16,8 @@ extern "C" {
 
 #include "resource/schema/ephemeral.hpp"
 
+#include <errno.h>
+
 namespace Flux {
 namespace resource_model {
 

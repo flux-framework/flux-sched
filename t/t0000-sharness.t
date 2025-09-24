@@ -448,7 +448,6 @@ test_expect_success 'empty sharness.d directory does not cause failure' '
 	mkdir nil-extensions &&
 	(
 		unset debug &&
-		unset verbose &&
 		cd nil-extensions &&
 		mkdir sharness.d  &&
 		ln -sf $SHARNESS_TEST_SRCDIR/sharness.sh . &&
@@ -456,7 +455,7 @@ test_expect_success 'empty sharness.d directory does not cause failure' '
 		test_description="sharness works"
 		. ./sharness.sh
 		test_expect_success "test success" "
-			/bin/true
+			true
 		"
 		test_done
 		EOF
