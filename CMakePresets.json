@@ -21,6 +21,18 @@
       "vendor": {}
     },
     {
+      "name": "mac",
+      "displayName": "MacOS Config",
+      "description": "MacOS build using Ninja generator",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build-mac",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      },
+      "environment": {},
+      "vendor": {}
+    },
+    {
       "name": "asan",
       "displayName": "Debug with address sanitizer",
       "description": "ASAN build using Ninja generator",
