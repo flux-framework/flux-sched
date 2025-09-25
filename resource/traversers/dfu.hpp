@@ -92,7 +92,8 @@ class dfu_traverser_t : protected detail::dfu_impl_t {
      *  \param writers   vertex/edge writers to emit the matched labels
      *  \param op        schedule operation:
      *                       allocate, allocate_with_satisfiability,
-     *                       allocate_orelse_reserve or satisfiability.
+     *                       allocate_orelse_reserve, satisfiability,
+     *                       or without_allocating.
      *  \param id        job ID to use for the schedule operation.
      *  \param at[out]   when the job is scheduled if reserved.
      *  \return          0 on success; -1 on error.
@@ -106,6 +107,11 @@ class dfu_traverser_t : protected detail::dfu_impl_t {
      */
     int run (Jobspec::Jobspec &jobspec,
              std::shared_ptr<match_writers_t> &writers,
+             match_op_t op,
+             int64_t id,
+             int64_t *at);
+    int run (Jobspec::Jobspec &jobspec,
+             std::vector<std::shared_ptr<match_writers_t>> &writers,
              match_op_t op,
              int64_t id,
              int64_t *at);
@@ -154,6 +160,7 @@ class dfu_traverser_t : protected detail::dfu_impl_t {
      *  \return          0 on success; -1 on error.
      */
     int find (std::shared_ptr<match_writers_t> &writers, const std::string &criteria);
+    int find (std::vector<std::shared_ptr<match_writers_t>> &writers, const std::string &criteria);
 
     /*! Remove the allocation/reservation referred to by jobid and update
      *  the resource state.
