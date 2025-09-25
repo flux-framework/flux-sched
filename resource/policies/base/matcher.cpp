@@ -298,12 +298,10 @@ bool matcher_util_api_t::get_my_pruning_types (subsystem_t subsystem,
 int matcher_util_api_t::add_exclusive_resource_type (resource_type_t type)
 {
     int rc = 0;
-    if (m_x_resource_types.find (type) == m_x_resource_types.end ()) {
-        auto ret = m_x_resource_types.insert (type);
-        if (!ret.second) {
-            errno = ENOMEM;
-            rc = -1;
-        }
+    auto ret = m_x_resource_types.insert (type);
+    if (!ret.second) {
+        errno = ENOMEM;
+        rc = -1;
     }
     return rc;
 }
