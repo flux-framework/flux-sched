@@ -103,10 +103,12 @@ class dfu_flexible_t : public dfu_impl_t {
      *  \param resources Resource request vector.
      *  \param[out] to_parent
      *                   output aggregates on the subtree.
+     *  \param[inout] js_trav data for job specification traversal
      *  \return          none.
      */
     void prime_jobspec (std::vector<Jobspec::Resource> &resources,
-                        std::unordered_map<resource_type_t, int64_t> &to_parent);
+                        std::unordered_map<resource_type_t, int64_t> &to_parent,
+                        jobspec_trav_data &js_trav) override;
 
     int prune_resources (const jobmeta_t &meta,
                          bool excl,

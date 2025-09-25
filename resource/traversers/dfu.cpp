@@ -371,7 +371,8 @@ int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
     const auto exclusive_types = traverser->get_exclusive_resource_types ();
     std::unordered_map<resource_type_t, int64_t> dfv;
 
-    traverser->prime_jobspec (jobspec.resources, dfv);
+    jobspec_trav_data js_trav;
+    traverser->prime_jobspec (jobspec.resources, dfv, js_trav);
     if (meta.build (jobspec, detail::jobmeta_t::alloc_type_t::AT_ALLOC, jobid, *at, graph_duration)
         < 0)
         return -1;
