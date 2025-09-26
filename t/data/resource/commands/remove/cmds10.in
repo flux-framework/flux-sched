@@ -1,12 +1,12 @@
 find agfilter=t
 match allocate @TEST_SRCDIR@/data/resource/jobspecs/remove/test002.yaml
 remove [0] false
-find jobid-alloc=1 agfilter=t
+find jobid-span=1 agfilter=t
 find agfilter=t
 cancel 1
 find agfilter=t
 match allocate @TEST_SRCDIR@/data/resource/jobspecs/remove/test001.yaml
-find jobid-alloc=2 agfilter=t
+find jobid-span=2 agfilter=t
 match allocate @TEST_SRCDIR@/data/resource/jobspecs/remove/test001.yaml
 find agfilter=t
 quit
