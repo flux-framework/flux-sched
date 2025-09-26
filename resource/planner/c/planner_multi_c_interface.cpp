@@ -551,7 +551,7 @@ extern "C" int64_t planner_multi_span_planned_at (planner_multi_t *ctx,
                                                   int64_t span_id,
                                                   unsigned int i)
 {
-    if (!ctx || span_id < 0) {
+    if (!ctx || span_id < 0 || i >= ctx->plan_multi->get_planners_size ()) {
         errno = EINVAL;
         return -1;
     }
@@ -559,6 +559,10 @@ extern "C" int64_t planner_multi_span_planned_at (planner_multi_t *ctx,
     if (span_it == ctx->plan_multi->get_span_lookup ().end ()) {
         errno = ENOENT;
         return -1;
+    }
+    // Span may have been removed during a partial cancel
+    if (span_it->second.at (i) == -1) {
+        return 0;
     }
     return planner_span_resource_count (ctx->plan_multi->get_planner_at (i),
                                         span_it->second.at (i));
