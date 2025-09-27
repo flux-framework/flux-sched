@@ -554,8 +554,17 @@ int dfu_impl_t::mod_plan (vtx_t u, int64_t jobid, modify_data_t &mod_data)
 
     plans = (*m_graph)[u].schedule.plans;
     if (mod_data.mod_type != job_modify_t::PARTIAL_CANCEL) {
-        if (mod_data.mod_type == job_modify_t::VTX_CANCEL)
-            prev_count = planner_span_resource_count (plans, span);
+        if (mod_data.mod_type == job_modify_t::VTX_CANCEL) {
+            if ((prev_count = planner_span_resource_count (plans, span)) < 0) {
+                m_err_msg += __FUNCTION__;
+                m_err_msg += ": planner_span_resource_count failed.\n";
+                m_err_msg += (*m_graph)[u].name + ".\n";
+                m_err_msg += strerror (errno);
+                m_err_msg += ".\n";
+                rc = -1;
+                goto done;
+            }
+        }
         if ((rc = planner_rem_span (plans, span)) == -1) {
             m_err_msg += __FUNCTION__;
             m_err_msg += ": planner_rem_span returned -1.\n";
@@ -686,9 +695,18 @@ int dfu_impl_t::clear_vertex (vtx_t vtx, modify_data_t &mod_data)
 
     // Compute removed span counts
     plans = (*m_graph)[vtx].schedule.plans;
+    int64_t counts = 0;
+    int64_t res_count = 0;
     for (const auto &alloc_it : (*m_graph)[vtx].schedule.allocations) {
-        mod_data.type_to_count[(*m_graph)[vtx].type.c_str ()] +=
-            planner_span_resource_count (plans, alloc_it.second);
+        if ((res_count = planner_span_resource_count (plans, alloc_it.second)) < 0) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": planner_span_resource_count failed.\n";
+            m_err_msg += strerror (errno);
+            m_err_msg += ".\n";
+            return -1;
+        }
+        counts += res_count;
+        mod_data.rank_to_counts[(*m_graph)[vtx].rank][(*m_graph)[vtx].type.c_str ()] += counts;
     }
     // Reset planner
     base_time = planner_base_time (plans);
