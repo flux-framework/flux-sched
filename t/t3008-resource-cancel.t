@@ -9,6 +9,7 @@ exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/cancel"
 grugs="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/resv_test.graphml"
 rv1s="${SHARNESS_TEST_SRCDIR}/data/resource/rv1exec/tiny_rv1exec.json"
 jgfs="${SHARNESS_TEST_SRCDIR}/data/resource/jgfs/elastic/tiny-partial-cancel.json"
+jgfs_power="${SHARNESS_TEST_SRCDIR}/data/resource/jgfs/power.json"
 query="../../resource/utilities/resource-query"
 
 #
@@ -209,6 +210,150 @@ test_expect_success "${test025_desc}" '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds025} > cmds025 &&
     ${query} -f jgf -L ${jgfs} -S CA -P low -t 025.R.out < cmds025 &&
     test_cmp 025.R.out ${exp_dir}/024.R.out
+'
+
+cmds026="${cmd_dir}/cmds12.in"
+test026_desc="Test partial cancel of cross-rack allocation"
+test_expect_success "${test026_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds026} > cmds026 &&
+    ${query} -f jgf -L ${jgfs_power} -S CA -P low -t 026.R.out < cmds026 2>026.R.err &&
+    test_cmp 026.R.out ${exp_dir}/026.R.out &&
+    test_cmp 026.R.err ${exp_dir}/026.R.err
+'
+
+cmds027="${cmd_dir}/cmds12.in"
+test027_desc="Test partial cancel of cross-rack allocation with more filters set"
+test_expect_success "${test027_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds027} > cmds027 &&
+    ${query} -f jgf -L ${jgfs_power} -S CA -P low --prune-filters=ALL:core,ALL:gpu,ALL:socket,ALL:node,ALL:memory -t 027.R.out < cmds027 2>027.R.err &&
+    test_cmp 027.R.out ${exp_dir}/027.R.out &&
+    test_cmp 027.R.err ${exp_dir}/027.R.err
+'
+
+cmds028="${cmd_dir}/cmds12.in"
+test028_desc="Test partial cancel of cross-rack allocation with intermediate filters set"
+test_expect_success "${test028_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds028} > cmds028 &&
+    ${query} -f jgf -L ${jgfs_power} -S CA -P low --prune-filters=ALL:socket,ALL:node -t 028.R.out < cmds028 2>028.R.err &&
+    test_cmp 028.R.out ${exp_dir}/028.R.out &&
+    test_cmp 028.R.err ${exp_dir}/028.R.err
+'
+
+cmds029="${cmd_dir}/cmds12.in"
+test029_desc="Test partial cancel of cross-rack allocation with leaf filters set"
+test_expect_success "${test029_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds029} > cmds029 &&
+    ${query} -f jgf -L ${jgfs_power} -S CA -P low --prune-filters=ALL:core,ALL:gpu,ALL:memory -t 029.R.out < cmds029 2>029.R.err &&
+    test_cmp 029.R.out ${exp_dir}/029.R.out &&
+    test_cmp 029.R.err ${exp_dir}/029.R.err
+'
+
+cmds030="${cmd_dir}/cmds13.in"
+test030_desc="Test partial cancel of cross-rack allocation specifying lower-level resources"
+test_expect_success "${test030_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds030} > cmds030 &&
+    ${query} -f jgf -L ${jgfs_power} -S CA -P low -t 030.R.out < cmds030 2>030.R.err &&
+    test_cmp 030.R.out ${exp_dir}/030.R.out &&
+    test_cmp 030.R.err ${exp_dir}/030.R.err
+'
+
+cmds031="${cmd_dir}/cmds13.in"
+test031_desc="Test partial cancel of cross-rack allocation with more filters set, specifying lower-level resources"
+test_expect_success "${test031_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds031} > cmds031 &&
+    ${query} -f jgf -L ${jgfs_power} -S CA -P low --prune-filters=ALL:core,ALL:gpu,ALL:socket,ALL:node,ALL:memory -t 031.R.out < cmds031 2>031.R.err &&
+    test_cmp 031.R.out ${exp_dir}/031.R.out &&
+    test_cmp 031.R.err ${exp_dir}/031.R.err
+'
+
+cmds032="${cmd_dir}/cmds13.in"
+test032_desc="Test partial cancel of cross-rack allocation with intermediate filters set, specifying lower-level resources"
+test_expect_success "${test032_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds032} > cmds032 &&
+    ${query} -f jgf -L ${jgfs_power} -S CA -P low --prune-filters=ALL:socket,ALL:node -t 032.R.out < cmds032 2>032.R.err &&
+    test_cmp 032.R.out ${exp_dir}/032.R.out &&
+    test_cmp 032.R.err ${exp_dir}/032.R.err
+'
+
+cmds033="${cmd_dir}/cmds13.in"
+test033_desc="Test partial cancel of cross-rack allocation with leaf filters set, specifying lower-level resources"
+test_expect_success "${test033_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds033} > cmds033 &&
+    ${query} -f jgf -L ${jgfs_power} -S CA -P low --prune-filters=ALL:core,ALL:gpu,ALL:memory -t 033.R.out < cmds033 2>033.R.err &&
+    test_cmp 033.R.out ${exp_dir}/033.R.out &&
+    test_cmp 033.R.err ${exp_dir}/033.R.err
+'
+
+cmds034="${cmd_dir}/cmds12.in"
+test034_desc="Test partial cancel of cross-rack allocation, lonodex"
+test_expect_success "${test034_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds034} > cmds034 &&
+    ${query} -f jgf -L ${jgfs_power} -S CA -P lonodex -t 034.R.out < cmds034 2>034.R.err &&
+    test_cmp 034.R.out ${exp_dir}/034.R.out &&
+    test_cmp 034.R.err ${exp_dir}/034.R.err
+'
+
+cmds035="${cmd_dir}/cmds12.in"
+test035_desc="Test partial cancel of cross-rack allocation with more filters set, lonodex"
+test_expect_success "${test035_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds035} > cmds035 &&
+    ${query} -f jgf -L ${jgfs_power} -S CA -P lonodex --prune-filters=ALL:core,ALL:gpu,ALL:socket,ALL:node,ALL:memory -t 035.R.out < cmds035 2>035.R.err &&
+    test_cmp 035.R.out ${exp_dir}/035.R.out &&
+    test_cmp 035.R.err ${exp_dir}/035.R.err
+'
+
+cmds036="${cmd_dir}/cmds12.in"
+test036_desc="Test partial cancel of cross-rack allocation with intermediate filters set, lonodex"
+test_expect_success "${test036_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds036} > cmds036 &&
+    ${query} -f jgf -L ${jgfs_power} -S CA -P lonodex --prune-filters=ALL:socket,ALL:node -t 036.R.out < cmds036 2>036.R.err &&
+    test_cmp 036.R.out ${exp_dir}/036.R.out &&
+    test_cmp 036.R.err ${exp_dir}/036.R.err
+'
+
+cmds037="${cmd_dir}/cmds12.in"
+test037_desc="Test partial cancel of cross-rack allocation with leaf filters set, lonodex"
+test_expect_success "${test037_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds037} > cmds037 &&
+    ${query} -f jgf -L ${jgfs_power} -S CA -P lonodex --prune-filters=ALL:core,ALL:gpu,ALL:memory -t 037.R.out < cmds037 2>037.R.err &&
+    test_cmp 037.R.out ${exp_dir}/037.R.out &&
+    test_cmp 037.R.err ${exp_dir}/037.R.err
+'
+
+cmds038="${cmd_dir}/cmds13.in"
+test038_desc="Test partial cancel of cross-rack allocation specifying lower-level resources, lonodex"
+test_expect_success "${test038_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds038} > cmds038 &&
+    ${query} -f jgf -L ${jgfs_power} -S CA -P lonodex -t 038.R.out < cmds038 2>038.R.err &&
+    test_cmp 038.R.out ${exp_dir}/038.R.out &&
+    test_cmp 038.R.err ${exp_dir}/038.R.err
+'
+
+cmds039="${cmd_dir}/cmds13.in"
+test039_desc="Test partial cancel of cross-rack allocation with more filters set, specifying lower-level resources, lonodex"
+test_expect_success "${test039_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds039} > cmds039 &&
+    ${query} -f jgf -L ${jgfs_power} -S CA -P lonodex --prune-filters=ALL:core,ALL:gpu,ALL:socket,ALL:node,ALL:memory -t 039.R.out < cmds039 2>039.R.err &&
+    test_cmp 039.R.out ${exp_dir}/039.R.out &&
+    test_cmp 039.R.err ${exp_dir}/039.R.err
+'
+
+cmds040="${cmd_dir}/cmds13.in"
+test040_desc="Test partial cancel of cross-rack allocation with intermediate filters set, specifying lower-level resources, lonodex"
+test_expect_success "${test040_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds040} > cmds040 &&
+    ${query} -f jgf -L ${jgfs_power} -S CA -P lonodex --prune-filters=ALL:socket,ALL:node -t 040.R.out < cmds040 2>040.R.err &&
+    test_cmp 040.R.out ${exp_dir}/040.R.out &&
+    test_cmp 040.R.err ${exp_dir}/040.R.err
+'
+
+cmds041="${cmd_dir}/cmds13.in"
+test041_desc="Test partial cancel of cross-rack allocation with leaf filters set, specifying lower-level resources, lonodex"
+test_expect_success "${test041_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds041} > cmds041 &&
+    ${query} -f jgf -L ${jgfs_power} -S CA -P lonodex --prune-filters=ALL:core,ALL:gpu,ALL:memory -t 041.R.out < cmds041 2>041.R.err &&
+    test_cmp 041.R.out ${exp_dir}/041.R.out &&
+    test_cmp 041.R.err ${exp_dir}/041.R.err
 '
 
 test_done
