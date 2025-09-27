@@ -697,7 +697,7 @@ static int test_partial_cancel ()
     size_t len = 5;
     int rc = -1;
     int64_t span1 = -1, span2 = -1, span3 = -1, span4 = -1, avail1 = -1, avail2 = -1, avail3 = -1,
-            avail4 = -1, avail5 = -1, avail6 = -1, avail7 = -1;
+            avail4 = -1, avail5 = -1, avail6 = -1, avail7 = -1, used = -1;
     const uint64_t resource_totals[] = {10, 20, 30, 40, 50};
     const char *resource_types[] = {"A", "B", "C", "D", "E"};
     const char *resource_types1[] = {"B", "A", "E"};
@@ -768,6 +768,10 @@ static int test_partial_cancel ()
     span4 = planner_multi_add_span (ctx, 3000, 1000, request3, len);
     rc = planner_multi_reduce_span (ctx, span4, reduce5, resource_types5, 1, removed1);
     rc = planner_multi_reduce_span (ctx, span4, reduce5, resource_types5, 1, removed2);
+    used = planner_multi_span_planned_at (ctx, span4, 0);
+    ok ((used == 0),
+        "partial reductions correctly report used resources of completely removed resource");
+
     rc = planner_multi_reduce_span (ctx, span4, reduce5, resource_types6, 1, removed3);
     rc = planner_multi_reduce_span (ctx, span4, reduce5, resource_types6, 1, removed4);
     avail6 = planner_multi_avail_resources_at (ctx, 3500, 0);
@@ -783,7 +787,7 @@ static int test_partial_cancel ()
 
 int main (int argc, char *argv[])
 {
-    plan (106);
+    plan (107);
 
     test_multi_basics ();
 
