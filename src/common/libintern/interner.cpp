@@ -22,7 +22,12 @@
 
 namespace intern {
 namespace detail {
-std::shared_mutex group_mtx;
+
+static std::shared_mutex &get_group_mtx ()
+{
+    static std::shared_mutex group_mtx;
+    return group_mtx;
+}
 
 struct string_hash {
     using hash_type = std::hash<std::string_view>;
@@ -57,7 +62,7 @@ struct dense_inner_storage {
 dense_inner_storage &get_dense_inner_storage (size_t unique_id)
 {
     static std::unordered_map<size_t, dense_inner_storage> groups;
-    auto guard = std::unique_lock (group_mtx);
+    auto guard = std::unique_lock (get_group_mtx ());
     return groups[unique_id];
 }
 
@@ -96,7 +101,7 @@ struct sparse_inner_storage : std::enable_shared_from_this<sparse_inner_storage>
 sparse_inner_storage *get_sparse_inner_storage (size_t unique_id)
 {
     static std::unordered_map<size_t, std::shared_ptr<sparse_inner_storage>> groups;
-    auto guard = std::unique_lock (group_mtx);
+    auto guard = std::unique_lock (get_group_mtx ());
     auto &ret = groups[unique_id];
     if (!ret)
         ret = std::make_shared<sparse_inner_storage> ();
