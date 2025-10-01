@@ -795,11 +795,10 @@ int resource_reader_jgf_t::cancel_vtx (vtx_t vtx,
                                        const fetch_helper_t &fetcher,
                                        jgf_updater_data &update_data)
 {
-    int rc = -1;
     int64_t span = -1;
     int64_t xspan = -1;
     int64_t sched_span = -1;
-    int64_t prev_avail = -1;
+    int64_t prev_occu = -1;
     planner_multi_t *subtree_plan = NULL;
     planner_t *x_checker = NULL;
     planner_t *plans = NULL;
@@ -809,14 +808,14 @@ int resource_reader_jgf_t::cancel_vtx (vtx_t vtx,
     std::map<int64_t, int64_t>::iterator span_it;
     std::map<int64_t, int64_t>::iterator xspan_it;
 
-    static subsystem_t containment_sub{"containment"};
+    static const subsystem_t containment_sub{"containment"};
     // remove from aggregate filter if present
     auto agg_span = job2span.find (update_data.jobid);
     if (agg_span != job2span.end ()) {
         if ((subtree_plan = g[vtx].idata.subplans[containment_sub]) == NULL)
-            goto ret;
+            goto error;
         if (planner_multi_rem_span (subtree_plan, agg_span->second) != 0)
-            goto ret;
+            goto error;
         // Delete from job2span tracker
         job2span.erase (update_data.jobid);
     }
@@ -824,16 +823,20 @@ int resource_reader_jgf_t::cancel_vtx (vtx_t vtx,
     // remove from exclusive filter;
     xspan_it = x_spans.find (update_data.jobid);
     if (xspan_it == x_spans.end ()) {
-        errno = EINVAL;
-        goto ret;
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": can't find x_checker span for job ";
+        m_err_msg += std::to_string (update_data.jobid) + " in " + g[vtx].name + ".\n";
+        goto error;
     }
     xspan = xspan_it->second;
     x_checker = g[vtx].idata.x_checker;
     g[vtx].idata.tags.erase (update_data.jobid);
     g[vtx].idata.x_spans.erase (update_data.jobid);
     if (planner_rem_span (x_checker, xspan) == -1) {
-        errno = EINVAL;
-        goto ret;
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": can't remove x_checker span for job ";
+        m_err_msg += std::to_string (update_data.jobid) + " in " + g[vtx].name + ".\n";
+        goto error;
     }
     // rem plan
     span_it = g[vtx].schedule.allocations.find (update_data.jobid);
@@ -841,24 +844,33 @@ int resource_reader_jgf_t::cancel_vtx (vtx_t vtx,
     if (span_it != g[vtx].schedule.allocations.end ()) {
         g[vtx].schedule.allocations.erase (update_data.jobid);
     } else {
-        errno = EINVAL;
-        goto ret;
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": can't find allocation span for job ";
+        m_err_msg += std::to_string (update_data.jobid) + " in " + g[vtx].name + ".\n";
+        goto error;
     }
     plans = g[vtx].schedule.plans;
-    prev_avail = planner_avail_resources_at (plans, 0);
-    if (planner_rem_span (plans, sched_span) == -1) {
-        errno = EINVAL;
-        goto ret;
+    if ((prev_occu = planner_span_resource_count (plans, sched_span)) < 0) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": planner_span_resource_count failed for job ";
+        m_err_msg += std::to_string (update_data.jobid) + " in " + g[vtx].name + ".\n";
+        goto error;
     }
+    if (planner_rem_span (plans, sched_span) == -1) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": can't remove allocation span for job ";
+        m_err_msg += std::to_string (update_data.jobid) + " in " + g[vtx].name + ".\n";
+        goto error;
+    }
+    // Don't need to check if rank is invalid; check done in find_vtx ().
     // Add the newly freed counts, Can't assume it freed everything.
-    update_data.type_to_count[g[vtx].type.c_str ()] +=
-        (planner_avail_resources_at (plans, 0) - prev_avail);
+    update_data.type_to_count[g[vtx].type.c_str ()] += prev_occu;
     update_data.ranks.insert (g[vtx].rank);
 
-    rc = 0;
-
-ret:
-    return rc;
+    return 0;
+error:
+    errno = EINVAL;
+    return -1;
 }
 
 int resource_reader_jgf_t::update_vtx (resource_graph_t &g,
