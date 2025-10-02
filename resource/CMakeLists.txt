@@ -29,6 +29,8 @@ set(RESOURCE_HEADERS
     schema/ephemeral.hpp
     traversers/dfu.hpp
     traversers/dfu_impl.hpp
+    traversers/dfu_flexible.hpp
+    traversers/dfu_traverser_policy_factory.hpp
     policies/base/dfu_match_cb.hpp
     policies/base/matcher.hpp
     readers/resource_namespace_remapper.hpp
@@ -62,6 +64,8 @@ add_library(resource STATIC
     schema/ephemeral.cpp
     traversers/dfu.cpp
     traversers/dfu_impl.cpp
+    traversers/dfu_flexible.cpp
+    traversers/dfu_traverser_policy_factory.cpp
     traversers/dfu_impl_update.cpp
     policies/base/dfu_match_cb.cpp
     policies/base/matcher.cpp

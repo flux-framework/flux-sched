@@ -14,6 +14,7 @@
 #include <iostream>
 #include <cstdlib>
 #include "resource/traversers/dfu_impl.hpp"
+#include "resource/traversers/dfu_traverser_policy_factory.hpp"
 
 namespace Flux {
 namespace resource_model {
@@ -23,10 +24,12 @@ namespace resource_model {
  *  by the matcher callback object (dfu_match_cb_t). Corresponding match
  *  callback methods are invoked at various well-defined graph visit events.
  */
-class dfu_traverser_t : protected detail::dfu_impl_t {
+class dfu_traverser_t {
    public:
-    dfu_traverser_t ();
-    dfu_traverser_t (std::shared_ptr<resource_graph_db_t> db, std::shared_ptr<dfu_match_cb_t> m);
+    dfu_traverser_t (const std::string policy = "simple");
+    dfu_traverser_t (std::shared_ptr<resource_graph_db_t> db,
+                     std::shared_ptr<dfu_match_cb_t> m,
+                     const std::string policy = "simple");
     dfu_traverser_t (const dfu_traverser_t &o);
     dfu_traverser_t (dfu_traverser_t &&o) = default;
     dfu_traverser_t &operator= (const dfu_traverser_t &o);
@@ -243,6 +246,7 @@ class dfu_traverser_t : protected detail::dfu_impl_t {
     bool m_initialized = false;
     unsigned int m_total_preorder = 0;
     unsigned int m_total_postorder = 0;
+    std::shared_ptr<detail::dfu_impl_t> traverser;
 };
 
 }  // namespace resource_model

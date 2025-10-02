@@ -39,7 +39,7 @@ namespace fs = std::filesystem;
 using namespace Flux::resource_model;
 using boost::tie;
 
-#define OPTIONS "L:f:W:S:P:F:g:o:p:t:r:edh"
+#define OPTIONS "L:f:W:S:P:T:F:g:o:p:t:r:edh"
 static const struct option longopts[] = {
     {"load-file", required_argument, 0, 'L'},
     {"load-format", required_argument, 0, 'f'},
@@ -47,6 +47,7 @@ static const struct option longopts[] = {
     {"match-subsystems", required_argument, 0, 'S'},
     {"match-policy", required_argument, 0, 'P'},
     {"match-format", required_argument, 0, 'F'},
+    {"traverser-policy", required_argument, 0, 'T'},
     {"graph-format", required_argument, 0, 'g'},
     {"graph-output", required_argument, 0, 'o'},
     {"prune-filters", required_argument, 0, 'p'},
@@ -148,6 +149,10 @@ OPTIONS:
     -F, --match-format=<simple|pretty_simple|jgf|rlite|rv1|rv1_nosched>
             Specify the emit format of the matched resource set.
             (default=simple).
+
+    -T, --traverser-policy=<simple|flexible>
+            Specify the traverser policy.
+            (default=simple)
 
     -p, --prune-filters=<HL-resource1:LL-resource1[,HL-resource2:LL-resource2...]...]>
             Install a planner-based filter at each High-Level (HL) resource
@@ -517,6 +522,9 @@ static void process_args (json_t *options, int argc, char *argv[])
                 break;
             case 'P': /* --match-policy */
                 json_object_set_new (options, "matcher_policy", json_string (optarg));
+                break;
+            case 'T': /* --traverser-policy */
+                json_object_set_new (options, "traverser_policy", json_string (optarg));
                 break;
             case 'F': /* --match-format */
                 json_object_set_new (options, "match_format", json_string (optarg));
