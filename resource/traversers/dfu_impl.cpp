@@ -900,10 +900,17 @@ int dfu_impl_t::dom_find_dfv (std::shared_ptr<match_writers_t> &w,
                 m_err_msg += " for vertex: " + (*m_graph)[u].name + "\n";
                 goto done;
             }
+            int64_t planned_resources = 0;
             for (size_t i = 0; i < planner_multi_resources_len (filter_plan); ++i) {
                 int64_t total_resources = planner_multi_resource_total_at (filter_plan, i);
-                int64_t planned_resources =
-                    planner_multi_span_planned_at (filter_plan, span_it->second, i);
+                if ((planned_resources =
+                         planner_multi_span_planned_at (filter_plan, span_it->second, i))
+                    < 0) {
+                    m_err_msg += __FUNCTION__;
+                    m_err_msg += ": error from planner_multi_span_planned_at: ";
+                    m_err_msg += " for vertex: " + (*m_graph)[u].name + "\n";
+                    goto done;
+                }
                 std::string rtype = std::string (planner_multi_resource_type_at (filter_plan, i));
                 std::string fcounts = "used:" + std::to_string (planned_resources)
                                       + ", total:" + std::to_string (total_resources);

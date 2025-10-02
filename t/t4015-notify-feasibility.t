@@ -20,6 +20,17 @@ force_down () {
 	flux python -c "import flux; flux.Flux().rpc(\"resource.monitor-force-down\", {\"ranks\":\"$1\"}).get()"
 }
 
+# Usage: wait_for_node_count N
+wait_for_node_count() {
+    retries=5
+    while test $retries -ge 0; do
+        test $(flux resource list -s all -no {nnodes}) -eq $1 && return 0
+        retries=$(($retries-1))
+        sleep 0.1
+    done
+    return 1
+}
+
 # If force-down is not supported then this version of flux-core does not
 # support shrink, so skip all tests:
 if ! force_down "" 2>/dev/null ; then
@@ -46,8 +57,7 @@ test_expect_success 'disconnect rank 3' '
 '
 
 test_expect_success 'there are now only 3 nodes' '
-    flux resource list -s all &&
-    test $(flux resource list -s all -no {nnodes}) -eq 3
+    wait_for_node_count 3
 '
 
 test_expect_success 'a 4 node job is now unsatisfiable' '
