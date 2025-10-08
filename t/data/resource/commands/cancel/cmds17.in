@@ -1,0 +1,13 @@
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/cancel/test029.yaml
+partial-cancel 1 rv1exec @TEST_SRCDIR@/data/resource/rv1exec/cancel/ranks_cancel_crossracks_simple.json stats
+find sched-now=allocated
+find jobid-span=1
+find jobid-tag=1
+info 1
+cancel 1 stats
+find sched-now=allocated
+find jobid-span=1
+find jobid-tag=1
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/cancel/test029.yaml
+find sched-now=allocated
+quit

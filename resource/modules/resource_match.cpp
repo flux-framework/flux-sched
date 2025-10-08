@@ -1134,7 +1134,7 @@ int shrink_resources (std::shared_ptr<resource_ctx_t> &ctx, const char *ids)
         goto done;
     }
     // Update total counts:
-    ctx->traverser->initialize ();
+    rc = ctx->traverser->initialize ();
     flux_log (ctx->h, LOG_DEBUG, "successfully removed ranks %s from resource set", ids);
 
 done:

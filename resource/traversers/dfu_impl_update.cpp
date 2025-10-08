@@ -437,9 +437,7 @@ int dfu_impl_t::mod_agfilter (vtx_t u,
         if ((rc = planner_multi_rem_span (subtree_plan, span_it->second)) != 0) {
             m_err_msg += __FUNCTION__;
             m_err_msg += ": planner_multi_rem_span returned -1.\n";
-            m_err_msg += (*m_graph)[u].name + ".\n";
-            m_err_msg += strerror (errno);
-            m_err_msg += "\n";
+            m_err_msg += (*m_graph)[u].name + " " + strerror (errno) + ".\n";
             goto done;
         }
         job2span.erase (span_it);
@@ -449,19 +447,11 @@ int dfu_impl_t::mod_agfilter (vtx_t u,
             stop = true;
             goto done;
         }
-        // If not a default/root rank and the rank is still in the graph
-        // but don't remove exclusive filter as allocation may be exclusive
-        // at the subgraph rooted here.
-        if ((mod_data.ranks_removed.find ((*m_graph)[u].rank) == mod_data.ranks_removed.end ())
-            && (*m_graph)[u].rank != -1) {
-            stop = true;
-            goto done;
-        }
         if (mod_data.type_to_count.size () > 0) {
             std::vector<const char *> reduced_types;
             std::vector<uint64_t> reduced_counts;
             for (const auto &t2ct_it : mod_data.type_to_count) {
-                reduced_types.push_back (t2ct_it.first);
+                reduced_types.push_back (t2ct_it.first.c_str ());
                 reduced_counts.push_back (t2ct_it.second);
             }
             if ((rc = planner_multi_reduce_span (subtree_plan,
@@ -473,17 +463,13 @@ int dfu_impl_t::mod_agfilter (vtx_t u,
                 != 0) {
                 m_err_msg += __FUNCTION__;
                 m_err_msg += ": planner_multi_reduce_span returned -1.\n";
-                m_err_msg += (*m_graph)[u].name + ".\n";
-                m_err_msg += strerror (errno);
-                m_err_msg += "\n";
+                m_err_msg += (*m_graph)[u].name + " " + strerror (errno) + ".\n";
                 goto done;
             }
         } else {
             m_err_msg += __FUNCTION__;
             m_err_msg += ": type_to_count empty.\n";
-            m_err_msg += (*m_graph)[u].name + ".\n";
-            m_err_msg += strerror (errno);
-            m_err_msg += "\n";
+            m_err_msg += (*m_graph)[u].name + " " + strerror (errno) + ".\n";
             rc = -1;
             goto done;
         }
@@ -554,27 +540,30 @@ int dfu_impl_t::mod_plan (vtx_t u, int64_t jobid, modify_data_t &mod_data)
 
     plans = (*m_graph)[u].schedule.plans;
     if (mod_data.mod_type != job_modify_t::PARTIAL_CANCEL) {
-        if (mod_data.mod_type == job_modify_t::VTX_CANCEL)
-            prev_count = planner_span_resource_count (plans, span);
+        if (mod_data.mod_type == job_modify_t::VTX_CANCEL) {
+            if ((prev_count = planner_span_resource_count (plans, span)) < 0) {
+                m_err_msg += __FUNCTION__;
+                m_err_msg += ": planner_span_resource_count failed.\n";
+                m_err_msg += (*m_graph)[u].name + " " + strerror (errno) + ".\n";
+                rc = -1;
+                goto done;
+            }
+        }
         if ((rc = planner_rem_span (plans, span)) == -1) {
             m_err_msg += __FUNCTION__;
             m_err_msg += ": planner_rem_span returned -1.\n";
-            m_err_msg += (*m_graph)[u].name + ".\n";
-            m_err_msg += strerror (errno);
-            m_err_msg += ".\n";
+            m_err_msg += (*m_graph)[u].name + " " + strerror (errno) + ".\n";
             goto done;
         }
         // Accumulate counts per type to partially remove from filters
         if (mod_data.mod_type == job_modify_t::VTX_CANCEL) {
-            mod_data.type_to_count[(*m_graph)[u].type.c_str ()] += prev_count;
+            mod_data.rank_to_counts[(*m_graph)[u].rank][(*m_graph)[u].type] += prev_count;
         }
     } else {  // PARTIAL_CANCEL
         m_err_msg += __FUNCTION__;
         m_err_msg += ": traverser tried to remove schedule and span";
         m_err_msg += " after vtx_cancel during partial cancel:\n";
-        m_err_msg += (*m_graph)[u].name + ".\n";
-        m_err_msg += strerror (errno);
-        m_err_msg += ".\n";
+        m_err_msg += (*m_graph)[u].name + " " + strerror (errno) + ".\n";
         rc = -1;
     }
 
@@ -686,18 +675,25 @@ int dfu_impl_t::clear_vertex (vtx_t vtx, modify_data_t &mod_data)
 
     // Compute removed span counts
     plans = (*m_graph)[vtx].schedule.plans;
+    int64_t count = 0;
+    int64_t total_count = 0;
     for (const auto &alloc_it : (*m_graph)[vtx].schedule.allocations) {
-        mod_data.type_to_count[(*m_graph)[vtx].type.c_str ()] +=
-            planner_span_resource_count (plans, alloc_it.second);
+        if ((count = planner_span_resource_count (plans, alloc_it.second)) < 0) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": planner_span_resource_count failed.\n";
+            m_err_msg += (*m_graph)[vtx].name + " " + strerror (errno) + ".\n";
+            return -1;
+        }
+        total_count += count;
     }
+    mod_data.rank_to_counts[(*m_graph)[vtx].rank][(*m_graph)[vtx].type] += total_count;
     // Reset planner
     base_time = planner_base_time (plans);
     duration = planner_duration (plans);
     if (planner_reset (plans, base_time, duration) != 0) {
         m_err_msg += __FUNCTION__;
         m_err_msg += ": planner_reset failed.\n";
-        m_err_msg += strerror (errno);
-        m_err_msg += ".\n";
+        m_err_msg += (*m_graph)[vtx].name + " " + strerror (errno) + ".\n";
         return -1;
     }
     // Reset planner_multi
@@ -707,8 +703,7 @@ int dfu_impl_t::clear_vertex (vtx_t vtx, modify_data_t &mod_data)
         if (planner_multi_reset (multi_plans, base_time, duration) != 0) {
             m_err_msg += __FUNCTION__;
             m_err_msg += ": planner_multi_reset failed.\n";
-            m_err_msg += strerror (errno);
-            m_err_msg += ".\n";
+            m_err_msg += (*m_graph)[vtx].name + " " + strerror (errno) + ".\n";
             return -1;
         }
     }
@@ -745,7 +740,7 @@ int dfu_impl_t::get_subgraph_vertices (vtx_t vtx, std::set<vtx_t> &vtx_set)
 int dfu_impl_t::get_parent_vtx (vtx_t vtx, vtx_t &parent_vtx)
 {
     int rc = -1;
-    vtx_t next_vtx;
+    vtx_t next_vtx = boost::graph_traits<resource_graph_t>::null_vertex ();
     boost::graph_traits<resource_graph_t>::in_edge_iterator ei, ei_end;
     subsystem_t dom = m_match->dom_subsystem ();
 
@@ -956,6 +951,7 @@ int dfu_impl_t::remove (vtx_t root,
     modify_data_t mod_data;
     resource_graph_t &g = m_graph_db->resource_graph;
     resource_graph_metadata_t &m = m_graph_db->metadata;
+    subsystem_t dom = m_match->dom_subsystem ();
     m_preorder = 0;
     m_postorder = 0;
 
@@ -965,41 +961,83 @@ int dfu_impl_t::remove (vtx_t root,
         return -1;
     }
 
-    // If type_to_count size is 0, reader was not JGF
-    if (mod_data.type_to_count.size () == 0) {
+    // If rank_to_counts size is 0, reader was not JGF
+    if (mod_data.rank_to_counts.size () == 0) {
         // Set modify type to be vertex cancel
         mod_data.mod_type = job_modify_t::VTX_CANCEL;
-        for (const int64_t &rank : mod_data.ranks_removed) {
+        for (const auto &rank : mod_data.ranks) {
             auto rank_vector = m.by_rank.find (rank);
             if (rank_vector == m.by_rank.end ()) {
                 m_err_msg += __FUNCTION__;
-                m_err_msg += ": rank not found in by_rank map.\n";
+                m_err_msg += std::to_string (rank) + " not found in by_rank map.\n";
                 return -1;
             }
+            uint32_t subgraph_root_len = std::numeric_limits<uint32_t>::max ();
+            // Max characters 2^32 - 1 for a huge graph
             for (const vtx_t &vtx : rank_vector->second) {
-                // Cancel the vertex if it has job tag. Not necessary
-                // but reduces number of checks before function return
+                // If no job tag is found on the vertex, job must not have
+                // allocated all rank resources
                 if ((*m_graph)[vtx].idata.tags.find (jobid) != (*m_graph)[vtx].idata.tags.end ()) {
                     if ((rc = cancel_vertex (vtx, mod_data, jobid)) != 0) {
-                        errno = EINVAL;
+                        m_err_msg += __FUNCTION__;
+                        m_err_msg += ": cancel_vertex failed\n.";
+                        m_err_msg += (*m_graph)[vtx].name + ".\n";
                         return rc;
                     }
+                }
+                if ((*m_graph)[vtx].paths.at (dom).length () < subgraph_root_len) {
+                    subgraph_root_len = (*m_graph)[vtx].paths.at (dom).length ();
+                    mod_data.rank_to_root[rank] = vtx;
                 }
             }
         }
     }
 
-    bool root_has_jtag =
-        ((*m_graph)[root].idata.tags.find (jobid) != (*m_graph)[root].idata.tags.end ());
-    // Now partial cancel DFV from graph root
-    mod_data.mod_type = job_modify_t::PARTIAL_CANCEL;
-    m_color.reset ();
-    if (root_has_jtag) {
-        rc = mod_dfv (root, jobid, mod_data);
+    if (mod_data.rank_to_root.size () == 0) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": rank_to_root is empty.\n";
+        return -1;
+    }
+
+    std::unordered_map<vtx_t, std::unordered_map<resource_type_t, int64_t>> parent_counts;
+    for (const auto &rank_root : mod_data.rank_to_root) {
+        const auto &rank_it = mod_data.rank_to_counts.find (rank_root.first);
+        if (rank_it == mod_data.rank_to_counts.end ()) {
+            m_err_msg += __FUNCTION__ + std::string (": ");
+            m_err_msg += std::to_string (rank_root.first) + " not found in rank_to_counts.\n";
+            return -1;
+        }
+        vtx_t subgraph_root_vtx = rank_root.second;
+        // Accumulate type_to_count for all vertices up to graph root
+        vtx_t parent_vtx = boost::graph_traits<resource_graph_t>::null_vertex ();
+        vtx_t curr_vtx = subgraph_root_vtx;
+        while (get_parent_vtx (curr_vtx, parent_vtx) == 0) {
+            for (const auto &vtx_count : rank_it->second) {
+                parent_counts[parent_vtx][vtx_count.first] += vtx_count.second;
+            }
+            curr_vtx = parent_vtx;
+        }
+    }
+
+    // Now partial cancel if root has job tag
+    // Otherwise exv cancel
+    if ((*m_graph)[root].idata.tags.find (jobid) != (*m_graph)[root].idata.tags.end ()) {
+        for (const auto &v : parent_counts) {
+            modify_data_t mod_data_new;
+            mod_data_new.mod_type = job_modify_t::PARTIAL_CANCEL;
+            mod_data_new.type_to_count = v.second;
+            if ((rc = cancel_vertex (v.first, mod_data_new, jobid)) != 0) {
+                m_err_msg += __FUNCTION__;
+                m_err_msg += ": cancel_vertex failed\n.";
+                m_err_msg += (*m_graph)[v.first].name + ".\n";
+                return rc;
+            }
+        }
         // Was the root vertex's job tag removed? If so, full_cancel
         full_cancel =
             ((*m_graph)[root].idata.tags.find (jobid) == (*m_graph)[root].idata.tags.end ());
     } else {
+        m_color.reset ();
         rc = mod_exv (jobid, mod_data);
     }
 
@@ -1015,32 +1053,74 @@ int dfu_impl_t::remove (vtx_t root, const std::set<int64_t> &ranks)
     m_preorder = 0;
     m_postorder = 0;
     std::unordered_set<int64_t> jobids;
+    subsystem_t dom = m_match->dom_subsystem ();
 
     for (const int64_t &rank : ranks) {
         auto rank_vector = m.by_rank.find (rank);
         if (rank_vector == m.by_rank.end ()) {
-            m_err_msg += __FUNCTION__;
-            m_err_msg += ": rank not found in by_rank map.\n";
+            m_err_msg += __FUNCTION__ + std::string (": ");
+            m_err_msg += std::to_string (rank) + " not found in by_rank map.\n";
             return -1;
         }
-        mod_data.ranks_removed.insert (rank);
+        mod_data.ranks.insert (rank);
+        uint32_t subgraph_root_len = std::numeric_limits<uint32_t>::max ();
+        // Max characters 2^32 - 1 for a huge graph
         for (const vtx_t &vtx : rank_vector->second) {
             for (const auto &jobid : (*m_graph)[vtx].idata.tags) {
                 jobids.insert (jobid.first);
             }
             // Clear all job data from the vertex.
             if ((rc = clear_vertex (vtx, mod_data)) != 0) {
-                errno = EINVAL;
+                m_err_msg += __FUNCTION__;
+                m_err_msg += ": clear_vertex failed.\n";
+                m_err_msg += (*m_graph)[vtx].name + ".\n";
                 return rc;
+            }
+            if ((*m_graph)[vtx].paths.at (dom).length () < subgraph_root_len) {
+                subgraph_root_len = (*m_graph)[vtx].paths.at (dom).length ();
+                mod_data.rank_to_root[rank] = vtx;
             }
         }
     }
+    if (jobids.size () == 0) {
+        // Nothing to do
+        return 0;
+    }
+    std::unordered_map<vtx_t,
+                       std::unordered_map<int64_t, std::unordered_map<resource_type_t, int64_t>>>
+        parent_jobid_counts;
+    for (const auto &rank_root : mod_data.rank_to_root) {
+        const auto &rank_it = mod_data.rank_to_counts.find (rank_root.first);
+        if (rank_it == mod_data.rank_to_counts.end ()) {
+            m_err_msg += __FUNCTION__ + std::string (": ");
+            m_err_msg += std::to_string (rank_root.first) + " not found in rank_to_counts.\n";
+            return -1;
+        }
+        vtx_t subgraph_root_vtx = rank_root.second;
+        // Accumulate type_to_count for all vertices up to graph root
+        vtx_t parent_vtx = boost::graph_traits<resource_graph_t>::null_vertex ();
+        vtx_t curr_vtx = subgraph_root_vtx;
+        while (get_parent_vtx (curr_vtx, parent_vtx) == 0) {
+            for (const auto &vtx_count : rank_it->second) {
+                for (const int64_t &jobid : jobids) {
+                    parent_jobid_counts[parent_vtx][jobid][vtx_count.first] += vtx_count.second;
+                }
+            }
+            curr_vtx = parent_vtx;
+        }
+    }
     // Now partial cancel DFV from graph root
-    mod_data.mod_type = job_modify_t::PARTIAL_CANCEL;
-    for (const int64_t &jobid : jobids) {
-        m_color.reset ();
-        if ((rc = mod_dfv (root, jobid, mod_data)) != 0)
-            return rc;
+    for (const auto &v : parent_jobid_counts) {
+        for (const auto &jobid : v.second) {
+            modify_data_t mod_data_new;
+            mod_data_new.mod_type = job_modify_t::PARTIAL_CANCEL;
+            mod_data_new.type_to_count = jobid.second;
+            if ((rc = cancel_vertex (v.first, mod_data_new, jobid.first)) != 0) {
+                m_err_msg += __FUNCTION__ + std::string (": ");
+                m_err_msg += (*m_graph)[v.first].name + ": cancel_vertex failed.\n";
+                return rc;
+            }
+        }
     }
     return rc;
 }

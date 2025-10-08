@@ -1,0 +1,18 @@
+version: 9999
+resources:
+  - type: slot
+    count: 17
+    label: default
+    with:
+      - type: node
+        count: 1
+
+# a comment
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: default
+    count:
+      per_slot: 1
