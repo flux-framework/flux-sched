@@ -608,11 +608,15 @@ int dfu_impl_t::aux_upv (const jobmeta_t &meta,
     planner_t *p = NULL;
     bool x_in = *excl;
 
+    static const auto &root = m_graph_db->metadata.roots.find (aux);
+    if (root == m_graph_db->metadata.roots.end ())
+        goto done;
+
     if ((prune (meta, x_in, aux, u, resources) == -1)
         || (m_match->aux_discover_vtx (u, aux, resources, *m_graph)) != 0)
         goto done;
 
-    if (u != (*m_roots)[aux])
+    if (u != root->second)
         explore (meta, u, aux, resources, pristine, excl, visit_t::UPV, upv);
 
     p = (*m_graph)[u].schedule.plans;

@@ -629,7 +629,6 @@ class dfu_impl_t {
     unsigned int m_trav_level = 0;
     unsigned int m_preorder = 0;
     unsigned int m_postorder = 0;
-    std::shared_ptr<std::map<subsystem_t, vtx_t>> m_roots = nullptr;
     resource_graph_t *m_graph = nullptr;
     std::shared_ptr<resource_graph_db_t> m_graph_db = nullptr;
     std::shared_ptr<dfu_match_cb_t> m_match = nullptr;
