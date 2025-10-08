@@ -53,5 +53,13 @@ test_expect_success "${test021_desc}" '
     test_cmp 021.R.out ${exp_dir}/021.R.out
 '
 
+# Update this test when subsystem match and aux_*_vtx are working
+cmds022="${cmd_dir}/cmds01.in"
+test022_desc="check for ability to match allocate with simple power configuration (pol=low) with two subsystems"
+test_expect_success "${test022_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds022} > cmds022 &&
+    ${query} -L ${grugs} -S C+PA -P low -t 022.R.out < cmds022 &&
+    test_cmp 022.R.out ${exp_dir}/022.R.out
+'
 
 test_done
