@@ -1,3 +1,19 @@
+flux-sched version 0.48.0 - 2025-10-08
+--------------------------------------
+
+### New Features
+ * Flexible Scheduling with or_slot (#1296)
+
+### Fixes
+ * qmanager/policy/fcfs: restart sched loop on unsatisfiable (#1407)
+ * resource: fix partial cancel for allocations that span
+    higher-level vertices (#1406)
+ * resource: fix segfault when loading multiple subsystems (#1412)
+
+### Build/Testsuite
+ * mergify: disable temporary PR branches (#1409)
+
+
 flux-sched version 0.47.0 - 2025-09-03
 --------------------------------------
 
