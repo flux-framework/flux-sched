@@ -615,7 +615,7 @@ static int unpack_resobj (json_t *resobj,
                 < 0)
                 goto inval;
             // Split the rank idset in resobj, convert each entry into
-            // distict_range_t and use it as the key to std::map.
+            // distinct_range_t and use it as the key to std::map.
             // The value is the pointer to resobj_t.
             // The distinct_range_t class provides ordering logic such that
             // you will be able to iterate through ranges in strictly

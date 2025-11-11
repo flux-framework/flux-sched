@@ -105,7 +105,7 @@ class reapi_t {
      *                   from 1 of 4 choices:
      *                   MATCH_ALLOCATE: try to allocate now and fail if resources
      *                   aren't available.
-     *                   MATCH_ALLOCATE_ORELSE_RESERVE : Try to allocate and reseve
+     *                   MATCH_ALLOCATE_ORELSE_RESERVE : Try to allocate and reserve
      *                   if resources aren't available now.
      *                   MATCH_SATISFIABILITY: Do a satisfiablity check and do not
      *                   allocate.
@@ -148,7 +148,7 @@ class reapi_t {
      *                   from 1 of 4 choices:
      *                   MATCH_ALLOCATE: try to allocate now and fail if resources
      *                   aren't available.
-     *                   MATCH_ALLOCATE_ORELSE_RESERVE : Try to allocate and reseve
+     *                   MATCH_ALLOCATE_ORELSE_RESERVE : Try to allocate and reserve
      *                   if resources aren't available now.
      *                   MATCH_SATISFIABILITY: Do a satisfiablity check and do not
      *                   allocate.

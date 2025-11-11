@@ -524,7 +524,7 @@ The Scoring API classes and implementation are entirely located in
 
 ## Fully vs. Paritially Specified Resource Request
 
-The resource section of a job specification can be fully or partitially
+The resource section of a job specification can be fully or partially
 hierarchically specified. A fully specified request describes the resource
 shape fully from the root to the requested resources with respect
 to the resource graph data used by `resource-query`. A partially specified
