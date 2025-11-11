@@ -680,7 +680,7 @@ flux-sched version 0.16.0 - 2021-05-05
 
 Note: Do you have a need to run high-throughput workloads
 at large scale? Check out this version. It combines
-our new first-match policy with asynchrous
+our new first-match policy with asynchronous
 communications to significantly improve scheduling scalability.
 
 ### Features
