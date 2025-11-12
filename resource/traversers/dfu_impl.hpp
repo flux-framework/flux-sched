@@ -34,6 +34,12 @@ enum class visit_t { DFV, UPV };
 
 enum class match_kind_t { RESOURCE_MATCH, SLOT_MATCH, NONE_MATCH, PRISTINE_NONE_MATCH };
 
+struct jobspec_trav_data {
+    int level = 0;
+    bool slot_resource = false;
+    int slot_level = std::numeric_limits<int>::max ();
+};
+
 struct jobmeta_t {
     enum class alloc_type_t : int {
         AT_ALLOC = 0,
@@ -173,10 +179,12 @@ class dfu_impl_t {
      *  \param resources Resource request vector.
      *  \param[out] to_parent
      *                   output aggregates on the subtree.
+     *  \param[inout] js_trav data for job specification traversal
      *  \return          none.
      */
     virtual void prime_jobspec (std::vector<Jobspec::Resource> &resources,
-                                std::unordered_map<resource_type_t, int64_t> &to_parent);
+                                std::unordered_map<resource_type_t, int64_t> &to_parent,
+                                jobspec_trav_data &js_trav);
 
     /*! Extract the aggregate info in the lookup object as pertaining to the
      *  planner-tracking resource types into resource_counts array, a form that

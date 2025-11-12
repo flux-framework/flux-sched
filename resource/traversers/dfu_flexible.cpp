@@ -146,24 +146,28 @@ int dfu_flexible_t::min_if (subsystem_t subsystem,
 }
 
 void dfu_flexible_t::prime_jobspec (std::vector<Resource> &resources,
-                                    std::unordered_map<resource_type_t, int64_t> &to_parent)
+                                    std::unordered_map<resource_type_t, int64_t> &to_parent,
+                                    jobspec_trav_data &js_trav)
 {
     subsystem_t subsystem = m_match->dom_subsystem ();
     for (auto &resource : resources) {
+        ++js_trav.level;
         // If the resource is requested as exclusive in the
         // jobspec, add it to the matcher's exclusive resource
         // set. This ensures that the full resource set (which
         // includes shadow resources) is emitted.
-        if (resource.exclusive == Jobspec::tristate_t::TRUE)
+        if (resource.exclusive == Jobspec::tristate_t::TRUE || js_trav.slot_resource)
             m_match->add_exclusive_resource_type (resource.type);
         // Use minimum requirement because you don't want to prune search
         // as far as a subtree satisfies the minimum requirement
         accum_if (subsystem, resource.type, resource.count.min, to_parent);
-        prime_jobspec (resource.with, resource.user_data);
+        prime_jobspec (resource.with, resource.user_data, js_trav);
 
         // Or slots should use a minimum of values rather than an accumulation
         // otherwise possible matches may be filtered out
         if (resource.type == slot_rt) {
+            js_trav.slot_resource = true;
+            js_trav.slot_level = js_trav.level;
             for (const auto &aggregate : resource.user_data) {
                 min_if (subsystem,
                         aggregate.first,
@@ -179,6 +183,11 @@ void dfu_flexible_t::prime_jobspec (std::vector<Resource> &resources,
             }
 
         } else {
+            if (js_trav.slot_resource && js_trav.level <= js_trav.slot_level) {
+                // Reset slot resource tracking
+                js_trav.slot_resource = false;
+                js_trav.slot_level = std::numeric_limits<int>::max ();
+            }
             for (const auto &aggregate : resource.user_data) {
                 accum_if (subsystem,
                           aggregate.first,
@@ -186,6 +195,7 @@ void dfu_flexible_t::prime_jobspec (std::vector<Resource> &resources,
                           to_parent);
             }
         }
+        --js_trav.level;
     }
 }
 
