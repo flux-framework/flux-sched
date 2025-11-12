@@ -26,7 +26,8 @@ namespace resource_model {
 bool known_resource_reader (const std::string &name)
 {
     bool rc = false;
-    if (name == "grug" || name == "hwloc" || name == "jgf" || name == "rv1exec")
+    if (name == "grug" || name == "hwloc" || name == "jgf" || name == "rv1exec"
+        || name == "rv1exec_force")
         rc = true;
     return rc;
 }
@@ -42,7 +43,7 @@ std::shared_ptr<resource_reader_base_t> create_resource_reader (const std::strin
             reader = std::make_shared<resource_reader_hwloc_t> ();
         } else if (name == "jgf") {
             reader = std::make_shared<resource_reader_jgf_t> ();
-        } else if (name == "rv1exec") {
+        } else if (name == "rv1exec" || name == "rv1exec_force") {
             reader = std::make_shared<resource_reader_rv1exec_t> ();
         } else {
             errno = EINVAL;

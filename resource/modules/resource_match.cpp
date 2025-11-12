@@ -971,7 +971,7 @@ static int grow_resource_db (std::shared_ptr<resource_ctx_t> &ctx, json_t *resou
         flux_log_error (ctx->h, "%s: unpack_resources", __FUNCTION__);
         goto done;
     }
-    if (jgf) {
+    if (jgf && ctx->opts.get_opt ().get_load_format () != "rv1exec_force") {
         if (ctx->reader == nullptr && (rc = create_reader (ctx, "jgf")) < 0) {
             flux_log (ctx->h, LOG_ERR, "%s: can't create jgf reader", __FUNCTION__);
             goto done;
@@ -984,7 +984,8 @@ static int grow_resource_db (std::shared_ptr<resource_ctx_t> &ctx, json_t *resou
                 goto done;
             }
             rc = grow_resource_db_hwloc (ctx, grow_set, r_lite);
-        } else if (ctx->opts.get_opt ().get_load_format () == "rv1exec") {
+        } else if (ctx->opts.get_opt ().get_load_format () == "rv1exec"
+                   || ctx->opts.get_opt ().get_load_format () == "rv1exec_force") {
             if (!ctx->reader && (rc = create_reader (ctx, "rv1exec")) < 0) {
                 flux_log (ctx->h, LOG_ERR, "%s: can't create rv1exec reader", __FUNCTION__);
                 goto done;
