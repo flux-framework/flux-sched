@@ -1262,6 +1262,7 @@ static void update_match_perf (double elapsed, int64_t jobid, bool match_success
 static int track_schedule_info (std::shared_ptr<resource_ctx_t> &ctx,
                                 int64_t id,
                                 bool reserved,
+                                bool allocated,
                                 int64_t at,
                                 const std::string &jspec,
                                 const std::stringstream &R,
@@ -1272,13 +1273,17 @@ static int track_schedule_info (std::shared_ptr<resource_ctx_t> &ctx,
         return -1;
     }
     try {
-        job_lifecycle_t state =
-            (!reserved) ? job_lifecycle_t::ALLOCATED : job_lifecycle_t::RESERVED;
-        ctx->jobs[id] = std::make_shared<job_info_t> (id, state, at, "", jspec, R.str (), elapse);
-        if (!reserved)
-            ctx->allocations[id] = id;
+        job_lifecycle_t state;
+        if (allocated)
+            state = (!reserved) ? job_lifecycle_t::ALLOCATED : job_lifecycle_t::RESERVED;
         else
-            ctx->reservations[id] = id;
+            state = job_lifecycle_t::MATCHED;
+        ctx->jobs[id] = std::make_shared<job_info_t> (id, state, at, "", jspec, R.str (), elapse);
+        if (allocated)
+            if (reserved)
+                ctx->reservations[id] = id;
+            else
+                ctx->allocations[id] = id;
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;
         return -1;
@@ -1412,27 +1417,16 @@ out:
 
 static int run (std::shared_ptr<resource_ctx_t> &ctx,
                 int64_t jobid,
-                const char *cmd,
+                match_op_t op,
                 const std::string &jstr,
+                int64_t latest,
                 int64_t *at,
                 flux_error_t *errp)
 {
     int rc = -1;
     try {
         Flux::Jobspec::Jobspec j{jstr};
-
-        dfu_traverser_t &tr = *(ctx->traverser);
-
-        if (std::string ("allocate") == cmd)
-            rc = tr.run (j, ctx->writers, match_op_t::MATCH_ALLOCATE, jobid, at);
-        else if (std::string ("allocate_with_satisfiability") == cmd)
-            rc = tr.run (j, ctx->writers, match_op_t::MATCH_ALLOCATE_W_SATISFIABILITY, jobid, at);
-        else if (std::string ("allocate_orelse_reserve") == cmd)
-            rc = tr.run (j, ctx->writers, match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE, jobid, at);
-        else if (std::string ("satisfiability") == cmd)
-            rc = tr.run (j, ctx->writers, match_op_t::MATCH_SATISFIABILITY, jobid, at);
-        else
-            errno = EINVAL;
+        rc = ctx->traverser->run (j, ctx->writers, op, jobid, at, latest);
     } catch (const Flux::Jobspec::parse_error &e) {
         errno = EINVAL;
         if (errp && e.what ()) {
@@ -1502,6 +1496,7 @@ int run_match (std::shared_ptr<resource_ctx_t> &ctx,
                int64_t jobid,
                const char *cmd,
                const std::string &jstr,
+               int64_t within,
                int64_t *now,
                int64_t *at,
                double *overhead,
@@ -1509,15 +1504,15 @@ int run_match (std::shared_ptr<resource_ctx_t> &ctx,
                flux_error_t *errp)
 {
     int rc = 0;
+    int64_t latest;
     std::chrono::time_point<std::chrono::system_clock> start;
     std::chrono::duration<double> elapsed;
     std::chrono::duration<int64_t> epoch;
     bool rsv = false;
 
     start = std::chrono::system_clock::now ();
-    if (strcmp ("allocate", cmd) != 0 && strcmp ("allocate_orelse_reserve", cmd) != 0
-        && strcmp ("allocate_with_satisfiability", cmd) != 0
-        && strcmp ("satisfiability", cmd) != 0) {
+    match_op_t op = string_to_match_op (cmd);
+    if (!match_op_valid (op)) {
         rc = -1;
         errno = EINVAL;
         flux_log (ctx->h, LOG_ERR, "%s: unknown cmd: %s", __FUNCTION__, cmd);
@@ -1526,7 +1521,13 @@ int run_match (std::shared_ptr<resource_ctx_t> &ctx,
 
     epoch = std::chrono::duration_cast<std::chrono::seconds> (start.time_since_epoch ());
     *at = *now = epoch.count ();
-    if ((rc = run (ctx, jobid, cmd, jstr, at, errp)) < 0) {
+
+    if (within < 0 || within > std::numeric_limits<int64_t>::max () - *now)
+        latest = std::numeric_limits<int64_t>::max ();
+    else
+        latest = *now + within;
+
+    if ((rc = run (ctx, jobid, op, jstr, latest, at, errp)) < 0) {
         elapsed = std::chrono::system_clock::now () - start;
         *overhead = elapsed.count ();
         update_match_perf (*overhead, jobid, false);
@@ -1542,8 +1543,16 @@ int run_match (std::shared_ptr<resource_ctx_t> &ctx,
     *overhead = elapsed.count ();
     update_match_perf (*overhead, jobid, true);
 
-    if (cmd != std::string ("satisfiability")) {
-        if ((rc = track_schedule_info (ctx, jobid, rsv, *at, jstr, o, *overhead)) != 0) {
+    if (op != match_op_t::MATCH_SATISFIABILITY) {
+        if ((rc = track_schedule_info (ctx,
+                                       jobid,
+                                       rsv,
+                                       op != match_op_t::MATCH_WITHOUT_ALLOCATING,
+                                       *at,
+                                       jstr,
+                                       o,
+                                       *overhead))
+            != 0) {
             flux_log_error (ctx->h,
                             "%s: can't add job info (id=%jd)",
                             __FUNCTION__,
@@ -1589,7 +1598,7 @@ int run_update (std::shared_ptr<resource_ctx_t> &ctx,
     elapsed = std::chrono::system_clock::now () - start;
     overhead = elapsed.count ();
     update_match_perf (overhead, jobid, true);
-    if ((rc = track_schedule_info (ctx, jobid, false, at, "", o, overhead)) != 0) {
+    if ((rc = track_schedule_info (ctx, jobid, false, true, at, "", o, overhead)) != 0) {
         flux_log_error (ctx->h, "%s: can't add job info (id=%jd)", __FUNCTION__, (intmax_t)jobid);
         goto done;
     }
