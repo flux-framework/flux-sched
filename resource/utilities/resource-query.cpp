@@ -102,7 +102,7 @@ OPTIONS:
             Input file from which to load the resource graph data store
             (default=conf/default)
 
-    -f, --load-format=<grug|hwloc|jgf|rv1exec>
+    -f, --load-format=<grug|hwloc|jgf|rv1exec|rv1exec_force>
             Format of the load file (default=grug)
 
     -W, --load-allowlist=<resource1[,resource2[,resource3...]]>
