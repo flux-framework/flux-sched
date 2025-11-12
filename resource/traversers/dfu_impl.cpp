@@ -811,7 +811,7 @@ done:
     return rc;
 }
 
-int dfu_impl_t::aux_find_upv (std::shared_ptr<match_writers_t> &writers,
+int dfu_impl_t::aux_find_upv (std::vector<std::shared_ptr<match_writers_t>> &writers,
                               const std::string &criteria,
                               vtx_t u,
                               subsystem_t aux,
@@ -820,7 +820,7 @@ int dfu_impl_t::aux_find_upv (std::shared_ptr<match_writers_t> &writers,
     return 0;
 }
 
-int dfu_impl_t::dom_find_dfv (std::shared_ptr<match_writers_t> &w,
+int dfu_impl_t::dom_find_dfv (std::vector<std::shared_ptr<match_writers_t>> &writers,
                               const std::string &criteria,
                               vtx_t u,
                               const vtx_predicates_override_t &p,
@@ -848,12 +848,14 @@ int dfu_impl_t::dom_find_dfv (std::shared_ptr<match_writers_t> &w,
             if (stop_explore (*ei, s) || !in_subsystem (*ei, s))
                 continue;
             vtx_t tgt = target (*ei, *m_graph);
-            rc = (s == dom) ? dom_find_dfv (w, criteria, tgt, p_overridden, jobid, agfilter)
-                            : aux_find_upv (w, criteria, tgt, s, p_overridden);
+            rc = (s == dom) ? dom_find_dfv (writers, criteria, tgt, p_overridden, jobid, agfilter)
+                            : aux_find_upv (writers, criteria, tgt, s, p_overridden);
             if (rc > 0) {
-                if (w->emit_edg (level (), *m_graph, *ei) < 0) {
-                    m_err_msg += __FUNCTION__;
-                    m_err_msg += ": emit_edg returned an error.\n";
+                for (auto writer = writers.begin (); writer != writers.end (); ++writer) {
+                    if ((*writer)->emit_edg (level (), *m_graph, *ei) < 0) {
+                        m_err_msg += __FUNCTION__;
+                        m_err_msg += ": emit_edg returned an error.\n";
+                    }
                 }
                 nchildren += rc;
             } else if (rc < 0) {
@@ -927,10 +929,14 @@ int dfu_impl_t::dom_find_dfv (std::shared_ptr<match_writers_t> &w,
     // emitting the vertex, since data could be leftover from previous
     // traversals where the vertex was matched but not emitted
     (*m_graph)[u].idata.ephemeral.check_and_clear_if_stale (m_best_k_cnt);
-    if ((rc = w->emit_vtx (level (), *m_graph, u, (*m_graph)[u].size, agfilter_data, true)) < 0) {
-        m_err_msg += __FUNCTION__;
-        m_err_msg += std::string (": error from emit_vtx: ") + strerror (errno);
-        goto done;
+    for (auto writer = writers.begin (); writer != writers.end (); ++writer) {
+        if ((rc = (*writer)
+                      ->emit_vtx (level (), *m_graph, u, (*m_graph)[u].size, agfilter_data, true))
+            < 0) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += std::string (": error from emit_vtx: ") + strerror (errno);
+            goto done;
+        }
     }
     // Need to clear out all data from the ephemeral object after
     // emitting the vertex to minimize the amount of stale data
@@ -1282,7 +1288,8 @@ int dfu_impl_t::select (Jobspec::Jobspec &j, vtx_t root, jobmeta_t &meta, bool e
     return rc;
 }
 
-int dfu_impl_t::find (std::shared_ptr<match_writers_t> &writers, const std::string &criteria)
+int dfu_impl_t::find (std::vector<std::shared_ptr<match_writers_t>> &writers,
+                      const std::string &criteria)
 {
     int rc = -1;
     vtx_t root;
@@ -1292,9 +1299,15 @@ int dfu_impl_t::find (std::shared_ptr<match_writers_t> &writers, const std::stri
     uint64_t jobid = 0;
     std::vector<std::pair<std::string, std::string>> predicates;
 
-    if (!m_match || !m_graph || !m_graph_db || !writers) {
+    if (!m_match || !m_graph || !m_graph_db || writers.empty ()) {
         errno = EINVAL;
         return rc;
+    }
+    for (auto writer : writers) {
+        if (!writer) {
+            errno = EINVAL;
+            return rc;
+        }
     }
     subsystem_t dom = m_match->dom_subsystem ();
     if (m_graph_db->metadata.roots.find (dom) == m_graph_db->metadata.roots.end ()) {
@@ -1332,9 +1345,11 @@ int dfu_impl_t::find (std::shared_ptr<match_writers_t> &writers, const std::stri
     if ((rc = dom_find_dfv (writers, criteria, root, p_overridden, jobid, agfilter)) < 0)
         goto done;
 
-    if (writers->emit_tm (0, 0) == -1) {
-        m_err_msg += __FUNCTION__;
-        m_err_msg += ": emit_tm returned -1.\n";
+    for (auto writer = writers.begin (); writer != writers.end (); ++writer) {
+        if ((*writer)->emit_tm (0, 0) == -1) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": emit_tm returned -1.\n";
+        }
     }
 
 done:
