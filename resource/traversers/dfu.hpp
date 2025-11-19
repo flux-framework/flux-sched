@@ -95,7 +95,8 @@ class dfu_traverser_t {
      *  \param writers   vertex/edge writers to emit the matched labels
      *  \param op        schedule operation:
      *                       allocate, allocate_with_satisfiability,
-     *                       allocate_orelse_reserve or satisfiability.
+     *                       allocate_orelse_reserve, satisfiability,
+     *                       or without_allocating.
      *  \param id        job ID to use for the schedule operation.
      *  \param at[out]   when the job is scheduled if reserved.
      *  \return          0 on success; -1 on error.

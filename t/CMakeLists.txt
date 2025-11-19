@@ -89,6 +89,7 @@ set(ALL_TESTS
   t4014-match-feasibility.t
   t4015-notify-feasibility.t
   t4016-match-flexible.t
+  t4017-match-without-allocating.t
   t5000-valgrind.t
   t5100-issues-test-driver.t
   t6000-graph-size.t
