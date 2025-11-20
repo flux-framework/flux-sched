@@ -576,7 +576,8 @@ class dfu_impl_t {
                    const jobmeta_t &jobmeta,
                    bool full,
                    const std::map<resource_type_t, int64_t> &dfu,
-                   std::map<resource_type_t, int64_t> &to_parent);
+                   std::map<resource_type_t, int64_t> &to_parent,
+                   bool excl_parent);
     int upd_upv (vtx_t u,
                  std::shared_ptr<match_writers_t> &writers,
                  subsystem_t subsystem,
@@ -592,7 +593,8 @@ class dfu_impl_t {
                  const jobmeta_t &jobmeta,
                  bool full,
                  std::map<resource_type_t, int64_t> &to_parent,
-                 bool emit_shadow);
+                 bool emit_shadow,
+                 bool excl_parent);
     bool rem_tag (vtx_t u, int64_t jobid);
     int rem_exclusive_filter (vtx_t u, int64_t jobid, const modify_data_t &mod_data);
     int mod_agfilter (vtx_t u,
