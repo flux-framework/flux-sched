@@ -57,6 +57,14 @@ class match_writers_t {
     int compress_hosts (const std::vector<std::string> &hosts,
                         const char *hostlist_init,
                         char **hostlist);
+
+    /* Return a boolean indicating whether or not the writer should be invoked
+     * on vertices that form non-root parts of exclusive subtrees.
+     */
+    virtual bool emit_exclusive_subtrees ()
+    {
+        return true;
+    }
 };
 
 /*! Simple match writers class for a matched resource set
