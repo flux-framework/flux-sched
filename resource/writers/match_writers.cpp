@@ -487,6 +487,17 @@ out:
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// JGF_shorthand Writers Class Public Method Definitions
+////////////////////////////////////////////////////////////////////////////////
+
+jgf_shorthand_match_writers_t &jgf_shorthand_match_writers_t::operator= (
+    const jgf_shorthand_match_writers_t &w)
+{
+    jgf_match_writers_t::operator= (w);
+    return *this;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // RLITE Writers Class Public Method Definitions
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1231,6 +1242,9 @@ std::shared_ptr<match_writers_t> match_writers_factory_t::create (match_format_t
             case match_format_t::JGF:
                 w = std::make_shared<jgf_match_writers_t> ();
                 break;
+            case match_format_t::JGF_SHORTHAND:
+                w = std::make_shared<jgf_shorthand_match_writers_t> ();
+                break;
             case match_format_t::RLITE:
                 w = std::make_shared<rlite_match_writers_t> ();
                 break;
@@ -1258,6 +1272,8 @@ match_format_t match_writers_factory_t::get_writers_type (const std::string &n)
     match_format_t format = match_format_t::SIMPLE;
     if (n == "jgf")
         format = match_format_t::JGF;
+    else if (n == "jgf_shorthand")
+        format = match_format_t::JGF_SHORTHAND;
     else if (n == "rlite")
         format = match_format_t::RLITE;
     else if (n == "rv1")
@@ -1271,8 +1287,8 @@ match_format_t match_writers_factory_t::get_writers_type (const std::string &n)
 
 bool known_match_format (const std::string &format)
 {
-    return (format == "simple" || format == "jgf" || format == "rlite" || format == "rv1"
-            || format == "rv1_nosched" || format == "pretty_simple");
+    return (format == "simple" || format == "jgf" || format == "jgf_shorthand" || format == "rlite"
+            || format == "rv1" || format == "rv1_nosched" || format == "pretty_simple");
 }
 
 }  // namespace resource_model
