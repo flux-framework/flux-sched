@@ -131,6 +131,14 @@ class resource_reader_jgf_t : public resource_reader_base_t {
      */
     virtual bool is_allowlist_supported ();
 
+   protected:
+    int apply_defaults (fetch_helper_t &f, const char *name);
+    int find_vtx (resource_graph_t &g,
+                  resource_graph_metadata_t &m,
+                  std::map<std::string, vmap_val_t> &vmap,
+                  const fetch_helper_t &fetcher,
+                  vtx_t &ret_v);
+
    private:
     int fetch_jgf (const std::string &str,
                    json_t **jgf_p,
@@ -139,7 +147,6 @@ class resource_reader_jgf_t : public resource_reader_base_t {
                    jgf_updater_data &update_data);
     int unpack_and_remap_vtx (fetch_helper_t &f, json_t *paths, json_t *properties);
     int remap_aware_unpack_vtx (fetch_helper_t &f, json_t *paths, json_t *properties);
-    int apply_defaults (fetch_helper_t &f, const char *name);
     int fill_fetcher (json_t *element, fetch_helper_t &f, json_t **path, json_t **properties);
     int unpack_vtx (json_t *element, fetch_helper_t &f);
     vtx_t create_vtx (resource_graph_t &g, const fetch_helper_t &fetcher);
@@ -169,11 +176,6 @@ class resource_reader_jgf_t : public resource_reader_base_t {
                int rank,
                const std::string &vid,
                vtx_t &v);
-    int find_vtx (resource_graph_t &g,
-                  resource_graph_metadata_t &m,
-                  std::map<std::string, vmap_val_t> &vmap,
-                  const fetch_helper_t &fetcher,
-                  vtx_t &ret_v);
     int update_vtx_plan (vtx_t v,
                          resource_graph_t &g,
                          const fetch_helper_t &fetcher,
