@@ -131,7 +131,7 @@ class resource_reader_jgf_t : public resource_reader_base_t {
      */
     virtual bool is_allowlist_supported ();
 
-   private:
+   protected:
     int fetch_jgf (const std::string &str,
                    json_t **jgf_p,
                    json_t **nodes_p,
