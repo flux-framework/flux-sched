@@ -68,6 +68,14 @@ class ResourceModuleInterface:
         payload = {"cmd": "without_allocating", "jobid": jobid, "jobspec": jobspec_str}
         return self.handle.rpc("sched-fluxion-resource.match", payload).get()
 
+    def rpc_wo_alloc_future(self, jobid, jobspec_str):
+        payload = {
+            "cmd": "without_allocating_future",
+            "jobid": jobid,
+            "jobspec": jobspec_str,
+        }
+        return self.handle.rpc("sched-fluxion-resource.match", payload).get()
+
     def rpc_info(self, jobid):
         payload = {"jobid": jobid}
         return self.handle.rpc("sched-fluxion-resource.info", payload).get()
@@ -180,6 +188,22 @@ def match_wo_alloc_action(args):
         jobspec_str = yaml.dump(yaml.safe_load(stream))
         rmod = ResourceModuleInterface()
         resp = rmod.rpc_wo_alloc(rmod.rpc_next_jobid(), jobspec_str)
+        print(heading())
+        print(body(resp["jobid"], resp["status"], resp["at"], resp["overhead"]))
+        print("=" * width())
+        print("MATCHED RESOURCES:")
+        print(resp["R"])
+
+
+def match_wo_alloc_future_action(args):
+    """
+    Action for match without_allocating_future sub-command
+    """
+
+    with open(args.jobspec, "r") as stream:
+        jobspec_str = yaml.dump(yaml.safe_load(stream))
+        rmod = ResourceModuleInterface()
+        resp = rmod.rpc_wo_alloc_future(rmod.rpc_next_jobid(), jobspec_str)
         print(heading())
         print(body(resp["jobid"], resp["status"], resp["at"], resp["overhead"]))
         print("=" * width())
@@ -468,7 +492,17 @@ def parse_match(parser_m: argparse.ArgumentParser):
         "without_allocating",
         help=(
             "Return the best matching resources if found. "
-            "Do not allocate or reserve them."
+            "Do not allocate or reserve them. "
+            "Will only return resources available immediately."
+        ),
+    )
+    parser_mf = subparsers_m.add_parser(
+        "without_allocating_future",
+        help=(
+            "Return the best matching resources if found. "
+            "Do not allocate or reserve them. "
+            "Will return both resources available immediately "
+            "and resources only available in the future."
         ),
     )
     parser_fe = subparsers_m.add_parser(
@@ -478,7 +512,7 @@ def parse_match(parser_m: argparse.ArgumentParser):
     #
     # Jobspec positional argument for all match sub-commands
     #
-    for subparser in parser_ma, parser_ms, parser_mr, parser_mw, parser_fe:
+    for subparser in parser_ma, parser_ms, parser_mr, parser_mw, parser_mf, parser_fe:
         subparser.add_argument(
             "jobspec", metavar="Jobspec", type=str, help="Jobspec file name"
         )
@@ -487,6 +521,7 @@ def parse_match(parser_m: argparse.ArgumentParser):
     parser_ms.set_defaults(func=match_alloc_sat_action)
     parser_mr.set_defaults(func=match_reserve_action)
     parser_mw.set_defaults(func=match_wo_alloc_action)
+    parser_mf.set_defaults(func=match_wo_alloc_future_action)
     parser_fe.set_defaults(func=satisfiability_action)
 
 
