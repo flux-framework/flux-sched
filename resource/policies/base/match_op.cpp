@@ -2,14 +2,14 @@
 #include <cstring>
 #include <map>
 
-const std::map<match_op_t, const char *> match_options = {{MATCH_UNKNOWN, "error"},
-                                                          {MATCH_ALLOCATE, "allocate"},
-                                                          {MATCH_ALLOCATE_ORELSE_RESERVE,
-                                                           "allocate_orelse_reserve"},
-                                                          {MATCH_ALLOCATE_W_SATISFIABILITY,
-                                                           "allocate_with_satisfiability"},
-                                                          {MATCH_SATISFIABILITY, "satisfiability"},
-                                                          {MATCH_WITHOUT_ALLOCATING, "without_allocating"}};
+const std::map<match_op_t, const char *> match_options =
+    {{MATCH_UNKNOWN, "error"},
+     {MATCH_ALLOCATE, "allocate"},
+     {MATCH_ALLOCATE_ORELSE_RESERVE, "allocate_orelse_reserve"},
+     {MATCH_ALLOCATE_W_SATISFIABILITY, "allocate_with_satisfiability"},
+     {MATCH_SATISFIABILITY, "satisfiability"},
+     {MATCH_WITHOUT_ALLOCATING, "without_allocating"},
+     {MATCH_WITHOUT_ALLOCATING_FUTURE, "without_allocating_future"}};
 
 const char *match_op_to_string (match_op_t match_op)
 {
