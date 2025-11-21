@@ -236,7 +236,7 @@ class resource_reader_jgf_t : public resource_reader_base_t {
 }  // namespace resource_model
 }  // namespace Flux
 
-#endif  // RESOURCE_READER_GRUG_HPP
+#endif  // RESOURCE_READER_JGF_HPP
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab
