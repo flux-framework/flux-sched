@@ -9,7 +9,8 @@ constexpr std::array<std::pair<match_op_t, const char *>, (int)(END_MATCH_OP_T)-
      std::pair (MATCH_ALLOCATE_ORELSE_RESERVE, "allocate_orelse_reserve"),
      std::pair (MATCH_ALLOCATE_W_SATISFIABILITY, "allocate_with_satisfiability"),
      std::pair (MATCH_SATISFIABILITY, "satisfiability"),
-     std::pair (MATCH_WITHOUT_ALLOCATING, "without_allocating")};
+     std::pair (MATCH_WITHOUT_ALLOCATING, "without_allocating"),
+     std::pair (MATCH_WITHOUT_ALLOCATING_FUTURE, "without_allocating_future")};
 
 const char *match_op_to_string (match_op_t match_op)
 {
