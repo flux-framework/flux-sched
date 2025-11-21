@@ -7,7 +7,8 @@ typedef enum match_op_t {
     MATCH_ALLOCATE_W_SATISFIABILITY,
     MATCH_ALLOCATE_ORELSE_RESERVE,
     MATCH_SATISFIABILITY,
-    MATCH_WITHOUT_ALLOCATING
+    MATCH_WITHOUT_ALLOCATING,
+    MATCH_WITHOUT_ALLOCATING_FUTURE
 } match_op_t;
 
 static const char *match_op_to_string (match_op_t match_op)
@@ -23,6 +24,8 @@ static const char *match_op_to_string (match_op_t match_op)
             return "satisfiability";
         case MATCH_WITHOUT_ALLOCATING:
             return "without_allocating";
+        case MATCH_WITHOUT_ALLOCATING_FUTURE:
+            return "without_allocating_future";
         default:
             return "error";
     }
@@ -40,6 +43,8 @@ static const match_op_t string_to_match_op (const char *str)
         return MATCH_SATISFIABILITY;
     else if (strcmp (str, "without_allocating") == 0)
         return MATCH_WITHOUT_ALLOCATING;
+    else if (strcmp (str, "without_allocating_future") == 0)
+        return MATCH_WITHOUT_ALLOCATING_FUTURE;
     else
         return MATCH_UNKNOWN;
 }
@@ -48,7 +53,8 @@ static bool match_op_valid (match_op_t match_op)
 {
     if ((match_op != MATCH_ALLOCATE) && (match_op != MATCH_ALLOCATE_W_SATISFIABILITY)
         && (match_op != MATCH_ALLOCATE_ORELSE_RESERVE) && (match_op != MATCH_SATISFIABILITY)
-        && (match_op != MATCH_WITHOUT_ALLOCATING)) {
+        && (match_op != MATCH_WITHOUT_ALLOCATING)
+        && (match_op != MATCH_WITHOUT_ALLOCATING_FUTURE)) {
         return false;
     }
 
