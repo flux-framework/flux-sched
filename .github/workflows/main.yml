@@ -39,6 +39,40 @@ jobs:
     - name: format and linting checks
       run: pre-commit run --all-files --show-diff-on-failure
 
+  flux-sched-python:
+    name: flux-sched python
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        fetch-depth: 0
+    - uses: devcontainers/ci@v0.3
+      with:
+        runCmd: |
+          set -e
+          sudo apt-get install -y python3-pip
+          sudo python3 -m pip install IPython Cython pytest --break-system-packages
+          sudo python3 -m pip install black pyflakes build --break-system-packages
+          for path in ./resource/reapi/bindings/python ./resource/reapi/bindings/python/tests
+          do          
+              black $path/*.py
+              pyflakes $path/*.py
+          done
+          export WITH_PYTHON_BINDINGS=yes
+          export LD_LIBRARY_PATH=$(pwd)/resource/reapi/bindings
+          ./configure
+          make -j
+          # Test relative to flux_sched (local module)
+          FLUXSCHED_PYTHON_ROOT=$(pwd)/resource/reapi/bindings/python
+          export PYTHONPATH=FLUXSCHED_PYTHON_ROOT
+          cd $FLUXSCHED_PYTHON_ROOT
+          pytest -xs ./tests/test_*.py
+          echo $?
+          # Test full build and install
+          # python3 -m build  --sdist --wheel
+          python3 -m build --sdist --wheel --no-isolation 
+          
   generate-matrix:
     # https://stackoverflow.com/questions/59977364
     name: Generate build matrix
