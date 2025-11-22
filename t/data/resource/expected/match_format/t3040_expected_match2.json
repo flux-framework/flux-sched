@@ -1,0 +1,1779 @@
+{
+  "graph": {
+    "edges": [
+      {
+        "source": "1",
+        "target": "2"
+      },
+      {
+        "source": "1",
+        "target": "3"
+      },
+      {
+        "source": "1",
+        "target": "4"
+      },
+      {
+        "source": "1",
+        "target": "5"
+      },
+      {
+        "source": "1",
+        "target": "6"
+      },
+      {
+        "source": "1",
+        "target": "7"
+      },
+      {
+        "source": "1",
+        "target": "8"
+      },
+      {
+        "source": "1",
+        "target": "9"
+      },
+      {
+        "source": "1",
+        "target": "10"
+      },
+      {
+        "source": "1",
+        "target": "11"
+      },
+      {
+        "source": "0",
+        "target": "1"
+      },
+      {
+        "source": "12",
+        "target": "13"
+      },
+      {
+        "source": "12",
+        "target": "14"
+      },
+      {
+        "source": "12",
+        "target": "15"
+      },
+      {
+        "source": "12",
+        "target": "16"
+      },
+      {
+        "source": "12",
+        "target": "17"
+      },
+      {
+        "source": "12",
+        "target": "18"
+      },
+      {
+        "source": "12",
+        "target": "19"
+      },
+      {
+        "source": "12",
+        "target": "20"
+      },
+      {
+        "source": "12",
+        "target": "21"
+      },
+      {
+        "source": "12",
+        "target": "22"
+      },
+      {
+        "source": "0",
+        "target": "12"
+      },
+      {
+        "source": "23",
+        "target": "24"
+      },
+      {
+        "source": "23",
+        "target": "25"
+      },
+      {
+        "source": "23",
+        "target": "26"
+      },
+      {
+        "source": "23",
+        "target": "27"
+      },
+      {
+        "source": "23",
+        "target": "28"
+      },
+      {
+        "source": "23",
+        "target": "29"
+      },
+      {
+        "source": "23",
+        "target": "30"
+      },
+      {
+        "source": "23",
+        "target": "31"
+      },
+      {
+        "source": "23",
+        "target": "32"
+      },
+      {
+        "source": "23",
+        "target": "33"
+      },
+      {
+        "source": "0",
+        "target": "23"
+      },
+      {
+        "source": "34",
+        "target": "35"
+      },
+      {
+        "source": "34",
+        "target": "36"
+      },
+      {
+        "source": "34",
+        "target": "37"
+      },
+      {
+        "source": "34",
+        "target": "38"
+      },
+      {
+        "source": "34",
+        "target": "39"
+      },
+      {
+        "source": "34",
+        "target": "40"
+      },
+      {
+        "source": "34",
+        "target": "41"
+      },
+      {
+        "source": "34",
+        "target": "42"
+      },
+      {
+        "source": "34",
+        "target": "43"
+      },
+      {
+        "source": "34",
+        "target": "44"
+      },
+      {
+        "source": "0",
+        "target": "34"
+      },
+      {
+        "source": "45",
+        "target": "46"
+      },
+      {
+        "source": "45",
+        "target": "47"
+      },
+      {
+        "source": "45",
+        "target": "48"
+      },
+      {
+        "source": "45",
+        "target": "49"
+      },
+      {
+        "source": "45",
+        "target": "50"
+      },
+      {
+        "source": "45",
+        "target": "51"
+      },
+      {
+        "source": "45",
+        "target": "52"
+      },
+      {
+        "source": "45",
+        "target": "53"
+      },
+      {
+        "source": "45",
+        "target": "54"
+      },
+      {
+        "source": "45",
+        "target": "55"
+      },
+      {
+        "source": "0",
+        "target": "45"
+      },
+      {
+        "source": "56",
+        "target": "57"
+      },
+      {
+        "source": "56",
+        "target": "58"
+      },
+      {
+        "source": "56",
+        "target": "59"
+      },
+      {
+        "source": "56",
+        "target": "60"
+      },
+      {
+        "source": "56",
+        "target": "61"
+      },
+      {
+        "source": "56",
+        "target": "62"
+      },
+      {
+        "source": "56",
+        "target": "63"
+      },
+      {
+        "source": "56",
+        "target": "64"
+      },
+      {
+        "source": "56",
+        "target": "65"
+      },
+      {
+        "source": "56",
+        "target": "66"
+      },
+      {
+        "source": "0",
+        "target": "56"
+      },
+      {
+        "source": "67",
+        "target": "68"
+      },
+      {
+        "source": "67",
+        "target": "69"
+      },
+      {
+        "source": "67",
+        "target": "70"
+      },
+      {
+        "source": "67",
+        "target": "71"
+      },
+      {
+        "source": "67",
+        "target": "72"
+      },
+      {
+        "source": "67",
+        "target": "73"
+      },
+      {
+        "source": "67",
+        "target": "74"
+      },
+      {
+        "source": "67",
+        "target": "75"
+      },
+      {
+        "source": "67",
+        "target": "76"
+      },
+      {
+        "source": "67",
+        "target": "77"
+      },
+      {
+        "source": "0",
+        "target": "67"
+      },
+      {
+        "source": "78",
+        "target": "79"
+      },
+      {
+        "source": "78",
+        "target": "80"
+      },
+      {
+        "source": "78",
+        "target": "81"
+      },
+      {
+        "source": "78",
+        "target": "82"
+      },
+      {
+        "source": "78",
+        "target": "83"
+      },
+      {
+        "source": "78",
+        "target": "84"
+      },
+      {
+        "source": "78",
+        "target": "85"
+      },
+      {
+        "source": "78",
+        "target": "86"
+      },
+      {
+        "source": "78",
+        "target": "87"
+      },
+      {
+        "source": "78",
+        "target": "88"
+      },
+      {
+        "source": "0",
+        "target": "78"
+      },
+      {
+        "source": "89",
+        "target": "90"
+      },
+      {
+        "source": "89",
+        "target": "91"
+      },
+      {
+        "source": "89",
+        "target": "92"
+      },
+      {
+        "source": "89",
+        "target": "93"
+      },
+      {
+        "source": "89",
+        "target": "94"
+      },
+      {
+        "source": "89",
+        "target": "95"
+      },
+      {
+        "source": "89",
+        "target": "96"
+      },
+      {
+        "source": "89",
+        "target": "97"
+      },
+      {
+        "source": "89",
+        "target": "98"
+      },
+      {
+        "source": "89",
+        "target": "99"
+      },
+      {
+        "source": "0",
+        "target": "89"
+      },
+      {
+        "source": "100",
+        "target": "101"
+      },
+      {
+        "source": "100",
+        "target": "102"
+      },
+      {
+        "source": "100",
+        "target": "103"
+      },
+      {
+        "source": "100",
+        "target": "104"
+      },
+      {
+        "source": "100",
+        "target": "105"
+      },
+      {
+        "source": "100",
+        "target": "106"
+      },
+      {
+        "source": "100",
+        "target": "107"
+      },
+      {
+        "source": "100",
+        "target": "108"
+      },
+      {
+        "source": "100",
+        "target": "109"
+      },
+      {
+        "source": "100",
+        "target": "110"
+      },
+      {
+        "source": "0",
+        "target": "100"
+      }
+    ],
+    "nodes": [
+      {
+        "id": "2",
+        "metadata": {
+          "exclusive": true,
+          "id": 0,
+          "paths": {
+            "containment": "/cluster0/compute1/gpu0"
+          },
+          "rank": 0,
+          "type": "gpu"
+        }
+      },
+      {
+        "id": "3",
+        "metadata": {
+          "exclusive": true,
+          "id": 1,
+          "paths": {
+            "containment": "/cluster0/compute1/gpu1"
+          },
+          "rank": 0,
+          "type": "gpu"
+        }
+      },
+      {
+        "id": "4",
+        "metadata": {
+          "exclusive": true,
+          "id": 0,
+          "paths": {
+            "containment": "/cluster0/compute1/core0"
+          },
+          "rank": 0,
+          "type": "core"
+        }
+      },
+      {
+        "id": "5",
+        "metadata": {
+          "exclusive": true,
+          "id": 1,
+          "paths": {
+            "containment": "/cluster0/compute1/core1"
+          },
+          "rank": 0,
+          "type": "core"
+        }
+      },
+      {
+        "id": "6",
+        "metadata": {
+          "exclusive": true,
+          "id": 2,
+          "paths": {
+            "containment": "/cluster0/compute1/core2"
+          },
+          "rank": 0,
+          "type": "core"
+        }
+      },
+      {
+        "id": "7",
+        "metadata": {
+          "exclusive": true,
+          "id": 3,
+          "paths": {
+            "containment": "/cluster0/compute1/core3"
+          },
+          "rank": 0,
+          "type": "core"
+        }
+      },
+      {
+        "id": "8",
+        "metadata": {
+          "exclusive": true,
+          "id": 4,
+          "paths": {
+            "containment": "/cluster0/compute1/core4"
+          },
+          "rank": 0,
+          "type": "core"
+        }
+      },
+      {
+        "id": "9",
+        "metadata": {
+          "exclusive": true,
+          "id": 5,
+          "paths": {
+            "containment": "/cluster0/compute1/core5"
+          },
+          "rank": 0,
+          "type": "core"
+        }
+      },
+      {
+        "id": "10",
+        "metadata": {
+          "exclusive": true,
+          "id": 6,
+          "paths": {
+            "containment": "/cluster0/compute1/core6"
+          },
+          "rank": 0,
+          "type": "core"
+        }
+      },
+      {
+        "id": "11",
+        "metadata": {
+          "exclusive": true,
+          "id": 7,
+          "paths": {
+            "containment": "/cluster0/compute1/core7"
+          },
+          "rank": 0,
+          "type": "core"
+        }
+      },
+      {
+        "id": "1",
+        "metadata": {
+          "id": 1,
+          "name": "compute1",
+          "paths": {
+            "containment": "/cluster0/compute1"
+          },
+          "rank": 0,
+          "type": "node"
+        }
+      },
+      {
+        "id": "13",
+        "metadata": {
+          "exclusive": true,
+          "id": 0,
+          "paths": {
+            "containment": "/cluster0/compute2/gpu0"
+          },
+          "rank": 1,
+          "type": "gpu"
+        }
+      },
+      {
+        "id": "14",
+        "metadata": {
+          "exclusive": true,
+          "id": 1,
+          "paths": {
+            "containment": "/cluster0/compute2/gpu1"
+          },
+          "rank": 1,
+          "type": "gpu"
+        }
+      },
+      {
+        "id": "15",
+        "metadata": {
+          "exclusive": true,
+          "id": 0,
+          "paths": {
+            "containment": "/cluster0/compute2/core0"
+          },
+          "rank": 1,
+          "type": "core"
+        }
+      },
+      {
+        "id": "16",
+        "metadata": {
+          "exclusive": true,
+          "id": 1,
+          "paths": {
+            "containment": "/cluster0/compute2/core1"
+          },
+          "rank": 1,
+          "type": "core"
+        }
+      },
+      {
+        "id": "17",
+        "metadata": {
+          "exclusive": true,
+          "id": 2,
+          "paths": {
+            "containment": "/cluster0/compute2/core2"
+          },
+          "rank": 1,
+          "type": "core"
+        }
+      },
+      {
+        "id": "18",
+        "metadata": {
+          "exclusive": true,
+          "id": 3,
+          "paths": {
+            "containment": "/cluster0/compute2/core3"
+          },
+          "rank": 1,
+          "type": "core"
+        }
+      },
+      {
+        "id": "19",
+        "metadata": {
+          "exclusive": true,
+          "id": 4,
+          "paths": {
+            "containment": "/cluster0/compute2/core4"
+          },
+          "rank": 1,
+          "type": "core"
+        }
+      },
+      {
+        "id": "20",
+        "metadata": {
+          "exclusive": true,
+          "id": 5,
+          "paths": {
+            "containment": "/cluster0/compute2/core5"
+          },
+          "rank": 1,
+          "type": "core"
+        }
+      },
+      {
+        "id": "21",
+        "metadata": {
+          "exclusive": true,
+          "id": 6,
+          "paths": {
+            "containment": "/cluster0/compute2/core6"
+          },
+          "rank": 1,
+          "type": "core"
+        }
+      },
+      {
+        "id": "22",
+        "metadata": {
+          "exclusive": true,
+          "id": 7,
+          "paths": {
+            "containment": "/cluster0/compute2/core7"
+          },
+          "rank": 1,
+          "type": "core"
+        }
+      },
+      {
+        "id": "12",
+        "metadata": {
+          "id": 2,
+          "name": "compute2",
+          "paths": {
+            "containment": "/cluster0/compute2"
+          },
+          "rank": 1,
+          "type": "node"
+        }
+      },
+      {
+        "id": "24",
+        "metadata": {
+          "exclusive": true,
+          "id": 0,
+          "paths": {
+            "containment": "/cluster0/compute3/gpu0"
+          },
+          "rank": 2,
+          "type": "gpu"
+        }
+      },
+      {
+        "id": "25",
+        "metadata": {
+          "exclusive": true,
+          "id": 1,
+          "paths": {
+            "containment": "/cluster0/compute3/gpu1"
+          },
+          "rank": 2,
+          "type": "gpu"
+        }
+      },
+      {
+        "id": "26",
+        "metadata": {
+          "exclusive": true,
+          "id": 0,
+          "paths": {
+            "containment": "/cluster0/compute3/core0"
+          },
+          "rank": 2,
+          "type": "core"
+        }
+      },
+      {
+        "id": "27",
+        "metadata": {
+          "exclusive": true,
+          "id": 1,
+          "paths": {
+            "containment": "/cluster0/compute3/core1"
+          },
+          "rank": 2,
+          "type": "core"
+        }
+      },
+      {
+        "id": "28",
+        "metadata": {
+          "exclusive": true,
+          "id": 2,
+          "paths": {
+            "containment": "/cluster0/compute3/core2"
+          },
+          "rank": 2,
+          "type": "core"
+        }
+      },
+      {
+        "id": "29",
+        "metadata": {
+          "exclusive": true,
+          "id": 3,
+          "paths": {
+            "containment": "/cluster0/compute3/core3"
+          },
+          "rank": 2,
+          "type": "core"
+        }
+      },
+      {
+        "id": "30",
+        "metadata": {
+          "exclusive": true,
+          "id": 4,
+          "paths": {
+            "containment": "/cluster0/compute3/core4"
+          },
+          "rank": 2,
+          "type": "core"
+        }
+      },
+      {
+        "id": "31",
+        "metadata": {
+          "exclusive": true,
+          "id": 5,
+          "paths": {
+            "containment": "/cluster0/compute3/core5"
+          },
+          "rank": 2,
+          "type": "core"
+        }
+      },
+      {
+        "id": "32",
+        "metadata": {
+          "exclusive": true,
+          "id": 6,
+          "paths": {
+            "containment": "/cluster0/compute3/core6"
+          },
+          "rank": 2,
+          "type": "core"
+        }
+      },
+      {
+        "id": "33",
+        "metadata": {
+          "exclusive": true,
+          "id": 7,
+          "paths": {
+            "containment": "/cluster0/compute3/core7"
+          },
+          "rank": 2,
+          "type": "core"
+        }
+      },
+      {
+        "id": "23",
+        "metadata": {
+          "id": 3,
+          "name": "compute3",
+          "paths": {
+            "containment": "/cluster0/compute3"
+          },
+          "rank": 2,
+          "type": "node"
+        }
+      },
+      {
+        "id": "35",
+        "metadata": {
+          "exclusive": true,
+          "id": 0,
+          "paths": {
+            "containment": "/cluster0/compute4/gpu0"
+          },
+          "rank": 3,
+          "type": "gpu"
+        }
+      },
+      {
+        "id": "36",
+        "metadata": {
+          "exclusive": true,
+          "id": 1,
+          "paths": {
+            "containment": "/cluster0/compute4/gpu1"
+          },
+          "rank": 3,
+          "type": "gpu"
+        }
+      },
+      {
+        "id": "37",
+        "metadata": {
+          "exclusive": true,
+          "id": 0,
+          "paths": {
+            "containment": "/cluster0/compute4/core0"
+          },
+          "rank": 3,
+          "type": "core"
+        }
+      },
+      {
+        "id": "38",
+        "metadata": {
+          "exclusive": true,
+          "id": 1,
+          "paths": {
+            "containment": "/cluster0/compute4/core1"
+          },
+          "rank": 3,
+          "type": "core"
+        }
+      },
+      {
+        "id": "39",
+        "metadata": {
+          "exclusive": true,
+          "id": 2,
+          "paths": {
+            "containment": "/cluster0/compute4/core2"
+          },
+          "rank": 3,
+          "type": "core"
+        }
+      },
+      {
+        "id": "40",
+        "metadata": {
+          "exclusive": true,
+          "id": 3,
+          "paths": {
+            "containment": "/cluster0/compute4/core3"
+          },
+          "rank": 3,
+          "type": "core"
+        }
+      },
+      {
+        "id": "41",
+        "metadata": {
+          "exclusive": true,
+          "id": 4,
+          "paths": {
+            "containment": "/cluster0/compute4/core4"
+          },
+          "rank": 3,
+          "type": "core"
+        }
+      },
+      {
+        "id": "42",
+        "metadata": {
+          "exclusive": true,
+          "id": 5,
+          "paths": {
+            "containment": "/cluster0/compute4/core5"
+          },
+          "rank": 3,
+          "type": "core"
+        }
+      },
+      {
+        "id": "43",
+        "metadata": {
+          "exclusive": true,
+          "id": 6,
+          "paths": {
+            "containment": "/cluster0/compute4/core6"
+          },
+          "rank": 3,
+          "type": "core"
+        }
+      },
+      {
+        "id": "44",
+        "metadata": {
+          "exclusive": true,
+          "id": 7,
+          "paths": {
+            "containment": "/cluster0/compute4/core7"
+          },
+          "rank": 3,
+          "type": "core"
+        }
+      },
+      {
+        "id": "34",
+        "metadata": {
+          "id": 4,
+          "name": "compute4",
+          "paths": {
+            "containment": "/cluster0/compute4"
+          },
+          "rank": 3,
+          "type": "node"
+        }
+      },
+      {
+        "id": "46",
+        "metadata": {
+          "exclusive": true,
+          "id": 0,
+          "paths": {
+            "containment": "/cluster0/compute5/gpu0"
+          },
+          "rank": 4,
+          "type": "gpu"
+        }
+      },
+      {
+        "id": "47",
+        "metadata": {
+          "exclusive": true,
+          "id": 1,
+          "paths": {
+            "containment": "/cluster0/compute5/gpu1"
+          },
+          "rank": 4,
+          "type": "gpu"
+        }
+      },
+      {
+        "id": "48",
+        "metadata": {
+          "exclusive": true,
+          "id": 0,
+          "paths": {
+            "containment": "/cluster0/compute5/core0"
+          },
+          "rank": 4,
+          "type": "core"
+        }
+      },
+      {
+        "id": "49",
+        "metadata": {
+          "exclusive": true,
+          "id": 1,
+          "paths": {
+            "containment": "/cluster0/compute5/core1"
+          },
+          "rank": 4,
+          "type": "core"
+        }
+      },
+      {
+        "id": "50",
+        "metadata": {
+          "exclusive": true,
+          "id": 2,
+          "paths": {
+            "containment": "/cluster0/compute5/core2"
+          },
+          "rank": 4,
+          "type": "core"
+        }
+      },
+      {
+        "id": "51",
+        "metadata": {
+          "exclusive": true,
+          "id": 3,
+          "paths": {
+            "containment": "/cluster0/compute5/core3"
+          },
+          "rank": 4,
+          "type": "core"
+        }
+      },
+      {
+        "id": "52",
+        "metadata": {
+          "exclusive": true,
+          "id": 4,
+          "paths": {
+            "containment": "/cluster0/compute5/core4"
+          },
+          "rank": 4,
+          "type": "core"
+        }
+      },
+      {
+        "id": "53",
+        "metadata": {
+          "exclusive": true,
+          "id": 5,
+          "paths": {
+            "containment": "/cluster0/compute5/core5"
+          },
+          "rank": 4,
+          "type": "core"
+        }
+      },
+      {
+        "id": "54",
+        "metadata": {
+          "exclusive": true,
+          "id": 6,
+          "paths": {
+            "containment": "/cluster0/compute5/core6"
+          },
+          "rank": 4,
+          "type": "core"
+        }
+      },
+      {
+        "id": "55",
+        "metadata": {
+          "exclusive": true,
+          "id": 7,
+          "paths": {
+            "containment": "/cluster0/compute5/core7"
+          },
+          "rank": 4,
+          "type": "core"
+        }
+      },
+      {
+        "id": "45",
+        "metadata": {
+          "id": 5,
+          "name": "compute5",
+          "paths": {
+            "containment": "/cluster0/compute5"
+          },
+          "rank": 4,
+          "type": "node"
+        }
+      },
+      {
+        "id": "57",
+        "metadata": {
+          "exclusive": true,
+          "id": 0,
+          "paths": {
+            "containment": "/cluster0/compute6/gpu0"
+          },
+          "rank": 5,
+          "type": "gpu"
+        }
+      },
+      {
+        "id": "58",
+        "metadata": {
+          "exclusive": true,
+          "id": 1,
+          "paths": {
+            "containment": "/cluster0/compute6/gpu1"
+          },
+          "rank": 5,
+          "type": "gpu"
+        }
+      },
+      {
+        "id": "59",
+        "metadata": {
+          "exclusive": true,
+          "id": 0,
+          "paths": {
+            "containment": "/cluster0/compute6/core0"
+          },
+          "rank": 5,
+          "type": "core"
+        }
+      },
+      {
+        "id": "60",
+        "metadata": {
+          "exclusive": true,
+          "id": 1,
+          "paths": {
+            "containment": "/cluster0/compute6/core1"
+          },
+          "rank": 5,
+          "type": "core"
+        }
+      },
+      {
+        "id": "61",
+        "metadata": {
+          "exclusive": true,
+          "id": 2,
+          "paths": {
+            "containment": "/cluster0/compute6/core2"
+          },
+          "rank": 5,
+          "type": "core"
+        }
+      },
+      {
+        "id": "62",
+        "metadata": {
+          "exclusive": true,
+          "id": 3,
+          "paths": {
+            "containment": "/cluster0/compute6/core3"
+          },
+          "rank": 5,
+          "type": "core"
+        }
+      },
+      {
+        "id": "63",
+        "metadata": {
+          "exclusive": true,
+          "id": 4,
+          "paths": {
+            "containment": "/cluster0/compute6/core4"
+          },
+          "rank": 5,
+          "type": "core"
+        }
+      },
+      {
+        "id": "64",
+        "metadata": {
+          "exclusive": true,
+          "id": 5,
+          "paths": {
+            "containment": "/cluster0/compute6/core5"
+          },
+          "rank": 5,
+          "type": "core"
+        }
+      },
+      {
+        "id": "65",
+        "metadata": {
+          "exclusive": true,
+          "id": 6,
+          "paths": {
+            "containment": "/cluster0/compute6/core6"
+          },
+          "rank": 5,
+          "type": "core"
+        }
+      },
+      {
+        "id": "66",
+        "metadata": {
+          "exclusive": true,
+          "id": 7,
+          "paths": {
+            "containment": "/cluster0/compute6/core7"
+          },
+          "rank": 5,
+          "type": "core"
+        }
+      },
+      {
+        "id": "56",
+        "metadata": {
+          "id": 6,
+          "name": "compute6",
+          "paths": {
+            "containment": "/cluster0/compute6"
+          },
+          "rank": 5,
+          "type": "node"
+        }
+      },
+      {
+        "id": "68",
+        "metadata": {
+          "exclusive": true,
+          "id": 0,
+          "paths": {
+            "containment": "/cluster0/compute7/gpu0"
+          },
+          "rank": 6,
+          "type": "gpu"
+        }
+      },
+      {
+        "id": "69",
+        "metadata": {
+          "exclusive": true,
+          "id": 1,
+          "paths": {
+            "containment": "/cluster0/compute7/gpu1"
+          },
+          "rank": 6,
+          "type": "gpu"
+        }
+      },
+      {
+        "id": "70",
+        "metadata": {
+          "exclusive": true,
+          "id": 0,
+          "paths": {
+            "containment": "/cluster0/compute7/core0"
+          },
+          "rank": 6,
+          "type": "core"
+        }
+      },
+      {
+        "id": "71",
+        "metadata": {
+          "exclusive": true,
+          "id": 1,
+          "paths": {
+            "containment": "/cluster0/compute7/core1"
+          },
+          "rank": 6,
+          "type": "core"
+        }
+      },
+      {
+        "id": "72",
+        "metadata": {
+          "exclusive": true,
+          "id": 2,
+          "paths": {
+            "containment": "/cluster0/compute7/core2"
+          },
+          "rank": 6,
+          "type": "core"
+        }
+      },
+      {
+        "id": "73",
+        "metadata": {
+          "exclusive": true,
+          "id": 3,
+          "paths": {
+            "containment": "/cluster0/compute7/core3"
+          },
+          "rank": 6,
+          "type": "core"
+        }
+      },
+      {
+        "id": "74",
+        "metadata": {
+          "exclusive": true,
+          "id": 4,
+          "paths": {
+            "containment": "/cluster0/compute7/core4"
+          },
+          "rank": 6,
+          "type": "core"
+        }
+      },
+      {
+        "id": "75",
+        "metadata": {
+          "exclusive": true,
+          "id": 5,
+          "paths": {
+            "containment": "/cluster0/compute7/core5"
+          },
+          "rank": 6,
+          "type": "core"
+        }
+      },
+      {
+        "id": "76",
+        "metadata": {
+          "exclusive": true,
+          "id": 6,
+          "paths": {
+            "containment": "/cluster0/compute7/core6"
+          },
+          "rank": 6,
+          "type": "core"
+        }
+      },
+      {
+        "id": "77",
+        "metadata": {
+          "exclusive": true,
+          "id": 7,
+          "paths": {
+            "containment": "/cluster0/compute7/core7"
+          },
+          "rank": 6,
+          "type": "core"
+        }
+      },
+      {
+        "id": "67",
+        "metadata": {
+          "id": 7,
+          "name": "compute7",
+          "paths": {
+            "containment": "/cluster0/compute7"
+          },
+          "rank": 6,
+          "type": "node"
+        }
+      },
+      {
+        "id": "79",
+        "metadata": {
+          "exclusive": true,
+          "id": 0,
+          "paths": {
+            "containment": "/cluster0/compute8/gpu0"
+          },
+          "rank": 7,
+          "type": "gpu"
+        }
+      },
+      {
+        "id": "80",
+        "metadata": {
+          "exclusive": true,
+          "id": 1,
+          "paths": {
+            "containment": "/cluster0/compute8/gpu1"
+          },
+          "rank": 7,
+          "type": "gpu"
+        }
+      },
+      {
+        "id": "81",
+        "metadata": {
+          "exclusive": true,
+          "id": 0,
+          "paths": {
+            "containment": "/cluster0/compute8/core0"
+          },
+          "rank": 7,
+          "type": "core"
+        }
+      },
+      {
+        "id": "82",
+        "metadata": {
+          "exclusive": true,
+          "id": 1,
+          "paths": {
+            "containment": "/cluster0/compute8/core1"
+          },
+          "rank": 7,
+          "type": "core"
+        }
+      },
+      {
+        "id": "83",
+        "metadata": {
+          "exclusive": true,
+          "id": 2,
+          "paths": {
+            "containment": "/cluster0/compute8/core2"
+          },
+          "rank": 7,
+          "type": "core"
+        }
+      },
+      {
+        "id": "84",
+        "metadata": {
+          "exclusive": true,
+          "id": 3,
+          "paths": {
+            "containment": "/cluster0/compute8/core3"
+          },
+          "rank": 7,
+          "type": "core"
+        }
+      },
+      {
+        "id": "85",
+        "metadata": {
+          "exclusive": true,
+          "id": 4,
+          "paths": {
+            "containment": "/cluster0/compute8/core4"
+          },
+          "rank": 7,
+          "type": "core"
+        }
+      },
+      {
+        "id": "86",
+        "metadata": {
+          "exclusive": true,
+          "id": 5,
+          "paths": {
+            "containment": "/cluster0/compute8/core5"
+          },
+          "rank": 7,
+          "type": "core"
+        }
+      },
+      {
+        "id": "87",
+        "metadata": {
+          "exclusive": true,
+          "id": 6,
+          "paths": {
+            "containment": "/cluster0/compute8/core6"
+          },
+          "rank": 7,
+          "type": "core"
+        }
+      },
+      {
+        "id": "88",
+        "metadata": {
+          "exclusive": true,
+          "id": 7,
+          "paths": {
+            "containment": "/cluster0/compute8/core7"
+          },
+          "rank": 7,
+          "type": "core"
+        }
+      },
+      {
+        "id": "78",
+        "metadata": {
+          "id": 8,
+          "name": "compute8",
+          "paths": {
+            "containment": "/cluster0/compute8"
+          },
+          "rank": 7,
+          "type": "node"
+        }
+      },
+      {
+        "id": "90",
+        "metadata": {
+          "exclusive": true,
+          "id": 0,
+          "paths": {
+            "containment": "/cluster0/compute9/gpu0"
+          },
+          "rank": 8,
+          "type": "gpu"
+        }
+      },
+      {
+        "id": "91",
+        "metadata": {
+          "exclusive": true,
+          "id": 1,
+          "paths": {
+            "containment": "/cluster0/compute9/gpu1"
+          },
+          "rank": 8,
+          "type": "gpu"
+        }
+      },
+      {
+        "id": "92",
+        "metadata": {
+          "exclusive": true,
+          "id": 0,
+          "paths": {
+            "containment": "/cluster0/compute9/core0"
+          },
+          "rank": 8,
+          "type": "core"
+        }
+      },
+      {
+        "id": "93",
+        "metadata": {
+          "exclusive": true,
+          "id": 1,
+          "paths": {
+            "containment": "/cluster0/compute9/core1"
+          },
+          "rank": 8,
+          "type": "core"
+        }
+      },
+      {
+        "id": "94",
+        "metadata": {
+          "exclusive": true,
+          "id": 2,
+          "paths": {
+            "containment": "/cluster0/compute9/core2"
+          },
+          "rank": 8,
+          "type": "core"
+        }
+      },
+      {
+        "id": "95",
+        "metadata": {
+          "exclusive": true,
+          "id": 3,
+          "paths": {
+            "containment": "/cluster0/compute9/core3"
+          },
+          "rank": 8,
+          "type": "core"
+        }
+      },
+      {
+        "id": "96",
+        "metadata": {
+          "exclusive": true,
+          "id": 4,
+          "paths": {
+            "containment": "/cluster0/compute9/core4"
+          },
+          "rank": 8,
+          "type": "core"
+        }
+      },
+      {
+        "id": "97",
+        "metadata": {
+          "exclusive": true,
+          "id": 5,
+          "paths": {
+            "containment": "/cluster0/compute9/core5"
+          },
+          "rank": 8,
+          "type": "core"
+        }
+      },
+      {
+        "id": "98",
+        "metadata": {
+          "exclusive": true,
+          "id": 6,
+          "paths": {
+            "containment": "/cluster0/compute9/core6"
+          },
+          "rank": 8,
+          "type": "core"
+        }
+      },
+      {
+        "id": "99",
+        "metadata": {
+          "exclusive": true,
+          "id": 7,
+          "paths": {
+            "containment": "/cluster0/compute9/core7"
+          },
+          "rank": 8,
+          "type": "core"
+        }
+      },
+      {
+        "id": "89",
+        "metadata": {
+          "id": 9,
+          "name": "compute9",
+          "paths": {
+            "containment": "/cluster0/compute9"
+          },
+          "rank": 8,
+          "type": "node"
+        }
+      },
+      {
+        "id": "101",
+        "metadata": {
+          "exclusive": true,
+          "id": 0,
+          "paths": {
+            "containment": "/cluster0/compute10/gpu0"
+          },
+          "rank": 9,
+          "type": "gpu"
+        }
+      },
+      {
+        "id": "102",
+        "metadata": {
+          "exclusive": true,
+          "id": 1,
+          "paths": {
+            "containment": "/cluster0/compute10/gpu1"
+          },
+          "rank": 9,
+          "type": "gpu"
+        }
+      },
+      {
+        "id": "103",
+        "metadata": {
+          "exclusive": true,
+          "id": 0,
+          "paths": {
+            "containment": "/cluster0/compute10/core0"
+          },
+          "rank": 9,
+          "type": "core"
+        }
+      },
+      {
+        "id": "104",
+        "metadata": {
+          "exclusive": true,
+          "id": 1,
+          "paths": {
+            "containment": "/cluster0/compute10/core1"
+          },
+          "rank": 9,
+          "type": "core"
+        }
+      },
+      {
+        "id": "105",
+        "metadata": {
+          "exclusive": true,
+          "id": 2,
+          "paths": {
+            "containment": "/cluster0/compute10/core2"
+          },
+          "rank": 9,
+          "type": "core"
+        }
+      },
+      {
+        "id": "106",
+        "metadata": {
+          "exclusive": true,
+          "id": 3,
+          "paths": {
+            "containment": "/cluster0/compute10/core3"
+          },
+          "rank": 9,
+          "type": "core"
+        }
+      },
+      {
+        "id": "107",
+        "metadata": {
+          "exclusive": true,
+          "id": 4,
+          "paths": {
+            "containment": "/cluster0/compute10/core4"
+          },
+          "rank": 9,
+          "type": "core"
+        }
+      },
+      {
+        "id": "108",
+        "metadata": {
+          "exclusive": true,
+          "id": 5,
+          "paths": {
+            "containment": "/cluster0/compute10/core5"
+          },
+          "rank": 9,
+          "type": "core"
+        }
+      },
+      {
+        "id": "109",
+        "metadata": {
+          "exclusive": true,
+          "id": 6,
+          "paths": {
+            "containment": "/cluster0/compute10/core6"
+          },
+          "rank": 9,
+          "type": "core"
+        }
+      },
+      {
+        "id": "110",
+        "metadata": {
+          "exclusive": true,
+          "id": 7,
+          "paths": {
+            "containment": "/cluster0/compute10/core7"
+          },
+          "rank": 9,
+          "type": "core"
+        }
+      },
+      {
+        "id": "100",
+        "metadata": {
+          "id": 10,
+          "name": "compute10",
+          "paths": {
+            "containment": "/cluster0/compute10"
+          },
+          "rank": 9,
+          "type": "node"
+        }
+      },
+      {
+        "id": "0",
+        "metadata": {
+          "id": 0,
+          "paths": {
+            "containment": "/cluster0"
+          },
+          "rank": -1,
+          "type": "cluster"
+        }
+      }
+    ]
+  }
+}

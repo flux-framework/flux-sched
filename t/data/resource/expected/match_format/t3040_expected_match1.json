@@ -1,0 +1,189 @@
+{
+  "graph": {
+    "edges": [
+      {
+        "source": "0",
+        "target": "1"
+      },
+      {
+        "source": "0",
+        "target": "12"
+      },
+      {
+        "source": "0",
+        "target": "23"
+      },
+      {
+        "source": "0",
+        "target": "34"
+      },
+      {
+        "source": "0",
+        "target": "45"
+      },
+      {
+        "source": "0",
+        "target": "56"
+      },
+      {
+        "source": "0",
+        "target": "67"
+      },
+      {
+        "source": "0",
+        "target": "78"
+      },
+      {
+        "source": "0",
+        "target": "89"
+      },
+      {
+        "source": "0",
+        "target": "100"
+      }
+    ],
+    "nodes": [
+      {
+        "id": "1",
+        "metadata": {
+          "exclusive": true,
+          "id": 1,
+          "name": "compute1",
+          "paths": {
+            "containment": "/cluster0/compute1"
+          },
+          "rank": 0,
+          "type": "node"
+        }
+      },
+      {
+        "id": "12",
+        "metadata": {
+          "exclusive": true,
+          "id": 2,
+          "name": "compute2",
+          "paths": {
+            "containment": "/cluster0/compute2"
+          },
+          "rank": 1,
+          "type": "node"
+        }
+      },
+      {
+        "id": "23",
+        "metadata": {
+          "exclusive": true,
+          "id": 3,
+          "name": "compute3",
+          "paths": {
+            "containment": "/cluster0/compute3"
+          },
+          "rank": 2,
+          "type": "node"
+        }
+      },
+      {
+        "id": "34",
+        "metadata": {
+          "exclusive": true,
+          "id": 4,
+          "name": "compute4",
+          "paths": {
+            "containment": "/cluster0/compute4"
+          },
+          "rank": 3,
+          "type": "node"
+        }
+      },
+      {
+        "id": "45",
+        "metadata": {
+          "exclusive": true,
+          "id": 5,
+          "name": "compute5",
+          "paths": {
+            "containment": "/cluster0/compute5"
+          },
+          "rank": 4,
+          "type": "node"
+        }
+      },
+      {
+        "id": "56",
+        "metadata": {
+          "exclusive": true,
+          "id": 6,
+          "name": "compute6",
+          "paths": {
+            "containment": "/cluster0/compute6"
+          },
+          "rank": 5,
+          "type": "node"
+        }
+      },
+      {
+        "id": "67",
+        "metadata": {
+          "exclusive": true,
+          "id": 7,
+          "name": "compute7",
+          "paths": {
+            "containment": "/cluster0/compute7"
+          },
+          "rank": 6,
+          "type": "node"
+        }
+      },
+      {
+        "id": "78",
+        "metadata": {
+          "exclusive": true,
+          "id": 8,
+          "name": "compute8",
+          "paths": {
+            "containment": "/cluster0/compute8"
+          },
+          "rank": 7,
+          "type": "node"
+        }
+      },
+      {
+        "id": "89",
+        "metadata": {
+          "exclusive": true,
+          "id": 9,
+          "name": "compute9",
+          "paths": {
+            "containment": "/cluster0/compute9"
+          },
+          "rank": 8,
+          "type": "node"
+        }
+      },
+      {
+        "id": "100",
+        "metadata": {
+          "exclusive": true,
+          "id": 10,
+          "name": "compute10",
+          "paths": {
+            "containment": "/cluster0/compute10"
+          },
+          "rank": 9,
+          "type": "node"
+        }
+      },
+      {
+        "id": "0",
+        "metadata": {
+          "id": 0,
+          "paths": {
+            "containment": "/cluster0"
+          },
+          "rank": -1,
+          "type": "cluster"
+        }
+      }
+    ]
+  }
+}

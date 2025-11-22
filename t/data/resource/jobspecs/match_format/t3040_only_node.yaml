@@ -1,0 +1,13 @@
+version: 9999
+resources:
+  - type: node
+    exclusive: true
+    count: 1
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ \"app\" ]
+    slot: default
+    count:
+      per_slot: 1
