@@ -204,9 +204,28 @@ std::tuple<dfu_flexible_t::Key, int, int> dfu_flexible_t::select_or_config (
     if (it != or_config.end ())
         return it->second;
 
-    // if there is only a single slot, no need to compute
+    // if there is only a single slot, no need to recurse
+    // loop through to calculate total number of matches
     if (slots.size () == 1) {
-        or_config[index] = std::make_tuple (resource_counts, nslots, 0);
+        // start with nslots as upper bound
+        int max_matches = nslots;
+        const auto &slot = slots[0];
+
+        // find maximum number of matches by taking the min
+        // of total matches for each resource in the slot
+        for (const auto &slot_elem : slot.with) {
+            auto it = resource_counts.find (slot_elem.type);
+            unsigned int qc = resource_counts.at (slot_elem.type);
+            unsigned int count = m_match->calc_count (slot_elem, qc);
+            if (it == resource_counts.end () || it->second < count || count <= 0) {
+                max_matches = 0;
+                break;
+            }
+            int possible = m_match->calc_count (slot_elem, it->second) / count;
+            max_matches = std::min (max_matches, possible);
+        }
+
+        or_config[index] = std::make_tuple (resource_counts, max_matches, 0);
         return or_config[index];
     }
 
