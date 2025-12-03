@@ -58,6 +58,9 @@ int reapi_cli_initialize (reapi_cli_ctx_t *ctx, const char *rgraph, const char *
  *                   satisfiability check if resources are not available.
  *                   MATCH_WITHOUT_ALLOCATING: match and return resources
  *                   but do not allocate or reserve them.
+ *                   MATCH_WITHOUT_ALLOCATING_FUTURE: match and return resources
+ *                   but do not allocate or reserve them. Return the earliest
+ *                   match, which could be in the future.
  *  \param jobspec   jobspec string.
  *  \param jobid     jobid of the uint64_t type.
  *  \param reserved  Boolean into which to return true if this job has been
