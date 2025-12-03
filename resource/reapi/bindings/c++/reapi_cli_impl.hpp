@@ -182,7 +182,8 @@ int reapi_cli_t::match_allocate (void *h,
     ov = get_elapsed_time (start_time, end_time);
 
     if (matched) {
-        if (match_op == match_op_t::MATCH_WITHOUT_ALLOCATING) {
+        if (match_op == match_op_t::MATCH_WITHOUT_ALLOCATING
+            || match_op == match_op_t::MATCH_WITHOUT_ALLOCATING_FUTURE) {
             reserved = false;
         } else {
             reserved = (at != 0) ? true : false;
@@ -206,7 +207,8 @@ int reapi_cli_t::match_allocate (void *h,
     }
 
     if (match_op != match_op_t::MATCH_SATISFIABILITY
-        && match_op != match_op_t::MATCH_WITHOUT_ALLOCATING)
+        && match_op != match_op_t::MATCH_WITHOUT_ALLOCATING
+        && match_op != match_op_t::MATCH_WITHOUT_ALLOCATING_FUTURE)
         rq->incr_job_counter ();
 
     if (traverser_rc < 0) {
