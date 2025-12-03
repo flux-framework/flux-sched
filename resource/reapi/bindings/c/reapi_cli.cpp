@@ -104,7 +104,8 @@ extern "C" int reapi_cli_match (reapi_cli_ctx_t *ctx,
     }
 
     // MWOA matches do not have a jobid, so return an invalid one
-    if (match_op == match_op_t::MATCH_WITHOUT_ALLOCATING) {
+    if (match_op == match_op_t::MATCH_WITHOUT_ALLOCATING
+        || match_op == match_op_t::MATCH_WITHOUT_ALLOCATING_FUTURE) {
         *jobid = -1;
     } else {
         *jobid = ctx->rqt->get_job_counter ();
