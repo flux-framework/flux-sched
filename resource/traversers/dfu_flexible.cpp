@@ -204,9 +204,28 @@ std::tuple<dfu_flexible_t::Key, int, int> dfu_flexible_t::select_or_config (
     if (it != or_config.end ())
         return it->second;
 
-    // if there is only a single slot, no need to compute
+    // if there is only a single slot, no need to recurse
+    // loop through to calculate total number of matches
     if (slots.size () == 1) {
-        or_config[index] = std::make_tuple (resource_counts, nslots, 0);
+        // start with nslots as upper bound
+        int max_matches = nslots;
+        const auto &slot = slots[0];
+
+        // find maximum number of matches by taking the min
+        // of total matches for each resource in the slot
+        for (const auto &slot_elem : slot.with) {
+            auto it = resource_counts.find (slot_elem.type);
+            unsigned int qc = resource_counts.at (slot_elem.type);
+            unsigned int count = m_match->calc_count (slot_elem, qc);
+            if (it == resource_counts.end () || it->second < count || count <= 0) {
+                max_matches = 0;
+                break;
+            }
+            int possible = m_match->calc_count (slot_elem, it->second) / count;
+            max_matches = std::min (max_matches, possible);
+        }
+
+        or_config[index] = std::make_tuple (resource_counts, max_matches, 0);
         return or_config[index];
     }
 
@@ -215,7 +234,6 @@ std::tuple<dfu_flexible_t::Key, int, int> dfu_flexible_t::select_or_config (
         ++i;
         bool match = true;
         std::map<resource_type_t, int> updated_counts = resource_counts;
-
         // determine if there are enough resources to match with this or_slot
         for (const auto &slot_elem : slot.with) {
             unsigned int qc = resource_counts.at (slot_elem.type);
@@ -270,15 +288,26 @@ int dfu_flexible_t::dom_slot (const jobmeta_t &meta,
     // it cannot distinguish beyond type. This may be resolvable if graph
     // coloring is removed during the selection process.
     std::vector<Resource> slot_resource_union;
+    std::map<resource_type_t, Resource> pre_union;
     std::map<resource_type_t, int> resource_types;
     for (const auto &slot : slots) {
         for (const auto &r : slot.with) {
-            if (resource_types.find (r.type) == resource_types.end ()) {
+            auto it = pre_union.find (r.type);
+            if (it == pre_union.end ()) {
                 resource_types[r.type] = 0;
-                slot_resource_union.push_back (r);
+                pre_union.emplace (r.type, r);
+            } else {
+                // We need the maximum value for count here
+                // otherwise first match policies won't work
+                if (it->second.count.min < r.count.min)
+                    pre_union.insert_or_assign (r.type, r);
             }
         }
     }
+
+    // Actually add the resources to the vector
+    for (const auto &it : pre_union)
+        slot_resource_union.push_back (it.second);
 
     if ((rc = explore (meta,
                        u,

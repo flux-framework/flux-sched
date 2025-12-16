@@ -73,4 +73,12 @@ test_expect_success "${test008_desc}" '
     test_cmp 008.R.out ${exp_dir}/008.R.out
 '
 
+cmds009="${cmd_dir}/cmds09.in"
+test009_desc="JGF: allocate 9 jobspecs with flexible scheduling using first match"
+test_expect_success "${test009_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds009} > cmds009 &&
+    ${query} -L ${jgf} -f jgf -S CA -P first -T flexible -t 009.R.out < cmds009 &&
+    test_cmp 009.R.out ${exp_dir}/009.R.out
+'
+
 test_done
