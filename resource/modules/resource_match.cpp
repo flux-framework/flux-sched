@@ -1720,6 +1720,32 @@ done:
     return rc;
 }
 
+int run_remove_subgraph (std::shared_ptr<resource_ctx_t> &ctx, const std::string &subgraph_path)
+{
+    int rc = -1;
+
+    if ((rc = ctx->traverser->remove_subgraph (subgraph_path)) != 0) {
+        flux_log (ctx->h,
+                  LOG_ERR,
+                  "remove subgraph by path: %s failed: %s",
+                  subgraph_path.c_str (),
+                  ctx->traverser->err_message ().c_str ());
+        goto done;
+    }
+    // Update total counts:
+    if ((rc = ctx->traverser->initialize ()) != 0) {
+        flux_log (ctx->h,
+                  LOG_ERR,
+                  "re-initialize after removing subgraph by path: %s failed: %s",
+                  subgraph_path.c_str (),
+                  ctx->traverser->err_message ().c_str ());
+        goto done;
+    }
+    flux_log (ctx->h, LOG_DEBUG, "successfully removed subgraph %s", subgraph_path.c_str ());
+done:
+    return rc;
+}
+
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab
  */
