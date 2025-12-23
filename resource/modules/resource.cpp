@@ -83,6 +83,11 @@ static void add_subgraph_request_cb (flux_t *h,
                                      const flux_msg_t *msg,
                                      void *arg);
 
+static void remove_subgraph_request_cb (flux_t *h,
+                                        flux_msg_handler_t *w,
+                                        const flux_msg_t *msg,
+                                        void *arg);
+
 static const struct flux_msg_handler_spec htab[] =
     {{FLUX_MSGTYPE_REQUEST, "sched-fluxion-resource.match", match_request_cb, 0},
      {FLUX_MSGTYPE_REQUEST, "sched-fluxion-resource.match_multi", match_multi_request_cb, 0},
@@ -107,6 +112,10 @@ static const struct flux_msg_handler_spec htab[] =
      {FLUX_MSGTYPE_REQUEST, "sched-fluxion-resource.params", params_request_cb, 0},
      {FLUX_MSGTYPE_REQUEST, "sched-fluxion-resource.set_status", set_status_request_cb, 0},
      {FLUX_MSGTYPE_REQUEST, "sched-fluxion-resource.add_subgraph", add_subgraph_request_cb, 0},
+     {FLUX_MSGTYPE_REQUEST,
+      "sched-fluxion-resource.remove_subgraph",
+      remove_subgraph_request_cb,
+      0},
      FLUX_MSGHANDLER_TABLE_END};
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1120,6 +1129,33 @@ static void add_subgraph_request_cb (flux_t *h,
 
     if (run_add_subgraph (ctx, R_subgraph) != 0) {
         errmsg = "failed to add subgraph.";
+        goto error;
+    }
+
+    if (flux_respond_pack (h, msg, "{}") < 0)
+        flux_log_error (h, "%s", __FUNCTION__);
+
+    return;
+
+error:
+    if (flux_respond_error (h, msg, errno, errmsg.c_str ()) < 0)
+        flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
+}
+
+static void remove_subgraph_request_cb (flux_t *h,
+                                        flux_msg_handler_t *w,
+                                        const flux_msg_t *msg,
+                                        void *arg)
+{
+    std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
+    std::string errmsg = "";
+    char *subgraph_path = NULL;
+
+    if (flux_request_unpack (msg, NULL, "{s:s}", "subgraph_path", &subgraph_path) < 0)
+        goto error;
+
+    if (run_remove_subgraph (ctx, subgraph_path) != 0) {
+        errmsg = "failed to remove subgraph at path " + std::string (subgraph_path);
         goto error;
     }
 

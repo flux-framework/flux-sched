@@ -164,6 +164,8 @@ int run_find (std::shared_ptr<resource_ctx_t> &ctx,
 
 int run_add_subgraph (std::shared_ptr<resource_ctx_t> &ctx, const std::string &R_subgraph);
 
+int run_remove_subgraph (std::shared_ptr<resource_ctx_t> &ctx, const std::string &subgraph_path);
+
 ////////////////////////////////////////////////////////////////////////////////
 // Resource Graph and Traverser Initialization
 ////////////////////////////////////////////////////////////////////////////////
