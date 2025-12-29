@@ -3,6 +3,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <resource/reapi/bindings/c++/reapi_cli.hpp>
 #include <resource/policies/base/match_op.h>
+#include <resource/schema/resource_graph.hpp>
 #include <fstream>
 #include <cstdlib>
 
@@ -117,6 +118,16 @@ TEST_CASE ("Match basic jobspec without allocating", "[match C++]")
     ctx = std::make_shared<resource_query_t> (rgraph, options);
     REQUIRE (ctx);
 
+    std::map<vtx_t, pool_infra_t> idata_map;
+    std::map<vtx_t, schedule_t> sched_map;
+    vtx_iterator_t u, end;
+    for (boost::tuples::tie (u, end) = boost::vertices (ctx->db->resource_graph); u != end; u++) {
+        idata_map[*u] = ctx->db->resource_graph[*u].idata;
+        sched_map[*u] = ctx->db->resource_graph[*u].schedule;
+        REQUIRE (idata_map[*u] == ctx->db->resource_graph[*u].idata);
+        REQUIRE (sched_map[*u] == ctx->db->resource_graph[*u].schedule);
+    }
+
     bool reserved = false;
     std::string R = "";
     uint64_t jobid = 1;
@@ -153,6 +164,12 @@ TEST_CASE ("Match basic jobspec without allocating", "[match C++]")
     REQUIRE (reserved == false);
     REQUIRE (at == 0);
 
+    // Check that the post-MWOA graph state is the same as the initial state
+    for (boost::tuples::tie (u, end) = boost::vertices (ctx->db->resource_graph); u != end; u++) {
+        CHECK (idata_map.at (*u).has_equal_behavior_to (ctx->db->resource_graph[*u].idata));
+        CHECK (sched_map.at (*u) == ctx->db->resource_graph[*u].schedule);
+    }
+
     // Allocate all resources
     match_op = match_op_t::MATCH_ALLOCATE;
 
@@ -180,6 +197,14 @@ TEST_CASE ("Match basic jobspec without allocating", "[match C++]")
                                               at,
                                               ov);
     REQUIRE (rc == -1);
+
+    // The graph state should have changed
+    bool changed = false;
+    for (boost::tuples::tie (u, end) = boost::vertices (ctx->db->resource_graph); u != end; u++) {
+        changed |= !(idata_map.at (*u).has_equal_behavior_to (ctx->db->resource_graph[*u].idata));
+        changed |= !(sched_map.at (*u) == ctx->db->resource_graph[*u].schedule);
+    }
+    REQUIRE (changed == true);
 
     // MWOA_FUTURE should match the next available time, which is in the future
     match_op = match_op_t::MATCH_WITHOUT_ALLOCATING_FUTURE;
