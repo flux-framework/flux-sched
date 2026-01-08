@@ -1215,6 +1215,37 @@ int pretty_sim_match_writers_t::emit_vtx (const std::string &prefix,
     return 0;
 }
 
+bool vertex_match_writers_t::empty ()
+{
+    return m_out.empty ();
+}
+
+int vertex_match_writers_t::emit_json (json_t **o, json_t **aux)
+{
+    return 0;
+}
+
+int vertex_match_writers_t::emit (std::stringstream &out)
+{
+    return 0;
+}
+
+int vertex_match_writers_t::emit_vtx (const std::string &prefix,
+                                      const resource_graph_t &g,
+                                      const vtx_t &u,
+                                      unsigned int needs,
+                                      const std::map<std::string, std::string> &agfilter_data,
+                                      bool exclusive)
+{
+    m_out.push_back (u);
+    return 0;
+}
+
+std::vector<vtx_t> &vertex_match_writers_t::get_vertices ()
+{
+    return m_out;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Match Writers Factory Class Method Definitions
 ////////////////////////////////////////////////////////////////////////////////
@@ -1239,6 +1270,9 @@ std::shared_ptr<match_writers_t> match_writers_factory_t::create (match_format_t
                 break;
             case match_format_t::PRETTY_SIMPLE:
                 w = std::make_shared<pretty_sim_match_writers_t> ();
+                break;
+            case match_format_t::VERTEX:
+                w = std::make_shared<vertex_match_writers_t> ();
                 break;
             case match_format_t::RV1:
             default:

@@ -180,6 +180,23 @@ static int64_t avail_at (planner_t *ctx, int64_t on_or_after, uint64_t duration,
     return at;
 }
 
+static int64_t unavail_at (planner_t *ctx, int64_t at, const int64_t request)
+{
+    if (at > ctx->plan->get_plan_end ()) {
+        errno = ERANGE;
+        return -1;
+    }
+
+    scheduled_point_t *point = ctx->plan->sp_tree_get_state (at);
+    while (point) {
+        if (request > point->remaining) {
+            return point->at;
+        }
+        point = ctx->plan->sp_tree_next (point);
+    }
+    return -1;
+}
+
 static bool avail_during (planner_t *ctx, int64_t at, uint64_t duration, const int64_t request)
 {
     bool ok = true;
@@ -495,6 +512,28 @@ extern "C" int64_t planner_avail_resources_at (planner_t *ctx, int64_t at)
     }
     state = ctx->plan->sp_tree_get_state (at);
     return state->remaining;
+}
+
+extern "C" int64_t planner_unavail_time_first (planner_t *ctx,
+                                               int64_t on_or_after,
+                                               uint64_t request)
+{
+    int64_t t = -1;
+    if (!ctx || on_or_after < ctx->plan->get_plan_start ()
+        || on_or_after >= ctx->plan->get_plan_end ()) {
+        errno = EINVAL;
+        return -1;
+    }
+    if (static_cast<int64_t> (request) > ctx->plan->get_total_resources ()) {
+        errno = ERANGE;
+        return -1;
+    }
+    restore_track_points (ctx);
+    ctx->plan->set_avail_time_iter_set (1);
+    copy_req (ctx->plan->get_current_request (), on_or_after, 0, request);
+    if ((t = unavail_at (ctx, on_or_after, (int64_t)request)) == -1)
+        errno = ENOENT;
+    return t;
 }
 
 extern "C" int64_t planner_add_span (planner_t *ctx,

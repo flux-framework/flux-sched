@@ -23,7 +23,7 @@ extern "C" {
 namespace Flux {
 namespace resource_model {
 
-enum class match_format_t { SIMPLE, JGF, RLITE, RV1, RV1_NOSCHED, PRETTY_SIMPLE };
+enum class match_format_t { SIMPLE, JGF, RLITE, RV1, RV1_NOSCHED, PRETTY_SIMPLE, VERTEX };
 
 /*! Base match writers class for a matched resource set
  */
@@ -268,6 +268,23 @@ class pretty_sim_match_writers_t : public match_writers_t {
 
    private:
     std::list<std::string> m_out;
+};
+
+class vertex_match_writers_t : public match_writers_t {
+   public:
+    virtual bool empty ();
+    virtual int emit_json (json_t **o, json_t **aux = nullptr);
+    virtual int emit (std::stringstream &out);
+    virtual int emit_vtx (const std::string &prefix,
+                          const resource_graph_t &g,
+                          const vtx_t &u,
+                          unsigned int needs,
+                          const std::map<std::string, std::string> &agfilter_data,
+                          bool exclusive);
+    std::vector<vtx_t> &get_vertices ();
+
+   private:
+    std::vector<vtx_t> m_out;
 };
 
 /*! Match writer factory-method class

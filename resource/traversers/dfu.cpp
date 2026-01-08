@@ -76,7 +76,8 @@ int dfu_traverser_t::request_feasible (detail::jobmeta_t const &meta,
 
     // check if there are enough nodes up at all
     if (target_nodes > get_graph_db ()->metadata.nodes_up) {
-        if (op == match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE || op == match_op_t::MATCH_ALLOCATE) {
+        if (op == match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE || op == match_op_t::MATCH_ALLOCATE
+            || op == match_op_t::MATCH_WITHOUT_ALLOCATING) {
             errno = EBUSY;
             return -1;
         }
@@ -99,7 +100,10 @@ int dfu_traverser_t::request_feasible (detail::jobmeta_t const &meta,
             get_graph_db ()->metadata.graph_duration.graph_end.time_since_epoch ())
             .count ();
     // only the initial time matters for allocate
-    const int64_t target_time = op == match_op_t::MATCH_ALLOCATE ? meta.at : graph_end - 1;
+    const int64_t target_time =
+        op == match_op_t::MATCH_ALLOCATE || op == match_op_t::MATCH_WITHOUT_ALLOCATING
+            ? meta.at
+            : graph_end - 1;
     int feasible_nodes = 0;
     for (auto const &node_vtx : all_nodes) {
         auto const &node = g[node_vtx];
@@ -118,7 +122,8 @@ int dfu_traverser_t::request_feasible (detail::jobmeta_t const &meta,
     }
     if (feasible_nodes < target_nodes) {
         // no chance, don't even try
-        if (op == match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE || op == match_op_t::MATCH_ALLOCATE) {
+        if (op == match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE || op == match_op_t::MATCH_ALLOCATE
+            || op == match_op_t::MATCH_WITHOUT_ALLOCATING) {
             errno = EBUSY;
             return -1;
         }
@@ -179,10 +184,15 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
             ++sched_iters;
             break;
         }
-        case match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE: {
+        case match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE:
             /* Or else reserve */
-            errno = 0;
             meta.alloc_type = jobmeta_t::alloc_type_t::AT_ALLOC_ORELSE_RESERVE;
+            /* Fall through */
+        case match_op_t::MATCH_WITHOUT_ALLOCATING_EXTEND:
+            /* Fall through */
+        case match_op_t::MATCH_WITHOUT_ALLOCATING: {
+            /* Seek to first successful match */
+            errno = 0;
             t = meta.at + 1;
             p = (*get_graph ())[root].idata.subplans.at (dom);
             len = planner_multi_resources_len (p);
@@ -343,8 +353,55 @@ int dfu_traverser_t::initialize (std::shared_ptr<resource_graph_db_t> db,
     return initialize ();
 }
 
+static int64_t maximum_duration_resources_available (
+    const std::shared_ptr<const resource_graph_db_t> &db,
+    std::vector<vtx_t> vertices,
+    int64_t at)
+{
+    int64_t maximum_duration = std::numeric_limits<int64_t>::max ();
+
+    // Find the maximum duration for which every vertex is unallocated
+    for (auto u : vertices) {
+        struct planner_t *p = db->resource_graph[u].schedule.plans;
+        int64_t end = planner_unavail_time_first (p, at, 1);
+
+        if (end == -1) {
+            if (errno == ENOENT) {
+                int64_t pdur = planner_duration (p);
+                if (pdur > 0) {
+                    end = planner_base_time (p) + pdur;  // Planner end
+                    errno = 0;
+                } else {
+                    return -1;
+                }
+            } else {
+                return -2;
+            }
+        }
+
+        // The maximum duration is the minimum of all component durations
+        if (maximum_duration > end - at)
+            maximum_duration = end - at;
+    }
+
+    if (maximum_duration < 1)
+        return -3;
+
+    return maximum_duration;
+}
+
 int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
-                          std::shared_ptr<match_writers_t> &writers,
+                          std::shared_ptr<match_writers_t> &writer,
+                          match_op_t op,
+                          int64_t jobid,
+                          int64_t *at)
+{
+    std::vector<std::shared_ptr<match_writers_t>> writers = {writer};
+    return run (jobspec, writers, op, jobid, at);
+}
+
+int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
+                          std::vector<std::shared_ptr<match_writers_t>> &writers,
                           match_op_t op,
                           int64_t jobid,
                           int64_t *at)
@@ -365,16 +422,27 @@ int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
     int64_t graph_end = std::chrono::duration_cast<std::chrono::seconds> (
                             graph_duration.graph_end.time_since_epoch ())
                             .count ();
+    int64_t max_dur;
     detail::jobmeta_t meta;
     vtx_t root = get_graph_db ()->metadata.roots.at (dom);
     bool x = traverser->exclusivity (jobspec.resources, root);
     const auto exclusive_types = traverser->get_exclusive_resource_types ();
     std::unordered_map<resource_type_t, int64_t> dfv;
+    std::shared_ptr<vertex_match_writers_t> vtx_writer =
+        std::make_shared<vertex_match_writers_t> ();
+    std::vector<std::shared_ptr<match_writers_t>> combined_writers = writers;
+    combined_writers.push_back (vtx_writer);
 
     traverser->prime_jobspec (jobspec.resources, dfv);
     if (meta.build (jobspec, detail::jobmeta_t::alloc_type_t::AT_ALLOC, jobid, *at, graph_duration)
         < 0)
         return -1;
+
+    // If matching without allocation, set meta.AT to prevent allocation in update
+    if (op == match_op_t::MATCH_WITHOUT_ALLOCATING
+        || op == match_op_t::MATCH_WITHOUT_ALLOCATING_EXTEND) {
+        meta.alloc_type = jobmeta_t::alloc_type_t::AT_NO_ALLOC;
+    }
 
     if ((op == match_op_t::MATCH_SATISFIABILITY)
         && (rc = is_satisfiable (jobspec, meta, x, root, dfv)) == 0) {
@@ -382,15 +450,13 @@ int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
     } else if ((rc = schedule (jobspec, meta, x, op, root, dfv)) == 0) {
         *at = meta.at;
         if (*at == graph_end) {
-            traverser->reset_exclusive_resource_types (exclusive_types);
             // no schedulable point found even at the end of the time, return EBUSY
             errno = EBUSY;
-            return -1;
+            goto out;
         }
         if (*at < 0 or *at > graph_end) {
-            traverser->reset_exclusive_resource_types (exclusive_types);
             errno = EINVAL;
-            return -1;
+            goto out;
         }
         // If job ends after the resource graph expires, reduce the duration
         // so it coincides with the graph expiration. Note that we could
@@ -400,8 +466,23 @@ int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
         if ((*at + static_cast<int64_t> (meta.duration)) > graph_end)
             meta.duration = graph_end - *at;
         // returns 0 or -1
-        rc = traverser->update (root, writers, meta);
+        if ((rc = traverser->update (root, combined_writers, meta)) < 0)
+            goto out;
+
+        if (op == match_op_t::MATCH_WITHOUT_ALLOCATING_EXTEND) {
+            max_dur = maximum_duration_resources_available (get_graph_db (),
+                                                            vtx_writer->get_vertices (),
+                                                            *at);
+            if (max_dur < 0)
+                goto out;
+            for (auto writer : writers) {
+                // Update the matched resources with their extended, maximum duration
+                if ((rc = writer->emit_tm (*at, *at + max_dur)) < 0)
+                    goto out;
+            }
+        }
     }
+out:
     // returns 0 or -1
     rc += traverser->reset_exclusive_resource_types (exclusive_types);
 
@@ -438,7 +519,14 @@ int dfu_traverser_t::run (const std::string &str,
     return traverser->update (root, writers, str, reader, meta);
 }
 
-int dfu_traverser_t::find (std::shared_ptr<match_writers_t> &writers, const std::string &criteria)
+int dfu_traverser_t::find (std::shared_ptr<match_writers_t> &writer, const std::string &criteria)
+{
+    std::vector<std::shared_ptr<match_writers_t>> writers = {writer};
+    return find (writers, criteria);
+}
+
+int dfu_traverser_t::find (std::vector<std::shared_ptr<match_writers_t>> &writers,
+                           const std::string &criteria)
 {
     // Clear the error message to disambiguate errors
     clear_err_message ();
