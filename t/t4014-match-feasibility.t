@@ -8,7 +8,7 @@ test_description='Test the basic functionality of match satisfiability'
 . `dirname $0`/sharness.sh
 
 conf_base=${SHARNESS_TEST_SRCDIR}/conf.d
-notify_base=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/shrink`
+notify_base=`readlink -f ${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/shrink`
 grug="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/tiny.graphml"
 jobspec1="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/basics/test001.yaml"
 

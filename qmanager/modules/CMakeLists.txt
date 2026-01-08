@@ -11,4 +11,5 @@ target_link_libraries(sched-fluxion-qmanager PRIVATE
     flux::schedutil
     PkgConfig::JANSSON
     cppwrappers
+    fluxion-data
     )

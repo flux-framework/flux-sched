@@ -8,7 +8,7 @@ Ensure that the match (allocate) handler within the resource module works
 
 . `dirname $0`/sharness.sh
 
-jobspec_basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/`
+jobspec_basepath=`readlink -f ${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/`
 # slot[1]->core[1]
 jobspec_1core="${jobspec_basepath}/basics/test008.yaml"
 jgf_4core="${SHARNESS_TEST_SRCDIR}/data/resource/jgfs/hwloc_4core.json"

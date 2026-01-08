@@ -256,7 +256,7 @@ class rv1_nosched_match_writers_t : public match_writers_t {
  */
 class pretty_sim_match_writers_t : public match_writers_t {
    public:
-    virtual bool empty ();
+    bool empty () override;
     virtual int emit_json (json_t **o, json_t **aux = nullptr);
     virtual int emit (std::stringstream &out);
     virtual int emit_vtx (const std::string &prefix,

@@ -8,7 +8,7 @@ Ensure that the resource.update handler within the resource module works
 
 . `dirname $0`/sharness.sh
 
-hwloc_basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/hwloc-data`
+hwloc_basepath=`readlink -f ${SHARNESS_TEST_SRCDIR}/data/hwloc-data`
 # 1 brokers, each (exclusively) have: 1 node, 2 sockets, 16 cores (8 per socket)
 excl_1N1B="${hwloc_basepath}/001N/exclusive/01-brokers"
 

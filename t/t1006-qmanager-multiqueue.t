@@ -130,7 +130,7 @@ test_expect_success 'unload qmanager and deconfigure queues' '
 	flux config reload
 '
 test_expect_success 'submit job with no queue' '
-	flux submit /bin/true >noqueue.jobid
+	flux submit true >noqueue.jobid
 '
 test_expect_success 'reconfigure with one queue and load qmanager' '
 	cat >config/queues.toml <<-EOT &&
@@ -148,7 +148,7 @@ test_expect_success 'unload qmanager' '
 	remove_qmanager
 '
 test_expect_success 'submit job with queue' '
-	flux submit --queue=foo /bin/true >withqueue.jobid
+	flux submit --queue=foo true >withqueue.jobid
 '
 test_expect_success 'deconfigure queues and load qmanager' '
 	cp /dev/null config/queues.toml &&
