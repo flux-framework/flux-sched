@@ -101,6 +101,8 @@ int dfu_impl_t::upd_idata (vtx_t u,
                            const std::map<resource_type_t, int64_t> &dfu)
 {
     int rc = 0;
+    if (jobmeta.alloc_type == jobmeta_t::alloc_type_t::AT_NO_ALLOC)
+        goto done;  // Do not update filters if NO_ALLOC is set
     if ((rc = upd_txfilter (u, jobmeta, dfu)) != 0)
         goto done;
     if ((rc = upd_agfilter (u, s, jobmeta, dfu)) != 0)
@@ -167,6 +169,9 @@ int dfu_impl_t::upd_plan (vtx_t u,
         if ((plans = (*m_graph)[u].schedule.plans) == NULL) {
             m_err_msg += __FUNCTION__;
             m_err_msg += ": plans not installed.\n";
+        }
+        if (jobmeta.alloc_type == jobmeta_t::alloc_type_t::AT_NO_ALLOC) {
+            goto done;  // Do not add a span if NO_ALLOC is set
         }
         if ((span = planner_add_span (plans, jobmeta.at, jobmeta.duration, (const uint64_t)needs))
             == -1) {

@@ -37,14 +37,14 @@ command_t commands[] =
       cmd_match,
       "Allocate or reserve matching resources (subcmd: "
       "allocate | allocate_with_satisfiability | allocate_orelse_reserve) | "
-      "satisfiability: "
+      "satisfiability | without_allocating: "
       "resource-query> match allocate jobspec"},
      {"multi-match",
       "M",
       cmd_match_multi,
       "Allocate or reserve for "
       "multiple jobspecs (subcmd: allocate | allocate_with_satisfiability | "
-      "allocate_orelse_reserve): "
+      "allocate_orelse_reserve | without_allocating): "
       "resource-query> multi-match allocate jobspec1 jobspec2 ..."},
      {"update",
       "u",
@@ -158,6 +158,7 @@ static void print_schedule_info (std::shared_ptr<detail::resource_query_t> &ctx,
                                  uint64_t jobid,
                                  const std::string &jobspec_fn,
                                  bool matched,
+                                 bool allocated,
                                  int64_t at,
                                  bool sat,
                                  double elapse)
@@ -167,7 +168,11 @@ static void print_schedule_info (std::shared_ptr<detail::resource_query_t> &ctx,
 
     if (matched) {
         job_lifecycle_t st;
-        std::string mode = (at == 0) ? "ALLOCATED" : "RESERVED";
+        std::string mode;
+        if (!allocated)
+            mode = "MATCHED";
+        else
+            mode = (at == 0) ? "ALLOCATED" : "RESERVED";
         std::string scheduled_at = (at == 0) ? "Now" : std::to_string (at);
         out << "INFO:"
             << " =============================" << std::endl;
@@ -188,12 +193,17 @@ static void print_schedule_info (std::shared_ptr<detail::resource_query_t> &ctx,
 
         out << "INFO:"
             << " =============================" << std::endl;
-        st = (at == 0) ? job_lifecycle_t::ALLOCATED : job_lifecycle_t::RESERVED;
-        ctx->jobs[jobid] = std::make_shared<job_info_t> (jobid, st, at, jobspec_fn, "", elapse);
-        if (at == 0)
-            ctx->allocations[jobid] = jobid;
+        if (!allocated)
+            st = job_lifecycle_t::MATCHED;
         else
-            ctx->reservations[jobid] = jobid;
+            st = (at == 0) ? job_lifecycle_t::ALLOCATED : job_lifecycle_t::RESERVED;
+        ctx->jobs[jobid] = std::make_shared<job_info_t> (jobid, st, at, jobspec_fn, "", elapse);
+        if (allocated) {
+            if (at == 0)
+                ctx->allocations[jobid] = jobid;
+            else
+                ctx->reservations[jobid] = jobid;
+        }
     } else {
         out << "INFO:"
             << " =============================" << std::endl;
@@ -235,7 +245,8 @@ static int run_match (std::shared_ptr<detail::resource_query_t> &ctx,
                       int64_t jobid,
                       const match_op_t match_op,
                       const std::string &jobspec_fn,
-                      std::ostream &out)
+                      std::ostream &out,
+                      int64_t within = -1)
 {
     int rc = 0;
     int64_t at = 0;
@@ -255,7 +266,15 @@ static int run_match (std::shared_ptr<detail::resource_query_t> &ctx,
 
     jobspec_in.close ();
 
-    detail::reapi_cli_t::match_allocate (ctx.get (), match_op, jobspec, jobid, reserved, R, at, ov);
+    detail::reapi_cli_t::match_allocate (ctx.get (),
+                                         match_op,
+                                         jobspec,
+                                         jobid,
+                                         reserved,
+                                         R,
+                                         at,
+                                         ov,
+                                         within);
 
     // check for match success
     if ((errno == ENODEV) || (errno == EBUSY) || (errno == EINVAL) || (errno == ENOENT)) {
@@ -274,10 +293,18 @@ static int run_match (std::shared_ptr<detail::resource_query_t> &ctx,
 
     out << R;
 
-    if (match_op != match_op_t::MATCH_SATISFIABILITY)
-        print_schedule_info (ctx, out, jobid, jobspec_fn, matched, at, sat, ov);
-    else
+    if (match_op == match_op_t::MATCH_SATISFIABILITY)
         print_sat_info (ctx, out, sat, ov);
+    else
+        print_schedule_info (ctx,
+                             out,
+                             jobid,
+                             jobspec_fn,
+                             matched,
+                             match_op != match_op_t::MATCH_WITHOUT_ALLOCATING,
+                             at,
+                             sat,
+                             ov);
 
     return rc;
 }
@@ -288,20 +315,12 @@ int cmd_match (std::shared_ptr<detail::resource_query_t> &ctx,
 {
     match_op_t match_op;
 
-    if (args.size () != 3) {
+    if (args.size () < 3 || args.size () > 4) {
         std::cerr << "ERROR: malformed command" << std::endl;
         return 0;
     }
-    std::string subcmd = args[1];
-    if (subcmd == "allocate") {
-        match_op = match_op_t::MATCH_ALLOCATE;
-    } else if (subcmd == "allocate_orelse_reserve") {
-        match_op = match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE;
-    } else if (subcmd == "allocate_with_satisfiability") {
-        match_op = match_op_t::MATCH_ALLOCATE_W_SATISFIABILITY;
-    } else if (subcmd == "satisfiability") {
-        match_op = match_op_t::MATCH_SATISFIABILITY;
-    } else {
+    match_op = string_to_match_op ((args[1]).c_str ());
+    if (!match_op_valid (match_op)) {
         std::cerr << "ERROR: unknown subcmd " << args[1] << std::endl;
         return 0;
     }
@@ -309,7 +328,17 @@ int cmd_match (std::shared_ptr<detail::resource_query_t> &ctx,
     uint64_t jobid = ctx->get_job_counter ();
     std::string &jobspec_fn = args[2];
 
-    run_match (ctx, jobid, match_op, jobspec_fn, out);
+    int64_t within = -1;
+    if (args.size () == 4) {
+        try {
+            within = std::stoi (args[3]);
+        } catch (...) {
+            std::cerr << "ERROR: invalid integer for 'within' param: " << args[3] << std::endl;
+            within = -1;
+        }
+    }
+
+    run_match (ctx, jobid, match_op, jobspec_fn, out, within);
 
     return 0;
 }
@@ -326,16 +355,8 @@ int cmd_match_multi (std::shared_ptr<detail::resource_query_t> &ctx,
         std::cerr << "ERROR: malformed command" << std::endl;
         return 0;
     }
-    std::string subcmd = args[1];
-    if (subcmd == "allocate") {
-        match_op = match_op_t::MATCH_ALLOCATE;
-    } else if (subcmd == "allocate_orelse_reserve") {
-        match_op = match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE;
-    } else if (subcmd == "allocate_with_satisfiability") {
-        match_op = match_op_t::MATCH_ALLOCATE_W_SATISFIABILITY;
-    } else if (subcmd == "satisfiability") {
-        match_op = match_op_t::MATCH_SATISFIABILITY;
-    } else {
+    match_op = string_to_match_op ((args[1]).c_str ());
+    if (!match_op_valid (match_op)) {
         std::cerr << "ERROR: unknown subcmd " << args[1] << std::endl;
         return 0;
     }
@@ -396,7 +417,7 @@ static int update_run (std::shared_ptr<detail::resource_query_t> &ctx,
     elapse = get_elapse_time (st, et);
     update_match_perf (ctx, elapse);
     ctx->jobid_counter = id;
-    print_schedule_info (ctx, out, id, fn, rc == 0, at, true, elapse);
+    print_schedule_info (ctx, out, id, fn, rc == 0, true, at, true, elapse);
     ctx->jobid_counter++;
 
     return 0;

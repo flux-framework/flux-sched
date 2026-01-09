@@ -111,6 +111,8 @@ class reapi_t {
      *                   allocate.
      *                   MATCH_ALLOCATE_W_SATISFIABILITY: try to allocate and run
      *                   satisfiability check if resources are not available.
+     *                   MATCH_WITHOUT_ALLOCATING: match and return resources
+     *                   but do not allocate or reserve them.
      *  \param jobspec   jobspec string.
      *  \param jobid     jobid of the uint64_t type.
      *  \param reserved  Boolean into which to return true if this job has been
@@ -122,6 +124,8 @@ class reapi_t {
      *  \param ov        Double into which to return performance overhead
      *                   in terms of elapse time needed to complete
      *                   the match operation.
+     *  \param within    Return only matches that start between now and now+$within.
+     *                   If within == -1 or int64_t::max, don't apply this filter.
      *  \return          0 on success; -1 on error.
      */
     static int match_allocate (void *h,
@@ -131,7 +135,8 @@ class reapi_t {
                                bool &reserved,
                                std::string &R,
                                int64_t &at,
-                               double &ov)
+                               double &ov,
+                               int64_t within = -1)
     {
         return -1;
     }
@@ -153,6 +158,9 @@ class reapi_t {
      *                   MATCH_SATISFIABILITY: Do a satisfiablity check and do not
      *                   allocate.
      *                   MATCH_ALLOCATE_W_SATISFIABILITY: try to allocate and run
+     *                   satisfiability check if resources are not available.
+     *                   MATCH_WITHOUT_ALLOCATING: match and return resources
+     *                   but do not allocate or reserve them.
      *  \param jobs      JSON array of jobspecs.
      *  \param adapter   queue_adapter_base_t object that provides
      *                   a set of callback methods to be called each time
