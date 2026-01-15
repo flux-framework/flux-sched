@@ -106,13 +106,28 @@ pool_infra_t &pool_infra_t::operator= (const pool_infra_t &o)
 
 bool pool_infra_t::operator== (const pool_infra_t &o) const
 {
+    if (!has_equal_behavior_to (o))
+        return false;
+    if (colors != o.colors)
+        return false;
+    return true;
+}
+
+pool_infra_t::~pool_infra_t ()
+{
+    for (auto &p : subplans)
+        planner_multi_destroy (&(p));
+    if (x_checker)
+        planner_destroy (&x_checker);
+}
+
+bool pool_infra_t::has_equal_behavior_to (const pool_infra_t &o) const
+{
     if (tags != o.tags)
         return false;
     if (x_spans != o.x_spans)
         return false;
     if (job2span != o.job2span)
-        return false;
-    if (colors != o.colors)
         return false;
     if (!planners_equal (x_checker, o.x_checker))
         return false;
@@ -128,14 +143,6 @@ bool pool_infra_t::operator== (const pool_infra_t &o) const
     }
 
     return true;
-}
-
-pool_infra_t::~pool_infra_t ()
-{
-    for (auto &p : subplans)
-        planner_multi_destroy (&(p));
-    if (x_checker)
-        planner_destroy (&x_checker);
 }
 
 void pool_infra_t::scrub ()
