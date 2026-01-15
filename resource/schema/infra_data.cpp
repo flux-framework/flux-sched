@@ -112,8 +112,6 @@ bool pool_infra_t::operator== (const pool_infra_t &o) const
         return false;
     if (job2span != o.job2span)
         return false;
-    if (colors != o.colors)
-        return false;
     if (!planners_equal (x_checker, o.x_checker))
         return false;
     if (subplans.size () != o.subplans.size ())
