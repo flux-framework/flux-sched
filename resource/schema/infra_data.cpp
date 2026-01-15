@@ -106,13 +106,22 @@ pool_infra_t &pool_infra_t::operator= (const pool_infra_t &o)
 
 bool pool_infra_t::operator== (const pool_infra_t &o) const
 {
+    if (!equal_except_color (o))
+        return false;
+    if (colors != o.colors)
+        return false;
+    return true;
+}
+
+// Two pool_infra_ts with different colors but all else equal will behave the
+// same in a traversal.
+bool pool_infra_t::equal_except_color (const pool_infra_t &o) const
+{
     if (tags != o.tags)
         return false;
     if (x_spans != o.x_spans)
         return false;
     if (job2span != o.job2span)
-        return false;
-    if (colors != o.colors)
         return false;
     if (!planners_equal (x_checker, o.x_checker))
         return false;
