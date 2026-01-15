@@ -39,6 +39,7 @@ struct pool_infra_t : public infra_base_t {
     pool_infra_t (const pool_infra_t &o);
     pool_infra_t &operator= (const pool_infra_t &o);
     bool operator== (const pool_infra_t &o) const;
+    bool has_equal_behavior_to (const pool_infra_t &o) const;
     virtual ~pool_infra_t ();
     virtual void scrub ();
 
