@@ -255,6 +255,34 @@ extern "C" int reapi_cli_stat (reapi_cli_ctx_t *ctx,
     return reapi_cli_t::stat (ctx->rqt, *V, *E, *J, *load, *min, *max, *avg);
 }
 
+extern "C" int reapi_cli_find (reapi_cli_ctx_t *ctx, const char *criteria, char **out)
+{
+    int rc = -1;
+    std::string out_buf = "";
+    char *out_buf_c = nullptr;
+
+    if (!ctx || !ctx->rqt || !criteria) {
+        errno = EINVAL;
+        return -1;
+    }
+    const std::string criteria_str = std::string (criteria);
+
+    if ((rc = reapi_cli_t::find (ctx->rqt, criteria_str, out_buf)) < 0)
+        goto done;
+    if (!(out_buf_c = strdup (out_buf.c_str ()))) {
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: can't allocate memory\n";
+        errno = ENOMEM;
+        rc = -1;
+        goto done;
+    }
+
+    (*out) = out_buf_c;
+
+done:
+    return rc;
+}
+
 extern "C" const char *reapi_cli_get_err_msg (reapi_cli_ctx_t *ctx)
 {
     std::string err_buf = "";
