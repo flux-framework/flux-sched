@@ -17,6 +17,8 @@ extern "C" {
 #include "resource/store/resource_graph_store.hpp"
 #include "resource/readers/resource_reader_base.hpp"
 
+#include <boost/graph/breadth_first_search.hpp>
+
 using namespace Flux;
 using namespace Flux::resource_model;
 
@@ -57,6 +59,19 @@ bool resource_graph_db_t::known_subsystem (subsystem_t s)
 {
     return (metadata.roots.find (s) != metadata.roots.end ()) ? true : false;
 }
+class bfs_non_tree_containment : public boost::default_bfs_visitor {
+   public:
+    template<typename Edge, typename Graph>
+    void non_tree_edge (Edge e, const Graph &g) const
+    {
+        // we're in a non-tree edge, it better not be a containment edge
+        if (g[e].subsystem == containment_sub) {
+            throw std::runtime_error (std::string ("Invalid containment edge detected, dying "
+                                                   "horribly from:")
+                                      + g[target (e, g)].name + " to:" + g[source (e, g)].name);
+        }
+    }
+};
 
 int resource_graph_db_t::load (const std::string &str,
                                std::shared_ptr<resource_reader_base_t> &reader,
@@ -64,6 +79,11 @@ int resource_graph_db_t::load (const std::string &str,
 {
     int rc = reader->unpack (resource_graph, metadata, str, rank);
     metadata.initialize_node_stats (resource_graph);
+    bfs_non_tree_containment vis;
+    boost::breadth_first_search (resource_graph,
+                                 boost::vertex (metadata.roots.at (containment_sub),
+                                                resource_graph),
+                                 boost::visitor (vis));
     return rc;
 };
 
@@ -74,6 +94,11 @@ int resource_graph_db_t::load (const std::string &str,
 {
     int rc = reader->unpack_at (resource_graph, metadata, vtx_at, str, rank);
     metadata.initialize_node_stats (resource_graph);
+    bfs_non_tree_containment vis;
+    boost::breadth_first_search (resource_graph,
+                                 boost::vertex (metadata.roots.at (containment_sub),
+                                                resource_graph),
+                                 boost::visitor (vis));
     return rc;
 };
 
