@@ -297,15 +297,8 @@ bool matcher_util_api_t::get_my_pruning_types (subsystem_t subsystem,
 
 int matcher_util_api_t::add_exclusive_resource_type (resource_type_t type)
 {
-    int rc = 0;
-    if (m_x_resource_types.find (type) == m_x_resource_types.end ()) {
-        auto ret = m_x_resource_types.insert (type);
-        if (!ret.second) {
-            errno = ENOMEM;
-            rc = -1;
-        }
-    }
-    return rc;
+    auto ret = m_x_resource_types.insert (type);
+    return ret.second ? 0 : -1;
 }
 
 const std::set<resource_type_t> &matcher_util_api_t::get_exclusive_resource_types () const
@@ -315,16 +308,9 @@ const std::set<resource_type_t> &matcher_util_api_t::get_exclusive_resource_type
 
 int matcher_util_api_t::reset_exclusive_resource_types (const std::set<resource_type_t> &x_types)
 {
-    int rc = 0;
     m_x_resource_types.clear ();
-    for (auto &x_type : x_types) {
-        auto ret = m_x_resource_types.insert (x_type);
-        if (!ret.second) {
-            errno = ENOMEM;
-            rc = -1;
-        }
-    }
-    return rc;
+    m_x_resource_types = x_types;
+    return 0;
 }
 
 bool matcher_util_api_t::is_resource_type_exclusive (resource_type_t type)
