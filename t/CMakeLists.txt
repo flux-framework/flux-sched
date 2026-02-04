@@ -31,6 +31,7 @@ set(ALL_TESTS
   t1026-rv1-partial-release.t
   t1027-rv1-partial-release-brokerless-resources.t
   t1028-rv1-partial-release-across-racks.t
+  t1029-resource-force-load-format.t
   t2317-resource-shrink.t
   t3000-jobspec.t
   t3001-resource-basic.t
@@ -70,6 +71,7 @@ set(ALL_TESTS
   t3035-resource-remove.t
   t3037-resource-custom-policy.t
   t3038-resource-flexible.t
+  t3039-resource-force-load-format.t
   t3300-system-dontblock.t
   t3301-system-latestart.t
   t4000-match-params.t
