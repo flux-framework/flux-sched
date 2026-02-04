@@ -146,7 +146,7 @@ OPTIONS:
                                 (perf_class must be set using set-property).
                 (default=first).
 
-    -F, --match-format=<simple|pretty_simple|jgf|rlite|rv1|rv1_nosched>
+    -F, --match-format=<simple|pretty_simple|jgf|jgf_shorthand|rlite|rv1|rv1_nosched>
             Specify the emit format of the matched resource set.
             (default=simple).
 

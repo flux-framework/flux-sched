@@ -251,7 +251,8 @@ int dfu_impl_t::upd_sched (vtx_t u,
                            const jobmeta_t &jobmeta,
                            bool full,
                            const std::map<resource_type_t, int64_t> &dfu,
-                           std::map<resource_type_t, int64_t> &to_parent)
+                           std::map<resource_type_t, int64_t> &to_parent,
+                           bool excl_parent)
 {
     int rc = -1;
     if ((rc = upd_plan (u, s, needs, excl, jobmeta, full, n)) == -1)
@@ -259,7 +260,9 @@ int dfu_impl_t::upd_sched (vtx_t u,
     if ((rc = upd_meta (u, s, needs, excl, n, jobmeta, dfu, to_parent)) == -1) {
         goto done;
     }
-    if (n > 0) {
+    // emit vertex if writer emits exclusive subtrees, or if the parent vertex is
+    // not exclusive
+    if (n > 0 && (writers->emit_exclusive_subtrees () || !excl_parent)) {
         if ((rc = emit_vtx (u, writers, needs, excl)) == -1) {
             m_err_msg += __FUNCTION__;
             m_err_msg += ": emit_vtx returned -1.\n";
@@ -313,7 +316,8 @@ int dfu_impl_t::upd_dfv (vtx_t u,
                          const jobmeta_t &jobmeta,
                          bool full,
                          std::map<resource_type_t, int64_t> &to_parent,
-                         bool emit_shadow)
+                         bool emit_shadow,
+                         bool excl_parent)
 {
     int n_plans = 0;
     std::map<resource_type_t, int64_t> dfu;
@@ -338,7 +342,8 @@ int dfu_impl_t::upd_dfv (vtx_t u,
                 get_eff_needs ((*m_graph)[*ei].idata.get_needs (), (*m_graph)[tgt].size, mod);
 
             if (subsystem == dom) {
-                n_plan_sub += upd_dfv (tgt, writers, needs, x, jobmeta, full, dfu, mod);
+                // Value of `excl_parent` for child vertex is the value of `excl` for its parent
+                n_plan_sub += upd_dfv (tgt, writers, needs, x, jobmeta, full, dfu, mod, excl);
             } else {
                 n_plan_sub += upd_upv (tgt, writers, subsystem, needs, x, jobmeta, full, dfu);
             }
@@ -349,16 +354,30 @@ int dfu_impl_t::upd_dfv (vtx_t u,
                     m_err_msg += __FUNCTION__;
                     m_err_msg += ": upd_by_outedges returned -1.\n";
                 }
-                if (emit_edg (*ei, writers) == -1) {
-                    m_err_msg += __FUNCTION__;
-                    m_err_msg += ": emit_edg returned -1.\n";
+                // emit the edge if writer emits exclusive subtrees, OR if the source
+                // vertex is not exclusive
+                if (writers->emit_exclusive_subtrees () || !excl) {
+                    if (emit_edg (*ei, writers) == -1) {
+                        m_err_msg += __FUNCTION__;
+                        m_err_msg += ": emit_edg returned -1.\n";
+                    }
                 }
                 n_plans += n_plan_sub;
             }
         }
     }
     (*m_graph)[u].idata.colors[dom] = m_color.black ();
-    return upd_sched (u, writers, dom, needs, excl, n_plans, jobmeta, full, dfu, to_parent);
+    return upd_sched (u,
+                      writers,
+                      dom,
+                      needs,
+                      excl,
+                      n_plans,
+                      jobmeta,
+                      full,
+                      dfu,
+                      to_parent,
+                      excl_parent);
 }
 
 int dfu_impl_t::rem_exclusive_filter (vtx_t u, int64_t jobid, const modify_data_t &mod_data)
@@ -845,7 +864,8 @@ int dfu_impl_t::update (vtx_t root, std::shared_ptr<match_writers_t> &writers, j
     m_color.reset ();
 
     bool emit_shadow = modify_traversal (root, false);
-    if ((rc = upd_dfv (root, writers, needs, x, jobmeta, true, dfu, emit_shadow)) > 0) {
+    // Regardless of value of `x`, value for `excl_parent` parameter starts as `false`
+    if ((rc = upd_dfv (root, writers, needs, x, jobmeta, true, dfu, emit_shadow, false)) > 0) {
         uint64_t starttime = jobmeta.at;
         uint64_t endtime = jobmeta.at + jobmeta.duration;
         if (writers->emit_tm (starttime, endtime) == -1) {
@@ -910,7 +930,8 @@ int dfu_impl_t::update (vtx_t root,
     needs = static_cast<unsigned int> (m_graph_db->metadata.v_rt_edges[dom].get_needs ());
     m_color.reset ();
     bool emit_shadow = modify_traversal (root, false);
-    if ((rc = upd_dfv (root, writers, needs, x, jobmeta, false, dfu, emit_shadow)) > 0) {
+    // Regardless of value of `x`, value for `excl_parent` parameter starts as `false`
+    if ((rc = upd_dfv (root, writers, needs, x, jobmeta, false, dfu, emit_shadow, false)) > 0) {
         uint64_t starttime = jobmeta.at;
         uint64_t endtime = jobmeta.at + jobmeta.duration;
         if (writers->emit_tm (starttime, endtime) == -1) {

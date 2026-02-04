@@ -72,6 +72,7 @@ set(ALL_TESTS
   t3037-resource-custom-policy.t
   t3038-resource-flexible.t
   t3039-resource-force-load-format.t
+  t3040-jgf-shorthand-match-format.t
   t3300-system-dontblock.t
   t3301-system-latestart.t
   t4000-match-params.t

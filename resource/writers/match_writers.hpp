@@ -23,7 +23,7 @@ extern "C" {
 namespace Flux {
 namespace resource_model {
 
-enum class match_format_t { SIMPLE, JGF, RLITE, RV1, RV1_NOSCHED, PRETTY_SIMPLE };
+enum class match_format_t { SIMPLE, JGF, JGF_SHORTHAND, RLITE, RV1, RV1_NOSCHED, PRETTY_SIMPLE };
 
 /*! Base match writers class for a matched resource set
  */
@@ -57,6 +57,14 @@ class match_writers_t {
     int compress_hosts (const std::vector<std::string> &hosts,
                         const char *hostlist_init,
                         char **hostlist);
+
+    /* Return a boolean indicating whether or not the writer should be invoked
+     * on vertices that form non-root parts of exclusive subtrees.
+     */
+    virtual bool emit_exclusive_subtrees ()
+    {
+        return true;
+    }
 };
 
 /*! Simple match writers class for a matched resource set
@@ -164,6 +172,20 @@ class jgf_match_writers_t : public match_writers_t {
 
     json_t *m_vout = NULL;
     json_t *m_eout = NULL;
+};
+
+/*! JGF_shorthand match writers class for a matched resource set
+ */
+class jgf_shorthand_match_writers_t : public jgf_match_writers_t {
+   public:
+    jgf_shorthand_match_writers_t () = default;
+    jgf_shorthand_match_writers_t (const jgf_shorthand_match_writers_t &w) = default;
+    jgf_shorthand_match_writers_t &operator= (const jgf_shorthand_match_writers_t &w);
+
+    virtual bool emit_exclusive_subtrees () override
+    {
+        return false;
+    }
 };
 
 /*! RLITE match writers class for a matched resource set
