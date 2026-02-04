@@ -27,3 +27,8 @@ if(DEFINED ENV{WITH_GO})
     message(STATUS "WITH_GO is set to build go bindings")
     add_subdirectory( go )
 endif()
+
+if(DEFINED ENV{WITH_PYTHON_BINDINGS})
+  message(STATUS "WITH_PYTHON_BINDINGS detected to build python bindings")
+  add_subdirectory( python )
+endif()
