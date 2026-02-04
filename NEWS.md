@@ -1,3 +1,21 @@
+flux-sched version 0.49.0 - 2026-02-10
+--------------------------------------
+
+### New Features
+ * readers: add jgf reader that can skip exclusive subtrees (#1422)
+ * resource: JGF writer variant that only writes non-exclusive vertices
+   (#1419)
+ * resource: add `rv1exec_force` load format (#1418)
+
+### Fixes
+ * Fix or slot for first match policies (#1421)
+
+### Build/Testsuite/Documentation
+ * ci: update typo checker version (#1417)
+ * Typos corrections (#1416)
+ * testsuite: set log-stderr-level on command line (#1429)
+
+
 flux-sched version 0.48.0 - 2025-10-08
 --------------------------------------
 
