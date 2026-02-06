@@ -162,6 +162,9 @@ int run_find (std::shared_ptr<resource_ctx_t> &ctx,
               const std::string &format_str,
               json_t **R);
 
+int run_remove_subgraph (std::shared_ptr<resource_ctx_t> &ctx,
+                         const char *subgraph_path);
+
 ////////////////////////////////////////////////////////////////////////////////
 // Resource Graph and Traverser Initialization
 ////////////////////////////////////////////////////////////////////////////////

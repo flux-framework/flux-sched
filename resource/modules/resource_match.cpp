@@ -1685,6 +1685,34 @@ error:
     return rc;
 }
 
+int run_remove_subgraph (std::shared_ptr<resource_ctx_t> &ctx,
+                         const char *subgraph_path)
+{
+    int rc = -1;
+    std::shared_ptr<resource_reader_base_t> reader;
+
+    if ((reader = create_resource_reader ("jgf")) == nullptr) {
+        flux_log (ctx->h,
+                  LOG_ERR,
+                  "creating JGF reader failed: %s",
+                  ctx->traverser->err_message ().c_str ());
+        goto done;
+    }
+    if ((rc = ctx->traverser->remove_subgraph (std::string (subgraph_path))) != 0) {
+        flux_log (ctx->h,
+                  LOG_ERR,
+                  "shrink by path: %s failed: %s",
+                  subgraph_path,
+                  ctx->traverser->err_message ().c_str ());
+        goto done;
+    }
+    // Update total counts:
+    rc = ctx->traverser->initialize ();
+    flux_log (ctx->h, LOG_DEBUG, "successfully removed subgraph %s", subgraph_path);
+done:
+    return rc;
+}
+
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab
  */
