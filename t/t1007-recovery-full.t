@@ -14,9 +14,7 @@ hwloc_basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/hwloc-data`
 excl_1N1B="${hwloc_basepath}/001N/exclusive/01-brokers"
 
 export FLUX_SCHED_MODULE=none
-test_under_flux 1
-
-flux setattr log-stderr-level 6
+test_under_flux 1 full -Slog-stderr-level=6
 
 
 test_expect_success 'recovery: generate a test jobspec' '
