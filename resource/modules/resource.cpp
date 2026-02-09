@@ -78,6 +78,11 @@ static void set_status_request_cb (flux_t *h,
                                    const flux_msg_t *msg,
                                    void *arg);
 
+static void add_subgraph_request_cb (flux_t *h,
+                                     flux_msg_handler_t *w,
+                                     const flux_msg_t *msg,
+                                     void *arg);
+
 static const struct flux_msg_handler_spec htab[] =
     {{FLUX_MSGTYPE_REQUEST, "sched-fluxion-resource.match", match_request_cb, 0},
      {FLUX_MSGTYPE_REQUEST, "sched-fluxion-resource.match_multi", match_multi_request_cb, 0},
@@ -101,6 +106,7 @@ static const struct flux_msg_handler_spec htab[] =
      {FLUX_MSGTYPE_REQUEST, "sched-fluxion-resource.ns-info", ns_info_request_cb, 0},
      {FLUX_MSGTYPE_REQUEST, "sched-fluxion-resource.params", params_request_cb, 0},
      {FLUX_MSGTYPE_REQUEST, "sched-fluxion-resource.set_status", set_status_request_cb, 0},
+     {FLUX_MSGTYPE_REQUEST, "sched-fluxion-resource.add_subgraph", add_subgraph_request_cb, 0},
      FLUX_MSGHANDLER_TABLE_END};
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1021,6 +1027,34 @@ static void get_property_request_cb (flux_t *h,
         }
     }
     if (flux_respond_pack (h, msg, "{s:o}", "values", resp_array) < 0)
+        flux_log_error (h, "%s", __FUNCTION__);
+
+    return;
+
+error:
+    if (flux_respond_error (h, msg, errno, errmsg.c_str ()) < 0)
+        flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
+}
+
+static void add_subgraph_request_cb (flux_t *h,
+                                     flux_msg_handler_t *w,
+                                     const flux_msg_t *msg,
+                                     void *arg)
+{
+    std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
+    std::string errmsg = "", R_s = "";
+    char *R_subgraph = NULL;
+
+    if (flux_request_unpack (msg, NULL, "{s:s}", "subgraph", &R_subgraph) < 0)
+        goto error;
+
+    R_s = R_subgraph;
+    if (run_add_subgraph (ctx, R_s) != 0) {
+        errmsg = "failed to add subgraph.";
+        goto error;
+    }
+
+    if (flux_respond_pack (h, msg, "{}") < 0)
         flux_log_error (h, "%s", __FUNCTION__);
 
     return;
