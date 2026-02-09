@@ -7,9 +7,7 @@ test_description='Test that parent duration is inherited according to RFC14'
 #
 # test_under_flux is under sharness.d/
 #
-test_under_flux 2
-
-flux setattr log-stderr-level 1
+test_under_flux 2 full -Slog-stderr-level=1
 export FLUX_URI_RESOLVE_LOCAL=t
 unset FLUX_MODPROBE_DISABLE
 
