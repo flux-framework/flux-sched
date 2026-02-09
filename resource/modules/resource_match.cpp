@@ -1732,6 +1732,43 @@ error:
     return rc;
 }
 
+int run_add_subgraph (std::shared_ptr<resource_ctx_t> &ctx, const std::string &R_subgraph)
+{
+    int rc = -1;
+    std::shared_ptr<resource_reader_base_t> reader;
+    vtx_t v = boost::graph_traits<resource_graph_t>::null_vertex ();
+    // Could be adding new resource types, so open the interner storage before adding the subgraph
+    auto subsystem_open = subsystem_t::storage_t::open_for_scope ();
+    auto resource_open = resource_type_t::storage_t::open_for_scope ();
+
+    if ((reader = create_resource_reader ("jgf")) == nullptr) {
+        flux_log (ctx->h, LOG_ERR, "creating JGF reader failed");
+        goto done;
+    }
+    if ((rc = reader->unpack_at (ctx->db->resource_graph, ctx->db->metadata, v, R_subgraph, -1))
+        != 0) {
+        flux_log (ctx->h,
+                  LOG_ERR,
+                  "add subgraph: %s failed: %s",
+                  R_subgraph.c_str (),
+                  reader->err_message ().c_str ());
+        goto done;
+    }
+    // Update total counts:
+    if ((rc = ctx->traverser->initialize ()) != 0) {
+        flux_log (ctx->h,
+                  LOG_ERR,
+                  "re-initialize after adding subgraph: %s failed: %s",
+                  R_subgraph.c_str (),
+                  ctx->traverser->err_message ().c_str ());
+        goto done;
+    }
+    flux_log (ctx->h, LOG_DEBUG, "successfully added subgraph %s", R_subgraph.c_str ());
+done:
+    // Close the interner storage after adding the subgraph
+    return rc;
+}
+
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab
  */
