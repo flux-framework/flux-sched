@@ -50,7 +50,7 @@ command_t commands[] =
       "u",
       cmd_update,
       "Update resources with a JGF subgraph (subcmd: "
-      "allocate | reserve), (reader: jgf | rv1exec): "
+      "allocate | reserve), (reader: jgf | jgf_shorthand | rv1exec): "
       "resource-query> update allocate jgf jgf_file jobid starttime duration"},
      {"attach",
       "j",
@@ -365,16 +365,9 @@ static int update_run (std::shared_ptr<detail::resource_query_t> &ctx,
     struct timeval st, et;
     std::shared_ptr<resource_reader_base_t> rd;
 
-    if (reader == "jgf") {
-        if ((rd = create_resource_reader ("jgf")) == nullptr) {
-            std::cerr << "ERROR: can't create JGF reader " << std::endl;
-            return -1;
-        }
-    } else {
-        if ((rd = create_resource_reader ("rv1exec")) == nullptr) {
-            std::cerr << "ERROR: can't create rv1exec reader " << std::endl;
-            return -1;
-        }
+    if ((rd = create_resource_reader (reader)) == nullptr) {
+        std::cerr << "ERROR: can't create '" << reader << "' reader " << std::endl;
+        return -1;
     }
 
     gettimeofday (&st, NULL);
@@ -417,7 +410,7 @@ static int update (std::shared_ptr<detail::resource_query_t> &ctx,
         std::cerr << "ERROR: unknown subcmd " << args[1] << std::endl;
         return -1;
     }
-    if (!(reader == "jgf" || reader == "rv1exec")) {
+    if (!(reader == "jgf" || reader == "rv1exec" || reader == "jgf_shorthand")) {
         std::cerr << "ERROR: unsupported reader " << args[2] << std::endl;
         return -1;
     }

@@ -17,11 +17,50 @@
 #include "resource/schema/resource_graph.hpp"
 #include "resource/readers/resource_reader_base.hpp"
 
-struct fetch_helper_t;
 struct vmap_val_t;
 
 namespace Flux {
 namespace resource_model {
+
+class fetch_remap_support_t {
+   public:
+    int64_t get_remapped_id () const;
+    int64_t get_remapped_rank () const;
+    const std::string &get_remapped_name () const;
+    void set_remapped_id (int64_t i);
+    void set_remapped_rank (int64_t r);
+    void set_remapped_name (const std::string &n);
+    bool is_name_remapped () const;
+    bool is_id_remapped () const;
+    bool is_rank_remapped () const;
+    void clear ();
+
+   private:
+    int64_t m_remapped_id = -1;
+    int64_t m_remapped_rank = -1;
+    std::string m_remapped_name = "";
+};
+
+struct fetch_helper_t : public fetch_remap_support_t {
+    const char *get_proper_name () const;
+    int64_t get_proper_id () const;
+    int64_t get_proper_rank () const;
+    void scrub ();
+
+    int64_t id = -2;
+    int64_t rank = -1;
+    int64_t size = -1;
+    int64_t uniq_id = -1;
+    int exclusive = -1;
+    resource_pool_t::status_t status = resource_pool_t::status_t::UP;
+    const char *type = NULL;
+    std::string name;
+    const char *unit = NULL;
+    const char *basename = NULL;
+    const char *vertex_id = NULL;
+    std::map<std::string, std::string> properties;
+    std::map<subsystem_t, std::string> paths;
+};
 
 struct rank_data {
     // store counts of resources to be cancelled
@@ -131,6 +170,14 @@ class resource_reader_jgf_t : public resource_reader_base_t {
      */
     virtual bool is_allowlist_supported ();
 
+   protected:
+    int apply_defaults (fetch_helper_t &f, const char *name);
+    int find_vtx (resource_graph_t &g,
+                  resource_graph_metadata_t &m,
+                  std::map<std::string, vmap_val_t> &vmap,
+                  const fetch_helper_t &fetcher,
+                  vtx_t &ret_v);
+
    private:
     int fetch_jgf (const std::string &str,
                    json_t **jgf_p,
@@ -139,7 +186,6 @@ class resource_reader_jgf_t : public resource_reader_base_t {
                    jgf_updater_data &update_data);
     int unpack_and_remap_vtx (fetch_helper_t &f, json_t *paths, json_t *properties);
     int remap_aware_unpack_vtx (fetch_helper_t &f, json_t *paths, json_t *properties);
-    int apply_defaults (fetch_helper_t &f, const char *name);
     int fill_fetcher (json_t *element, fetch_helper_t &f, json_t **path, json_t **properties);
     int unpack_vtx (json_t *element, fetch_helper_t &f);
     vtx_t create_vtx (resource_graph_t &g, const fetch_helper_t &fetcher);
@@ -169,11 +215,6 @@ class resource_reader_jgf_t : public resource_reader_base_t {
                int rank,
                const std::string &vid,
                vtx_t &v);
-    int find_vtx (resource_graph_t &g,
-                  resource_graph_metadata_t &m,
-                  std::map<std::string, vmap_val_t> &vmap,
-                  const fetch_helper_t &fetcher,
-                  vtx_t &ret_v);
     int update_vtx_plan (vtx_t v,
                          resource_graph_t &g,
                          const fetch_helper_t &fetcher,
@@ -201,6 +242,11 @@ class resource_reader_jgf_t : public resource_reader_base_t {
                          std::map<std::string, vmap_val_t> &vmap,
                          json_t *nodes,
                          jgf_updater_data &updater_data);
+    virtual int fetch_additional_vertices (resource_graph_t &g,
+                                           resource_graph_metadata_t &m,
+                                           std::map<std::string, vmap_val_t> &vmap,
+                                           fetch_helper_t &fetcher,
+                                           std::vector<fetch_helper_t> &additional_vertices);
     int unpack_edge (json_t *element,
                      std::map<std::string, vmap_val_t> &vmap,
                      std::string &source,

@@ -27,46 +27,6 @@ extern "C" {
 using namespace Flux;
 using namespace Flux::resource_model;
 
-class fetch_remap_support_t {
-   public:
-    int64_t get_remapped_id () const;
-    int64_t get_remapped_rank () const;
-    const std::string &get_remapped_name () const;
-    void set_remapped_id (int64_t i);
-    void set_remapped_rank (int64_t r);
-    void set_remapped_name (const std::string &n);
-    bool is_name_remapped () const;
-    bool is_id_remapped () const;
-    bool is_rank_remapped () const;
-    void clear ();
-
-   private:
-    int64_t m_remapped_id = -1;
-    int64_t m_remapped_rank = -1;
-    std::string m_remapped_name = "";
-};
-
-struct fetch_helper_t : public fetch_remap_support_t {
-    const char *get_proper_name () const;
-    int64_t get_proper_id () const;
-    int64_t get_proper_rank () const;
-    void scrub ();
-
-    int64_t id = -2;
-    int64_t rank = -1;
-    int64_t size = -1;
-    int64_t uniq_id = -1;
-    int exclusive = -1;
-    resource_pool_t::status_t status = resource_pool_t::status_t::UP;
-    const char *type = NULL;
-    std::string name;
-    const char *unit = NULL;
-    const char *basename = NULL;
-    const char *vertex_id = NULL;
-    std::map<std::string, std::string> properties;
-    std::map<subsystem_t, std::string> paths;
-};
-
 int64_t fetch_remap_support_t::get_remapped_id () const
 {
     return m_remapped_id;
@@ -1007,18 +967,40 @@ int resource_reader_jgf_t::update_vertices (resource_graph_t &g,
     int rc = -1;
     unsigned int i = 0;
     fetch_helper_t fetcher;
+    std::vector<fetch_helper_t> additional_vertices;
+    std::map<std::string, vmap_val_t> empty_vmap{};
 
     for (i = 0; i < json_array_size (nodes); i++) {
         fetcher.scrub ();
+        additional_vertices.clear ();
         if ((rc = unpack_vtx (json_array_get (nodes, i), fetcher)) != 0)
             goto done;
         if ((rc = update_vtx (g, m, vmap, fetcher, update_data)) != 0)
             goto done;
+        if (fetch_additional_vertices (g, m, empty_vmap, fetcher, additional_vertices) != 0)
+            goto done;
+        for (auto &fetcher : additional_vertices) {
+            std::string vertex_id = std::to_string (fetcher.uniq_id);
+            fetcher.vertex_id = vertex_id.c_str ();
+            if ((rc = update_vtx (g, m, vmap, fetcher, update_data)) != 0) {
+                goto done;
+            }
+        }
     }
     rc = 0;
 
 done:
     return rc;
+}
+
+int resource_reader_jgf_t::fetch_additional_vertices (
+    resource_graph_t &g,
+    resource_graph_metadata_t &m,
+    std::map<std::string, vmap_val_t> &vmap,
+    fetch_helper_t &fetcher,
+    std::vector<fetch_helper_t> &additional_vertices)
+{
+    return 0;
 }
 
 int resource_reader_jgf_t::unpack_edge (json_t *element,
