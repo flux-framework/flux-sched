@@ -118,6 +118,14 @@ class ResourceModuleInterface:
     def rpc_params(self):
         return self.handle.rpc("sched-fluxion-resource.params").get()
 
+    def rpc_add_subgraph(self, subgraph):
+        payload = {"subgraph": subgraph}
+        return self.handle.rpc("sched-fluxion-resource.add_subgraph", payload).get()
+
+    def rpc_remove_subgraph(self, subgraph_path):
+        payload = {"subgraph_path": subgraph_path}
+        return self.handle.rpc("sched-fluxion-resource.remove_subgraph", payload).get()
+
 
 def match_alloc_action(args):
     """
@@ -418,6 +426,24 @@ def params_action(_):
     print(json.dumps(resp))
 
 
+def add_subgraph_action(args):
+    """
+    Action for add-subgraph sub-command
+    """
+    with open(args.subgraph, "r") as stream:
+        subgraph = json.dumps(json.load(stream))
+        rmod = ResourceModuleInterface()
+        rmod.rpc_add_subgraph(subgraph)
+
+
+def remove_subgraph_action(args):
+    """
+    Action for remove-subgraph sub-command
+    """
+    rmod = ResourceModuleInterface()
+    rmod.rpc_remove_subgraph(args.subgraph_path)
+
+
 def parse_match(parser_m: argparse.ArgumentParser):
     """
     Add subparser for the match sub-command
@@ -557,6 +583,10 @@ def main():
     )
     parser_n = mkparser("ns-info", "Get remapped ID given raw ID seen by the reader.")
     parser_pa = mkparser("params", "Display the module's parameter values.")
+    parser_as = mkparser("add-subgraph", "Add a subgraph to the resource graph.")
+    parser_rs = mkparser(
+        "remove-subgraph", "Remove a subgraph from the resource graph."
+    )
 
     #
     # Action for stat sub-command
@@ -649,6 +679,26 @@ def main():
     # Positional argument for params sub-command
     #
     parser_pa.set_defaults(func=params_action)
+
+    # Positional argument for add-subgraph sub-command
+    #
+    parser_as.add_argument(
+        "subgraph",
+        metavar="Subgraph",
+        type=str,
+        help="add-subgraph <subgraph file name>",
+    )
+    parser_as.set_defaults(func=add_subgraph_action)
+
+    # Positional argument for remove_subgraph sub-command
+    #
+    parser_rs.add_argument(
+        "subgraph_path",
+        metavar="SubgraphPath",
+        type=str,
+        help="remove-subgraph subgraph_path",
+    )
+    parser_rs.set_defaults(func=remove_subgraph_action)
 
     #
     # Parse the args and call an action routine as part of that

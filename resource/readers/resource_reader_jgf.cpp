@@ -1251,10 +1251,7 @@ int resource_reader_jgf_t::unpack_at (resource_graph_t &g,
                                       const std::string &str,
                                       int rank)
 {
-    /* This functionality is currently experimental, as resource graph
-     * growth causes a resize of the boost vecS vertex container type.
-     * Resizing the vecS results in lost job allocations and reservations
-     * as there is no copy constructor for planner.
+    /* This functionality is currently experimental.
      * vtx_t vtx is not implemented and may be used in the future
      * for optimization.
      */

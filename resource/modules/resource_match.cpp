@@ -1685,6 +1685,67 @@ error:
     return rc;
 }
 
+int run_add_subgraph (std::shared_ptr<resource_ctx_t> &ctx, const std::string &R_subgraph)
+{
+    int rc = -1;
+    std::shared_ptr<resource_reader_base_t> reader;
+    vtx_t v = boost::graph_traits<resource_graph_t>::null_vertex ();
+
+    if ((reader = create_resource_reader ("jgf")) == nullptr) {
+        flux_log (ctx->h,
+                  LOG_ERR,
+                  "creating JGF reader failed: %s",
+                  ctx->traverser->err_message ().c_str ());
+        goto done;
+    }
+    // Could be adding new resource types, so open the interner storage before adding the subgraph
+    subsystem_t::storage_t::open ();
+    resource_type_t::storage_t::open ();
+    if ((rc = reader->unpack_at (ctx->db->resource_graph, ctx->db->metadata, v, R_subgraph, -1))
+        != 0) {
+        flux_log (ctx->h,
+                  LOG_ERR,
+                  "add subgraph by path: %s failed: %s",
+                  R_subgraph.c_str (),
+                  reader->err_message ().c_str ());
+        goto done;
+    }
+    // Update total counts:
+    rc = ctx->traverser->initialize ();
+    flux_log (ctx->h, LOG_DEBUG, "successfully added subgraph %s", R_subgraph.c_str ());
+done:
+    // Close the interner storage after adding the subgraph
+    subsystem_t::storage_t::finalize ();
+    resource_type_t::storage_t::finalize ();
+    return rc;
+}
+
+int run_remove_subgraph (std::shared_ptr<resource_ctx_t> &ctx, const std::string &subgraph_path)
+{
+    int rc = -1;
+
+    if ((rc = ctx->traverser->remove_subgraph (subgraph_path)) != 0) {
+        flux_log (ctx->h,
+                  LOG_ERR,
+                  "remove subgraph by path: %s failed: %s",
+                  subgraph_path.c_str (),
+                  ctx->traverser->err_message ().c_str ());
+        goto done;
+    }
+    // Update total counts:
+    if ((rc = ctx->traverser->initialize ()) != 0) {
+        flux_log (ctx->h,
+                  LOG_ERR,
+                  "re-initialize after removing subgraph by path: %s failed: %s",
+                  subgraph_path.c_str (),
+                  ctx->traverser->err_message ().c_str ());
+        goto done;
+    }
+    flux_log (ctx->h, LOG_DEBUG, "successfully removed subgraph %s", subgraph_path.c_str ());
+done:
+    return rc;
+}
+
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab
  */
