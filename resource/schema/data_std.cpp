@@ -22,6 +22,7 @@ resource_type_t gpu_rt{"gpu"};
 resource_type_t node_rt{"node"};
 resource_type_t rack_rt{"rack"};
 resource_type_t slot_rt{"slot"};
+resource_type_t xor_slot_rt{"xor_slot"};
 resource_type_t ssd_rt{"ssd"};
 
 }  // namespace resource_model
