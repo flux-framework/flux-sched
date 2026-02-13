@@ -214,7 +214,7 @@ class dfu_impl_t {
      *  \return          0 on success; -1 on error -- call err_message ()
      *                   for detail.
      */
-    int select (Jobspec::Jobspec &jobspec, vtx_t root, jobmeta_t &meta, bool exclusive);
+    virtual int select (Jobspec::Jobspec &jobspec, vtx_t root, jobmeta_t &meta, bool exclusive);
 
     /*! Traverse the resource graph and emit those resources whose
      *  status is matched with the matching criteria.

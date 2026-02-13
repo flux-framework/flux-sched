@@ -73,6 +73,8 @@ class dfu_flexible_t : public dfu_impl_t {
         std::unordered_map<Key, std::tuple<std::map<resource_type_t, int>, int, int>, Hash>
             &or_config);
 
+    int select (Jobspec::Jobspec &j, vtx_t root, jobmeta_t &meta, bool excl);
+
     /*! Find min count if type matches with one of the resource
      *  types used in the scheduler-driven aggregate update (SDAU) scheme.
      *  dfu_match_cb_t provides an interface to configure what types are used
@@ -109,7 +111,7 @@ class dfu_flexible_t : public dfu_impl_t {
      */
     void prime_jobspec (std::vector<Jobspec::Resource> &resources,
                         std::unordered_map<resource_type_t, int64_t> &to_parent);
-    
+
     std::vector<ResourceList> split_xor_slots (const ResourceList &resources);
 
     int prune_resources (const jobmeta_t &meta,
