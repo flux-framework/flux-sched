@@ -1130,7 +1130,7 @@ int dfu_impl_t::remove (vtx_t root, const std::set<int64_t> &ranks)
             curr_vtx = parent_vtx;
         }
     }
-    // Now partial cancel DFV from graph root
+    // Now partial cancel ancestors with accumulated counts
     for (const auto &v : parent_jobid_counts) {
         for (const auto &jobid : v.second) {
             modify_data_t mod_data_new;
