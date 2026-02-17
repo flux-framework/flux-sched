@@ -1,0 +1,11 @@
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/flexible/test009.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/flexible/test009.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/flexible/test009.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/flexible/test009.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/flexible/test009.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/flexible/test009.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/flexible/test009.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/flexible/test009.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/flexible/test009.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/flexible/test009.yaml
+quit
