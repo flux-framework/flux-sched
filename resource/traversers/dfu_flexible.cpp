@@ -163,7 +163,7 @@ void dfu_flexible_t::prime_jobspec (std::vector<Resource> &resources,
 
         // Or slots should use a minimum of values rather than an accumulation
         // otherwise possible matches may be filtered out
-        if (resource.type == slot_rt) {
+        if (resource.type == slot_rt or resource.type == xor_slot_rt) {
             for (const auto &aggregate : resource.user_data) {
                 min_if (subsystem,
                         aggregate.first,
@@ -187,6 +187,100 @@ void dfu_flexible_t::prime_jobspec (std::vector<Resource> &resources,
             }
         }
     }
+}
+
+int dfu_flexible_t::select (Jobspec::Jobspec &j, vtx_t root, jobmeta_t &meta, bool excl)
+{
+    auto xor_resources = split_xor_slots (j.resources);
+
+    if (xor_resources.empty ())
+        return -1;
+
+    for (auto &resources : xor_resources) {
+        scoring_api_t dfu;
+        bool x_in = excl;
+        subsystem_t dom = m_match->dom_subsystem ();
+
+        tick ();
+        m_preorder = 0;
+        m_postorder = 0;
+
+        int rc = dom_dfv (meta, root, resources, true, &x_in, dfu);
+        if (rc != 0)
+            continue;  // try next xor slot
+
+        unsigned int needs = 0;
+        eval_edg_t ev_edg (dfu.avail (), dfu.avail (), excl);
+        eval_egroup_t egrp (dfu.overall_score (), dfu.avail (), 0, excl, true);
+        egrp.edges.push_back (ev_edg);
+        dfu.add (dom, (*m_graph)[root].type, egrp);
+        rc = resolve_graph (root, resources, dfu, excl, &needs);
+
+        if (rc == 0) {
+            m_graph_db->metadata.v_rt_edges[dom].set_for_trav_update (needs, x_in, m_best_k_cnt);
+
+            // only set the jobspec with the new
+            // resources if there's a match
+            j.resources = resources;
+            return rc;
+        }
+    }
+
+    return -1;
+}
+
+std::vector<ResourceList> dfu_flexible_t::split_xor_slots (const ResourceList &resources)
+{
+    std::vector<ResourceList> results;
+    std::vector<ResourceList> results2;
+    ResourceList xor_slots;
+    ResourceList rest;
+
+    // first separate out xor slots from everything else
+    for (auto &resource : resources) {
+        if (resource.type == xor_slot_rt)
+            xor_slots.push_back (resource);
+        else
+            rest.push_back (resource);
+    }
+
+    // handle case where resource is a parent of an xor slot
+    for (auto it = rest.begin (); it != rest.end ();) {
+        auto test = dfu_flexible_t::split_xor_slots (it->with);
+        if (test.size () > 1) {
+            for (const auto &option : test) {
+                Resource temp = *it;         // Make a copy of the Resource
+                temp.with = option;          // Set the .with member to this option
+                results.push_back ({temp});  // Add to results
+            }
+            it = rest.erase (it);  // Remove from rest, continue
+        } else {
+            ++it;
+        }
+    }
+
+    if (results.size () != 0) {
+        // one resource is ancestor to an xor slot
+        for (auto &result : results) {
+            result.insert (result.end (), rest.begin (), rest.end ());
+        }
+    } else
+        // no resources with xor slot ancestry
+        // also should be recursive base case
+        results = {rest};
+
+    // assume only 1 level of xor slots, no need to recurse
+    for (auto &resource : xor_slots) {
+        resource.type = slot_rt;
+        for (auto result : results) {
+            result.push_back (resource);
+            results2.push_back (result);
+        }
+    }
+
+    if (results2.empty ())
+        results2 = results;
+    return results2;
 }
 
 std::tuple<dfu_flexible_t::Key, int, int> dfu_flexible_t::select_or_config (

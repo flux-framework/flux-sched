@@ -81,4 +81,28 @@ test_expect_success "${test009_desc}" '
     test_cmp 009.R.out ${exp_dir}/009.R.out
 '
 
+cmds010="${cmd_dir}/cmds10.in"
+test010_desc="JGF: allocate pristine jobspec with xor slots"
+test_expect_success "${test009_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds010} > cmds010 &&
+    ${query} -L ${jgf} -f jgf -S CA -P first -T flexible -t 010.R.out < cmds010 &&
+    test_cmp 010.R.out ${exp_dir}/010.R.out
+'
+
+cmds011="${cmd_dir}/cmds11.in"
+test011_desc="JGF: allocate_orelse_reserve pristine jobspec with xor slots"
+test_expect_success "${test011_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds011} > cmds011 &&
+    ${query} -L ${jgf} -f jgf -S CA -P first -T flexible -t 011.R.out < cmds011 &&
+    test_cmp 011.R.out ${exp_dir}/011.R.out
+'
+
+cmds012="${cmd_dir}/cmds12.in"
+test012_desc="JGF: allocate jobspecs with xor slots"
+test_expect_success "${test012_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds012} > cmds012 &&
+    ${query} -L ${jgf} -f jgf -S CA -P first -T flexible -t 012.R.out < cmds012 &&
+    test_cmp 012.R.out ${exp_dir}/012.R.out
+'
+
 test_done
