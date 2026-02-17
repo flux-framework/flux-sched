@@ -1,0 +1,40 @@
+version: 9999
+resources:
+  - type: xor_slot
+    count: 2
+    label: default
+    with:
+      - type: core
+        count: 12
+      - type: memory
+        count: 4
+  - type: xor_slot
+    count: 2
+    label: default
+    with:
+      - type: core
+        count: 5 
+      - type: gpu
+        count: 1
+      - type: memory
+        count: 4
+  - type: xor_slot
+    count: 2
+    label: default
+    with:
+      - type: core
+        count: 4 
+      - type: gpu
+        count: 2
+      - type: memory
+        count: 4
+
+# a comment
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: default
+    count:
+      per_slot: 1
