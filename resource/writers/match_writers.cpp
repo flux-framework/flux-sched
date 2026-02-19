@@ -876,7 +876,7 @@ ret:
 
 bool rv1_match_writers_t::empty ()
 {
-    return (rlite.empty () && jgf.empty ());
+    return (rlite.empty () && get_jgf ().empty ());
 }
 
 int rv1_match_writers_t::attrs_json (json_t **o)
@@ -921,11 +921,11 @@ int rv1_match_writers_t::emit_json (json_t **j_o, json_t **aux)
     json_t *jgf_o = NULL;
     json_t *attrs_o = NULL;
 
-    if (rlite.empty () || jgf.empty ())
+    if (rlite.empty () || get_jgf ().empty ())
         goto ret;
     if ((rc = rlite.emit_json (&rlite_o, &rlite_aux_o)) < 0)
         goto ret;
-    if ((rc = jgf.emit_json (&jgf_o)) < 0) {
+    if ((rc = get_jgf ().emit_json (&jgf_o)) < 0) {
         saved_errno = errno;
         json_decref (rlite_aux_o);
         errno = saved_errno;
@@ -1006,7 +1006,7 @@ int rv1_match_writers_t::emit (std::stringstream &out)
     json_t *o = NULL;
     char *json_str = NULL;
 
-    if (rlite.empty () || jgf.empty ())
+    if (rlite.empty () || get_jgf ().empty ())
         goto ret;
     if ((rc = emit_json (&o)) < 0)
         goto ret;
@@ -1034,7 +1034,7 @@ int rv1_match_writers_t::emit_vtx (const std::string &prefix,
 {
     int rc = 0;
     if ((rc = rlite.emit_vtx (prefix, g, u, needs, agfilter_data, exclusive)) == 0)
-        rc = jgf.emit_vtx (prefix, g, u, needs, agfilter_data, exclusive);
+        rc = get_jgf ().emit_vtx (prefix, g, u, needs, agfilter_data, exclusive);
     return rc;
 }
 
@@ -1044,7 +1044,7 @@ int rv1_match_writers_t::emit_edg (const std::string &prefix,
 {
     int rc = 0;
     if ((rc = rlite.emit_edg (prefix, g, e)) == 0)
-        rc = jgf.emit_edg (prefix, g, e);
+        rc = get_jgf ().emit_edg (prefix, g, e);
     return rc;
 }
 
@@ -1059,6 +1059,11 @@ int rv1_match_writers_t::emit_attrs (const std::string &k, const std::string &v)
 {
     m_attrs[k] = v;
     return 0;
+}
+
+jgf_match_writers_t &rv1_match_writers_t::get_jgf ()
+{
+    return jgf_writer;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

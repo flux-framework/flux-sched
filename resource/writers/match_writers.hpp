@@ -243,6 +243,9 @@ class rv1_match_writers_t : public match_writers_t {
     virtual int emit_tm (uint64_t start_tm, uint64_t end_tm);
     virtual int emit_attrs (const std::string &k, const std::string &v);
 
+   protected:
+    virtual jgf_match_writers_t &get_jgf ();
+
    private:
     int attrs_json (json_t **o);
 
@@ -250,7 +253,7 @@ class rv1_match_writers_t : public match_writers_t {
     int64_t m_starttime = 0;
     int64_t m_expiration = 0;
     std::map<std::string, std::string> m_attrs;
-    jgf_match_writers_t jgf;
+    jgf_match_writers_t jgf_writer;
 };
 
 /*! R Version 1 with no "scheduling" key match writers class
