@@ -500,6 +500,38 @@ jgf_shorthand_match_writers_t &jgf_shorthand_match_writers_t::operator= (
     return *this;
 }
 
+int jgf_shorthand_match_writers_t::emit_vtx (
+    const std::string &prefix,
+    const resource_graph_t &g,
+    const vtx_t &u,
+    unsigned int needs,
+    const std::map<std::string, std::string> &agfilter_data,
+    bool exclusive,
+    bool excl_parent)
+{
+    if (excl_parent) {
+        return 0;
+    }
+    return jgf_match_writers_t::emit_vtx (prefix,
+                                          g,
+                                          u,
+                                          needs,
+                                          agfilter_data,
+                                          exclusive,
+                                          excl_parent);
+}
+
+int jgf_shorthand_match_writers_t::emit_edg (const std::string &prefix,
+                                             const resource_graph_t &g,
+                                             const edg_t &e,
+                                             bool excl_parent)
+{
+    if (excl_parent) {
+        return 0;
+    }
+    return jgf_match_writers_t::emit_edg (prefix, g, e, excl_parent);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // RLITE Writers Class Public Method Definitions
 ////////////////////////////////////////////////////////////////////////////////

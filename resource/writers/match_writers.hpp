@@ -61,14 +61,6 @@ class match_writers_t {
     int compress_hosts (const std::vector<std::string> &hosts,
                         const char *hostlist_init,
                         char **hostlist);
-
-    /* Return a boolean indicating whether or not the writer should be invoked
-     * on vertices that form non-root parts of exclusive subtrees.
-     */
-    virtual bool emit_exclusive_subtrees ()
-    {
-        return true;
-    }
 };
 
 /*! Simple match writers class for a matched resource set
@@ -191,10 +183,17 @@ class jgf_shorthand_match_writers_t : public jgf_match_writers_t {
     jgf_shorthand_match_writers_t (const jgf_shorthand_match_writers_t &w) = default;
     jgf_shorthand_match_writers_t &operator= (const jgf_shorthand_match_writers_t &w);
 
-    virtual bool emit_exclusive_subtrees () override
-    {
-        return false;
-    }
+    int emit_vtx (const std::string &prefix,
+                  const resource_graph_t &g,
+                  const vtx_t &u,
+                  unsigned int needs,
+                  const std::map<std::string, std::string> &agfilter_data,
+                  bool exclusive,
+                  bool excl_parent) override;
+    int emit_edg (const std::string &prefix,
+                  const resource_graph_t &g,
+                  const edg_t &e,
+                  bool excl_parent) override;
 };
 
 /*! RLITE match writers class for a matched resource set
