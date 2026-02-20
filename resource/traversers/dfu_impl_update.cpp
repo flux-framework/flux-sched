@@ -261,9 +261,7 @@ int dfu_impl_t::upd_sched (vtx_t u,
     if ((rc = upd_meta (u, s, needs, excl, n, jobmeta, dfu, to_parent)) == -1) {
         goto done;
     }
-    // emit vertex if writer emits exclusive subtrees, or if the parent vertex is
-    // not exclusive
-    if (n > 0 && (writers->emit_exclusive_subtrees () || !excl_parent)) {
+    if (n > 0) {
         if ((rc = emit_vtx (u, writers, needs, excl, excl_parent)) == -1) {
             m_err_msg += __FUNCTION__;
             m_err_msg += ": emit_vtx returned -1.\n";
@@ -355,13 +353,9 @@ int dfu_impl_t::upd_dfv (vtx_t u,
                     m_err_msg += __FUNCTION__;
                     m_err_msg += ": upd_by_outedges returned -1.\n";
                 }
-                // emit the edge if writer emits exclusive subtrees, OR if the source
-                // vertex is not exclusive
-                if (writers->emit_exclusive_subtrees () || !excl) {
-                    if (emit_edg (*ei, writers, excl) == -1) {
-                        m_err_msg += __FUNCTION__;
-                        m_err_msg += ": emit_edg returned -1.\n";
-                    }
+                if (emit_edg (*ei, writers, excl) == -1) {
+                    m_err_msg += __FUNCTION__;
+                    m_err_msg += ": emit_edg returned -1.\n";
                 }
                 n_plans += n_plan_sub;
             }
