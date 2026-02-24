@@ -965,13 +965,28 @@ static int grow_resource_db (std::shared_ptr<resource_ctx_t> &ctx, json_t *resou
     struct idset *grow_set = NULL;
     json_t *r_lite = NULL;
     json_t *jgf = NULL;
+    const char *writer_uri = NULL;
+    bool jgf_shorthand = false;
     auto guard = resource_type_t::storage_t::open_for_scope ();
 
     if ((rc = unpack_resources (resources, &grow_set, &r_lite, &jgf, duration)) < 0) {
         flux_log_error (ctx->h, "%s: unpack_resources", __FUNCTION__);
         goto done;
     }
-    if (jgf && ctx->opts.get_opt ().get_load_format () != "rv1exec_force") {
+    if (jgf) {
+        json_unpack (jgf, "{s?s}", "writer", &writer_uri);
+    }
+    // only complete JGF is useful here; for shorthand JGF we have to fall
+    // back to rv1exec. Assume JGF is complete by default
+    if (writer_uri) {
+        if (std::string (writer_uri) == "fluxion:jgf_shorthand")
+            jgf_shorthand = true;
+        else {
+            flux_log (ctx->h, LOG_ERR, "%s: unrecognized reader URI %s", __FUNCTION__, writer_uri);
+            goto done;
+        }
+    }
+    if (jgf && ctx->opts.get_opt ().get_load_format () != "rv1exec_force" && !jgf_shorthand) {
         if (ctx->reader == nullptr && (rc = create_reader (ctx, "jgf")) < 0) {
             flux_log (ctx->h, LOG_ERR, "%s: can't create jgf reader", __FUNCTION__);
             goto done;
