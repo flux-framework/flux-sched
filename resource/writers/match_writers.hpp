@@ -126,6 +126,9 @@ class jgf_match_writers_t : public match_writers_t {
                           const edg_t &e,
                           bool excl_parent);
 
+   protected:
+    virtual json_t *get_metadata ();
+
    private:
     json_t *emit_vtx_base (const resource_graph_t &g,
                            const vtx_t &u,
@@ -203,6 +206,12 @@ class jgf_shorthand_match_writers_t : public jgf_match_writers_t {
                   const resource_graph_t &g,
                   const edg_t &e,
                   bool excl_parent) override;
+
+   protected:
+    json_t *get_metadata () override;
+
+   private:
+    bool m_complete = true;
 };
 
 /*! RLITE match writers class for a matched resource set
