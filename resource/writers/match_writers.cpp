@@ -205,7 +205,14 @@ int jgf_match_writers_t::emit_json (json_t **o, json_t **aux)
 
     if ((rc = check_array_sizes ()) <= 0)
         goto ret;
-    if (!(*o = json_pack ("{s:{s:o s:o}}", "graph", "nodes", m_vout, "edges", m_eout))) {
+    if (!(*o = json_pack ("{s:{s:o s:o} s:s*}",
+                          "graph",
+                          "nodes",
+                          m_vout,
+                          "edges",
+                          m_eout,
+                          "writer",
+                          get_uri ()))) {
         json_decref (m_vout);
         json_decref (m_eout);
         m_vout = NULL;
@@ -488,6 +495,11 @@ out:
     return rc;
 }
 
+const char *jgf_match_writers_t::get_uri ()
+{
+    return NULL;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // JGF_shorthand Writers Class Public Method Definitions
 ////////////////////////////////////////////////////////////////////////////////
@@ -509,6 +521,7 @@ int jgf_shorthand_match_writers_t::emit_vtx (
     bool excl_parent)
 {
     if (excl_parent) {
+        m_complete = false;
         return 0;
     }
     return jgf_match_writers_t::emit_vtx (prefix,
@@ -526,9 +539,18 @@ int jgf_shorthand_match_writers_t::emit_edg (const std::string &prefix,
                                              bool excl_parent)
 {
     if (excl_parent) {
+        m_complete = false;
         return 0;
     }
     return jgf_match_writers_t::emit_edg (prefix, g, e, excl_parent);
+}
+
+const char *jgf_shorthand_match_writers_t::get_uri ()
+{
+    if (m_complete) {
+        return jgf_match_writers_t::get_uri ();
+    }
+    return m_uri.c_str ();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
