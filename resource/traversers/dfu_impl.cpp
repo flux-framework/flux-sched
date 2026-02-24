@@ -16,6 +16,7 @@ extern "C" {
 
 #include "resource/traversers/dfu_impl.hpp"
 #include <optional>
+#include <boost/optional/optional.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 #include <chrono>
 
@@ -24,6 +25,8 @@ extern "C" {
 using namespace Flux::Jobspec;
 using namespace Flux::resource_model;
 using namespace Flux::resource_model::detail;
+
+planner_multi_t *null_planner = nullptr;
 
 ////////////////////////////////////////////////////////////////////////////////
 // DFU Traverser Implementation Private API Definitions
@@ -55,8 +58,11 @@ bool dfu_impl_t::stop_explore (edg_t e, subsystem_t subsystem) const
     // Return true if the target vertex has been visited (forward: black)
     // or being visited (cycle: gray).
     vtx_t u = target (e, *m_graph);
-    return (m_color.is_gray ((*m_graph)[u].idata.colors[subsystem])
-            || m_color.is_black ((*m_graph)[u].idata.colors[subsystem]));
+    boost::optional<uint64_t &> u_color = (*m_graph)[u].idata.colors.try_at (subsystem);
+
+    if (!u_color)
+        return false;
+    return m_color.is_gray (u_color.get ()) || m_color.is_black (u_color.get ());
 }
 
 bool dfu_impl_t::exclusivity (const std::vector<Jobspec::Resource> &resources, vtx_t u)
@@ -161,9 +167,9 @@ int dfu_impl_t::by_subplan (const jobmeta_t &meta,
     int64_t at = meta.at;
     uint64_t d = meta.duration;
     std::vector<uint64_t> aggs;
-    planner_multi_t *p = (*m_graph)[u].idata.subplans[s];
+    boost::optional<planner_multi_t *&> opt_p = (*m_graph)[u].idata.subplans.try_at (s);
 
-    if (!p) {
+    if (!opt_p.value_or (null_planner)) {
         // Subplan is null if u is a leaf.
         // TODO: handle the unlikely case
         // where the subplan is null for another
@@ -174,9 +180,9 @@ int dfu_impl_t::by_subplan (const jobmeta_t &meta,
         // If user_data is empty, no data is available to prune with.
         return 0;
     }
-    count_relevant_types (p, resource.user_data, aggs);
+    count_relevant_types (opt_p.get (), resource.user_data, aggs);
     len = aggs.size ();
-    if ((rc = planner_multi_avail_during (p, at, d, aggs.data (), len)) == -1) {
+    if ((rc = planner_multi_avail_during (opt_p.get (), at, d, aggs.data (), len)) == -1) {
         // Don't log ERANGE or EBUSY - these are expected conditions:
         // ERANGE: request exceeds capacity (unsatisfiable)
         // EBUSY: resources temporarily unavailable
@@ -876,6 +882,7 @@ int dfu_impl_t::dom_find_dfv (std::shared_ptr<match_writers_t> &w,
     Flux::resource_model::vtx_predicates_override_t p_overridden = p;
     p_overridden.set (down, allocated, reserved);
     std::map<std::string, std::string> agfilter_data;
+    boost::optional<planner_multi_t *&> opt_filter_plan;
     planner_multi_t *filter_plan = NULL;
 
     (*m_graph)[u].idata.colors[dom] = m_color.gray ();
@@ -910,8 +917,10 @@ int dfu_impl_t::dom_find_dfv (std::shared_ptr<match_writers_t> &w,
     }
     if (agfilter) {
         // Check if there's a pruning (aggregate) filter initialized
-        if ((filter_plan = (*m_graph)[u].idata.subplans[dom]) == NULL)
+        opt_filter_plan = (*m_graph)[u].idata.subplans.try_at (dom);
+        if (!opt_filter_plan.value_or (null_planner))
             goto done;
+        filter_plan = opt_filter_plan.get ();
         if (jobid == 0) {  // jobid not specified; get totals
             auto now = std::chrono::system_clock::now ();
             int64_t now_epoch =
@@ -1219,6 +1228,7 @@ int dfu_impl_t::prime_pruning_filter (subsystem_t s,
     std::map<resource_type_t, int64_t> dfv;
     resource_type_t resource_type = (*m_graph)[u].type;
     std::vector<resource_type_t> out_prune_types;
+    boost::optional<planner_multi_t *&> opt_p;
 
     (*m_graph)[u].idata.colors[s] = m_color.gray ();
     accum_if (s, resource_type, (*m_graph)[u].size, to_parent);
@@ -1257,7 +1267,10 @@ int dfu_impl_t::prime_pruning_filter (subsystem_t s,
         goto done;
     }
 
-    if ((*m_graph)[u].idata.subplans[s] == NULL) {
+    opt_p = (*m_graph)[u].idata.subplans.try_at (s);
+    if (opt_p.value_or (null_planner)) {
+        planner_multi_update (opt_p.get (), avail.data (), types.data (), types.size ());
+    } else {
         planner_multi_t *p = NULL;
         if (!(p = subtree_plan (u, avail, types))) {
             m_err_msg += "prime: error initializing a multi-planner. ";
@@ -1266,11 +1279,6 @@ int dfu_impl_t::prime_pruning_filter (subsystem_t s,
             goto done;
         }
         (*m_graph)[u].idata.subplans[s] = p;
-    } else {
-        planner_multi_update ((*m_graph)[u].idata.subplans[s],
-                              avail.data (),
-                              types.data (),
-                              types.size ());
     }
     rc = 0;
 done:

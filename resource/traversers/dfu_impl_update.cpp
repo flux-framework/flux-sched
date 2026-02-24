@@ -14,11 +14,15 @@ extern "C" {
 #endif
 }
 
+#include <boost/optional/optional.hpp>
+
 #include "resource/traversers/dfu_impl.hpp"
 
 using namespace Flux::Jobspec;
 using namespace Flux::resource_model;
 using namespace Flux::resource_model::detail;
+
+extern planner_multi_t *null_planner;
 
 ////////////////////////////////////////////////////////////////////////////////
 // DFU Traverser Implementation Private Update API
@@ -71,15 +75,15 @@ int dfu_impl_t::upd_agfilter (vtx_t u,
                               jobmeta_t jobmeta,
                               const std::map<resource_type_t, int64_t> &dfu)
 {
-    // idata subtree aggregate prunning filter
-    planner_multi_t *subtree_plan = (*m_graph)[u].idata.subplans[s];
-    if (subtree_plan && !dfu.empty ()) {
+    // idata subtree aggregate pruning filter
+    boost::optional<planner_multi_t *&> opt_subtree_plan = (*m_graph)[u].idata.subplans.try_at (s);
+    if (opt_subtree_plan.value_or (null_planner) && !dfu.empty ()) {
         int64_t span = -1;
         std::vector<uint64_t> aggregate;
         // Update the subtree aggregate pruning filter of this vertex
         // using the new aggregates passed by dfu.
-        count_relevant_types (subtree_plan, dfu, aggregate);
-        span = planner_multi_add_span (subtree_plan,
+        count_relevant_types (opt_subtree_plan.get (), dfu, aggregate);
+        span = planner_multi_add_span (opt_subtree_plan.get (),
                                        jobmeta.at,
                                        jobmeta.duration,
                                        aggregate.data (),
@@ -114,9 +118,10 @@ int dfu_impl_t::upd_by_outedges (subsystem_t subsystem, jobmeta_t jobmeta, vtx_t
 {
     size_t len = 0;
     vtx_t tgt = target (e, *m_graph);
-    planner_multi_t *subplan = (*m_graph)[tgt].idata.subplans[subsystem];
-    if (subplan) {
-        if ((len = planner_multi_resources_len (subplan)) == 0)
+    boost::optional<planner_multi_t *&> opt_subplan =
+        (*m_graph)[tgt].idata.subplans.try_at (subsystem);
+    if (opt_subplan.value_or (null_planner)) {
+        if ((len = planner_multi_resources_len (opt_subplan.get ())) == 0)
             return -1;
 
         // Set dynamic traversing order based on the following heuristics:
@@ -124,9 +129,9 @@ int dfu_impl_t::upd_by_outedges (subsystem_t subsystem, jobmeta_t jobmeta, vtx_t
         //     2. Last pruning filter resource type (if additional
         //        pruning filter type was given, that's a good
         //        indication that it is the scarcest resource)
-        int64_t avail = planner_multi_avail_resources_at (subplan, jobmeta.now, len - 1);
+        int64_t avail = planner_multi_avail_resources_at (opt_subplan.get (), jobmeta.now, len - 1);
         // Special case to skip (e.g., leaf resource vertices)
-        if (avail == 0 && planner_multi_span_size (subplan) == 0)
+        if (avail == 0 && planner_multi_span_size (opt_subplan.get ()) == 0)
             return 0;
 
         auto key = std::make_pair ((*m_graph)[e].idata.get_weight (), (*m_graph)[tgt].uniq_id);
@@ -430,13 +435,13 @@ int dfu_impl_t::mod_agfilter (vtx_t u,
 {
     int rc = 0;
     bool removed = false;
-    planner_multi_t *subtree_plan = NULL;
+    boost::optional<planner_multi_t *&> opt_subtree_plan;
     auto &job2span = (*m_graph)[u].idata.job2span;
     std::map<int64_t, int64_t>::iterator span_it;
 
-    if ((subtree_plan = (*m_graph)[u].idata.subplans[subsystem]) == NULL)
+    opt_subtree_plan = (*m_graph)[u].idata.subplans.try_at (subsystem);
+    if (!opt_subtree_plan.value_or (null_planner))
         goto done;
-
     span_it = job2span.find (jobid);
     if (span_it == job2span.end ()) {
         if (mod_data.mod_type == job_modify_t::PARTIAL_CANCEL)
@@ -448,7 +453,7 @@ int dfu_impl_t::mod_agfilter (vtx_t u,
         goto done;
     }
     if (mod_data.mod_type != job_modify_t::PARTIAL_CANCEL) {
-        if ((rc = planner_multi_rem_span (subtree_plan, span_it->second)) != 0) {
+        if ((rc = planner_multi_rem_span (opt_subtree_plan.get (), span_it->second)) != 0) {
             m_err_msg += __FUNCTION__;
             m_err_msg += ": planner_multi_rem_span returned -1.\n";
             m_err_msg += (*m_graph)[u].name + " " + strerror (errno) + ".\n";
@@ -468,7 +473,7 @@ int dfu_impl_t::mod_agfilter (vtx_t u,
                 reduced_types.push_back (t2ct_it.first.c_str ());
                 reduced_counts.push_back (t2ct_it.second);
             }
-            if ((rc = planner_multi_reduce_span (subtree_plan,
+            if ((rc = planner_multi_reduce_span (opt_subtree_plan.get (),
                                                  span_it->second,
                                                  reduced_counts.data (),
                                                  reduced_types.data (),
@@ -685,7 +690,7 @@ int dfu_impl_t::clear_vertex (vtx_t vtx, modify_data_t &mod_data)
     int64_t base_time = 0;
     int64_t duration = 0;
     planner_t *plans = NULL;
-    planner_multi_t *multi_plans = NULL;
+    boost::optional<planner_multi_t *&> opt_multi_plans;
 
     // Compute removed span counts
     plans = (*m_graph)[vtx].schedule.plans;
@@ -711,10 +716,11 @@ int dfu_impl_t::clear_vertex (vtx_t vtx, modify_data_t &mod_data)
         return -1;
     }
     // Reset planner_multi
-    if ((multi_plans = (*m_graph)[vtx].idata.subplans[dom]) != NULL) {
-        base_time = planner_multi_base_time (multi_plans);
-        duration = planner_multi_duration (multi_plans);
-        if (planner_multi_reset (multi_plans, base_time, duration) != 0) {
+    opt_multi_plans = (*m_graph)[vtx].idata.subplans.try_at (dom);
+    if (opt_multi_plans.value_or (null_planner)) {
+        base_time = planner_multi_base_time (opt_multi_plans.get ());
+        duration = planner_multi_duration (opt_multi_plans.get ());
+        if (planner_multi_reset (opt_multi_plans.get (), base_time, duration) != 0) {
             m_err_msg += __FUNCTION__;
             m_err_msg += ": planner_multi_reset failed.\n";
             m_err_msg += (*m_graph)[vtx].name + " " + strerror (errno) + ".\n";
