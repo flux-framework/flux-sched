@@ -78,7 +78,7 @@ class resource_prop_t {
 
 /*! resource match option set class
  */
-class resource_opts_t : public optmgr_parse_t {
+class resource_opts_t : public optmgr_parse_t, public resource_prop_t {
    public:
     enum class resource_opts_key_t : int {
         LOAD_FILE = 1,
@@ -101,40 +101,6 @@ class resource_opts_t : public optmgr_parse_t {
     // No exception is thrown from move constructor and move assignment
     resource_opts_t (resource_opts_t &&o) = default;
     resource_opts_t &operator= (resource_opts_t &&o) = default;
-
-    const std::string &get_load_file () const;
-    const std::string &get_load_format () const;
-    const std::string &get_load_allowlist () const;
-    const std::string &get_match_policy () const;
-    const std::string &get_match_format () const;
-    const std::string &get_match_subsystems () const;
-    const int get_reserve_vtx_vec () const;
-    const std::string &get_prune_filters () const;
-    const resource_prop_t &get_resource_prop () const;
-    const int get_update_interval () const;
-    const std::string &get_traverser_policy () const;
-
-    void set_load_file (const std::string &o);
-    bool set_load_format (const std::string &o);
-    void set_load_allowlist (const std::string &o);
-    bool set_match_policy (const std::string &o, std::string &e);
-    bool set_match_format (const std::string &o);
-    void set_match_subsystems (const std::string &o);
-    void set_reserve_vtx_vec (const int i);
-    void set_prune_filters (const std::string &o);
-    void set_update_interval (const int i);
-    bool set_traverser_policy (const std::string &o);
-
-    bool is_load_file_set () const;
-    bool is_load_format_set () const;
-    bool is_load_allowlist_set () const;
-    bool is_match_policy_set () const;
-    bool is_match_format_set () const;
-    bool is_match_subsystems_set () const;
-    bool is_reserve_vtx_vec_set () const;
-    bool is_prune_filters_set () const;
-    bool is_update_interval_set () const;
-    bool is_traverser_policy_set () const;
 
     /*! Canonicalize the option set -- apply the general resource properties
      */
@@ -179,9 +145,6 @@ class resource_opts_t : public optmgr_parse_t {
 
    private:
     bool is_number (const std::string &num_str);
-
-    // default queue properties
-    resource_prop_t m_resource_prop;
 
     // mapping each option to an integer
     std::map<std::string, int> m_tab;

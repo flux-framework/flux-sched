@@ -53,8 +53,12 @@ bool dfu_impl_t::stop_explore (edg_t e, subsystem_t subsystem) const
     // Return true if the target vertex has been visited (forward: black)
     // or being visited (cycle: gray).
     vtx_t u = target (e, *m_graph);
-    return (m_color.is_gray ((*m_graph)[u].idata.colors[subsystem])
-            || m_color.is_black ((*m_graph)[u].idata.colors[subsystem]));
+    boost::optional<uint64_t &> u_color = (*m_graph)[u].idata.colors.try_at (subsystem);
+
+    if (u_color == boost::none)
+        return false;
+    else
+        return m_color.is_gray (u_color.get ()) || m_color.is_black (u_color.get ());
 }
 
 bool dfu_impl_t::exclusivity (const std::vector<Jobspec::Resource> &resources, vtx_t u)
@@ -175,9 +179,10 @@ int dfu_impl_t::by_subplan (const jobmeta_t &meta,
     uint64_t d = meta.duration;
     std::vector<uint64_t> aggs;
     int saved_errno = errno;
-    planner_multi_t *p = (*m_graph)[u].idata.subplans[s];
+    boost::optional<planner_multi_t *&> opt_p = (*m_graph)[u].idata.subplans.try_at (s);
+    planner_multi_t *p;
 
-    if (!p) {
+    if (opt_p == boost::none) {
         // Subplan is null if u is a leaf.
         // TODO: handle the unlikely case
         // where the subplan is null for another
@@ -185,6 +190,7 @@ int dfu_impl_t::by_subplan (const jobmeta_t &meta,
         rc = 0;
         goto done;
     }
+    p = opt_p.get ();
     if (resource.user_data.empty ()) {
         // If user_data is empty, no data is available to prune with.
         rc = 0;
@@ -839,6 +845,7 @@ int dfu_impl_t::dom_find_dfv (std::shared_ptr<match_writers_t> &w,
     Flux::resource_model::vtx_predicates_override_t p_overridden = p;
     p_overridden.set (down, allocated, reserved);
     std::map<std::string, std::string> agfilter_data;
+    boost::optional<planner_multi_t *&> opt_filter_plan;
     planner_multi_t *filter_plan = NULL;
 
     (*m_graph)[u].idata.colors[dom] = m_color.gray ();
@@ -873,8 +880,9 @@ int dfu_impl_t::dom_find_dfv (std::shared_ptr<match_writers_t> &w,
     }
     if (agfilter) {
         // Check if there's a pruning (aggregate) filter initialized
-        if ((filter_plan = (*m_graph)[u].idata.subplans[dom]) == NULL)
+        if ((opt_filter_plan = (*m_graph)[u].idata.subplans.try_at (dom)) == boost::none)
             goto done;
+        filter_plan = opt_filter_plan.get ();
         if (jobid == 0) {  // jobid not specified; get totals
             auto now = std::chrono::system_clock::now ();
             int64_t now_epoch =
@@ -1216,7 +1224,7 @@ int dfu_impl_t::prime_pruning_filter (subsystem_t s,
         goto done;
     }
 
-    if ((*m_graph)[u].idata.subplans[s] == NULL) {
+    if ((*m_graph)[u].idata.subplans.try_at (s) == boost::none) {
         errno = 0;
         planner_multi_t *p = NULL;
         if (!(p = subtree_plan (u, avail, types))) {
@@ -1226,7 +1234,7 @@ int dfu_impl_t::prime_pruning_filter (subsystem_t s,
         }
         (*m_graph)[u].idata.subplans[s] = p;
     } else {
-        planner_multi_update ((*m_graph)[u].idata.subplans[s],
+        planner_multi_update ((*m_graph)[u].idata.subplans.at (s),
                               avail.data (),
                               types.data (),
                               types.size ());

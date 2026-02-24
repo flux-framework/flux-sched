@@ -71,10 +71,12 @@ int dfu_impl_t::upd_agfilter (vtx_t u,
                               const std::map<resource_type_t, int64_t> &dfu)
 {
     // idata subtree aggregate prunning filter
-    planner_multi_t *subtree_plan = (*m_graph)[u].idata.subplans[s];
-    if (subtree_plan && !dfu.empty ()) {
+    boost::optional<planner_multi_t *&> opt_subtree_plan = (*m_graph)[u].idata.subplans.try_at (s);
+    planner_multi_t *subtree_plan;
+    if ((opt_subtree_plan != boost::none) && (!dfu.empty ())) {
         int64_t span = -1;
         std::vector<uint64_t> aggregate;
+        subtree_plan = opt_subtree_plan.get ();
         // Update the subtree aggregate pruning filter of this vertex
         // using the new aggregates passed by dfu.
         count_relevant_types (subtree_plan, dfu, aggregate);
@@ -113,8 +115,11 @@ int dfu_impl_t::upd_by_outedges (subsystem_t subsystem, jobmeta_t jobmeta, vtx_t
 {
     size_t len = 0;
     vtx_t tgt = target (e, *m_graph);
-    planner_multi_t *subplan = (*m_graph)[tgt].idata.subplans[subsystem];
-    if (subplan) {
+    boost::optional<planner_multi_t *&> opt_subplan =
+        (*m_graph)[tgt].idata.subplans.try_at (subsystem);
+    planner_multi_t *subplan;
+    if (opt_subplan != boost::none) {
+        subplan = opt_subplan.get ();
         if ((len = planner_multi_resources_len (subplan)) == 0)
             return -1;
 
@@ -255,10 +260,17 @@ int dfu_impl_t::upd_sched (vtx_t u,
                            bool excl_parent)
 {
     int rc = -1;
-    if ((rc = upd_plan (u, s, needs, excl, jobmeta, full, n)) == -1)
-        goto done;
-    if ((rc = upd_meta (u, s, needs, excl, n, jobmeta, dfu, to_parent)) == -1) {
-        goto done;
+
+    // No need to update scheduling if NO_ALLOC is set; count exclusive vertices
+    if (jobmeta.alloc_type == jobmeta_t::alloc_type_t::AT_NO_ALLOC) {
+        if (excl)
+            n++;
+    } else {
+        if ((rc = upd_plan (u, s, needs, excl, jobmeta, full, n)) == -1)
+            goto done;
+        if ((rc = upd_meta (u, s, needs, excl, n, jobmeta, dfu, to_parent)) == -1) {
+            goto done;
+        }
     }
     // emit vertex if writer emits exclusive subtrees, or if the parent vertex is
     // not exclusive
@@ -435,13 +447,14 @@ int dfu_impl_t::mod_agfilter (vtx_t u,
 {
     int rc = 0;
     bool removed = false;
+    boost::optional<planner_multi_t *&> opt_subtree_plan;
     planner_multi_t *subtree_plan = NULL;
     auto &job2span = (*m_graph)[u].idata.job2span;
     std::map<int64_t, int64_t>::iterator span_it;
 
-    if ((subtree_plan = (*m_graph)[u].idata.subplans[subsystem]) == NULL)
+    if ((opt_subtree_plan = (*m_graph)[u].idata.subplans.try_at (subsystem)) == boost::none)
         goto done;
-
+    subtree_plan = opt_subtree_plan.get ();
     span_it = job2span.find (jobid);
     if (span_it == job2span.end ()) {
         if (mod_data.mod_type == job_modify_t::PARTIAL_CANCEL)
@@ -690,6 +703,7 @@ int dfu_impl_t::clear_vertex (vtx_t vtx, modify_data_t &mod_data)
     int64_t base_time = 0;
     int64_t duration = 0;
     planner_t *plans = NULL;
+    boost::optional<planner_multi_t *&> opt_multi_plans;
     planner_multi_t *multi_plans = NULL;
 
     // Compute removed span counts
@@ -716,7 +730,8 @@ int dfu_impl_t::clear_vertex (vtx_t vtx, modify_data_t &mod_data)
         return -1;
     }
     // Reset planner_multi
-    if ((multi_plans = (*m_graph)[vtx].idata.subplans[dom]) != NULL) {
+    if ((opt_multi_plans = (*m_graph)[vtx].idata.subplans.try_at (dom)) != boost::none) {
+        multi_plans = opt_multi_plans.get ();
         base_time = planner_multi_base_time (multi_plans);
         duration = planner_multi_duration (multi_plans);
         if (planner_multi_reset (multi_plans, base_time, duration) != 0) {
