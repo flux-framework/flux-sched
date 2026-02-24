@@ -851,7 +851,7 @@ int dfu_impl_t::dom_find_dfv (std::shared_ptr<match_writers_t> &w,
             rc = (s == dom) ? dom_find_dfv (w, criteria, tgt, p_overridden, jobid, agfilter)
                             : aux_find_upv (w, criteria, tgt, s, p_overridden);
             if (rc > 0) {
-                if (w->emit_edg (level (), *m_graph, *ei) < 0) {
+                if (w->emit_edg (level (), *m_graph, *ei, false) < 0) {
                     m_err_msg += __FUNCTION__;
                     m_err_msg += ": emit_edg returned an error.\n";
                 }
@@ -927,7 +927,8 @@ int dfu_impl_t::dom_find_dfv (std::shared_ptr<match_writers_t> &w,
     // emitting the vertex, since data could be leftover from previous
     // traversals where the vertex was matched but not emitted
     (*m_graph)[u].idata.ephemeral.check_and_clear_if_stale (m_best_k_cnt);
-    if ((rc = w->emit_vtx (level (), *m_graph, u, (*m_graph)[u].size, agfilter_data, true)) < 0) {
+    if ((rc = w->emit_vtx (level (), *m_graph, u, (*m_graph)[u].size, agfilter_data, true, false))
+        < 0) {
         m_err_msg += __FUNCTION__;
         m_err_msg += std::string (": error from emit_vtx: ") + strerror (errno);
         goto done;
