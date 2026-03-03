@@ -60,7 +60,9 @@ test_expect_success 'jgf_shorthand emits cores and gpus with policy=low' '
     grep compute1 match2.json > /dev/null &&
     grep cluster match2.json > /dev/null &&
     jq -e ".graph.nodes[] | select(.id == \"23\") | .metadata.name == \"compute3\"" match2.json &&
-    test_cmp match2.json ${exp_dir}/t3040_expected_match2.json
+    jq -e ".writer == null" match2.json &&
+    jq "del(.graph.metadata)" match2.json > match2_without_metadata.json &&
+    test_cmp match2_without_metadata.json ${exp_dir}/t3040_expected_match2.json
 '
 
 test_expect_success 'emitted jgf_shorthand resource graph can be loaded' '
