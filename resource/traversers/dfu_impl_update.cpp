@@ -868,9 +868,14 @@ int dfu_impl_t::update (vtx_t root, std::shared_ptr<match_writers_t> &writers, j
     if ((rc = upd_dfv (root, writers, needs, x, jobmeta, true, dfu, emit_shadow, false)) > 0) {
         uint64_t starttime = jobmeta.at;
         uint64_t endtime = jobmeta.at + jobmeta.duration;
+        unsigned int nslots = jobmeta.nslots;
         if (writers->emit_tm (starttime, endtime) == -1) {
             m_err_msg += __FUNCTION__;
             m_err_msg += ": emit_tm returned -1.\n";
+        }
+        if (writers->emit_nslots (nslots) == -1) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": emit_nslots returned -1.\n";
         }
         if (jobmeta.is_queue_set ()) {
             if (writers->emit_attrs ("queue", jobmeta.get_queue ()) == -1) {
@@ -934,9 +939,14 @@ int dfu_impl_t::update (vtx_t root,
     if ((rc = upd_dfv (root, writers, needs, x, jobmeta, false, dfu, emit_shadow, false)) > 0) {
         uint64_t starttime = jobmeta.at;
         uint64_t endtime = jobmeta.at + jobmeta.duration;
+        unsigned int nslots = jobmeta.nslots;
         if (writers->emit_tm (starttime, endtime) == -1) {
             m_err_msg += __FUNCTION__;
             m_err_msg += ": emit_tm returned -1.\n";
+        }
+        if (writers->emit_nslots (nslots) == -1) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": emit_nslots returned -1.\n";
         }
         if (jobmeta.is_queue_set ()) {
             if (writers->emit_attrs ("queue", jobmeta.get_queue ()) == -1) {

@@ -794,6 +794,18 @@ int dfu_impl_t::dom_dfv (const jobmeta_t &meta,
         goto done;
     to_parent.set_avail (avail);
     to_parent.set_overall_score (dfu.overall_score ());
+    if (sm != match_kind_t::SLOT_MATCH) {
+        std::vector<resource_type_t> types;
+        dfu.resrc_types(dom, types);
+        for (auto t : types) {
+            unsigned int multiplier = dfu.best_i (dom, t);
+            unsigned int count = dfu.nslots ();
+            to_parent.set_nslots ((multiplier > 0 ? multiplier : 1) * count);
+        }
+    } else {
+        dfu.set_nslots (dfu.best_i (dom, slot_rt));
+        to_parent.set_nslots (dfu.best_i (dom, slot_rt));
+    }
 
     for (auto &resource : resources) {
         if ((resource.type == (*m_graph)[u].type) && (!resource.label.empty ())) {
@@ -1277,6 +1289,13 @@ int dfu_impl_t::select (Jobspec::Jobspec &j, vtx_t root, jobmeta_t &meta, bool e
         egrp.edges.push_back (ev_edg);
         dfu.add (dom, (*m_graph)[root].type, egrp);
         rc = resolve_graph (root, j.resources, dfu, excl, &needs);
+        for (auto &r : j.resources) {
+            unsigned int mult = dfu.best_i (dom, r.type);
+            unsigned int nslots = dfu.nslots ();
+            mult = mult > 0 ? mult : 1;
+            nslots = nslots > 0 ? nslots : 1;
+            meta.nslots = mult * nslots;
+        }
         m_graph_db->metadata.v_rt_edges[dom].set_for_trav_update (needs, x_in, m_best_k_cnt);
     }
     return rc;
