@@ -82,16 +82,16 @@ class sim_match_writers_t : public match_writers_t {
     virtual ~sim_match_writers_t ()
     {
     }
-    virtual bool empty ();
-    virtual int emit_json (json_t **o, json_t **aux = nullptr);
-    virtual int emit (std::stringstream &out);
-    virtual int emit_vtx (const std::string &prefix,
-                          const resource_graph_t &g,
-                          const vtx_t &u,
-                          unsigned int needs,
-                          const std::map<std::string, std::string> &agfilter_data,
-                          bool exclusive,
-                          bool) override;
+    bool empty () override;
+    int emit_json (json_t **o, json_t **aux = nullptr) override;
+    int emit (std::stringstream &out) override;
+    int emit_vtx (const std::string &prefix,
+                  const resource_graph_t &g,
+                  const vtx_t &u,
+                  unsigned int needs,
+                  const std::map<std::string, std::string> &agfilter_data,
+                  bool exclusive,
+                  bool) override;
 
    private:
     std::stringstream m_out;
@@ -114,20 +114,20 @@ class jgf_match_writers_t : public match_writers_t {
     jgf_match_writers_t &operator= (const jgf_match_writers_t &w);
     virtual ~jgf_match_writers_t ();
 
-    virtual bool empty ();
-    virtual int emit_json (json_t **o, json_t **aux = nullptr);
-    virtual int emit (std::stringstream &out);
-    virtual int emit_vtx (const std::string &prefix,
-                          const resource_graph_t &g,
-                          const vtx_t &u,
-                          unsigned int needs,
-                          const std::map<std::string, std::string> &agfilter_data,
-                          bool exclusive,
-                          bool excl_parent) override;
-    virtual int emit_edg (const std::string &prefix,
-                          const resource_graph_t &g,
-                          const edg_t &e,
-                          bool excl_parent);
+    bool empty () override;
+    int emit_json (json_t **o, json_t **aux = nullptr) override;
+    int emit (std::stringstream &out) override;
+    int emit_vtx (const std::string &prefix,
+                  const resource_graph_t &g,
+                  const vtx_t &u,
+                  unsigned int needs,
+                  const std::map<std::string, std::string> &agfilter_data,
+                  bool exclusive,
+                  bool excl_parent) override;
+    int emit_edg (const std::string &prefix,
+                  const resource_graph_t &g,
+                  const edg_t &e,
+                  bool excl_parent) override;
 
    protected:
     virtual const char *get_uri ();
@@ -226,17 +226,17 @@ class rlite_match_writers_t : public match_writers_t {
     rlite_match_writers_t &operator= (const rlite_match_writers_t &w);
     virtual ~rlite_match_writers_t ();
 
-    virtual bool empty ();
-    virtual int emit_json (json_t **o, json_t **aux = nullptr);
+    bool empty () override;
+    int emit_json (json_t **o, json_t **aux = nullptr) override;
     virtual int emit (std::stringstream &out, bool newline);
-    virtual int emit (std::stringstream &out);
-    virtual int emit_vtx (const std::string &prefix,
-                          const resource_graph_t &g,
-                          const vtx_t &u,
-                          unsigned int needs,
-                          const std::map<std::string, std::string> &agfilter_data,
-                          bool exclusive,
-                          bool excl_parent) override;
+    int emit (std::stringstream &out) override;
+    int emit_vtx (const std::string &prefix,
+                  const resource_graph_t &g,
+                  const vtx_t &u,
+                  unsigned int needs,
+                  const std::map<std::string, std::string> &agfilter_data,
+                  bool exclusive,
+                  bool excl_parent) override;
 
    private:
     class rank_host_t {
@@ -260,20 +260,20 @@ class rlite_match_writers_t : public match_writers_t {
  */
 class rv1_match_writers_t : public match_writers_t {
    public:
-    virtual bool empty ();
-    virtual int emit_json (json_t **o, json_t **aux = nullptr);
-    virtual int emit (std::stringstream &out);
-    virtual int emit_vtx (const std::string &prefix,
-                          const resource_graph_t &g,
-                          const vtx_t &u,
-                          unsigned int needs,
-                          const std::map<std::string, std::string> &agfilter_data,
-                          bool exclusive,
-                          bool excl_parent) override;
-    virtual int emit_edg (const std::string &prefix,
-                          const resource_graph_t &g,
-                          const edg_t &e,
-                          bool excl_parent);
+    bool empty () override;
+    int emit_json (json_t **o, json_t **aux = nullptr) override;
+    int emit (std::stringstream &out) override;
+    int emit_vtx (const std::string &prefix,
+                  const resource_graph_t &g,
+                  const vtx_t &u,
+                  unsigned int needs,
+                  const std::map<std::string, std::string> &agfilter_data,
+                  bool exclusive,
+                  bool excl_parent) override;
+    int emit_edg (const std::string &prefix,
+                  const resource_graph_t &g,
+                  const edg_t &e,
+                  bool excl_parent) override;
     virtual int emit_tm (uint64_t start_tm, uint64_t end_tm);
     virtual int emit_attrs (const std::string &k, const std::string &v);
 
@@ -294,16 +294,16 @@ class rv1_match_writers_t : public match_writers_t {
  */
 class rv1_nosched_match_writers_t : public match_writers_t {
    public:
-    virtual bool empty ();
-    virtual int emit_json (json_t **o, json_t **aux = nullptr);
-    virtual int emit (std::stringstream &out);
-    virtual int emit_vtx (const std::string &prefix,
-                          const resource_graph_t &g,
-                          const vtx_t &u,
-                          unsigned int needs,
-                          const std::map<std::string, std::string> &agfilter_data,
-                          bool exclusive,
-                          bool excl_parent) override;
+    bool empty () override;
+    int emit_json (json_t **o, json_t **aux = nullptr) override;
+    int emit (std::stringstream &out) override;
+    int emit_vtx (const std::string &prefix,
+                  const resource_graph_t &g,
+                  const vtx_t &u,
+                  unsigned int needs,
+                  const std::map<std::string, std::string> &agfilter_data,
+                  bool exclusive,
+                  bool excl_parent) override;
     virtual int emit_tm (uint64_t start_tm, uint64_t end_tm);
 
    private:
@@ -326,16 +326,16 @@ class rv1_shorthand_match_writers_t : public rv1_match_writers_t {
  */
 class pretty_sim_match_writers_t : public match_writers_t {
    public:
-    virtual bool empty ();
-    virtual int emit_json (json_t **o, json_t **aux = nullptr);
-    virtual int emit (std::stringstream &out);
-    virtual int emit_vtx (const std::string &prefix,
-                          const resource_graph_t &g,
-                          const vtx_t &u,
-                          unsigned int needs,
-                          const std::map<std::string, std::string> &agfilter_data,
-                          bool exclusive,
-                          bool excl_parent) override;
+    bool empty () override;
+    int emit_json (json_t **o, json_t **aux = nullptr) override;
+    int emit (std::stringstream &out) override;
+    int emit_vtx (const std::string &prefix,
+                  const resource_graph_t &g,
+                  const vtx_t &u,
+                  unsigned int needs,
+                  const std::map<std::string, std::string> &agfilter_data,
+                  bool exclusive,
+                  bool excl_parent) override;
 
    private:
     std::list<std::string> m_out;
