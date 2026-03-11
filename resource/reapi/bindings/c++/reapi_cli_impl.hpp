@@ -138,11 +138,12 @@ int reapi_cli_t::match_allocate (void *h,
         else
             rq->set_allocation (jobid);
 
-        job_info = std::make_shared<job_info_t> (jobid, st, at, "", "", ov);
-        if (job_info == nullptr) {
+        try {
+            job_info = std::make_shared<job_info_t> (jobid, st, at, "", "", ov);
+        } catch (std::bad_alloc &e) {
             errno = ENOMEM;
             m_err_msg += __FUNCTION__;
-            m_err_msg += ": ERROR: can't allocate memory: " + std::string (strerror (errno)) + "\n";
+            m_err_msg += ": ERROR: can't allocate memory: " + std::string (e.what ()) + "\n";
             rc = -1;
             goto out;
         }
