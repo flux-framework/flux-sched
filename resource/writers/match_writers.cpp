@@ -933,7 +933,7 @@ int rv1_match_writers_t::emit_json (json_t **j_o, json_t **aux)
     }
     if (json_object_get (rlite_aux_o, "properties")) {
         if (m_nslots) {
-            if (!(o = json_pack ("{s:i s:{s:o s:O s:O s:I s:I s:I} s:o}",
+            if (!(o = json_pack ("{s:i s:{s:o s:O s:O s:I s:I s:i} s:o}",
                                  "version",
                                  1,
                                  "execution",
@@ -985,7 +985,7 @@ int rv1_match_writers_t::emit_json (json_t **j_o, json_t **aux)
         }
     } else {
         if (m_nslots) {
-            if (!(o = json_pack ("{s:i s:{s:o s:O s:I s:I s:I} s:o}",
+            if (!(o = json_pack ("{s:i s:{s:o s:O s:I s:I s:i} s:o}",
                                  "version",
                                  1,
                                  "execution",
@@ -1142,7 +1142,7 @@ int rv1_nosched_match_writers_t::emit_json (json_t **j_o, json_t **aux)
         goto ret;
     if (json_object_get (rlite_aux_o, "properties")) {
         if (m_nslots) {
-            if (!(*j_o = json_pack ("{s:i s:{s:o s:O s:O s:I s:I s:I}}",
+            if (!(*j_o = json_pack ("{s:i s:{s:o s:O s:O s:I s:I s:i}}",
                                     "version",
                                     1,
                                     "execution",
@@ -1188,7 +1188,7 @@ int rv1_nosched_match_writers_t::emit_json (json_t **j_o, json_t **aux)
         }
     } else {
         if (m_nslots) {
-            if (!(*j_o = json_pack ("{s:i s:{s:o s:O s:I s:I s:I}}",
+            if (!(*j_o = json_pack ("{s:i s:{s:o s:O s:I s:I s:i}}",
                                     "version",
                                     1,
                                     "execution",

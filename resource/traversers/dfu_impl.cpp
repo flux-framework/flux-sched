@@ -796,7 +796,7 @@ int dfu_impl_t::dom_dfv (const jobmeta_t &meta,
     to_parent.set_overall_score (dfu.overall_score ());
     if (sm != match_kind_t::SLOT_MATCH) {
         std::vector<resource_type_t> types;
-        dfu.resrc_types(dom, types);
+        dfu.resrc_types (dom, types);
         for (auto t : types) {
             unsigned int multiplier = dfu.best_i (dom, t);
             unsigned int count = dfu.nslots ();
