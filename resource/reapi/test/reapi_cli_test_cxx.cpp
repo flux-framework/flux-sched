@@ -5,6 +5,7 @@
 #include <fstream>
 
 #include "resource/schema/resource_graph.hpp"
+#include "resource/policies/base/match_op.h"
 
 namespace Flux::resource_model::detail {
 
@@ -24,6 +25,26 @@ TEST_CASE ("Initialize REAPI CLI", "[initialize C++]")
     std::shared_ptr<resource_query_t> ctx = nullptr;
     ctx = std::make_shared<resource_query_t> (rgraph, options);
     REQUIRE (ctx);
+}
+
+TEST_CASE ("Convert between strings and match_op_ts", "[match C++]")
+{
+    // string <-> match_op_t idempotence
+    // (excluding START_ AND END_ vals, which count as MATCH_UNKNOWN)
+    for (int op = START_MATCH_OP_T+1; op != END_MATCH_OP_T; op++)
+        REQUIRE (string_to_match_op (match_op_to_string ((match_op_t)op)) == op);
+
+    // valid match_op_t are valid (assuming the enum order:
+    // [start, unknown, valid..., end])
+    for (int op = START_MATCH_OP_T+2; op != END_MATCH_OP_T; op++) {
+        REQUIRE (match_op_valid ((match_op_t)op));
+    }
+
+    // invalid match_op_t are invalid
+    REQUIRE (!match_op_valid (MATCH_UNKNOWN));
+    REQUIRE (!match_op_valid (START_MATCH_OP_T));
+    REQUIRE (!match_op_valid (END_MATCH_OP_T));
+    REQUIRE (!match_op_valid (string_to_match_op ("0xDEADBEEF")));
 }
 
 TEST_CASE ("Match basic jobspec", "[match C++]")
