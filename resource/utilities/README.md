@@ -589,6 +589,109 @@ specification, `resource-query` will choose the highest-scored node at the
 `rack` level in the same manner as how it enforces the lower-level constraints
 (e.g., `socket`).
 
+## Flexible Traverser, Or Slots, and Xor Slots
+
+The default DFU traverser assumes that each jobspec level describes one
+required resource shape.  If a request needs alternatives at a given level,
+use the `flexible` traverser with `resource-query -T flexible` or the
+equivalent Flux module configuration.
+
+### Or Slots
+
+The `flexible` traverser interprets sibling `slot` resources at the same
+hierarchical level as alternatives.  Informally, these are "or slots":
+any one of the sibling slots may satisfy that part of the jobspec.
+
+For example, the following requests either a GPU-capable slot or a larger
+CPU-only slot:
+
+```yaml
+version: 9999
+resources:
+  - type: slot
+    count: 1
+    label: default
+    with:
+      - type: core
+        count: 8
+      - type: gpu
+        count: 1
+  - type: slot
+    count: 1
+    label: default
+    with:
+      - type: core
+        count: 10
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: default
+    count:
+      per_slot: 1
+```
+
+This form is useful when the alternatives all live at the same jobspec level
+and share the same task slot label.  Internally, the `flexible` traverser uses
+a dynamic-programming step to choose the slot configuration that yields the
+largest total number of satisfiable slot matches across the request.  Once a
+slot shape has been selected, the concrete resources used for each matched slot
+are still chosen according to the active match policy.
+
+### Xor Slots
+
+Use `xor_slot` when the alternatives should be expanded into distinct jobspec
+branches before traversal.  Each `xor_slot` is converted into a normal `slot`
+candidate internally, and the `flexible` traverser tries the expanded
+branches one by one.
+
+This is especially useful when each alternative carries a different subtree
+prefix:
+
+```yaml
+version: 9999
+resources:
+  - type: xor_slot
+    count: 1
+    label: default
+    with:
+      - type: socket
+        count: 1
+        with:
+          - type: core
+            count: 8
+          - type: gpu
+            count: 1
+  - type: xor_slot
+    count: 1
+    label: default
+    with:
+      - type: node
+        count: 1
+        with:
+          - type: socket
+            count: 1
+            with:
+              - type: core
+                count: 6
+              - type: memory
+                count: 2
+```
+
+The example above means "pick either the socket-local GPU branch or the
+node-scoped memory branch." The resulting branches are expanded before
+matching and then tried as separate candidate jobspecs. Nested `xor_slot`s 
+are supported by the `flexible` traverser.
+
+### Or and Xor Slot Comparison
+
+| Feature | OR-slots | XOR-slots |
+|---------|----------|-----------|
+| Expansion timing | During traversal | Before traversal |
+| Selection algorithm | Dynamic programming (optimal) | First-match |
+| Use case | Same-level alternatives | Different hierarchy prefixes, Exclusive Same-level alternatives |
+| Nesting support | No | Yes |
 
 ## Limitations of Depth-First and Up (DFU) Traversal
 
@@ -714,4 +817,3 @@ traversal types.
 If you are interested in our earlier discussions on the different classes
 of matching problems, please refer to
 [this issue](https://github.com/flux-framework/flux-sched/issues/247#issuecomment-310551638)
-
