@@ -44,7 +44,7 @@ int dfu_traverser_t::is_satisfiable (Jobspec::Jobspec &jobspec,
     planner_multi_t *p = (*get_graph ())[root].idata.subplans.at (dom);
     meta.at = planner_multi_base_time (p) + planner_multi_duration (p) - meta.duration - 1;
     traverser->count_relevant_types (p, dfv, agg);
-    if ((rc = traverser->select (jobspec, root, meta, x)) < 0) {
+    if ((rc = traverser->select (jobspec.resources, root, meta, x)) < 0) {
         // Translate resource unavailability to unsatisfiable
         // EBUSY: not available even at far future
         // ERANGE: exceeds total capacity
@@ -155,7 +155,7 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
         goto out;
 
     sched_iters++;
-    if ((rc = traverser->select (jobspec, root, meta, x)) == 0) {
+    if ((rc = traverser->select (jobspec.resources, root, meta, x)) == 0) {
         m_total_preorder = traverser->get_preorder_count ();
         m_total_postorder = traverser->get_postorder_count ();
         goto out;
@@ -170,7 +170,7 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
             p = (*get_graph ())[root].idata.subplans.at (dom);
             meta.at = planner_multi_base_time (p) + planner_multi_duration (p) - meta.duration - 1;
             traverser->count_relevant_types (p, dfv, agg);
-            if (traverser->select (jobspec, root, meta, x) < 0) {
+            if (traverser->select (jobspec.resources, root, meta, x) < 0) {
                 // Translate resource unavailability to unsatisfiable
                 // EBUSY: not available even at far future
                 // ERANGE: exceeds total capacity
@@ -197,7 +197,7 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
                  (t != -1 && rc);
                  t = planner_multi_avail_time_next (p)) {
                 meta.at = t;
-                rc = traverser->select (jobspec, root, meta, x);
+                rc = traverser->select (jobspec.resources, root, meta, x);
                 m_total_preorder += traverser->get_preorder_count ();
                 m_total_postorder += traverser->get_postorder_count ();
                 // increment match traversal loop count
@@ -210,7 +210,7 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
                 errno = EBUSY;
                 meta.alloc_type = jobmeta_t::alloc_type_t::AT_SATISFIABILITY;
                 meta.at = planner_multi_base_time (p) + planner_multi_duration (p) - duration - 1;
-                if (traverser->select (jobspec, root, meta, x) < 0) {
+                if (traverser->select (jobspec.resources, root, meta, x) < 0) {
                     // Translate resource unavailability to unsatisfiable
                     // EBUSY: not available even at far future
                     // ERANGE: exceeds total capacity
