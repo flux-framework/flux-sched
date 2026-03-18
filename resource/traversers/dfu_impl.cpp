@@ -1266,7 +1266,10 @@ void dfu_impl_t::prime_jobspec (std::vector<Resource> &resources,
     }
 }
 
-int dfu_impl_t::select (Jobspec::Jobspec &j, vtx_t root, jobmeta_t &meta, bool excl)
+int dfu_impl_t::select (std::vector<Jobspec::Resource> &resources,
+                        vtx_t root,
+                        jobmeta_t &meta,
+                        bool excl)
 {
     int rc = -1;
     scoring_api_t dfu;
@@ -1276,14 +1279,14 @@ int dfu_impl_t::select (Jobspec::Jobspec &j, vtx_t root, jobmeta_t &meta, bool e
     tick ();
     m_preorder = 0;
     m_postorder = 0;
-    rc = dom_dfv (meta, root, j.resources, true, &x_in, dfu);
+    rc = dom_dfv (meta, root, resources, true, &x_in, dfu);
     if (rc == 0) {
         unsigned int needs = 0;
         eval_edg_t ev_edg (dfu.avail (), dfu.avail (), excl);
         eval_egroup_t egrp (dfu.overall_score (), dfu.avail (), 0, excl, true);
         egrp.edges.push_back (ev_edg);
         dfu.add (dom, (*m_graph)[root].type, egrp);
-        rc = resolve_graph (root, j.resources, dfu, excl, &needs);
+        rc = resolve_graph (root, resources, dfu, excl, &needs);
         m_graph_db->metadata.v_rt_edges[dom].set_for_trav_update (needs, x_in, m_sequence_number);
     }
     return rc;
