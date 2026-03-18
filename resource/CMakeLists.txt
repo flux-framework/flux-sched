@@ -108,6 +108,7 @@ add_subdirectory(evaluators)
 add_subdirectory(policies)
 add_subdirectory(schema)
 add_subdirectory(writers)
+add_subdirectory(traversers/test)
 
 # programs that depend on libresource
 add_subdirectory(utilities)
