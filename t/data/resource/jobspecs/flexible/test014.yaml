@@ -1,0 +1,97 @@
+version: 9999
+resources:
+  - type: xor_slot
+    count: 1
+    label: default
+    with:
+      - type: socket
+        count: 1
+        with:
+          - type: xor_slot
+            count: 1
+            label: a1
+            with:
+              - type: core
+                count: 8
+          - type: xor_slot
+            count: 1
+            label: a2
+            with:
+              - type: core
+                count: 10
+          - type: xor_slot
+            count: 1
+            label: a3
+            with:
+              - type: core
+                count: 12
+  - type: xor_slot
+    count: 1
+    label: default
+    with:
+      - type: node
+        count: 1
+        with:
+          - type: socket
+            count: 1
+            with:
+              - type: xor_slot
+                count: 1
+                label: b1
+                with:
+                  - type: core
+                    count: 5
+              - type: xor_slot
+                count: 1
+                label: b2
+                with:
+                  - type: core
+                    count: 6
+              - type: xor_slot
+                count: 1
+                label: b3
+                with:
+                  - type: core
+                    count: 7
+  - type: xor_slot
+    count: 1
+    label: default
+    with:
+      - type: cluster
+        count: 1
+        with:
+          - type: rack
+            count: 1
+            with:
+              - type: node
+                count: 1
+                with:
+                  - type: socket
+                    count: 1
+                    with:
+                      - type: xor_slot
+                        count: 1
+                        label: c1
+                        with:
+                          - type: core
+                            count: 4
+                      - type: xor_slot
+                        count: 1
+                        label: c2
+                        with:
+                          - type: core
+                            count: 5
+                      - type: xor_slot
+                        count: 1
+                        label: c3
+                        with:
+                          - type: core
+                            count: 6
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: default
+    count:
+      per_slot: 1
