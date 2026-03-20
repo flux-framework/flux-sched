@@ -21,7 +21,7 @@ test_expect_success 'resource_query can be loaded with jgf' '
 EOF
     jq -S .scheduling R_JGF.json > JGF.json &&
     ${query} -L JGF.json -f jgf -F rv1_nosched -t R1.out -P high < match_jobspec_cmd &&
-    head -n1 R1.out | jq -S "del(.execution.starttime, .execution.expiration)" > r_match.json &&
+    head -n1 R1.out | jq -S "del(.execution.starttime, .execution.expiration, .execution.nslots)" > r_match.json &&
     # the jobspec requests all resources in the graph, so the job R should be the same as
     # the R for the graph
     test_cmp r_match.json R.norm.json

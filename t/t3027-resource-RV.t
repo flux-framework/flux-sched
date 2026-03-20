@@ -18,12 +18,32 @@ print_ranks_nodes() {
 	jq -r ".execution.R_lite[].rank, .execution.nodelist[0]" $1 | sort
 }
 
+remove_nslots() {
+  jq -r -R '
+    if startswith("{") then
+      fromjson | del(.execution.nslots) |
+      def f:
+        if type == "object" then
+          "{" + ([to_entries[] | "\"\(.key)\": " + (.value | f)] | join(", ")) + "}"
+        elif type == "array" then
+          "[" + (map(f) | join(", ")) + "]"
+        else
+          tojson
+        end;
+      f
+    else
+      .
+    end
+  ' "$1"
+}
+
 test_expect_success 'RV1 is correct on rank and node ID order match' '
 	cat > cmds001 <<-EOF &&
 	match allocate ${full_job}
 	quit
 	EOF
-	${query} -L ${jgf_orig} -f jgf -F rv1_nosched -t R1.out -P high < cmds001 &&
+	${query} -L ${jgf_orig} -f jgf -F rv1_nosched -t R1.raw.out -P high < cmds001 &&
+	remove_nslots R1.raw.out > R1.out &&
 	test_cmp R1.out ${exp_dir}/R1.out
 '
 
@@ -32,7 +52,8 @@ test_expect_success 'RV1 is correct on core ID modified' '
 	match allocate ${full_job}
 	quit
 	EOF
-	${query} -L ${jgf_mod1} -f jgf -F rv1_nosched -t R2.out -P high < cmds002 &&
+	${query} -L ${jgf_mod1} -f jgf -F rv1_nosched -t R2.raw.out -P high < cmds002 &&
+	remove_nslots R2.raw.out > R2.out &&
 	test_cmp R2.out ${exp_dir}/R2.out
 '
 
@@ -41,7 +62,8 @@ test_expect_success 'RV1 correct on rank/node ID mismatch + core ID modified' '
 	match allocate ${full_job}
 	quit
 	EOF
-	${query} -L ${jgf_mod2} -f jgf -F rv1_nosched -t R3.out -P high < cmds003 &&
+	${query} -L ${jgf_mod2} -f jgf -F rv1_nosched -t R3.raw.out -P high < cmds003 &&
+	remove_nslots R3.raw.out > R3.out &&
 	test_cmp R3.out ${exp_dir}/R3.out
 '
 

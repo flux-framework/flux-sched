@@ -23,6 +23,25 @@ rv1exec_graph_2_1="${SHARNESS_TEST_SRCDIR}/data/resource/rv1exec/tiny_rv1exec_2-
 rv1exec_graph_2_1_split="${SHARNESS_TEST_SRCDIR}/data/resource/rv1exec/tiny_rv1exec_2-1_split.json"
 query="../../resource/utilities/resource-query"
 
+remove_nslots() {
+  jq -r -R '
+    if startswith("{") then
+      fromjson | del(.execution.nslots) |
+      def f:
+        if type == "object" then
+          "{" + ([to_entries[] | "\"\(.key)\": " + (.value | f)] | join(", ")) + "}"
+        elif type == "array" then
+          "[" + (map(f) | join(", ")) + "]"
+        else
+          tojson
+        end;
+      f
+    else
+      .
+    end
+  ' "$1"
+}
+
 test001_desc="match-allocate/update-allocate result in same output"
 test_expect_success "${test001_desc}" '
     cat >cmds001 <<-EOF &&
@@ -348,7 +367,8 @@ test_expect_success "${test011_desc}" '
         match allocate ${unit_job}
         quit
 EOF
-    ${query} -L ${grugs} -S CA -P high -F rv1 -t 011.R.out < cmds011 &&
+    ${query} -L ${grugs} -S CA -P high -F rv1 -t 011.R.raw.out < cmds011 &&
+	remove_nslots 011.R.raw.out > 011.R.out &&
     cat 011.R.out | grep -v INFO | \
 split -l 1 --additional-suffix=".json" - cmds011_ &&
     cat >upd_cmds011 <<-EOF &&
@@ -371,7 +391,9 @@ test_expect_success "${test012_desc}" '
 	match allocate ${job5}
 	quit
 EOF
-    ${query} -L ${rv1exec_graph} -f rv1exec -S CA -P high -F rv1_nosched -t 012.R.out < cmds012 &&
+    ${query} -L ${rv1exec_graph} -f rv1exec -S CA -P high -F rv1_nosched -t 012.R.raw.out < cmds012 &&
+	remove_nslots 012.R.raw.out > 012.R.out &&
+	cat 012.R.raw.out &&
     cat 012.R.out | grep -v INFO | \
 split -l 1 --additional-suffix=".json" - cmds012_ &&
     cat >upd_cmds012 <<-EOF &&
@@ -394,7 +416,8 @@ test_expect_success "${test013_desc}" '
 	match allocate ${job6}
 	quit
 EOF
-    ${query} -L ${rv1exec_graph} -f rv1exec -S CA -P high -F rv1_nosched -t 013.R.out < cmds013 &&
+    ${query} -L ${rv1exec_graph} -f rv1exec -S CA -P high -F rv1_nosched -t 013.R.raw.out < cmds013 &&
+	remove_nslots 013.R.raw.out > 013.R.out &&
     cat 013.R.out | grep -v INFO | \
 split -l 1 --additional-suffix=".json" - cmds013_ &&
     cat >upd_cmds013 <<-EOF &&

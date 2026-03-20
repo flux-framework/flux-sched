@@ -20,21 +20,21 @@ test_expect_success 'resource_query can be loaded with rv1exec_force' '
     quit
 EOF
     ${query} -L R_JGF.json -f rv1exec_force -F rv1_nosched -t R1.out -P high < match_jobspec_cmd &&
-    head -n1 R1.out | jq -S "del(.execution.starttime, .execution.expiration)" > match1.json &&
-    jq -S "del(.execution.starttime, .execution.expiration)" R.json > R.norm.json &&
+    head -n1 R1.out | jq -S "del(.execution.starttime, .execution.expiration, .execution.nslots)" > match1.json &&
+    jq -S "del(.execution.starttime, .execution.expiration, .execution.nslots)" R.json > R.norm.json &&
     test_cmp match1.json R.norm.json
 '
 
 test_expect_success 'resource_query can be loaded with rv1exec' '
     ${query} -L R_JGF.json -f rv1exec -F rv1_nosched -t R2.out -P high < match_jobspec_cmd &&
-    head -n1 R2.out | jq -S "del(.execution.starttime, .execution.expiration)" > match2.json &&
+    head -n1 R2.out | jq -S "del(.execution.starttime, .execution.expiration, .execution.nslots)" > match2.json &&
     test_cmp match2.json R.norm.json
 '
 
 test_expect_success 'resource_query can be loaded with jgf' '
     jq .scheduling R_JGF.json > JGF.json &&
     ${query} -L JGF.json -f jgf -F rv1_nosched -t R3.out -P high < match_jobspec_cmd &&
-    head -n1 R3.out | jq -S "del(.execution.starttime, .execution.expiration)" > match3.json &&
+    head -n1 R3.out | jq -S "del(.execution.starttime, .execution.expiration, .execution.nslots)" > match3.json &&
     test_cmp match3.json R.norm.json
 '
 

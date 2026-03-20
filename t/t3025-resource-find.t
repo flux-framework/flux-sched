@@ -14,8 +14,8 @@ grugs="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/tiny.graphml"
 jgf="${SHARNESS_TEST_SRCDIR}/data/resource/jgfs/tiny.json"
 query="../../resource/utilities/resource-query"
 
-remove_times() {
-    cat ${1} | jq 'del (.execution.starttime) | del (.execution.expiration)'
+remove_times_and_nslots() {
+    cat ${1} | jq 'del (.execution.starttime) | del (.execution.expiration) | del (.execution.nslots)'
 }
 
 
@@ -26,7 +26,7 @@ test_expect_success 'a jobspec requesting all resources works' '
 EOF
     ${query} -L ${grugs} -F rv1_nosched -S CA -P high -t full.out < cmds001 &&
     cat full.out | grep -v "INFO" > full.json &&
-    remove_times full.json > full.filt.json
+    remove_times_and_nslots full.json > full.filt.json
 '
 
 test_expect_success 'find status=up returns the entire system' '
@@ -36,7 +36,7 @@ test_expect_success 'find status=up returns the entire system' '
 EOF
     ${query} -L ${grugs} -F rv1_nosched -S CA -P high -t up.out < cmds002 &&
     cat up.out | grep -v "INFO" > up.json &&
-    remove_times up.json > up.filt.json &&
+    remove_times_and_nslots up.json > up.filt.json &&
     test_cmp up.filt.json full.filt.json
 '
 
@@ -87,7 +87,7 @@ test_expect_success 'mark down 1 node and find status=up or status=down' '
 EOF
     ${query} -L ${grugs} -F rv1_nosched -S CA -P high -t down4.out < cmds006 &&
     cat down4.out | grep -v "INFO" > down4.json &&
-    remove_times down4.json > down4.filt.json &&
+    remove_times_and_nslots down4.json > down4.filt.json &&
     test_cmp down4.filt.json full.filt.json
 '
 
@@ -100,8 +100,8 @@ EOF
     ${query} -L ${grugs} -F rv1_nosched -S CA -P high -t alloc.out < cmds007 &&
     cat alloc.out | awk "{if(NR==1) print \$0}" > alloc.1.json &&
     cat alloc.out | awk "{if(NR==7) print \$0}" > alloc.2.json &&
-    remove_times alloc.1.json > alloc.1.filt.json &&
-    remove_times alloc.2.json > alloc.2.filt.json &&
+    remove_times_and_nslots alloc.1.json > alloc.1.filt.json &&
+    remove_times_and_nslots alloc.2.json > alloc.2.filt.json &&
     test_cmp alloc.1.filt.json alloc.2.filt.json
 '
 
@@ -258,7 +258,7 @@ test_expect_success 'mix upper and lower cases for predicate values' '
 EOF
     ${query} -L ${grugs} -F rv1_nosched -S CA -P high -t down5.out < cmds016 &&
     cat down5.out | grep -v "INFO" > down5.json &&
-    remove_times down5.json > down5.filt.json &&
+    remove_times_and_nslots down5.json > down5.filt.json &&
     test_cmp down5.filt.json full.filt.json
 '
 

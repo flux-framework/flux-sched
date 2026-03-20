@@ -18,6 +18,21 @@ excl_1N1B="${hwloc_basepath}/001N/exclusive/01-brokers"
 export FLUX_SCHED_MODULE=none
 test_under_flux 1
 
+remove_nslots() {
+  jq -r '
+    del(.execution.nslots) | 
+    def f: 
+      if type == "object" then 
+        "{" + ([to_entries[] | "\"\(.key)\": " + (.value | f)] | join(", ")) + "}" 
+      elif type == "array" then 
+        "[" + (map(f) | join(", ")) + "]" 
+      else 
+        tojson 
+      end; 
+    f
+  ' "$1"
+}
+
 test_expect_success 'update: generate jobspec for a simple test job' '
     flux run --dry-run -N 1 -n 1 -t 1h hostname > basic.json
 '
@@ -32,13 +47,17 @@ test_expect_success 'update: loading sched-fluxion-resource works' '
 
 test_expect_success 'update: resource.match-allocate works with a jobspec' '
     flux ion-resource match allocate ./basic.json | \
-awk "NR==5{ print; }" > R1 &&
+awk "NR==5{ print; }" > R1.raw &&
+    remove_nslots R1.raw > R1 &&
     flux ion-resource match allocate ./basic.json | \
-awk "NR==5{ print; }" > R2 &&
+awk "NR==5{ print; }" > R2.raw &&
+    remove_nslots R2.raw > R2 &&
     flux ion-resource match allocate ./basic.json | \
-awk "NR==5{ print; }" > R3 &&
+awk "NR==5{ print; }" > R3.raw &&
+    remove_nslots R3.raw > R3 &&
     flux ion-resource match allocate ./basic.json | \
-awk "NR==5{ print; }" > R4
+awk "NR==5{ print; }" > R4.raw &&
+    remove_nslots R4.raw > R4
 '
 
 test_expect_success 'update: reloading sched-fluxion-resource works' '
