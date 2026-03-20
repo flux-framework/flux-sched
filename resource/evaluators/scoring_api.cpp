@@ -152,7 +152,7 @@ unsigned int scoring_api_t::nslots ()
 
 void scoring_api_t::set_nslots (unsigned int nslots)
 {
-    m_nslots = std::max (m_nslots, nslots);
+    m_nslots = nslots;
 }
 
 }  // namespace resource_model
