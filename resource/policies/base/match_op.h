@@ -2,11 +2,13 @@
 #define MATCH_OP_H
 
 typedef enum match_op_t {
+    START_MATCH_OP_T = 0,
     MATCH_UNKNOWN,
     MATCH_ALLOCATE,
     MATCH_ALLOCATE_W_SATISFIABILITY,
     MATCH_ALLOCATE_ORELSE_RESERVE,
     MATCH_SATISFIABILITY
+    END_MATCH_OP_T
 } match_op_t;
 
 static const char *match_op_to_string (match_op_t match_op)
