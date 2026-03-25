@@ -13,6 +13,7 @@ extern "C" {
 #include "config.h"
 #endif
 #include <flux/hostlist.h>
+#include <flux/idset.h>
 }
 
 #include <new>
@@ -33,31 +34,31 @@ namespace resource_model {
 
 int match_writers_t::compress_ids (std::stringstream &o, const std::vector<int64_t> &ids)
 {
-    int rc = 0;
-    try {
-        int64_t base = INT64_MIN;
-        int64_t runlen = 0;
-
-        for (auto &id : ids) {
-            if (id == (base + runlen + 1)) {
-                runlen++;
-            } else {
-                if (runlen != 0)
-                    o << "-" + std::to_string (base + runlen) + ",";
-                else if (base != INT64_MIN)
-                    o << ",";
-                o << id;
-                base = id;
-                runlen = 0;
-            }
-        }
-        if (runlen)
-            o << "-" << (base + runlen);
-    } catch (std::bad_alloc &) {
-        rc = -1;
-        errno = ENOMEM;
+    char *encoded_idset = NULL;
+    struct idset *idset = idset_create (0, IDSET_FLAG_AUTOGROW);
+    if (!idset) {
+        return -1;
     }
-    return rc;
+    for (auto &id : ids) {
+        if (id < 0 || idset_set (idset, id) < 0) {
+            idset_destroy (idset);
+            return -1;
+        }
+    }
+    if (!(encoded_idset = idset_encode (idset, IDSET_FLAG_RANGE))) {
+        idset_destroy (idset);
+        return -1;
+    }
+    idset_destroy (idset);
+    try {
+        o << encoded_idset;
+    } catch (std::bad_alloc &) {
+        errno = ENOMEM;
+        free (encoded_idset);
+        return -1;
+    }
+    free (encoded_idset);
+    return 0;
 }
 
 int match_writers_t::compress_hosts (const std::vector<std::string> &hosts,
