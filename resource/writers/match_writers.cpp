@@ -932,104 +932,54 @@ int rv1_match_writers_t::emit_json (json_t **j_o, json_t **aux)
         goto ret;
     }
     if (json_object_get (rlite_aux_o, "properties")) {
-        if (m_nslots) {
-            if (!(o = json_pack ("{s:i s:{s:o s:O s:O s:I s:I s:i} s:o}",
-                                 "version",
-                                 1,
-                                 "execution",
-                                 "R_lite",
-                                 rlite_o,
-                                 "nodelist",
-                                 json_object_get (rlite_aux_o, "nodelist"),
-                                 "properties",
-                                 json_object_get (rlite_aux_o, "properties"),
-                                 "starttime",
-                                 m_starttime,
-                                 "expiration",
-                                 m_expiration,
-                                 "nslots",
-                                 m_nslots,
-                                 "scheduling",
-                                 jgf_o))) {
-                json_decref (rlite_o);
-                json_decref (jgf_o);
-                json_decref (rlite_aux_o);
-                rc = -1;
-                errno = EINVAL;
-                goto ret;
-            }
-        } else {
-            if (!(o = json_pack ("{s:i s:{s:o s:O s:O s:I s:I} s:o}",
-                                 "version",
-                                 1,
-                                 "execution",
-                                 "R_lite",
-                                 rlite_o,
-                                 "nodelist",
-                                 json_object_get (rlite_aux_o, "nodelist"),
-                                 "properties",
-                                 json_object_get (rlite_aux_o, "properties"),
-                                 "starttime",
-                                 m_starttime,
-                                 "expiration",
-                                 m_expiration,
-                                 "scheduling",
-                                 jgf_o))) {
-                json_decref (rlite_o);
-                json_decref (jgf_o);
-                json_decref (rlite_aux_o);
-                rc = -1;
-                errno = EINVAL;
-                goto ret;
-            }
+        if (!(o = json_pack ("{s:i s:{s:o s:O s:O s:I s:I s:o*} s:o}",
+                             "version",
+                             1,
+                             "execution",
+                             "R_lite",
+                             rlite_o,
+                             "nodelist",
+                             json_object_get (rlite_aux_o, "nodelist"),
+                             "properties",
+                             json_object_get (rlite_aux_o, "properties"),
+                             "starttime",
+                             m_starttime,
+                             "expiration",
+                             m_expiration,
+                             "nslots",
+                             m_nslots ? json_integer (m_nslots) : NULL,
+                             "scheduling",
+                             jgf_o))) {
+            json_decref (rlite_o);
+            json_decref (jgf_o);
+            json_decref (rlite_aux_o);
+            rc = -1;
+            errno = EINVAL;
+            goto ret;
         }
     } else {
-        if (m_nslots) {
-            if (!(o = json_pack ("{s:i s:{s:o s:O s:I s:I s:i} s:o}",
-                                 "version",
-                                 1,
-                                 "execution",
-                                 "R_lite",
-                                 rlite_o,
-                                 "nodelist",
-                                 json_object_get (rlite_aux_o, "nodelist"),
-                                 "starttime",
-                                 m_starttime,
-                                 "expiration",
-                                 m_expiration,
-                                 "nslots",
-                                 m_nslots,
-                                 "scheduling",
-                                 jgf_o))) {
-                json_decref (rlite_o);
-                json_decref (jgf_o);
-                json_decref (rlite_aux_o);
-                rc = -1;
-                errno = EINVAL;
-                goto ret;
-            }
-        } else {
-            if (!(o = json_pack ("{s:i s:{s:o s:O s:I s:I} s:o}",
-                                 "version",
-                                 1,
-                                 "execution",
-                                 "R_lite",
-                                 rlite_o,
-                                 "nodelist",
-                                 json_object_get (rlite_aux_o, "nodelist"),
-                                 "starttime",
-                                 m_starttime,
-                                 "expiration",
-                                 m_expiration,
-                                 "scheduling",
-                                 jgf_o))) {
-                json_decref (rlite_o);
-                json_decref (jgf_o);
-                json_decref (rlite_aux_o);
-                rc = -1;
-                errno = EINVAL;
-                goto ret;
-            }
+        if (!(o = json_pack ("{s:i s:{s:o s:O s:I s:I s:o*} s:o}",
+                             "version",
+                             1,
+                             "execution",
+                             "R_lite",
+                             rlite_o,
+                             "nodelist",
+                             json_object_get (rlite_aux_o, "nodelist"),
+                             "starttime",
+                             m_starttime,
+                             "expiration",
+                             m_expiration,
+                             "nslots",
+                             m_nslots ? json_integer (m_nslots) : NULL,
+                             "scheduling",
+                             jgf_o))) {
+            json_decref (rlite_o);
+            json_decref (jgf_o);
+            json_decref (rlite_aux_o);
+            rc = -1;
+            errno = EINVAL;
+            goto ret;
         }
     }
 
@@ -1141,92 +1091,48 @@ int rv1_nosched_match_writers_t::emit_json (json_t **j_o, json_t **aux)
     if ((rc = rlite.emit_json (&rlite_o, &rlite_aux_o)) < 0)
         goto ret;
     if (json_object_get (rlite_aux_o, "properties")) {
-        if (m_nslots) {
-            if (!(*j_o = json_pack ("{s:i s:{s:o s:O s:O s:I s:I s:i}}",
-                                    "version",
-                                    1,
-                                    "execution",
-                                    "R_lite",
-                                    rlite_o,
-                                    "nodelist",
-                                    json_object_get (rlite_aux_o, "nodelist"),
-                                    "properties",
-                                    json_object_get (rlite_aux_o, "properties"),
-                                    "starttime",
-                                    m_starttime,
-                                    "expiration",
-                                    m_expiration,
-                                    "nslots",
-                                    m_nslots))) {
-                json_decref (rlite_o);
-                json_decref (rlite_aux_o);
-                rc = -1;
-                errno = EINVAL;
-                goto ret;
-            }
-        } else {
-            if (!(*j_o = json_pack ("{s:i s:{s:o s:O s:O s:I s:I}}",
-                                    "version",
-                                    1,
-                                    "execution",
-                                    "R_lite",
-                                    rlite_o,
-                                    "nodelist",
-                                    json_object_get (rlite_aux_o, "nodelist"),
-                                    "properties",
-                                    json_object_get (rlite_aux_o, "properties"),
-                                    "starttime",
-                                    m_starttime,
-                                    "expiration",
-                                    m_expiration))) {
-                json_decref (rlite_o);
-                json_decref (rlite_aux_o);
-                rc = -1;
-                errno = EINVAL;
-                goto ret;
-            }
+        if (!(*j_o = json_pack ("{s:i s:{s:o s:O s:O s:I s:I s:o*}}",
+                                "version",
+                                1,
+                                "execution",
+                                "R_lite",
+                                rlite_o,
+                                "nodelist",
+                                json_object_get (rlite_aux_o, "nodelist"),
+                                "properties",
+                                json_object_get (rlite_aux_o, "properties"),
+                                "starttime",
+                                m_starttime,
+                                "expiration",
+                                m_expiration,
+                                "nslots",
+                                m_nslots ? json_integer (m_nslots) : NULL))) {
+            json_decref (rlite_o);
+            json_decref (rlite_aux_o);
+            rc = -1;
+            errno = EINVAL;
+            goto ret;
         }
     } else {
-        if (m_nslots) {
-            if (!(*j_o = json_pack ("{s:i s:{s:o s:O s:I s:I s:i}}",
-                                    "version",
-                                    1,
-                                    "execution",
-                                    "R_lite",
-                                    rlite_o,
-                                    "nodelist",
-                                    json_object_get (rlite_aux_o, "nodelist"),
-                                    "starttime",
-                                    m_starttime,
-                                    "expiration",
-                                    m_expiration,
-                                    "nslots",
-                                    m_nslots))) {
-                json_decref (rlite_o);
-                json_decref (rlite_aux_o);
-                rc = -1;
-                errno = EINVAL;
-                goto ret;
-            }
-        } else {
-            if (!(*j_o = json_pack ("{s:i s:{s:o s:O s:I s:I}}",
-                                    "version",
-                                    1,
-                                    "execution",
-                                    "R_lite",
-                                    rlite_o,
-                                    "nodelist",
-                                    json_object_get (rlite_aux_o, "nodelist"),
-                                    "starttime",
-                                    m_starttime,
-                                    "expiration",
-                                    m_expiration))) {
-                json_decref (rlite_o);
-                json_decref (rlite_aux_o);
-                rc = -1;
-                errno = EINVAL;
-                goto ret;
-            }
+        if (!(*j_o = json_pack ("{s:i s:{s:o s:O s:I s:I s:o*}}",
+                                "version",
+                                1,
+                                "execution",
+                                "R_lite",
+                                rlite_o,
+                                "nodelist",
+                                json_object_get (rlite_aux_o, "nodelist"),
+                                "starttime",
+                                m_starttime,
+                                "expiration",
+                                m_expiration,
+                                "nslots",
+                                m_nslots ? json_integer (m_nslots) : NULL))) {
+            json_decref (rlite_o);
+            json_decref (rlite_aux_o);
+            rc = -1;
+            errno = EINVAL;
+            goto ret;
         }
     }
 
