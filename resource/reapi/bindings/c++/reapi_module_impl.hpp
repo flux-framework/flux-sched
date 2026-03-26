@@ -42,7 +42,7 @@ int reapi_module_t::match_allocate (void *h,
     const char *status = NULL;
     const char *cmd = match_op_to_string (match_op);
 
-    if (!fh || jobspec == "" || jobid > INT64_MAX) {
+    if (!fh || !cmd || jobspec == "" || jobid > INT64_MAX) {
         errno = EINVAL;
         goto out;
     }
@@ -150,7 +150,7 @@ int reapi_module_t::match_allocate_multi (void *h,
     flux_future_t *f = nullptr;
     const char *cmd = match_op_to_string (match_op);
 
-    if (!fh || !jobs) {
+    if (!fh || !cmd || !jobs) {
         errno = EINVAL;
         goto error;
     }

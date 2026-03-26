@@ -1,5 +1,23 @@
+/*****************************************************************************\
+ * Copyright 2026 Lawrence Livermore National Security, LLC
+ * (c.f. AUTHORS, NOTICE.LLNS, LICENSE)
+ *
+ * This file is part of the Flux resource manager framework.
+ * For details, see https://github.com/flux-framework.
+ *
+ * SPDX-License-Identifier: LGPL-3.0
+\*****************************************************************************/
+
 #ifndef MATCH_OP_H
 #define MATCH_OP_H
+
+#ifndef __cplusplus
+#include <stdbool.h>
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef enum match_op_t {
     MATCH_UNKNOWN,
@@ -10,30 +28,14 @@ typedef enum match_op_t {
     END_MATCH_OP_T
 } match_op_t;
 
-static const char *match_op_to_string (match_op_t match_op)
-{
-    switch (match_op) {
-        case MATCH_ALLOCATE:
-            return "allocate";
-        case MATCH_ALLOCATE_ORELSE_RESERVE:
-            return "allocate_orelse_reserve";
-        case MATCH_ALLOCATE_W_SATISFIABILITY:
-            return "allocate_with_satisfiability";
-        case MATCH_SATISFIABILITY:
-            return "satisfiability";
-        default:
-            return "error";
-    }
-}
+const char *match_op_to_string (match_op_t match_op);
 
-static bool match_op_valid (match_op_t match_op)
-{
-    if ((match_op != MATCH_ALLOCATE) && (match_op != MATCH_ALLOCATE_W_SATISFIABILITY)
-        && (match_op != MATCH_ALLOCATE_ORELSE_RESERVE) && (match_op != MATCH_SATISFIABILITY)) {
-        return false;
-    }
+match_op_t match_op_from_string (const char *str);
 
-    return true;
+bool match_op_valid (match_op_t match_op);
+
+#ifdef __cplusplus
 }
+#endif
 
 #endif  // MATCH_OP_H
