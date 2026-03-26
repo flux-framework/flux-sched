@@ -6,8 +6,10 @@ test_description='Test Correctness of Match Emit Format'
 
 tiny_grug="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/tiny.graphml"
 large_grug="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/sierra.graphml"
+rabbit_jgf="${SHARNESS_TEST_SRCDIR}/data/resource/jgfs/rabbit.json"
 jobspec="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/basics/test001.yaml"
 jobspec2="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/basics/test011.yaml"
+rabbit_jobspec="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/advanced/rabbit.yaml"
 schema="${SHARNESS_TEST_SRCDIR}/schemas/json-graph-schema.json"
 query="../../resource/utilities/resource-query"
 
@@ -71,6 +73,15 @@ test_expect_success "rv1_nosched contains starttime and expiration keys" '
     expiration=$(cat o11 | grep -v "INFO:" | jq ".execution.expiration") &&
     test ${starttime} -eq 0 &&
     test ${expiration} -eq 3600
+'
+
+test_expect_success "rv1_nosched matches storage_nodes like nodes" '
+    echo "match allocate ${rabbit_jobspec}" > in12.txt &&
+    echo "quit" >> in12.txt &&
+    ${query} -L ${rabbit_jgf} -f jgf -F rv1_nosched -d -t o12 -P high < in12.txt &&
+    head -n1 o12 | jq -S "del(.execution.starttime, .execution.expiration)" > rabbit_match.json &&
+    test $(jq .execution.nodelist[0] rabbit_match.json | flux hostlist -c) -eq 2 &&
+    test $(jq .execution.R_lite[0].rank rabbit_match.json | flux hostlist -c) -eq 2
 '
 
 test_done

@@ -23,6 +23,7 @@ resource_type_t node_rt{"node"};
 resource_type_t rack_rt{"rack"};
 resource_type_t slot_rt{"slot"};
 resource_type_t ssd_rt{"ssd"};
+resource_type_t storage_node_rt{"storage_node"};
 
 }  // namespace resource_model
 }  // namespace Flux

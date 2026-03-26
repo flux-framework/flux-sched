@@ -1,0 +1,1134 @@
+{
+  "graph": {
+    "directed": false,
+    "nodes": [
+      {
+        "id": "0",
+        "metadata": {
+          "type": "cluster",
+          "name": "hetchy",
+          "paths": {
+            "containment": "/hetchy"
+          }
+        }
+      },
+      {
+        "id": "1",
+        "metadata": {
+          "type": "chassis",
+          "id": 0,
+          "properties": {
+            "rabbit": "hetchy201",
+            "ssdcount": "36"
+          },
+          "paths": {
+            "containment": "/hetchy/chassis0"
+          }
+        }
+      },
+      {
+        "id": "2",
+        "metadata": {
+          "type": "ssd",
+          "unit": "GiB",
+          "size": 793,
+          "paths": {
+            "containment": "/hetchy/chassis0/ssd0"
+          }
+        }
+      },
+      {
+        "id": "3",
+        "metadata": {
+          "type": "ssd",
+          "unit": "GiB",
+          "size": 793,
+          "paths": {
+            "containment": "/hetchy/chassis0/ssd1"
+          }
+        }
+      },
+      {
+        "id": "4",
+        "metadata": {
+          "type": "node",
+          "name": "hetchy1001",
+          "rank": 1,
+          "paths": {
+            "containment": "/hetchy/chassis0/hetchy1001"
+          }
+        }
+      },
+      {
+        "id": "5",
+        "metadata": {
+          "type": "core",
+          "id": 0,
+          "rank": 1,
+          "paths": {
+            "containment": "/hetchy/chassis0/hetchy1001/core0"
+          }
+        }
+      },
+      {
+        "id": "6",
+        "metadata": {
+          "type": "core",
+          "id": 1,
+          "rank": 1,
+          "paths": {
+            "containment": "/hetchy/chassis0/hetchy1001/core1"
+          }
+        }
+      },
+      {
+        "id": "7",
+        "metadata": {
+          "type": "node",
+          "name": "hetchy1002",
+          "rank": 2,
+          "properties": {
+            "bardpeak": "",
+            "pall": ""
+          },
+          "paths": {
+            "containment": "/hetchy/chassis0/hetchy1002"
+          }
+        }
+      },
+      {
+        "id": "8",
+        "metadata": {
+          "type": "core",
+          "id": 0,
+          "rank": 2,
+          "paths": {
+            "containment": "/hetchy/chassis0/hetchy1002/core0"
+          }
+        }
+      },
+      {
+        "id": "9",
+        "metadata": {
+          "type": "core",
+          "id": 1,
+          "rank": 2,
+          "paths": {
+            "containment": "/hetchy/chassis0/hetchy1002/core1"
+          }
+        }
+      },
+      {
+        "id": "10",
+        "metadata": {
+          "type": "storage_node",
+          "name": "hetchy201",
+          "rank": 19,
+          "properties": {
+            "rabbit": ""
+          },
+          "paths": {
+            "containment": "/hetchy/chassis0/hetchy201"
+          }
+        }
+      },
+      {
+        "id": "11",
+        "metadata": {
+          "type": "core",
+          "id": 0,
+          "rank": 19,
+          "paths": {
+            "containment": "/hetchy/chassis0/hetchy201/core0"
+          }
+        }
+      },
+      {
+        "id": "12",
+        "metadata": {
+          "type": "core",
+          "id": 1,
+          "rank": 19,
+          "paths": {
+            "containment": "/hetchy/chassis0/hetchy201/core1"
+          }
+        }
+      },
+      {
+        "id": "13",
+        "metadata": {
+          "type": "chassis",
+          "id": 1,
+          "properties": {
+            "rabbit": "hetchy202",
+            "ssdcount": "36"
+          },
+          "paths": {
+            "containment": "/hetchy/chassis1"
+          }
+        }
+      },
+      {
+        "id": "14",
+        "metadata": {
+          "type": "ssd",
+          "unit": "GiB",
+          "size": 793,
+          "paths": {
+            "containment": "/hetchy/chassis1/ssd0"
+          }
+        }
+      },
+      {
+        "id": "15",
+        "metadata": {
+          "type": "ssd",
+          "unit": "GiB",
+          "size": 793,
+          "paths": {
+            "containment": "/hetchy/chassis1/ssd1"
+          }
+        }
+      },
+      {
+        "id": "16",
+        "metadata": {
+          "type": "node",
+          "name": "hetchy1003",
+          "rank": 3,
+          "properties": {
+            "parrypeak": "",
+            "pall": ""
+          },
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1003"
+          }
+        }
+      },
+      {
+        "id": "17",
+        "metadata": {
+          "type": "core",
+          "id": 0,
+          "rank": 3,
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1003/core0"
+          }
+        }
+      },
+      {
+        "id": "18",
+        "metadata": {
+          "type": "core",
+          "id": 1,
+          "rank": 3,
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1003/core1"
+          }
+        }
+      },
+      {
+        "id": "19",
+        "metadata": {
+          "type": "node",
+          "name": "hetchy1004",
+          "rank": 4,
+          "properties": {
+            "parrypeak": "",
+            "pall": ""
+          },
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1004"
+          }
+        }
+      },
+      {
+        "id": "20",
+        "metadata": {
+          "type": "core",
+          "id": 0,
+          "rank": 4,
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1004/core0"
+          }
+        }
+      },
+      {
+        "id": "21",
+        "metadata": {
+          "type": "core",
+          "id": 1,
+          "rank": 4,
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1004/core1"
+          }
+        }
+      },
+      {
+        "id": "22",
+        "metadata": {
+          "type": "node",
+          "name": "hetchy1005",
+          "rank": 5,
+          "properties": {
+            "parrypeak": "",
+            "pall": ""
+          },
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1005"
+          }
+        }
+      },
+      {
+        "id": "23",
+        "metadata": {
+          "type": "core",
+          "id": 0,
+          "rank": 5,
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1005/core0"
+          }
+        }
+      },
+      {
+        "id": "24",
+        "metadata": {
+          "type": "core",
+          "id": 1,
+          "rank": 5,
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1005/core1"
+          }
+        }
+      },
+      {
+        "id": "25",
+        "metadata": {
+          "type": "node",
+          "name": "hetchy1006",
+          "rank": 6,
+          "properties": {
+            "parrypeak": "",
+            "pall": ""
+          },
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1006"
+          }
+        }
+      },
+      {
+        "id": "26",
+        "metadata": {
+          "type": "core",
+          "id": 0,
+          "rank": 6,
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1006/core0"
+          }
+        }
+      },
+      {
+        "id": "27",
+        "metadata": {
+          "type": "core",
+          "id": 1,
+          "rank": 6,
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1006/core1"
+          }
+        }
+      },
+      {
+        "id": "28",
+        "metadata": {
+          "type": "node",
+          "name": "hetchy1007",
+          "rank": 7,
+          "properties": {
+            "parrypeak": "",
+            "pall": ""
+          },
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1007"
+          }
+        }
+      },
+      {
+        "id": "29",
+        "metadata": {
+          "type": "core",
+          "id": 0,
+          "rank": 7,
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1007/core0"
+          }
+        }
+      },
+      {
+        "id": "30",
+        "metadata": {
+          "type": "core",
+          "id": 1,
+          "rank": 7,
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1007/core1"
+          }
+        }
+      },
+      {
+        "id": "31",
+        "metadata": {
+          "type": "node",
+          "name": "hetchy1008",
+          "rank": 8,
+          "properties": {
+            "parrypeak": "",
+            "pall": ""
+          },
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1008"
+          }
+        }
+      },
+      {
+        "id": "32",
+        "metadata": {
+          "type": "core",
+          "id": 0,
+          "rank": 8,
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1008/core0"
+          }
+        }
+      },
+      {
+        "id": "33",
+        "metadata": {
+          "type": "core",
+          "id": 1,
+          "rank": 8,
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1008/core1"
+          }
+        }
+      },
+      {
+        "id": "34",
+        "metadata": {
+          "type": "node",
+          "name": "hetchy1009",
+          "rank": 9,
+          "properties": {
+            "parrypeak": "",
+            "pall": ""
+          },
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1009"
+          }
+        }
+      },
+      {
+        "id": "35",
+        "metadata": {
+          "type": "core",
+          "id": 0,
+          "rank": 9,
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1009/core0"
+          }
+        }
+      },
+      {
+        "id": "36",
+        "metadata": {
+          "type": "core",
+          "id": 1,
+          "rank": 9,
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1009/core1"
+          }
+        }
+      },
+      {
+        "id": "37",
+        "metadata": {
+          "type": "node",
+          "name": "hetchy1010",
+          "rank": 10,
+          "properties": {
+            "parrypeak": "",
+            "pall": ""
+          },
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1010"
+          }
+        }
+      },
+      {
+        "id": "38",
+        "metadata": {
+          "type": "core",
+          "id": 0,
+          "rank": 10,
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1010/core0"
+          }
+        }
+      },
+      {
+        "id": "39",
+        "metadata": {
+          "type": "core",
+          "id": 1,
+          "rank": 10,
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1010/core1"
+          }
+        }
+      },
+      {
+        "id": "40",
+        "metadata": {
+          "type": "node",
+          "name": "hetchy1011",
+          "rank": 11,
+          "properties": {
+            "parrypeak": "",
+            "pall": ""
+          },
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1011"
+          }
+        }
+      },
+      {
+        "id": "41",
+        "metadata": {
+          "type": "core",
+          "id": 0,
+          "rank": 11,
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1011/core0"
+          }
+        }
+      },
+      {
+        "id": "42",
+        "metadata": {
+          "type": "core",
+          "id": 1,
+          "rank": 11,
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1011/core1"
+          }
+        }
+      },
+      {
+        "id": "43",
+        "metadata": {
+          "type": "node",
+          "name": "hetchy1012",
+          "rank": 12,
+          "properties": {
+            "parrypeak": "",
+            "pall": ""
+          },
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1012"
+          }
+        }
+      },
+      {
+        "id": "44",
+        "metadata": {
+          "type": "core",
+          "id": 0,
+          "rank": 12,
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1012/core0"
+          }
+        }
+      },
+      {
+        "id": "45",
+        "metadata": {
+          "type": "core",
+          "id": 1,
+          "rank": 12,
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1012/core1"
+          }
+        }
+      },
+      {
+        "id": "46",
+        "metadata": {
+          "type": "node",
+          "name": "hetchy1013",
+          "rank": 13,
+          "properties": {
+            "parrypeak": "",
+            "pall": ""
+          },
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1013"
+          }
+        }
+      },
+      {
+        "id": "47",
+        "metadata": {
+          "type": "core",
+          "id": 0,
+          "rank": 13,
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1013/core0"
+          }
+        }
+      },
+      {
+        "id": "48",
+        "metadata": {
+          "type": "core",
+          "id": 1,
+          "rank": 13,
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1013/core1"
+          }
+        }
+      },
+      {
+        "id": "49",
+        "metadata": {
+          "type": "node",
+          "name": "hetchy1014",
+          "rank": 14,
+          "properties": {
+            "parrypeak": "",
+            "pall": ""
+          },
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1014"
+          }
+        }
+      },
+      {
+        "id": "50",
+        "metadata": {
+          "type": "core",
+          "id": 0,
+          "rank": 14,
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1014/core0"
+          }
+        }
+      },
+      {
+        "id": "51",
+        "metadata": {
+          "type": "core",
+          "id": 1,
+          "rank": 14,
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1014/core1"
+          }
+        }
+      },
+      {
+        "id": "52",
+        "metadata": {
+          "type": "node",
+          "name": "hetchy1015",
+          "rank": 15,
+          "properties": {
+            "parrypeak": "",
+            "pall": ""
+          },
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1015"
+          }
+        }
+      },
+      {
+        "id": "53",
+        "metadata": {
+          "type": "core",
+          "id": 0,
+          "rank": 15,
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1015/core0"
+          }
+        }
+      },
+      {
+        "id": "54",
+        "metadata": {
+          "type": "core",
+          "id": 1,
+          "rank": 15,
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1015/core1"
+          }
+        }
+      },
+      {
+        "id": "55",
+        "metadata": {
+          "type": "node",
+          "name": "hetchy1016",
+          "rank": 16,
+          "properties": {
+            "parrypeak": "",
+            "pall": ""
+          },
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1016"
+          }
+        }
+      },
+      {
+        "id": "56",
+        "metadata": {
+          "type": "core",
+          "id": 0,
+          "rank": 16,
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1016/core0"
+          }
+        }
+      },
+      {
+        "id": "57",
+        "metadata": {
+          "type": "core",
+          "id": 1,
+          "rank": 16,
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1016/core1"
+          }
+        }
+      },
+      {
+        "id": "58",
+        "metadata": {
+          "type": "node",
+          "name": "hetchy1017",
+          "rank": 17,
+          "properties": {
+            "parrypeak": "",
+            "pall": ""
+          },
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1017"
+          }
+        }
+      },
+      {
+        "id": "59",
+        "metadata": {
+          "type": "core",
+          "id": 0,
+          "rank": 17,
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1017/core0"
+          }
+        }
+      },
+      {
+        "id": "60",
+        "metadata": {
+          "type": "core",
+          "id": 1,
+          "rank": 17,
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1017/core1"
+          }
+        }
+      },
+      {
+        "id": "61",
+        "metadata": {
+          "type": "node",
+          "name": "hetchy1018",
+          "rank": 18,
+          "properties": {
+            "parrypeak": "",
+            "pall": ""
+          },
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1018"
+          }
+        }
+      },
+      {
+        "id": "62",
+        "metadata": {
+          "type": "core",
+          "id": 0,
+          "rank": 18,
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1018/core0"
+          }
+        }
+      },
+      {
+        "id": "63",
+        "metadata": {
+          "type": "core",
+          "id": 1,
+          "rank": 18,
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy1018/core1"
+          }
+        }
+      },
+      {
+        "id": "64",
+        "metadata": {
+          "type": "storage_node",
+          "name": "hetchy202",
+          "rank": 20,
+          "properties": {
+            "rabbit": ""
+          },
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy202"
+          }
+        }
+      },
+      {
+        "id": "65",
+        "metadata": {
+          "type": "core",
+          "id": 0,
+          "rank": 20,
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy202/core0"
+          }
+        }
+      },
+      {
+        "id": "66",
+        "metadata": {
+          "type": "core",
+          "id": 1,
+          "rank": 20,
+          "paths": {
+            "containment": "/hetchy/chassis1/hetchy202/core1"
+          }
+        }
+      },
+      {
+        "id": "67",
+        "metadata": {
+          "type": "node",
+          "name": "hetchy1",
+          "rank": 0,
+          "paths": {
+            "containment": "/hetchy/hetchy1"
+          }
+        }
+      },
+      {
+        "id": "68",
+        "metadata": {
+          "type": "core",
+          "id": 0,
+          "rank": 0,
+          "paths": {
+            "containment": "/hetchy/hetchy1/core0"
+          }
+        }
+      },
+      {
+        "id": "69",
+        "metadata": {
+          "type": "core",
+          "id": 1,
+          "rank": 0,
+          "paths": {
+            "containment": "/hetchy/hetchy1/core1"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "0",
+        "target": "1"
+      },
+      {
+        "source": "1",
+        "target": "2"
+      },
+      {
+        "source": "1",
+        "target": "3"
+      },
+      {
+        "source": "1",
+        "target": "4"
+      },
+      {
+        "source": "4",
+        "target": "5"
+      },
+      {
+        "source": "4",
+        "target": "6"
+      },
+      {
+        "source": "1",
+        "target": "7"
+      },
+      {
+        "source": "7",
+        "target": "8"
+      },
+      {
+        "source": "7",
+        "target": "9"
+      },
+      {
+        "source": "1",
+        "target": "10"
+      },
+      {
+        "source": "10",
+        "target": "11"
+      },
+      {
+        "source": "10",
+        "target": "12"
+      },
+      {
+        "source": "0",
+        "target": "13"
+      },
+      {
+        "source": "13",
+        "target": "14"
+      },
+      {
+        "source": "13",
+        "target": "15"
+      },
+      {
+        "source": "13",
+        "target": "16"
+      },
+      {
+        "source": "16",
+        "target": "17"
+      },
+      {
+        "source": "16",
+        "target": "18"
+      },
+      {
+        "source": "13",
+        "target": "19"
+      },
+      {
+        "source": "19",
+        "target": "20"
+      },
+      {
+        "source": "19",
+        "target": "21"
+      },
+      {
+        "source": "13",
+        "target": "22"
+      },
+      {
+        "source": "22",
+        "target": "23"
+      },
+      {
+        "source": "22",
+        "target": "24"
+      },
+      {
+        "source": "13",
+        "target": "25"
+      },
+      {
+        "source": "25",
+        "target": "26"
+      },
+      {
+        "source": "25",
+        "target": "27"
+      },
+      {
+        "source": "13",
+        "target": "28"
+      },
+      {
+        "source": "28",
+        "target": "29"
+      },
+      {
+        "source": "28",
+        "target": "30"
+      },
+      {
+        "source": "13",
+        "target": "31"
+      },
+      {
+        "source": "31",
+        "target": "32"
+      },
+      {
+        "source": "31",
+        "target": "33"
+      },
+      {
+        "source": "13",
+        "target": "34"
+      },
+      {
+        "source": "34",
+        "target": "35"
+      },
+      {
+        "source": "34",
+        "target": "36"
+      },
+      {
+        "source": "13",
+        "target": "37"
+      },
+      {
+        "source": "37",
+        "target": "38"
+      },
+      {
+        "source": "37",
+        "target": "39"
+      },
+      {
+        "source": "13",
+        "target": "40"
+      },
+      {
+        "source": "40",
+        "target": "41"
+      },
+      {
+        "source": "40",
+        "target": "42"
+      },
+      {
+        "source": "13",
+        "target": "43"
+      },
+      {
+        "source": "43",
+        "target": "44"
+      },
+      {
+        "source": "43",
+        "target": "45"
+      },
+      {
+        "source": "13",
+        "target": "46"
+      },
+      {
+        "source": "46",
+        "target": "47"
+      },
+      {
+        "source": "46",
+        "target": "48"
+      },
+      {
+        "source": "13",
+        "target": "49"
+      },
+      {
+        "source": "49",
+        "target": "50"
+      },
+      {
+        "source": "49",
+        "target": "51"
+      },
+      {
+        "source": "13",
+        "target": "52"
+      },
+      {
+        "source": "52",
+        "target": "53"
+      },
+      {
+        "source": "52",
+        "target": "54"
+      },
+      {
+        "source": "13",
+        "target": "55"
+      },
+      {
+        "source": "55",
+        "target": "56"
+      },
+      {
+        "source": "55",
+        "target": "57"
+      },
+      {
+        "source": "13",
+        "target": "58"
+      },
+      {
+        "source": "58",
+        "target": "59"
+      },
+      {
+        "source": "58",
+        "target": "60"
+      },
+      {
+        "source": "13",
+        "target": "61"
+      },
+      {
+        "source": "61",
+        "target": "62"
+      },
+      {
+        "source": "61",
+        "target": "63"
+      },
+      {
+        "source": "13",
+        "target": "64"
+      },
+      {
+        "source": "64",
+        "target": "65"
+      },
+      {
+        "source": "64",
+        "target": "66"
+      },
+      {
+        "source": "0",
+        "target": "67"
+      },
+      {
+        "source": "67",
+        "target": "68"
+      },
+      {
+        "source": "67",
+        "target": "69"
+      }
+    ]
+  }
+}
