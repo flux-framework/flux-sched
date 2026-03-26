@@ -82,12 +82,20 @@ vtx_t resource_reader_hwloc_t::add_new_vertex (resource_graph_t &g,
         is_root = true;
     std::string istr = (id != -1) ? std::to_string (id) : "";
     std::string prefix = is_root ? "" : g[parent].paths[subsys];
+    // nodes must be given a nonnegative rank because flux-core expects
+    // ranks to be provided in an IDset, which only supports nonnegative
+    // integers
+    if (type == node_rt && rank == -1) {
+        m_node_rank += 1;
+        g[v].rank = m_node_rank;
+    } else {
+        g[v].rank = rank;
+    }
 
     g[v].type = type;
     g[v].basename = basename;
     g[v].size = size;
     g[v].uniq_id = v;
-    g[v].rank = rank;
     g[v].schedule.plans = planner_new (0, INT64_MAX, size, type.c_str ());
     g[v].idata.x_checker = planner_new (0, INT64_MAX, X_CHECKER_NJOBS, X_CHECKER_JOBS_STR);
     g[v].id = id;
@@ -101,7 +109,7 @@ vtx_t resource_reader_hwloc_t::add_new_vertex (resource_graph_t &g,
     m.by_path[g[v].paths[subsys]].push_back (v);
     m.by_type[g[v].type].push_back (v);
     m.by_name[g[v].name].push_back (v);
-    m.by_rank[rank].push_back (v);
+    m.by_rank[g[v].rank].push_back (v);
     return v;
 }
 
