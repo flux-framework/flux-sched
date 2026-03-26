@@ -11,6 +11,7 @@ target_link_libraries( reapi_cli PRIVATE
     )
 target_link_libraries( reapi_cli PUBLIC
     flux::core
+    match_option
     )
 install(TARGETS reapi_cli LIBRARY DESTINATION "${FLUX_LIB_DIR}")
 
