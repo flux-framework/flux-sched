@@ -19,6 +19,8 @@ extern "C" {
 #include <boost/iterator/transform_iterator.hpp>
 #include <chrono>
 
+#include <flux/core/job.h>
+
 using namespace Flux::Jobspec;
 using namespace Flux::resource_model;
 using namespace Flux::resource_model::detail;
@@ -1292,7 +1294,7 @@ int dfu_impl_t::find (std::shared_ptr<match_writers_t> &writers, const std::stri
     expr_eval_vtx_target_t target;
     vtx_predicates_override_t p_overridden;
     bool agfilter = false;
-    uint64_t jobid = 0;
+    flux_jobid_t jobid = 0;
     std::vector<std::pair<std::string, std::string>> predicates;
 
     if (!m_match || !m_graph || !m_graph_db || !writers) {
@@ -1319,8 +1321,8 @@ int dfu_impl_t::find (std::shared_ptr<match_writers_t> &writers, const std::stri
     for (auto const &p : predicates) {
         if (p.first == "jobid-alloc" || p.first == "jobid-span" || p.first == "jobid-tag"
             || p.first == "jobid-reserved") {
-            // Don't need try; catch here since validate () succeeded
-            jobid = std::stoul (p.second);
+            // Don't need to check returncode since validate () succeeded
+            flux_job_id_parse (p.second.c_str (), &jobid);
         } else if (p.first == "agfilter") {
             if (p.second == "true" || p.second == "t") {
                 agfilter = true;
