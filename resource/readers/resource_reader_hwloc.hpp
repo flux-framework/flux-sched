@@ -134,6 +134,8 @@ class resource_reader_hwloc_t : public resource_reader_base_t {
                          vtx_t &vtx,
                          const std::string &str,
                          int rank = -1);
+
+    int m_node_rank = -1;
 };
 
 }  // namespace resource_model

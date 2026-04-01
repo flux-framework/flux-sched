@@ -20,6 +20,9 @@ extern "C" {
 #include <jansson.h>
 }
 
+#include "resource/schema/resource_data.hpp"
+#include "resource/schema/resource_graph.hpp"
+
 namespace Flux {
 namespace resource_model {
 

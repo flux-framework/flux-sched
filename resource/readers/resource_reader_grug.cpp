@@ -57,6 +57,7 @@ class dfs_emitter_t : public boost::default_dfs_visitor {
     resource_graph_metadata_t *m_gm_p = NULL;
     resource_gen_spec_t *m_gspec_p = NULL;
     int m_rank = -1;
+    int m_node_rank = -1;
     std::string m_err_msg = "";
 };
 
@@ -206,6 +207,15 @@ vtx_t dfs_emitter_t::emit_vertex (ggv_t u,
     }
 
     std::string istr = (id != -1) ? std::to_string (id) : "";
+    // nodes must be given a nonnegative rank because flux-core expects
+    // ranks to be provided in an IDset, which only supports nonnegative
+    // integers
+    if (recipe[u].type == node_rt) {
+        m_node_rank += 1;
+        g[v].rank = m_node_rank;
+    } else {
+        g[v].rank = m_rank;
+    }
     g[v].type = recipe[u].type;
     g[v].basename = recipe[u].basename;
     g[v].size = recipe[u].size;
@@ -217,7 +227,6 @@ vtx_t dfs_emitter_t::emit_vertex (ggv_t u,
     g[v].paths[ssys] = pref + "/" + g[v].name;
     g[v].idata.member_of[ssys] = "*";
     g[v].uniq_id = v;
-    g[v].rank = m_rank;
 
     //
     // Indexing for fast look-up...
@@ -225,7 +234,7 @@ vtx_t dfs_emitter_t::emit_vertex (ggv_t u,
     m.by_path[g[v].paths[ssys]].push_back (v);
     m.by_type[g[v].type].push_back (v);
     m.by_name[g[v].name].push_back (v);
-    m.by_rank[m_rank].push_back (v);
+    m.by_rank[g[v].rank].push_back (v);
     return v;
 }
 

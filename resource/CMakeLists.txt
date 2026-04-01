@@ -107,6 +107,7 @@ add_subdirectory(reapi)
 add_subdirectory(evaluators)
 add_subdirectory(policies)
 add_subdirectory(schema)
+add_subdirectory(writers)
 
 # programs that depend on libresource
 add_subdirectory(utilities)

@@ -21,7 +21,8 @@ test_expect_success "vertex/edge counts for a tiny machine are correct" '
 '
 
 # Note that by default the rank is -1, meaning that the by_rank map 
-# contains the same number of vertices as the overall resource graph. 
+# contains the same number of vertices as the overall resource graph, except
+# for nodes which are given a unique rank incrementing from 0
 test_expect_success "by_type, by_name, by_path, and by_rank map sizes are \
 correct for GRUG" '
     echo "quit" > input2.txt &&
@@ -32,7 +33,7 @@ Pairs: //") &&
 Pairs: //") &&
     by_path=$(grep "by_path" out2.txt | sed "s/INFO: by_path Key-Value \
 Pairs: //") &&
-    by_rank=$(grep "number of" out2.txt | sed "s/INFO: number of \
+    by_rank=$(grep "number of" out2.txt | head -n1 | sed "s/INFO: number of \
 vertices with rank //") &&
     rank=$( echo ${by_rank} | sed "s/:.*//" ) &&
     nvertices=$( echo ${by_rank} | sed "s/[^:]*://" ) &&
@@ -40,11 +41,24 @@ vertices with rank //") &&
     test ${by_name} -eq 52 &&
     test ${by_path} -eq 100 &&
     test ${rank} -eq -1 &&
-    test ${nvertices} -eq 100
+    test ${nvertices} -eq 98 &&
+    by_rank=$(grep "number of" out2.txt | sed -n 2p | sed "s/INFO: number of \
+vertices with rank //") &&
+    rank=$( echo ${by_rank} | sed "s/:.*//" ) &&
+    nvertices=$( echo ${by_rank} | sed "s/[^:]*://" ) &&
+    test ${rank} -eq 0 &&
+    test ${nvertices} -eq 1 &&
+    by_rank=$(grep "number of" out2.txt | sed -n 3p | sed "s/INFO: number of \
+vertices with rank //") &&
+    rank=$( echo ${by_rank} | sed "s/:.*//" ) &&
+    nvertices=$( echo ${by_rank} | sed "s/[^:]*://" ) &&
+    test ${rank} -eq 1 &&
+    test ${nvertices} -eq 1
 '
 
 # Note that by default the rank is -1, meaning that the by_rank map 
-# contains the same number of vertices as the overall resource graph. 
+# contains the same number of vertices as the overall resource graph, except
+# for nodes which are given a unique rank incrementing from 0
 test_expect_success "by_type, by_name, by_path, and by_rank map sizes are \
 correct for JGF." '
     echo "quit" > input3.txt &&
@@ -56,7 +70,7 @@ Pairs: //") &&
 Pairs: //") &&
     by_path=$(grep "by_path" out3.txt | sed "s/INFO: by_path Key-Value \
 Pairs: //") &&
-    by_rank=$(grep "number of" out3.txt | sed "s/INFO: number of \
+    by_rank=$(grep "number of" out3.txt | head -n1 | sed "s/INFO: number of \
 vertices with rank //") &&
     rank=$( echo ${by_rank} | sed "s/:.*//" ) &&
     nvertices=$( echo ${by_rank} | sed "s/[^:]*://" ) &&
@@ -64,11 +78,24 @@ vertices with rank //") &&
     test ${by_name} -eq 52 &&
     test ${by_path} -eq 100 &&
     test ${rank} -eq -1 &&
-    test ${nvertices} -eq 100
+    test ${nvertices} -eq 98 &&
+    by_rank=$(grep "number of" out3.txt | sed -n 2p | sed "s/INFO: number of \
+vertices with rank //") &&
+    rank=$( echo ${by_rank} | sed "s/:.*//" ) &&
+    nvertices=$( echo ${by_rank} | sed "s/[^:]*://" ) &&
+    test ${rank} -eq 0 &&
+    test ${nvertices} -eq 1 &&
+    by_rank=$(grep "number of" out3.txt | sed -n 3p | sed "s/INFO: number of \
+vertices with rank //") &&
+    rank=$( echo ${by_rank} | sed "s/:.*//" ) &&
+    nvertices=$( echo ${by_rank} | sed "s/[^:]*://" ) &&
+    test ${rank} -eq 1 &&
+    test ${nvertices} -eq 1
 '
 
 # Note that by default the rank is -1, meaning that the by_rank map 
-# contains the same number of vertices as the overall resource graph. 
+# contains the same number of vertices as the overall resource graph, except
+# for nodes which are given a unique rank incrementing from 0
 test_expect_success "by_type, by_name, by_path, and by_rank map sizes are \
 correct for hwloc" '
     echo "quit" > input4.txt &&
@@ -80,7 +107,7 @@ Pairs: //") &&
 Pairs: //") &&
     by_path=$(grep "by_path" out4.txt | sed "s/INFO: by_path Key-Value \
 Pairs: //") &&
-    by_rank=$(grep "number of" out4.txt | sed "s/INFO: number of \
+    by_rank=$(grep "number of" out4.txt | head -n1 | sed "s/INFO: number of \
 vertices with rank //") &&
     rank=$( echo ${by_rank} | sed "s/:.*//" ) &&
     nvertices=$( echo ${by_rank} | sed "s/[^:]*://" ) &&
@@ -88,7 +115,13 @@ vertices with rank //") &&
     test ${by_name} -eq 7 &&
     test ${by_path} -eq 7 &&
     test ${rank} -eq -1 &&
-    test ${nvertices} -eq 7
+    test ${nvertices} -eq 6 &&
+    by_rank=$(grep "number of" out4.txt | sed -n 2p | sed "s/INFO: number of \
+vertices with rank //") &&
+    rank=$( echo ${by_rank} | sed "s/:.*//" ) &&
+    nvertices=$( echo ${by_rank} | sed "s/[^:]*://" ) &&
+    test ${rank} -eq 0 &&
+    test ${nvertices} -eq 1
 '
 
 test_expect_success "--reserve-vtx-vec works" '

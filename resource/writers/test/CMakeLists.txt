@@ -1,0 +1,5 @@
+add_executable(match_writers_test match_writers_test.cpp)
+add_sanitizers(match_writers_test)
+target_link_libraries(match_writers_test PRIVATE resource Catch2::Catch2WithMain intern)
+flux_add_test(NAME match_writers_test COMMAND match_writers_test)
+set_property(TEST match_writers_test APPEND PROPERTY ENVIRONMENT "TESTRESRC_INPUT_FILE=$(CMAKE_SOURCE_DIR)/conf/hype.lua")
