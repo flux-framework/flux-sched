@@ -17,8 +17,6 @@
 #include "resource/schema/resource_graph.hpp"
 #include "resource/readers/resource_reader_base.hpp"
 
-struct vmap_val_t;
-
 namespace Flux {
 namespace resource_model {
 
@@ -87,6 +85,13 @@ struct jgf_updater_data {
     bool update = true;        // Updating or partial cancel
     bool isect_ranks = false;  // Updating with partial_ok; intersecting with ranks key
     bool skipped = false;
+};
+
+struct vmap_val_t {
+    vtx_t v;
+    std::map<subsystem_t, bool> is_roots;
+    unsigned int needs;
+    unsigned int exclusive;
 };
 
 /*! JGF resource reader class.
@@ -244,7 +249,6 @@ class resource_reader_jgf_t : public resource_reader_base_t {
                          jgf_updater_data &updater_data);
     virtual int fetch_additional_vertices (resource_graph_t &g,
                                            resource_graph_metadata_t &m,
-                                           std::map<std::string, vmap_val_t> &vmap,
                                            fetch_helper_t &fetcher,
                                            std::vector<fetch_helper_t> &additional_vertices);
     int unpack_edge (json_t *element,

@@ -17,16 +17,16 @@ resource_reader_jgf_shorthand_t::~resource_reader_jgf_shorthand_t ()
 int resource_reader_jgf_shorthand_t::fetch_additional_vertices (
     resource_graph_t &g,
     resource_graph_metadata_t &m,
-    std::map<std::string, vmap_val_t> &vmap,
     fetch_helper_t &fetcher,
     std::vector<fetch_helper_t> &additional_vertices)
 {
     int rc = -1;
+    std::map<std::string, vmap_val_t> empty_vmap{};  // so `find_vtx` doesn't error out
     vtx_t v = boost::graph_traits<resource_graph_t>::null_vertex ();
     if (!fetcher.exclusive)  // vertex isn't exclusive, nothing to do
         return 0;
 
-    if ((rc = resource_reader_jgf_t::find_vtx (g, m, vmap, fetcher, v)) != 0)
+    if ((rc = resource_reader_jgf_t::find_vtx (g, m, empty_vmap, fetcher, v)) != 0)
         return rc;
 
     return recursively_collect_vertices (g, v, additional_vertices);

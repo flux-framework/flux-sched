@@ -112,13 +112,6 @@ void fetch_helper_t::scrub ()
     clear ();
 }
 
-struct vmap_val_t {
-    vtx_t v;
-    std::map<subsystem_t, bool> is_roots;
-    unsigned int needs;
-    unsigned int exclusive;
-};
-
 bool operator== (const resource_pool_t &r, const fetch_helper_t &f)
 {
     return (r.type.get () == f.type && r.basename == f.basename
@@ -968,7 +961,6 @@ int resource_reader_jgf_t::update_vertices (resource_graph_t &g,
     unsigned int i = 0;
     fetch_helper_t fetcher;
     std::vector<fetch_helper_t> additional_vertices;
-    std::map<std::string, vmap_val_t> empty_vmap{};
 
     for (i = 0; i < json_array_size (nodes); i++) {
         fetcher.scrub ();
@@ -977,7 +969,7 @@ int resource_reader_jgf_t::update_vertices (resource_graph_t &g,
             goto done;
         if ((rc = update_vtx (g, m, vmap, fetcher, update_data)) != 0)
             goto done;
-        if (fetch_additional_vertices (g, m, empty_vmap, fetcher, additional_vertices) != 0)
+        if (fetch_additional_vertices (g, m, fetcher, additional_vertices) != 0)
             goto done;
         for (auto &additional_fetcher : additional_vertices) {
             std::string vertex_id = std::to_string (additional_fetcher.uniq_id);
@@ -996,7 +988,6 @@ done:
 int resource_reader_jgf_t::fetch_additional_vertices (
     resource_graph_t &g,
     resource_graph_metadata_t &m,
-    std::map<std::string, vmap_val_t> &vmap,
     fetch_helper_t &fetcher,
     std::vector<fetch_helper_t> &additional_vertices)
 {
