@@ -1165,7 +1165,8 @@ int resource_reader_jgf_t::update_tgt_edge (resource_graph_t &g,
     if (!found) {
         errno = EINVAL;
         m_err_msg += __FUNCTION__;
-        m_err_msg += ": JGF edge not found in resource graph.\n";
+        m_err_msg += ": JGF edge from " + source + " to ";
+        m_err_msg += target + " not found in resource graph.\n";
         goto done;
     }
     g[e].idata.set_for_trav_update (vmap[target].needs, vmap[target].exclusive, token);

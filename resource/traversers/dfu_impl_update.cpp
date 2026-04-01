@@ -915,7 +915,7 @@ int dfu_impl_t::update (vtx_t root,
 
     if (m_graph_db->metadata.v_rt_edges[dom].get_trav_token () != m_best_k_cnt) {
         // This condition occurs when the subgraph came from a
-        // traverver different from this traverser, for example,
+        // traverser different from this traverser, for example,
         // a traverser whose dominant subsystem is different than this.
         return 0;
     }
