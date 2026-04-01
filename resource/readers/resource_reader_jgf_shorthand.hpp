@@ -22,7 +22,7 @@ class resource_reader_jgf_shorthand_t : public resource_reader_jgf_t {
    public:
     virtual ~resource_reader_jgf_shorthand_t ();
 
-   protected:
+   private:
     int fetch_additional_edges (resource_graph_t &g,
                                 resource_graph_metadata_t &m,
                                 std::map<std::string, vmap_val_t> &vmap,

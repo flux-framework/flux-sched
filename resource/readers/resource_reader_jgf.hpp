@@ -183,6 +183,17 @@ class resource_reader_jgf_t : public resource_reader_base_t {
                   std::map<std::string, vmap_val_t> &vmap,
                   const fetch_helper_t &fetcher,
                   vtx_t &ret_v);
+    int update_src_edge (resource_graph_t &g,
+                         resource_graph_metadata_t &m,
+                         std::map<std::string, vmap_val_t> &vmap,
+                         std::string &source,
+                         uint64_t token);
+    int update_tgt_edge (resource_graph_t &g,
+                         resource_graph_metadata_t &m,
+                         std::map<std::string, vmap_val_t> &vmap,
+                         std::string &source,
+                         std::string &target,
+                         uint64_t token);
 
    private:
     int fetch_jgf (const std::string &str,
@@ -264,17 +275,6 @@ class resource_reader_jgf_t : public resource_reader_base_t {
                      std::string &target,
                      std::string &subsystem,
                      jgf_updater_data &update_data);
-    int update_src_edge (resource_graph_t &g,
-                         resource_graph_metadata_t &m,
-                         std::map<std::string, vmap_val_t> &vmap,
-                         std::string &source,
-                         uint64_t token);
-    int update_tgt_edge (resource_graph_t &g,
-                         resource_graph_metadata_t &m,
-                         std::map<std::string, vmap_val_t> &vmap,
-                         std::string &source,
-                         std::string &target,
-                         uint64_t token);
     int unpack_edges (resource_graph_t &g,
                       resource_graph_metadata_t &m,
                       std::map<std::string, vmap_val_t> &vmap,
