@@ -57,6 +57,8 @@ class scoring_api_t {
     unsigned int avail ();
     void set_avail (unsigned int avail);
     bool is_contained (subsystem_t s, resource_type_t const &r);
+    unsigned int nslots ();
+    void set_nslots (unsigned int nslots);
 
     template<class compare_op = fold::greater, class binary_op = fold::plus>
     int64_t choose_accum_best_k (subsystem_t s,
@@ -102,6 +104,7 @@ class scoring_api_t {
     bool m_hier_constrain_now = false;
     int64_t m_overall_score = -1;
     unsigned int m_avail = 0;
+    unsigned int m_nslots = 0;
 };
 
 }  // namespace resource_model

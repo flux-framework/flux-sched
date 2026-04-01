@@ -145,6 +145,16 @@ bool scoring_api_t::is_contained (subsystem_t s, resource_type_t const &r)
     return m_ssys_map[s].contains (r);
 }
 
+unsigned int scoring_api_t::nslots ()
+{
+    return m_nslots;
+}
+
+void scoring_api_t::set_nslots (unsigned int nslots)
+{
+    m_nslots = nslots;
+}
+
 }  // namespace resource_model
 }  // namespace Flux
 

@@ -12,8 +12,8 @@ excl_4N4B="${hwloc_basepath}/004N/exclusive/04-brokers-sierra2"
 # Expected agfilter output
 expected_agfilter="${SHARNESS_TEST_SRCDIR}/data/resource/expected/find-status/agfilter.json"
 
-remove_times() {
-    cat ${1} | jq 'del (.execution.starttime) | del (.execution.expiration)'
+remove_times_and_nslots() {
+    cat ${1} | jq 'del (.execution.starttime) | del (.execution.expiration) | del (.execution.nslots)'
 }
 
 export FLUX_SCHED_MODULE=none
@@ -49,12 +49,12 @@ test_expect_success 'find/status: a jobspec requesting all resources can run' '
     jobid1=$(flux job submit full.json) &&
     flux job wait-event -t 10 ${jobid1} start &&
     flux job info ${jobid1} R > full.R.raw.json &&
-    remove_times full.R.raw.json > full.R.json
+    remove_times_and_nslots full.R.raw.json > full.R.json
 '
 
 test_expect_success 'find/status: find status=up returns the entire system' '
     flux ion-resource find status=up | tail -1 > up.raw.json &&
-    remove_times up.raw.json > up.json &&
+    remove_times_and_nslots up.raw.json > up.json &&
     diff full.R.json up.json
 '
 
@@ -74,14 +74,14 @@ test_expect_success 'find/status: find status=down and status=up' '
 test_expect_success 'find/status: find status=down or status=up' '
     flux ion-resource find "status=down or status=up" | \
 tail -1 > all.raw.json &&
-    remove_times all.raw.json > all.json &&
+    remove_times_and_nslots all.raw.json > all.json &&
     diff full.R.json all.json
 '
 
 test_expect_success 'find/status: find sched-now=allocated' '
     flux ion-resource find "sched-now=allocated" | \
 tail -1 > allocated.raw.json &&
-    remove_times allocated.raw.json > allocated.json &&
+    remove_times_and_nslots allocated.raw.json > allocated.json &&
     diff full.R.json allocated.json
 '
 
@@ -108,8 +108,8 @@ test_expect_success 'find/status: flux ion-resource status works' '
     cat status.json | jq " .all " > all.key.raw.json &&
     cat status.json | jq " .allocated " > allocated.key.raw.json &&
     cat status.json | jq " .down " > down.key.json &&
-    remove_times all.key.raw.json > all.key.json &&
-    remove_times allocated.key.raw.json > allocated.key.json &&
+    remove_times_and_nslots all.key.raw.json > all.key.json &&
+    remove_times_and_nslots allocated.key.raw.json > allocated.key.json &&
     diff full.R.json all.key.json &&
     diff full.R.json allocated.key.json &&
     downrank=$(cat down.key.json | jq " .execution.R_lite[].rank ") &&

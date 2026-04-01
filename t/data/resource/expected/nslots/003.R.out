@@ -1,0 +1,16 @@
+{"version": 1, "execution": {"R_lite": [{"rank": "-1", "children": {"core": "24-35", "gpu": "1"}}, {"rank": "-1", "children": {"core": "6-17,24-35", "gpu": "0-1"}}], "nodelist": ["node[1,0]"], "starttime": 0, "expiration": 3600, "nslots": 3}}
+INFO: =============================
+INFO: JOBID=1
+INFO: RESOURCES=ALLOCATED
+INFO: SCHEDULED AT=Now
+INFO: =============================
+{"version": 1, "execution": {"R_lite": [{"rank": "-1", "children": {"core": "6-17", "gpu": "0"}}], "nodelist": ["node1"], "starttime": 0, "expiration": 3600, "nslots": 1}}
+INFO: =============================
+INFO: JOBID=2
+INFO: RESOURCES=ALLOCATED
+INFO: SCHEDULED AT=Now
+INFO: =============================
+INFO: =============================
+INFO: No matching resources found
+INFO: JOBID=3
+INFO: =============================

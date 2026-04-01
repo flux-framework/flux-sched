@@ -934,7 +934,7 @@ int rv1_match_writers_t::emit_json (json_t **j_o, json_t **aux)
         goto ret;
     }
     if (json_object_get (rlite_aux_o, "properties")) {
-        if (!(o = json_pack ("{s:i s:{s:o s:O s:O s:I s:I} s:o}",
+        if (!(o = json_pack ("{s:i s:{s:o s:O s:O s:I s:I s:o*} s:o}",
                              "version",
                              1,
                              "execution",
@@ -948,6 +948,8 @@ int rv1_match_writers_t::emit_json (json_t **j_o, json_t **aux)
                              m_starttime,
                              "expiration",
                              m_expiration,
+                             "nslots",
+                             m_nslots ? json_integer (m_nslots) : NULL,
                              "scheduling",
                              jgf_o))) {
             json_decref (rlite_o);
@@ -958,7 +960,7 @@ int rv1_match_writers_t::emit_json (json_t **j_o, json_t **aux)
             goto ret;
         }
     } else {
-        if (!(o = json_pack ("{s:i s:{s:o s:O s:I s:I} s:o}",
+        if (!(o = json_pack ("{s:i s:{s:o s:O s:I s:I s:o*} s:o}",
                              "version",
                              1,
                              "execution",
@@ -970,6 +972,8 @@ int rv1_match_writers_t::emit_json (json_t **j_o, json_t **aux)
                              m_starttime,
                              "expiration",
                              m_expiration,
+                             "nslots",
+                             m_nslots ? json_integer (m_nslots) : NULL,
                              "scheduling",
                              jgf_o))) {
             json_decref (rlite_o);
@@ -1057,6 +1061,12 @@ int rv1_match_writers_t::emit_tm (uint64_t start_tm, uint64_t end_tm)
     return 0;
 }
 
+int rv1_match_writers_t::emit_nslots (unsigned int nslots)
+{
+    m_nslots = nslots;
+    return 0;
+}
+
 int rv1_match_writers_t::emit_attrs (const std::string &k, const std::string &v)
 {
     m_attrs[k] = v;
@@ -1083,7 +1093,7 @@ int rv1_nosched_match_writers_t::emit_json (json_t **j_o, json_t **aux)
     if ((rc = rlite.emit_json (&rlite_o, &rlite_aux_o)) < 0)
         goto ret;
     if (json_object_get (rlite_aux_o, "properties")) {
-        if (!(*j_o = json_pack ("{s:i s:{s:o s:O s:O s:I s:I}}",
+        if (!(*j_o = json_pack ("{s:i s:{s:o s:O s:O s:I s:I s:o*}}",
                                 "version",
                                 1,
                                 "execution",
@@ -1096,7 +1106,9 @@ int rv1_nosched_match_writers_t::emit_json (json_t **j_o, json_t **aux)
                                 "starttime",
                                 m_starttime,
                                 "expiration",
-                                m_expiration))) {
+                                m_expiration,
+                                "nslots",
+                                m_nslots ? json_integer (m_nslots) : NULL))) {
             json_decref (rlite_o);
             json_decref (rlite_aux_o);
             rc = -1;
@@ -1104,7 +1116,7 @@ int rv1_nosched_match_writers_t::emit_json (json_t **j_o, json_t **aux)
             goto ret;
         }
     } else {
-        if (!(*j_o = json_pack ("{s:i s:{s:o s:O s:I s:I}}",
+        if (!(*j_o = json_pack ("{s:i s:{s:o s:O s:I s:I s:o*}}",
                                 "version",
                                 1,
                                 "execution",
@@ -1115,7 +1127,9 @@ int rv1_nosched_match_writers_t::emit_json (json_t **j_o, json_t **aux)
                                 "starttime",
                                 m_starttime,
                                 "expiration",
-                                m_expiration))) {
+                                m_expiration,
+                                "nslots",
+                                m_nslots ? json_integer (m_nslots) : NULL))) {
             json_decref (rlite_o);
             json_decref (rlite_aux_o);
             rc = -1;
@@ -1169,6 +1183,12 @@ int rv1_nosched_match_writers_t::emit_tm (uint64_t start_tm, uint64_t end_tm)
 {
     m_starttime = start_tm;
     m_expiration = end_tm;
+    return 0;
+}
+
+int rv1_nosched_match_writers_t::emit_nslots (unsigned int nslots)
+{
+    m_nslots = nslots;
     return 0;
 }
 
