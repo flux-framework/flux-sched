@@ -73,3 +73,14 @@ int resource_reader_jgf_shorthand_t::recursively_collect_vertices (
     }
     return 0;
 }
+
+int resource_reader_jgf_shorthand_t::fetch_additional_edges (
+    resource_graph_t &g,
+    resource_graph_metadata_t &m,
+    std::map<std::string, vmap_val_t> &vmap,
+    fetch_helper_t &root,
+    std::vector<fetch_helper_t> &additional_vertices,
+    uint64_t token)
+{
+    return 0;
+}

@@ -978,6 +978,10 @@ int resource_reader_jgf_t::update_vertices (resource_graph_t &g,
                 goto done;
             }
         }
+        if (fetch_additional_edges (g, m, vmap, fetcher, additional_vertices, update_data.token)
+            < 0) {
+            goto done;
+        }
     }
     rc = 0;
 
@@ -990,6 +994,16 @@ int resource_reader_jgf_t::fetch_additional_vertices (
     resource_graph_metadata_t &m,
     fetch_helper_t &fetcher,
     std::vector<fetch_helper_t> &additional_vertices)
+{
+    return 0;
+}
+
+int resource_reader_jgf_t::fetch_additional_edges (resource_graph_t &g,
+                                                   resource_graph_metadata_t &m,
+                                                   std::map<std::string, vmap_val_t> &vmap,
+                                                   fetch_helper_t &root,
+                                                   std::vector<fetch_helper_t> &additional_vertices,
+                                                   uint64_t token)
 {
     return 0;
 }
@@ -1283,6 +1297,7 @@ int resource_reader_jgf_t::update (resource_graph_t &g,
     update_data.duration = dur;
     update_data.reserved = rsv;
     update_data.update = true;
+    update_data.token = token;
 
     if ((rc = fetch_jgf (str, &jgf, &nodes, &edges, update_data)) != 0)
         goto done;
@@ -1321,8 +1336,10 @@ int resource_reader_jgf_t::partial_cancel (resource_graph_t &g,
     // Fill in updater data
     p_cancel_data.jobid = jobid;
     p_cancel_data.update = false;
+    p_cancel_data.token = 0;
     if ((rc = fetch_jgf (R, &jgf, &nodes, &edges, p_cancel_data)) != 0)
         goto done;
+
     if ((rc = update_vertices (g, m, vmap, nodes, p_cancel_data)) != 0)
         goto done;
 

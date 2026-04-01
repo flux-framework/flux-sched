@@ -85,6 +85,7 @@ struct jgf_updater_data {
     bool update = true;        // Updating or partial cancel
     bool isect_ranks = false;  // Updating with partial_ok; intersecting with ranks key
     bool skipped = false;
+    uint64_t token = 0;
 };
 
 struct vmap_val_t {
@@ -251,6 +252,12 @@ class resource_reader_jgf_t : public resource_reader_base_t {
                                            resource_graph_metadata_t &m,
                                            fetch_helper_t &fetcher,
                                            std::vector<fetch_helper_t> &additional_vertices);
+    virtual int fetch_additional_edges (resource_graph_t &g,
+                                        resource_graph_metadata_t &m,
+                                        std::map<std::string, vmap_val_t> &vmap,
+                                        fetch_helper_t &root,
+                                        std::vector<fetch_helper_t> &additional_vertices,
+                                        uint64_t token);
     int unpack_edge (json_t *element,
                      std::map<std::string, vmap_val_t> &vmap,
                      std::string &source,
