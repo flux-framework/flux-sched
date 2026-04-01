@@ -62,6 +62,7 @@ int resource_reader_jgf_shorthand_t::recursively_collect_vertices (
         vertex_copy.properties = g[target].properties;
         vertex_copy.paths = g[target].paths;
         vertex_copy.unit = g[target].unit.c_str ();
+        vertex_copy.exclusive = 1;  // must be exclusive as part of exclusive sub-tree
         if (resource_reader_jgf_t::apply_defaults (vertex_copy, g[target].name.c_str ()) < 0)
             return -1;
 
