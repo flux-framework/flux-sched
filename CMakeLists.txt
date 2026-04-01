@@ -124,7 +124,7 @@ execute_process(
   OUTPUT_STRIP_TRAILING_WHITESPACE)
 pkg_check_modules(yaml-cpp REQUIRED IMPORTED_TARGET yaml-cpp)
 pkg_check_modules(LIBEDIT REQUIRED IMPORTED_TARGET libedit)
-pkg_check_modules(HWLOC REQUIRED IMPORTED_TARGET hwloc>=1.11.1)
+pkg_check_modules(HWLOC REQUIRED IMPORTED_TARGET hwloc>=2)
 pkg_check_modules(JANSSON REQUIRED IMPORTED_TARGET jansson>=2.10)
 pkg_check_modules(UUID REQUIRED IMPORTED_TARGET uuid)
 
