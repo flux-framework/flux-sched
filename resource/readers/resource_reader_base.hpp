@@ -30,6 +30,7 @@ struct modify_data_t {
     std::unordered_map<int64_t, vtx_t> rank_to_root;
     std::unordered_map<int64_t, std::unordered_map<resource_type_t, int64_t>> rank_to_counts;
     std::unordered_map<resource_type_t, int64_t> type_to_count;
+    uint64_t token = 0;
 };
 
 /*!  Base resource reader class.

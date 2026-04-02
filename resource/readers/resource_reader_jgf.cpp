@@ -1337,7 +1337,7 @@ int resource_reader_jgf_t::partial_cancel (resource_graph_t &g,
     // Fill in updater data
     p_cancel_data.jobid = jobid;
     p_cancel_data.update = false;
-    p_cancel_data.token = 0;
+    p_cancel_data.token = mod_data.token;
     if ((rc = fetch_jgf (R, &jgf, &nodes, &edges, p_cancel_data)) != 0)
         goto done;
 
