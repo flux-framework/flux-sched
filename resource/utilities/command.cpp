@@ -470,24 +470,12 @@ static int attach (std::shared_ptr<detail::resource_query_t> &ctx,
         std::cerr << "ERROR: can't open " << args[1] << std::endl;
         return -1;
     }
+
     buffer << jgf_file.rdbuf ();
     jgf_file.close ();
-
-    if ((rd = create_resource_reader ("jgf")) == nullptr) {
-        std::cerr << "ERROR: can't create JGF reader " << std::endl;
-        return -1;
-    }
-
-    // Unpack_at currently does not use the vertex attachment point.
-    // This functionality is currently experimental.
-    vtx_t v = boost::graph_traits<resource_graph_t>::null_vertex ();
-    if ((rd->unpack_at (ctx->db->resource_graph, ctx->db->metadata, v, buffer.str (), -1)) != 0) {
+    if ((detail::reapi_cli_t::add_subgraph (ctx.get (), buffer.str ())) != 0) {
         std::cerr << "ERROR: can't attach JGF subgraph " << std::endl;
-        std::cerr << "ERROR: " << rd->err_message ();
-        return -1;
-    }
-    if (ctx->traverser->initialize (ctx->db, ctx->matcher) != 0) {
-        std::cerr << "ERROR: can't reinitialize traverser after attach" << std::endl;
+        std::cerr << "ERROR: " << detail::reapi_cli_t::get_err_message ();
         return -1;
     }
 
@@ -496,7 +484,6 @@ static int attach (std::shared_ptr<detail::resource_query_t> &ctx,
 
 static int remove (std::shared_ptr<detail::resource_query_t> &ctx,
                    std::vector<std::string> &args,
-
                    std::ostream &out)
 {
     const std::string target = args[1];
@@ -509,9 +496,9 @@ static int remove (std::shared_ptr<detail::resource_query_t> &ctx,
 
     if (is_path == "true") {
         path = true;
-        if ((ctx->traverser->remove_subgraph (target)) != 0) {
+        if ((detail::reapi_cli_t::remove_subgraph (ctx.get (), target)) != 0) {
             std::cerr << "ERROR: can't remove subgraph " << std::endl;
-            std::cerr << "ERROR: " << ctx->traverser->err_message ();
+            std::cerr << "ERROR: " << detail::reapi_cli_t::get_err_message ();
             return -1;
         }
     } else if (is_path == "false") {
@@ -535,12 +522,17 @@ static int remove (std::shared_ptr<detail::resource_query_t> &ctx,
             std::cerr << "ERROR: " << ctx->traverser->err_message ();
             return -1;
         }
+        // Neither of the above remove calls will update counts, so we need to do it here.
+        if (ctx->traverser->initialize () != 0) {
+            std::cerr << "ERROR: failed to update counts after partial cancel and remove "
+                      << std::endl;
+            std::cerr << "ERROR: " << ctx->traverser->err_message ();
+            return -1;
+        }
     } else {
         std::cerr << "ERROR: invalid path boolean input " << std::endl;
         return -1;
     }
-
-    ctx->traverser->initialize ();
 
     return 0;
 }
