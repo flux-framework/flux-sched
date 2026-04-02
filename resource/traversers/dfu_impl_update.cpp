@@ -972,7 +972,7 @@ int dfu_impl_t::remove (vtx_t root,
     m_postorder = 0;
 
     tick ();
-    mod_data.token = m_best_k_cnt;
+    mod_data.sequence_number = m_best_k_cnt;
     if (reader->partial_cancel (g, m, mod_data, R_to_cancel, jobid) != 0) {
         m_err_msg += __FUNCTION__;
         m_err_msg += ": partial_cancel returned error.\n";

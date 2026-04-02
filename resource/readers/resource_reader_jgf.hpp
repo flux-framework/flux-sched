@@ -85,7 +85,7 @@ struct jgf_updater_data {
     bool update = true;        // Updating or partial cancel
     bool isect_ranks = false;  // Updating with partial_ok; intersecting with ranks key
     bool skipped = false;
-    uint64_t token = 0;
+    uint64_t sequence_number = 0;
 };
 
 struct vmap_val_t {
@@ -141,8 +141,8 @@ class resource_reader_jgf_t : public resource_reader_base_t {
      * \param at     start time of this job
      * \param dur    duration of this job
      * \param rsv    true if this update is for a reservation.
-     * \param trav_token
-     *               token to be used by traverser
+     * \param sequence_number
+     *               traversal token (trav_token) to be used by traverser
      * \return       0 on success; non-zero integer on an error
      */
     virtual int update (resource_graph_t &g,
@@ -152,7 +152,7 @@ class resource_reader_jgf_t : public resource_reader_base_t {
                         int64_t at,
                         uint64_t dur,
                         bool rsv,
-                        uint64_t trav_token);
+                        uint64_t sequence_number);
 
     /*! Partial cancellation of jobid based on R.
      *
@@ -187,13 +187,13 @@ class resource_reader_jgf_t : public resource_reader_base_t {
                          resource_graph_metadata_t &m,
                          std::map<std::string, vmap_val_t> &vmap,
                          std::string &source,
-                         uint64_t token);
+                         uint64_t sequence_number);
     int update_tgt_edge (resource_graph_t &g,
                          resource_graph_metadata_t &m,
                          std::map<std::string, vmap_val_t> &vmap,
                          std::string &source,
                          std::string &target,
-                         uint64_t token);
+                         uint64_t sequence_number);
 
    private:
     int fetch_jgf (const std::string &str,
@@ -268,7 +268,7 @@ class resource_reader_jgf_t : public resource_reader_base_t {
                                         std::map<std::string, vmap_val_t> &vmap,
                                         fetch_helper_t &root,
                                         std::vector<fetch_helper_t> &additional_vertices,
-                                        uint64_t token);
+                                        uint64_t sequence_number);
     int unpack_edge (json_t *element,
                      std::map<std::string, vmap_val_t> &vmap,
                      std::string &source,
@@ -284,7 +284,7 @@ class resource_reader_jgf_t : public resource_reader_base_t {
                       resource_graph_metadata_t &m,
                       std::map<std::string, vmap_val_t> &vmap,
                       json_t *edges,
-                      uint64_t token,
+                      uint64_t sequence_number,
                       jgf_updater_data &update_data);
     int get_subgraph_vertices (resource_graph_t &g, vtx_t node, std::vector<vtx_t> &node_list);
     int get_parent_vtx (resource_graph_t &g, vtx_t node, vtx_t &parent_node);

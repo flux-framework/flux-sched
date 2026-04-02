@@ -371,7 +371,7 @@ int resource_reader_rv1exec_t::update_edges (resource_graph_t &g,
         m_err_msg += ": rv1exec edge not found in resource graph.\n";
         goto error;
     }
-    g[e].idata.set_for_trav_update (g[dst].size, true, update_data.token);
+    g[e].idata.set_for_trav_update (g[dst].size, true, update_data.sequence_number);
 
     return 0;
 
@@ -852,7 +852,7 @@ int resource_reader_rv1exec_t::unpack_rlite (resource_graph_t &g,
     // Set the cluster "needs" and make the update shared access to the cluster
     m.v_rt_edges[containment_sub].set_for_trav_update (g[cluster_vtx].size,
                                                        false,
-                                                       update_data.token);
+                                                       update_data.sequence_number);
     json_array_foreach (rlite, index, entry) {
         if (unpack_rlite_entry (g, m, cluster_vtx, entry, hlist, rmap, pmap, update_data) < 0)
             goto error;
@@ -1037,7 +1037,7 @@ int resource_reader_rv1exec_t::update (resource_graph_t &g,
                                        int64_t at,
                                        uint64_t dur,
                                        bool rsv,
-                                       uint64_t token)
+                                       uint64_t sequence_number)
 {
     int rc = -1;
     json_error_t error;
@@ -1060,7 +1060,7 @@ int resource_reader_rv1exec_t::update (resource_graph_t &g,
     update_data.at = at;
     update_data.duration = dur;
     update_data.reserved = rsv;
-    update_data.token = token;
+    update_data.sequence_number = sequence_number;
 
     if ((rc = unpack_internal (g, m, rv1, update_data)) == -1) {
         undo_vertices (g, update_data);

@@ -69,8 +69,8 @@ class resource_reader_hwloc_t : public resource_reader_base_t {
      * \param at     start time of this job
      * \param dur    duration of this job
      * \param rsv    true if this update is for a reservation.
-     * \param trav_token
-     *               token to be used by traverser
+     * \param sequence_number
+     *               traversal token (trav_token) to be used by traverser
      * \return       0 on success; non-zero integer on an error
      */
     virtual int update (resource_graph_t &g,
@@ -80,7 +80,7 @@ class resource_reader_hwloc_t : public resource_reader_base_t {
                         int64_t at,
                         uint64_t dur,
                         bool rsv,
-                        uint64_t trav_token);
+                        uint64_t sequence_number);
 
     /*! Partial cancellation of jobid based on R.
      *

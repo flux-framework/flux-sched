@@ -27,7 +27,7 @@ struct updater_data {
     int64_t at = 0;
     uint64_t duration = 0;
     bool reserved = false;
-    uint64_t token = 0;
+    uint64_t sequence_number = 0;
     // track updated vertices to undo upon error
     std::map<int64_t, std::vector<vtx_t>> updated_vertices;
     bool update = true;  // Updating or adding vertex
@@ -81,8 +81,8 @@ class resource_reader_rv1exec_t : public resource_reader_base_t {
      * \param at     start time of this job
      * \param dur    duration of this job
      * \param rsv    true if this update is for a reservation.
-     * \param trav_token
-     *               token to be used by traverser
+     * \param sequence_number
+     *               traversal token (trav_token) to be used by traverser
      * \return       -1 with ENOTSUP (Not supported yet)
      */
     virtual int update (resource_graph_t &g,
@@ -92,7 +92,7 @@ class resource_reader_rv1exec_t : public resource_reader_base_t {
                         int64_t at,
                         uint64_t dur,
                         bool rsv,
-                        uint64_t trav_token);
+                        uint64_t sequence_number);
 
     /*! Partial cancellation of jobid based on R.
      *

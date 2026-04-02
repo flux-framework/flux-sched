@@ -80,14 +80,15 @@ int resource_reader_jgf_shorthand_t::fetch_additional_edges (
     std::map<std::string, vmap_val_t> &vmap,
     fetch_helper_t &root,
     std::vector<fetch_helper_t> &additional_vertices,
-    uint64_t token)
+    uint64_t sequence_number)
 {
-    if (additional_vertices.size () > 0 && update_additional_edges (g, m, vmap, root, token) < 0) {
+    if (additional_vertices.size () > 0
+        && update_additional_edges (g, m, vmap, root, sequence_number) < 0) {
         return -1;
     }
     // iterate through again to add edges
     for (auto &fetcher : additional_vertices) {
-        if (update_additional_edges (g, m, vmap, fetcher, token) < 0) {
+        if (update_additional_edges (g, m, vmap, fetcher, sequence_number) < 0) {
             return -1;
         }
     }
@@ -99,7 +100,7 @@ int resource_reader_jgf_shorthand_t::update_additional_edges (
     resource_graph_metadata_t &m,
     std::map<std::string, vmap_val_t> &vmap,
     fetch_helper_t &fetcher,
-    uint64_t token)
+    uint64_t sequence_number)
 {
     vtx_t v;
     std::map<std::string, vmap_val_t> empty_vmap{};  // so `find_vtx` doesn't error out
@@ -114,8 +115,8 @@ int resource_reader_jgf_shorthand_t::update_additional_edges (
         if (g[*ei].subsystem != containment_sub)
             continue;
         std::string target_str = std::to_string (boost::target (*ei, g));
-        if (update_src_edge (g, m, vmap, vertex_id, token) < 0
-            || update_tgt_edge (g, m, vmap, vertex_id, target_str, token) < 0) {
+        if (update_src_edge (g, m, vmap, vertex_id, sequence_number) < 0
+            || update_tgt_edge (g, m, vmap, vertex_id, target_str, sequence_number) < 0) {
             return -1;
         }
     }
