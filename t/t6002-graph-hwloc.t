@@ -4,7 +4,7 @@ test_description='Test Graph Data Store under the Fluxion Resource Module'
 
 . `dirname $0`/sharness.sh
 
-hwloc_basepath=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/hwloc-data`
+hwloc_basepath=`readlink -f ${SHARNESS_TEST_SRCDIR}/data/hwloc-data`
 # 4 brokers, each (exclusively) have: 1 node, 2 sockets, 16 cores (8 per socket)
 excl_4N4B="${hwloc_basepath}/004N/exclusive/04-brokers"
 

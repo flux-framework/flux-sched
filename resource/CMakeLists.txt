@@ -1,5 +1,5 @@
 add_library(fluxion-data SHARED schema/data_std.cpp)
-target_link_libraries(fluxion-data PRIVATE
+target_link_libraries(fluxion-data PUBLIC
     intern
     )
 set_target_properties(fluxion-data PROPERTIES

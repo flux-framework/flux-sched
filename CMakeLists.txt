@@ -199,8 +199,12 @@ function(flux_add_plugin TargetName PluginType)
     ${__argsQuoted}
     )"
     )
-  target_link_options(${TargetName} PRIVATE
-    "LINKER:--version-script=${CMAKE_SOURCE_DIR}/flux-plugin.map" ${LinkerOpts})
+
+  if (${CMAKE_SYSTEM_NAME} MATCHES "LINUX")
+    target_link_options(${TargetName} PRIVATE
+      "LINKER:--version-script=${CMAKE_SOURCE_DIR}/flux-plugin.map" ${LinkerOpts})
+  endif()
+
   add_sanitizers(${TargetName})
   target_link_libraries(${TargetName} PRIVATE flux::core)
   if (NOT ARG_NOINSTALL)

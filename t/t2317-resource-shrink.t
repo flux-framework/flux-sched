@@ -4,7 +4,7 @@ test_description='Test resource shrink when not using resource configuration'
 
 . `dirname $0`/sharness.sh
 
-notify_base=`readlink -e ${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/satisfiability`
+notify_base=`readlink -f ${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/satisfiability`
 
 SIZE=4
 test_under_flux $SIZE full --test-exit-mode=leader
