@@ -82,7 +82,7 @@ class resource_reader_rv1exec_t : public resource_reader_base_t {
      * \param dur    duration of this job
      * \param rsv    true if this update is for a reservation.
      * \param sequence_number
-     *               traversal token (trav_token) to be used by traverser
+     *               traversal token to be used by traverser
      * \return       -1 with ENOTSUP (Not supported yet)
      */
     int update (resource_graph_t &g,

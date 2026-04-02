@@ -631,7 +631,7 @@ class dfu_impl_t {
      *                                                                      *
      ************************************************************************/
     color_t m_color;
-    uint64_t m_best_k_cnt = 0;
+    uint64_t m_sequence_number = 0;
     unsigned int m_trav_level = 0;
     unsigned int m_preorder = 0;
     unsigned int m_postorder = 0;

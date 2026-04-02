@@ -295,7 +295,7 @@ bool dfu_impl_t::modify_traversal (vtx_t u, bool emit_shadow_from_parent) const
 
 bool dfu_impl_t::stop_explore_best (edg_t e, bool mod_trav) const
 {
-    return (*m_graph)[e].idata.get_trav_token () != m_best_k_cnt && !mod_trav;
+    return (*m_graph)[e].idata.get_sequence_number () != m_sequence_number && !mod_trav;
 }
 
 bool dfu_impl_t::get_eff_exclusive (bool x, bool mod_trav) const
@@ -847,7 +847,7 @@ int dfu_impl_t::update (vtx_t root, std::shared_ptr<match_writers_t> &writers, j
     std::map<resource_type_t, int64_t> dfu;
     subsystem_t dom = m_match->dom_subsystem ();
 
-    if (m_graph_db->metadata.v_rt_edges[dom].get_trav_token () != m_best_k_cnt) {
+    if (m_graph_db->metadata.v_rt_edges[dom].get_sequence_number () != m_sequence_number) {
         m_err_msg += __FUNCTION__;
         m_err_msg += ": resource state wasn't properly set up for update.\n";
         return -1;
@@ -906,14 +906,14 @@ int dfu_impl_t::update (vtx_t root,
                               jobmeta.at,
                               jobmeta.duration,
                               rsv,
-                              m_best_k_cnt))
+                              m_sequence_number))
         != 0) {
         m_err_msg += reader->err_message ();
         reader->clear_err_message ();
         return rc;
     }
 
-    if (m_graph_db->metadata.v_rt_edges[dom].get_trav_token () != m_best_k_cnt) {
+    if (m_graph_db->metadata.v_rt_edges[dom].get_sequence_number () != m_sequence_number) {
         // This condition occurs when the subgraph came from a
         // traverser different from this traverser, for example,
         // a traverser whose dominant subsystem is different than this.
@@ -972,7 +972,7 @@ int dfu_impl_t::remove (vtx_t root,
     m_postorder = 0;
 
     tick ();
-    mod_data.sequence_number = m_best_k_cnt;
+    mod_data.sequence_number = m_sequence_number;
     if (reader->partial_cancel (g, m, mod_data, R_to_cancel, jobid) != 0) {
         m_err_msg += __FUNCTION__;
         m_err_msg += ": partial_cancel returned error.\n";

@@ -142,7 +142,7 @@ class resource_reader_jgf_t : public resource_reader_base_t {
      * \param dur    duration of this job
      * \param rsv    true if this update is for a reservation.
      * \param sequence_number
-     *               traversal token (trav_token) to be used by traverser
+     *               traversal token to be used by traverser
      * \return       0 on success; non-zero integer on an error
      */
     int update (resource_graph_t &g,
