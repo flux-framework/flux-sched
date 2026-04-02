@@ -111,10 +111,10 @@ class resource_reader_jgf_t : public resource_reader_base_t {
      *                   ENOMEM: out of memory
      *                   EINVAL: invalid input or operation
      */
-    virtual int unpack (resource_graph_t &g,
-                        resource_graph_metadata_t &m,
-                        const std::string &str,
-                        int rank = -1);
+    int unpack (resource_graph_t &g,
+                resource_graph_metadata_t &m,
+                const std::string &str,
+                int rank = -1) override;
 
     /*! Unpack str into a resource graph and graft
      *  the top-level vertices to vtx.
@@ -126,11 +126,11 @@ class resource_reader_jgf_t : public resource_reader_base_t {
      * \param rank   assign this rank to all the newly created resource vertices
      * \return       -1 with errno=ENOTSUP (Not supported yet)
      */
-    virtual int unpack_at (resource_graph_t &g,
-                           resource_graph_metadata_t &m,
-                           vtx_t &vtx,
-                           const std::string &str,
-                           int rank = -1);
+    int unpack_at (resource_graph_t &g,
+                   resource_graph_metadata_t &m,
+                   vtx_t &vtx,
+                   const std::string &str,
+                   int rank = -1) override;
 
     /*! Update resource graph g with str.
      *
@@ -145,14 +145,14 @@ class resource_reader_jgf_t : public resource_reader_base_t {
      *               traversal token (trav_token) to be used by traverser
      * \return       0 on success; non-zero integer on an error
      */
-    virtual int update (resource_graph_t &g,
-                        resource_graph_metadata_t &m,
-                        const std::string &str,
-                        int64_t jobid,
-                        int64_t at,
-                        uint64_t dur,
-                        bool rsv,
-                        uint64_t sequence_number);
+    int update (resource_graph_t &g,
+                resource_graph_metadata_t &m,
+                const std::string &str,
+                int64_t jobid,
+                int64_t at,
+                uint64_t dur,
+                bool rsv,
+                uint64_t sequence_number) override;
 
     /*! Partial cancellation of jobid based on R.
      *
@@ -164,17 +164,17 @@ class resource_reader_jgf_t : public resource_reader_base_t {
      * \param jobid  jobid of str
      * \return       0 on success; non-zero integer on an error
      */
-    virtual int partial_cancel (resource_graph_t &g,
-                                resource_graph_metadata_t &m,
-                                modify_data_t &mod_data,
-                                const std::string &R,
-                                int64_t jobid);
+    int partial_cancel (resource_graph_t &g,
+                        resource_graph_metadata_t &m,
+                        modify_data_t &mod_data,
+                        const std::string &R,
+                        int64_t jobid) override;
 
     /*! Is the selected reader format support allowlist
      *
      * \return       false
      */
-    virtual bool is_allowlist_supported ();
+    bool is_allowlist_supported () override;
 
    protected:
     int apply_defaults (fetch_helper_t &f, const char *name);
