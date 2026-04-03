@@ -60,7 +60,9 @@ test_expect_success 'jgf_shorthand emits cores and gpus with policy=low' '
     grep compute1 match2.json > /dev/null &&
     grep cluster match2.json > /dev/null &&
     jq -e ".graph.nodes[] | select(.id == \"23\") | .metadata.name == \"compute3\"" match2.json &&
-    test_cmp match2.json ${exp_dir}/t3040_expected_match2.json
+    jq -e ".writer == null" match2.json &&
+    jq "del(.graph.metadata)" match2.json > match2_without_metadata.json &&
+    test_cmp match2_without_metadata.json ${exp_dir}/t3040_expected_match2.json
 '
 
 test_expect_success 'emitted jgf_shorthand resource graph can be loaded' '
@@ -101,6 +103,38 @@ test_expect_success 'emitted jgf_shorthand resource graph can be loaded but has 
     ${query} -L match3.json -f jgf -F jgf -t shorthand3-2.out -P low < match_only_nodes_cmd &&
     test_must_fail grep "No matching resources found" shorthand3-2.out &&
     grep cluster shorthand3-2.out && grep node shorthand3-2.out
+'
+
+test_expect_success 'rv1_shorthand does not emit cores or gpus with exclusive nodes' '
+    ${query} -L JGF.json -f jgf -F rv1_shorthand -t rv1_shorthand.out -P high < match_jobspec_exclusive_cmd &&
+    head -n1 rv1_shorthand.out | jq -S . > match4.json &&
+    grep core match4.json > /dev/null &&
+    grep gpu match4.json > /dev/null &&
+    jq .scheduling match4.json > match4_jgf.json &&
+    test_must_fail grep core match4_jgf.json > /dev/null &&
+    test_must_fail grep gpu match4_jgf.json > /dev/null &&
+    grep node match4_jgf.json > /dev/null &&
+    grep compute1 match4_jgf.json > /dev/null &&
+    grep cluster match4_jgf.json > /dev/null &&
+    jq -e ".graph.nodes[] | select(.id == \"23\") | .metadata.name == \"compute3\"" match4_jgf.json &&
+    # result should be the same as above when a non-exclusive jobspec was submitted with a
+    # node-exclusive match policy (i.e. match1)
+    test_cmp match4_jgf.json ${exp_dir}/t3040_expected_match1.json
+'
+
+test_expect_success 'rv1_shorthand does not emit cores or gpus with policy=hinodex' '
+    ${query} -L JGF.json -f jgf -F rv1_shorthand -t rv1_shorthand2.out -P hinodex < match_jobspec_cmd &&
+    head -n1 rv1_shorthand2.out | jq -S . > match5.json &&
+    grep core match5.json > /dev/null &&
+    grep gpu match5.json > /dev/null &&
+    jq .scheduling match5.json > match5_jgf.json &&
+    test_must_fail grep core match5_jgf.json > /dev/null &&
+    test_must_fail grep gpu match5_jgf.json > /dev/null &&
+    grep node match5_jgf.json > /dev/null &&
+    grep compute1 match5_jgf.json > /dev/null &&
+    grep cluster match5_jgf.json > /dev/null &&
+    jq -e ".graph.nodes[] | select(.id == \"23\") | .metadata.name == \"compute3\"" match5_jgf.json &&
+    test_cmp match5_jgf.json ${exp_dir}/t3040_expected_match1.json
 '
 
 test_done

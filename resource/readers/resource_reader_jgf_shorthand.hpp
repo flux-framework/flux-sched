@@ -22,10 +22,22 @@ class resource_reader_jgf_shorthand_t : public resource_reader_jgf_t {
    public:
     virtual ~resource_reader_jgf_shorthand_t ();
 
-   protected:
+   private:
+    int fetch_additional_edges (resource_graph_t &g,
+                                resource_graph_metadata_t &m,
+                                std::map<std::string, vmap_val_t> &vmap,
+                                fetch_helper_t &root,
+                                std::vector<fetch_helper_t> &additional_vertices,
+                                uint64_t sequence_number) override;
+
+    int update_additional_edges (resource_graph_t &g,
+                                 resource_graph_metadata_t &m,
+                                 std::map<std::string, vmap_val_t> &vmap,
+                                 fetch_helper_t &fetcher,
+                                 uint64_t sequence_number);
+
     int fetch_additional_vertices (resource_graph_t &g,
                                    resource_graph_metadata_t &m,
-                                   std::map<std::string, vmap_val_t> &vmap,
                                    fetch_helper_t &fetcher,
                                    std::vector<fetch_helper_t> &additional_vertices) override;
 

@@ -1,4 +1,4 @@
-version: 9999
+version: 1
 resources:
   - type: chassis
     count: 1
@@ -28,7 +28,7 @@ attributes:
   system:
     duration: 3600
 tasks:
-  - command: [ "app" ]
+  - command: [ "true" ]
     slot: task
     count:
       per_slot: 1

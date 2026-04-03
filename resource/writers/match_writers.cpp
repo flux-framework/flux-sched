@@ -140,7 +140,8 @@ int sim_match_writers_t::emit_vtx (const std::string &prefix,
                                    const vtx_t &u,
                                    unsigned int needs,
                                    const std::map<std::string, std::string> &agfilter_data,
-                                   bool exclusive)
+                                   bool exclusive,
+                                   bool)
 {
     std::string mode = (exclusive) ? "x" : "s";
     m_out << prefix << g[u].name << "[" << needs << ":" << mode << "]" << std::endl;
@@ -204,7 +205,14 @@ int jgf_match_writers_t::emit_json (json_t **o, json_t **aux)
 
     if ((rc = check_array_sizes ()) <= 0)
         goto ret;
-    if (!(*o = json_pack ("{s:{s:o s:o}}", "graph", "nodes", m_vout, "edges", m_eout))) {
+    if (!(*o = json_pack ("{s:{s:o s:o} s:s*}",
+                          "graph",
+                          "nodes",
+                          m_vout,
+                          "edges",
+                          m_eout,
+                          "writer",
+                          get_uri ()))) {
         json_decref (m_vout);
         json_decref (m_eout);
         m_vout = NULL;
@@ -252,7 +260,8 @@ int jgf_match_writers_t::emit_vtx (const std::string &prefix,
                                    const vtx_t &u,
                                    unsigned int needs,
                                    const std::map<std::string, std::string> &agfilter_data,
-                                   bool exclusive)
+                                   bool exclusive,
+                                   bool)
 {
     int rc = 0;
     json_t *o = NULL;
@@ -305,7 +314,8 @@ out:
 
 int jgf_match_writers_t::emit_edg (const std::string &prefix,
                                    const resource_graph_t &g,
-                                   const edg_t &e)
+                                   const edg_t &e,
+                                   bool)
 {
     int rc = 0;
     json_t *o = NULL;
@@ -485,6 +495,11 @@ out:
     return rc;
 }
 
+const char *jgf_match_writers_t::get_uri ()
+{
+    return NULL;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // JGF_shorthand Writers Class Public Method Definitions
 ////////////////////////////////////////////////////////////////////////////////
@@ -494,6 +509,48 @@ jgf_shorthand_match_writers_t &jgf_shorthand_match_writers_t::operator= (
 {
     jgf_match_writers_t::operator= (w);
     return *this;
+}
+
+int jgf_shorthand_match_writers_t::emit_vtx (
+    const std::string &prefix,
+    const resource_graph_t &g,
+    const vtx_t &u,
+    unsigned int needs,
+    const std::map<std::string, std::string> &agfilter_data,
+    bool exclusive,
+    bool excl_parent)
+{
+    if (excl_parent) {
+        m_complete = false;
+        return 0;
+    }
+    return jgf_match_writers_t::emit_vtx (prefix,
+                                          g,
+                                          u,
+                                          needs,
+                                          agfilter_data,
+                                          exclusive,
+                                          excl_parent);
+}
+
+int jgf_shorthand_match_writers_t::emit_edg (const std::string &prefix,
+                                             const resource_graph_t &g,
+                                             const edg_t &e,
+                                             bool excl_parent)
+{
+    if (excl_parent) {
+        m_complete = false;
+        return 0;
+    }
+    return jgf_match_writers_t::emit_edg (prefix, g, e, excl_parent);
+}
+
+const char *jgf_shorthand_match_writers_t::get_uri ()
+{
+    if (m_complete) {
+        return jgf_match_writers_t::get_uri ();
+    }
+    return m_uri.c_str ();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -633,7 +690,8 @@ int rlite_match_writers_t::emit_vtx (const std::string &prefix,
                                      const vtx_t &u,
                                      unsigned int needs,
                                      const std::map<std::string, std::string> &agfilter_data,
-                                     bool exclusive)
+                                     bool exclusive,
+                                     bool)
 {
     int rc = 0;
 
@@ -878,7 +936,7 @@ ret:
 
 bool rv1_match_writers_t::empty ()
 {
-    return (rlite.empty () && jgf.empty ());
+    return (rlite.empty () && get_jgf ().empty ());
 }
 
 int rv1_match_writers_t::attrs_json (json_t **o)
@@ -923,11 +981,11 @@ int rv1_match_writers_t::emit_json (json_t **j_o, json_t **aux)
     json_t *jgf_o = NULL;
     json_t *attrs_o = NULL;
 
-    if (rlite.empty () || jgf.empty ())
+    if (rlite.empty () || get_jgf ().empty ())
         goto ret;
     if ((rc = rlite.emit_json (&rlite_o, &rlite_aux_o)) < 0)
         goto ret;
-    if ((rc = jgf.emit_json (&jgf_o)) < 0) {
+    if ((rc = get_jgf ().emit_json (&jgf_o)) < 0) {
         saved_errno = errno;
         json_decref (rlite_aux_o);
         errno = saved_errno;
@@ -1008,7 +1066,7 @@ int rv1_match_writers_t::emit (std::stringstream &out)
     json_t *o = NULL;
     char *json_str = NULL;
 
-    if (rlite.empty () || jgf.empty ())
+    if (rlite.empty () || get_jgf ().empty ())
         goto ret;
     if ((rc = emit_json (&o)) < 0)
         goto ret;
@@ -1032,21 +1090,23 @@ int rv1_match_writers_t::emit_vtx (const std::string &prefix,
                                    const vtx_t &u,
                                    unsigned int needs,
                                    const std::map<std::string, std::string> &agfilter_data,
-                                   bool exclusive)
+                                   bool exclusive,
+                                   bool excl_parent)
 {
     int rc = 0;
-    if ((rc = rlite.emit_vtx (prefix, g, u, needs, agfilter_data, exclusive)) == 0)
-        rc = jgf.emit_vtx (prefix, g, u, needs, agfilter_data, exclusive);
+    if ((rc = rlite.emit_vtx (prefix, g, u, needs, agfilter_data, exclusive, excl_parent)) == 0)
+        rc = get_jgf ().emit_vtx (prefix, g, u, needs, agfilter_data, exclusive, excl_parent);
     return rc;
 }
 
 int rv1_match_writers_t::emit_edg (const std::string &prefix,
                                    const resource_graph_t &g,
-                                   const edg_t &e)
+                                   const edg_t &e,
+                                   bool excl_parent)
 {
     int rc = 0;
-    if ((rc = rlite.emit_edg (prefix, g, e)) == 0)
-        rc = jgf.emit_edg (prefix, g, e);
+    if ((rc = rlite.emit_edg (prefix, g, e, excl_parent)) == 0)
+        rc = get_jgf ().emit_edg (prefix, g, e, excl_parent);
     return rc;
 }
 
@@ -1061,6 +1121,11 @@ int rv1_match_writers_t::emit_attrs (const std::string &k, const std::string &v)
 {
     m_attrs[k] = v;
     return 0;
+}
+
+jgf_match_writers_t &rv1_match_writers_t::get_jgf ()
+{
+    return jgf_writer;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1160,9 +1225,10 @@ int rv1_nosched_match_writers_t::emit_vtx (const std::string &prefix,
                                            const vtx_t &u,
                                            unsigned int needs,
                                            const std::map<std::string, std::string> &agfilter_data,
-                                           bool exclusive)
+                                           bool exclusive,
+                                           bool excl_parent)
 {
-    return rlite.emit_vtx (prefix, g, u, needs, agfilter_data, exclusive);
+    return rlite.emit_vtx (prefix, g, u, needs, agfilter_data, exclusive, excl_parent);
 }
 
 int rv1_nosched_match_writers_t::emit_tm (uint64_t start_tm, uint64_t end_tm)
@@ -1170,6 +1236,15 @@ int rv1_nosched_match_writers_t::emit_tm (uint64_t start_tm, uint64_t end_tm)
     m_starttime = start_tm;
     m_expiration = end_tm;
     return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// RV1 Nosched Writers Class Method Definitions
+////////////////////////////////////////////////////////////////////////////////
+
+jgf_match_writers_t &rv1_shorthand_match_writers_t::get_jgf ()
+{
+    return jgf_writer;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1219,7 +1294,8 @@ int pretty_sim_match_writers_t::emit_vtx (const std::string &prefix,
                                           const vtx_t &u,
                                           unsigned int needs,
                                           const std::map<std::string, std::string> &agfilter_data,
-                                          bool exclusive)
+                                          bool exclusive,
+                                          bool)
 {
     std::stringstream out;
     std::string mode = (exclusive) ? "exclusive" : "shared";
@@ -1253,6 +1329,9 @@ std::shared_ptr<match_writers_t> match_writers_factory_t::create (match_format_t
             case match_format_t::RV1_NOSCHED:
                 w = std::make_shared<rv1_nosched_match_writers_t> ();
                 break;
+            case match_format_t::RV1_SHORTHAND:
+                w = std::make_shared<rv1_shorthand_match_writers_t> ();
+                break;
             case match_format_t::PRETTY_SIMPLE:
                 w = std::make_shared<pretty_sim_match_writers_t> ();
                 break;
@@ -1282,6 +1361,8 @@ match_format_t match_writers_factory_t::get_writers_type (const std::string &n)
         format = match_format_t::RV1;
     else if (n == "rv1_nosched")
         format = match_format_t::RV1_NOSCHED;
+    else if (n == "rv1_shorthand")
+        format = match_format_t::RV1_SHORTHAND;
     else if (n == "pretty_simple")
         format = match_format_t::PRETTY_SIMPLE;
     return format;
@@ -1290,7 +1371,8 @@ match_format_t match_writers_factory_t::get_writers_type (const std::string &n)
 bool known_match_format (const std::string &format)
 {
     return (format == "simple" || format == "jgf" || format == "jgf_shorthand" || format == "rlite"
-            || format == "rv1" || format == "rv1_nosched" || format == "pretty_simple");
+            || format == "rv1" || format == "rv1_nosched" || format == "rv1_shorthand"
+            || format == "pretty_simple");
 }
 
 }  // namespace resource_model

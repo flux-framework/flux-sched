@@ -160,7 +160,7 @@ relation_infra_t::relation_infra_t () = default;
 relation_infra_t::relation_infra_t (const relation_infra_t &o) : infra_base_t (o)
 {
     m_needs = o.m_needs;
-    m_trav_token = o.m_trav_token;
+    m_sequence_number = o.m_sequence_number;
     m_exclusive = o.m_exclusive;
 }
 
@@ -168,7 +168,7 @@ relation_infra_t &relation_infra_t::operator= (const relation_infra_t &o)
 {
     infra_base_t::operator= (o);
     m_needs = o.m_needs;
-    m_trav_token = o.m_trav_token;
+    m_sequence_number = o.m_sequence_number;
     m_exclusive = o.m_exclusive;
     return *this;
 }
@@ -180,14 +180,14 @@ relation_infra_t::~relation_infra_t ()
 void relation_infra_t::scrub ()
 {
     m_needs = 0;
-    m_trav_token = 0;
+    m_sequence_number = 0;
     m_exclusive = 0;
 }
 
-void relation_infra_t::set_for_trav_update (uint64_t needs, int exclusive, uint64_t trav_token)
+void relation_infra_t::set_for_trav_update (uint64_t needs, int exclusive, uint64_t sequence_number)
 {
     m_needs = needs;
-    m_trav_token = trav_token;
+    m_sequence_number = sequence_number;
     m_exclusive = exclusive;
 }
 
@@ -201,9 +201,9 @@ int relation_infra_t::get_exclusive () const
     return m_exclusive;
 }
 
-uint64_t relation_infra_t::get_trav_token () const
+uint64_t relation_infra_t::get_sequence_number () const
 {
-    return m_trav_token;
+    return m_sequence_number;
 }
 
 uint64_t relation_infra_t::get_weight () const

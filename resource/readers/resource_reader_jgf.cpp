@@ -112,13 +112,6 @@ void fetch_helper_t::scrub ()
     clear ();
 }
 
-struct vmap_val_t {
-    vtx_t v;
-    std::map<subsystem_t, bool> is_roots;
-    unsigned int needs;
-    unsigned int exclusive;
-};
-
 bool operator== (const resource_pool_t &r, const fetch_helper_t &f)
 {
     return (r.type.get () == f.type && r.basename == f.basename
@@ -968,7 +961,6 @@ int resource_reader_jgf_t::update_vertices (resource_graph_t &g,
     unsigned int i = 0;
     fetch_helper_t fetcher;
     std::vector<fetch_helper_t> additional_vertices;
-    std::map<std::string, vmap_val_t> empty_vmap{};
 
     for (i = 0; i < json_array_size (nodes); i++) {
         fetcher.scrub ();
@@ -977,14 +969,23 @@ int resource_reader_jgf_t::update_vertices (resource_graph_t &g,
             goto done;
         if ((rc = update_vtx (g, m, vmap, fetcher, update_data)) != 0)
             goto done;
-        if (fetch_additional_vertices (g, m, empty_vmap, fetcher, additional_vertices) != 0)
+        if (fetch_additional_vertices (g, m, fetcher, additional_vertices) != 0)
             goto done;
-        for (auto &fetcher : additional_vertices) {
-            std::string vertex_id = std::to_string (fetcher.uniq_id);
-            fetcher.vertex_id = vertex_id.c_str ();
-            if ((rc = update_vtx (g, m, vmap, fetcher, update_data)) != 0) {
+        for (auto &additional_fetcher : additional_vertices) {
+            std::string vertex_id = std::to_string (additional_fetcher.uniq_id);
+            additional_fetcher.vertex_id = vertex_id.c_str ();
+            if ((rc = update_vtx (g, m, vmap, additional_fetcher, update_data)) != 0) {
                 goto done;
             }
+        }
+        if (fetch_additional_edges (g,
+                                    m,
+                                    vmap,
+                                    fetcher,
+                                    additional_vertices,
+                                    update_data.sequence_number)
+            < 0) {
+            goto done;
         }
     }
     rc = 0;
@@ -996,9 +997,18 @@ done:
 int resource_reader_jgf_t::fetch_additional_vertices (
     resource_graph_t &g,
     resource_graph_metadata_t &m,
-    std::map<std::string, vmap_val_t> &vmap,
     fetch_helper_t &fetcher,
     std::vector<fetch_helper_t> &additional_vertices)
+{
+    return 0;
+}
+
+int resource_reader_jgf_t::fetch_additional_edges (resource_graph_t &g,
+                                                   resource_graph_metadata_t &m,
+                                                   std::map<std::string, vmap_val_t> &vmap,
+                                                   fetch_helper_t &root,
+                                                   std::vector<fetch_helper_t> &additional_vertices,
+                                                   uint64_t sequence_number)
 {
     return 0;
 }
@@ -1121,7 +1131,7 @@ int resource_reader_jgf_t::update_src_edge (resource_graph_t &g,
                                             resource_graph_metadata_t &m,
                                             std::map<std::string, vmap_val_t> &vmap,
                                             std::string &source,
-                                            uint64_t token)
+                                            uint64_t sequence_number)
 {
     if (vmap[source].is_roots.empty ())
         return 0;
@@ -1129,7 +1139,7 @@ int resource_reader_jgf_t::update_src_edge (resource_graph_t &g,
     for (const auto &kv : vmap[source].is_roots)
         m.v_rt_edges[kv.first].set_for_trav_update (vmap[source].needs,
                                                     vmap[source].exclusive,
-                                                    token);
+                                                    sequence_number);
 
     // This way, when a root vertex appears in multiple JGF edges
     // we only update the virtual in-edge into the root only once.
@@ -1142,7 +1152,7 @@ int resource_reader_jgf_t::update_tgt_edge (resource_graph_t &g,
                                             std::map<std::string, vmap_val_t> &vmap,
                                             std::string &source,
                                             std::string &target,
-                                            uint64_t token)
+                                            uint64_t sequence_number)
 {
     edg_t e;
     int rc = -1;
@@ -1160,10 +1170,11 @@ int resource_reader_jgf_t::update_tgt_edge (resource_graph_t &g,
     if (!found) {
         errno = EINVAL;
         m_err_msg += __FUNCTION__;
-        m_err_msg += ": JGF edge not found in resource graph.\n";
+        m_err_msg += ": JGF edge from " + source + " to ";
+        m_err_msg += target + " not found in resource graph.\n";
         goto done;
     }
-    g[e].idata.set_for_trav_update (vmap[target].needs, vmap[target].exclusive, token);
+    g[e].idata.set_for_trav_update (vmap[target].needs, vmap[target].exclusive, sequence_number);
     rc = 0;
 
 done:
@@ -1174,7 +1185,7 @@ int resource_reader_jgf_t::update_edges (resource_graph_t &g,
                                          resource_graph_metadata_t &m,
                                          std::map<std::string, vmap_val_t> &vmap,
                                          json_t *edges,
-                                         uint64_t token,
+                                         uint64_t sequence_number,
                                          jgf_updater_data &update_data)
 {
     edg_t e;
@@ -1195,9 +1206,9 @@ int resource_reader_jgf_t::update_edges (resource_graph_t &g,
             update_data.skipped = false;
             continue;
         }
-        if ((rc = update_src_edge (g, m, vmap, source, token)) != 0)
+        if ((rc = update_src_edge (g, m, vmap, source, sequence_number)) != 0)
             goto done;
-        if ((rc = update_tgt_edge (g, m, vmap, source, target, token)) != 0)
+        if ((rc = update_tgt_edge (g, m, vmap, source, target, sequence_number)) != 0)
             goto done;
     }
 
@@ -1269,7 +1280,7 @@ int resource_reader_jgf_t::update (resource_graph_t &g,
                                    int64_t at,
                                    uint64_t dur,
                                    bool rsv,
-                                   uint64_t token)
+                                   uint64_t sequence_number)
 {
     int rc = -1;
     json_t *jgf = NULL;
@@ -1292,6 +1303,7 @@ int resource_reader_jgf_t::update (resource_graph_t &g,
     update_data.duration = dur;
     update_data.reserved = rsv;
     update_data.update = true;
+    update_data.sequence_number = sequence_number;
 
     if ((rc = fetch_jgf (str, &jgf, &nodes, &edges, update_data)) != 0)
         goto done;
@@ -1299,7 +1311,7 @@ int resource_reader_jgf_t::update (resource_graph_t &g,
         undo_vertices (g, vmap, update_data);
         goto done;
     }
-    if ((rc = update_edges (g, m, vmap, edges, token, update_data)) != 0)
+    if ((rc = update_edges (g, m, vmap, edges, sequence_number, update_data)) != 0)
         goto done;
 
 done:
@@ -1330,8 +1342,10 @@ int resource_reader_jgf_t::partial_cancel (resource_graph_t &g,
     // Fill in updater data
     p_cancel_data.jobid = jobid;
     p_cancel_data.update = false;
+    p_cancel_data.sequence_number = mod_data.sequence_number;
     if ((rc = fetch_jgf (R, &jgf, &nodes, &edges, p_cancel_data)) != 0)
         goto done;
+
     if ((rc = update_vertices (g, m, vmap, nodes, p_cancel_data)) != 0)
         goto done;
 

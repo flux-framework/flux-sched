@@ -26,7 +26,16 @@ extern "C" {
 namespace Flux {
 namespace resource_model {
 
-enum class match_format_t { SIMPLE, JGF, JGF_SHORTHAND, RLITE, RV1, RV1_NOSCHED, PRETTY_SIMPLE };
+enum class match_format_t {
+    SIMPLE,
+    JGF,
+    JGF_SHORTHAND,
+    RLITE,
+    RV1,
+    RV1_NOSCHED,
+    RV1_SHORTHAND,
+    PRETTY_SIMPLE
+};
 
 /*! Base match writers class for a matched resource set
  */
@@ -43,8 +52,12 @@ class match_writers_t {
                           const vtx_t &u,
                           unsigned int needs,
                           const std::map<std::string, std::string> &agfilter_data,
-                          bool exclusive) = 0;
-    virtual int emit_edg (const std::string &prefix, const resource_graph_t &g, const edg_t &e)
+                          bool exclusive,
+                          bool excl_parent) = 0;
+    virtual int emit_edg (const std::string &prefix,
+                          const resource_graph_t &g,
+                          const edg_t &e,
+                          bool excl_parent)
     {
         return 0;
     }
@@ -60,14 +73,6 @@ class match_writers_t {
     int compress_hosts (const std::vector<std::string> &hosts,
                         const char *hostlist_init,
                         char **hostlist);
-
-    /* Return a boolean indicating whether or not the writer should be invoked
-     * on vertices that form non-root parts of exclusive subtrees.
-     */
-    virtual bool emit_exclusive_subtrees ()
-    {
-        return true;
-    }
 };
 
 /*! Simple match writers class for a matched resource set
@@ -77,15 +82,16 @@ class sim_match_writers_t : public match_writers_t {
     virtual ~sim_match_writers_t ()
     {
     }
-    virtual bool empty ();
-    virtual int emit_json (json_t **o, json_t **aux = nullptr);
-    virtual int emit (std::stringstream &out);
-    virtual int emit_vtx (const std::string &prefix,
-                          const resource_graph_t &g,
-                          const vtx_t &u,
-                          unsigned int needs,
-                          const std::map<std::string, std::string> &agfilter_data,
-                          bool exclusive) override;
+    bool empty () override;
+    int emit_json (json_t **o, json_t **aux = nullptr) override;
+    int emit (std::stringstream &out) override;
+    int emit_vtx (const std::string &prefix,
+                  const resource_graph_t &g,
+                  const vtx_t &u,
+                  unsigned int needs,
+                  const std::map<std::string, std::string> &agfilter_data,
+                  bool exclusive,
+                  bool) override;
 
    private:
     std::stringstream m_out;
@@ -108,16 +114,23 @@ class jgf_match_writers_t : public match_writers_t {
     jgf_match_writers_t &operator= (const jgf_match_writers_t &w);
     virtual ~jgf_match_writers_t ();
 
-    virtual bool empty ();
-    virtual int emit_json (json_t **o, json_t **aux = nullptr);
-    virtual int emit (std::stringstream &out);
-    virtual int emit_vtx (const std::string &prefix,
-                          const resource_graph_t &g,
-                          const vtx_t &u,
-                          unsigned int needs,
-                          const std::map<std::string, std::string> &agfilter_data,
-                          bool exclusive) override;
-    virtual int emit_edg (const std::string &prefix, const resource_graph_t &g, const edg_t &e);
+    bool empty () override;
+    int emit_json (json_t **o, json_t **aux = nullptr) override;
+    int emit (std::stringstream &out) override;
+    int emit_vtx (const std::string &prefix,
+                  const resource_graph_t &g,
+                  const vtx_t &u,
+                  unsigned int needs,
+                  const std::map<std::string, std::string> &agfilter_data,
+                  bool exclusive,
+                  bool excl_parent) override;
+    int emit_edg (const std::string &prefix,
+                  const resource_graph_t &g,
+                  const edg_t &e,
+                  bool excl_parent) override;
+
+   protected:
+    virtual const char *get_uri ();
 
    private:
     json_t *emit_vtx_base (const resource_graph_t &g,
@@ -185,10 +198,23 @@ class jgf_shorthand_match_writers_t : public jgf_match_writers_t {
     jgf_shorthand_match_writers_t (const jgf_shorthand_match_writers_t &w) = default;
     jgf_shorthand_match_writers_t &operator= (const jgf_shorthand_match_writers_t &w);
 
-    virtual bool emit_exclusive_subtrees () override
-    {
-        return false;
-    }
+    int emit_vtx (const std::string &prefix,
+                  const resource_graph_t &g,
+                  const vtx_t &u,
+                  unsigned int needs,
+                  const std::map<std::string, std::string> &agfilter_data,
+                  bool exclusive,
+                  bool excl_parent) override;
+    int emit_edg (const std::string &prefix,
+                  const resource_graph_t &g,
+                  const edg_t &e,
+                  bool excl_parent) override;
+
+   private:
+    const char *get_uri () override;
+
+    bool m_complete = true;
+    const std::string m_uri = "fluxion:jgf_shorthand";
 };
 
 /*! RLITE match writers class for a matched resource set
@@ -200,16 +226,17 @@ class rlite_match_writers_t : public match_writers_t {
     rlite_match_writers_t &operator= (const rlite_match_writers_t &w);
     virtual ~rlite_match_writers_t ();
 
-    virtual bool empty ();
-    virtual int emit_json (json_t **o, json_t **aux = nullptr);
+    bool empty () override;
+    int emit_json (json_t **o, json_t **aux = nullptr) override;
     virtual int emit (std::stringstream &out, bool newline);
-    virtual int emit (std::stringstream &out);
-    virtual int emit_vtx (const std::string &prefix,
-                          const resource_graph_t &g,
-                          const vtx_t &u,
-                          unsigned int needs,
-                          const std::map<std::string, std::string> &agfilter_data,
-                          bool exclusive) override;
+    int emit (std::stringstream &out) override;
+    int emit_vtx (const std::string &prefix,
+                  const resource_graph_t &g,
+                  const vtx_t &u,
+                  unsigned int needs,
+                  const std::map<std::string, std::string> &agfilter_data,
+                  bool exclusive,
+                  bool excl_parent) override;
 
    private:
     class rank_host_t {
@@ -233,18 +260,25 @@ class rlite_match_writers_t : public match_writers_t {
  */
 class rv1_match_writers_t : public match_writers_t {
    public:
-    virtual bool empty ();
-    virtual int emit_json (json_t **o, json_t **aux = nullptr);
-    virtual int emit (std::stringstream &out);
-    virtual int emit_vtx (const std::string &prefix,
-                          const resource_graph_t &g,
-                          const vtx_t &u,
-                          unsigned int needs,
-                          const std::map<std::string, std::string> &agfilter_data,
-                          bool exclusive) override;
-    virtual int emit_edg (const std::string &prefix, const resource_graph_t &g, const edg_t &e);
+    bool empty () override;
+    int emit_json (json_t **o, json_t **aux = nullptr) override;
+    int emit (std::stringstream &out) override;
+    int emit_vtx (const std::string &prefix,
+                  const resource_graph_t &g,
+                  const vtx_t &u,
+                  unsigned int needs,
+                  const std::map<std::string, std::string> &agfilter_data,
+                  bool exclusive,
+                  bool excl_parent) override;
+    int emit_edg (const std::string &prefix,
+                  const resource_graph_t &g,
+                  const edg_t &e,
+                  bool excl_parent) override;
     virtual int emit_tm (uint64_t start_tm, uint64_t end_tm);
     virtual int emit_attrs (const std::string &k, const std::string &v);
+
+   protected:
+    virtual jgf_match_writers_t &get_jgf ();
 
    private:
     int attrs_json (json_t **o);
@@ -253,22 +287,23 @@ class rv1_match_writers_t : public match_writers_t {
     int64_t m_starttime = 0;
     int64_t m_expiration = 0;
     std::map<std::string, std::string> m_attrs;
-    jgf_match_writers_t jgf;
+    jgf_match_writers_t jgf_writer;
 };
 
 /*! R Version 1 with no "scheduling" key match writers class
  */
 class rv1_nosched_match_writers_t : public match_writers_t {
    public:
-    virtual bool empty ();
-    virtual int emit_json (json_t **o, json_t **aux = nullptr);
-    virtual int emit (std::stringstream &out);
-    virtual int emit_vtx (const std::string &prefix,
-                          const resource_graph_t &g,
-                          const vtx_t &u,
-                          unsigned int needs,
-                          const std::map<std::string, std::string> &agfilter_data,
-                          bool exclusive) override;
+    bool empty () override;
+    int emit_json (json_t **o, json_t **aux = nullptr) override;
+    int emit (std::stringstream &out) override;
+    int emit_vtx (const std::string &prefix,
+                  const resource_graph_t &g,
+                  const vtx_t &u,
+                  unsigned int needs,
+                  const std::map<std::string, std::string> &agfilter_data,
+                  bool exclusive,
+                  bool excl_parent) override;
     virtual int emit_tm (uint64_t start_tm, uint64_t end_tm);
 
    private:
@@ -277,19 +312,30 @@ class rv1_nosched_match_writers_t : public match_writers_t {
     int64_t m_expiration = 0;
 };
 
+/*! R Version 1 with JGF shorthand writer
+ */
+class rv1_shorthand_match_writers_t : public rv1_match_writers_t {
+   protected:
+    jgf_match_writers_t &get_jgf () override;
+
+   private:
+    jgf_shorthand_match_writers_t jgf_writer;
+};
+
 /*! Human-friendly simple match writers class for a matched resource set
  */
 class pretty_sim_match_writers_t : public match_writers_t {
    public:
-    virtual bool empty ();
-    virtual int emit_json (json_t **o, json_t **aux = nullptr);
-    virtual int emit (std::stringstream &out);
-    virtual int emit_vtx (const std::string &prefix,
-                          const resource_graph_t &g,
-                          const vtx_t &u,
-                          unsigned int needs,
-                          const std::map<std::string, std::string> &agfilter_data,
-                          bool exclusive) override;
+    bool empty () override;
+    int emit_json (json_t **o, json_t **aux = nullptr) override;
+    int emit (std::stringstream &out) override;
+    int emit_vtx (const std::string &prefix,
+                  const resource_graph_t &g,
+                  const vtx_t &u,
+                  unsigned int needs,
+                  const std::map<std::string, std::string> &agfilter_data,
+                  bool exclusive,
+                  bool excl_parent) override;
 
    private:
     std::list<std::string> m_out;

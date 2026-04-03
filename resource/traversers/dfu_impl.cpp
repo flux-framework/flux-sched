@@ -19,6 +19,8 @@ extern "C" {
 #include <boost/iterator/transform_iterator.hpp>
 #include <chrono>
 
+#include <flux/core/job.h>
+
 using namespace Flux::Jobspec;
 using namespace Flux::resource_model;
 using namespace Flux::resource_model::detail;
@@ -38,7 +40,7 @@ const std::string dfu_impl_t::level () const
 
 void dfu_impl_t::tick ()
 {
-    m_best_k_cnt++;
+    m_sequence_number++;
     m_color.reset ();
 }
 
@@ -797,7 +799,7 @@ int dfu_impl_t::dom_dfv (const jobmeta_t &meta,
 
     for (auto &resource : resources) {
         if ((resource.type == (*m_graph)[u].type) && (!resource.label.empty ())) {
-            rc = (*m_graph)[u].idata.ephemeral.insert (m_best_k_cnt, "label", resource.label);
+            rc = (*m_graph)[u].idata.ephemeral.insert (m_sequence_number, "label", resource.label);
             if (rc < 0) {
                 m_err_msg += "dom_dfv: inserting label into ephemeral failed.\n";
                 m_err_msg += strerror (errno);
@@ -851,7 +853,7 @@ int dfu_impl_t::dom_find_dfv (std::shared_ptr<match_writers_t> &w,
             rc = (s == dom) ? dom_find_dfv (w, criteria, tgt, p_overridden, jobid, agfilter)
                             : aux_find_upv (w, criteria, tgt, s, p_overridden);
             if (rc > 0) {
-                if (w->emit_edg (level (), *m_graph, *ei) < 0) {
+                if (w->emit_edg (level (), *m_graph, *ei, false) < 0) {
                     m_err_msg += __FUNCTION__;
                     m_err_msg += ": emit_edg returned an error.\n";
                 }
@@ -926,8 +928,11 @@ int dfu_impl_t::dom_find_dfv (std::shared_ptr<match_writers_t> &w,
     // Need to clear out any stale data from the ephemeral object before
     // emitting the vertex, since data could be leftover from previous
     // traversals where the vertex was matched but not emitted
-    (*m_graph)[u].idata.ephemeral.check_and_clear_if_stale (m_best_k_cnt);
-    if ((rc = w->emit_vtx (level (), *m_graph, u, (*m_graph)[u].size, agfilter_data, true)) < 0) {
+    (*m_graph)[u].idata.ephemeral.check_and_clear_if_stale (m_sequence_number);
+    // The last two booleans are for exclusivity (which we set to true) and for exclusive_parent
+    // which we set to `false` for simplicity.
+    if ((rc = w->emit_vtx (level (), *m_graph, u, (*m_graph)[u].size, agfilter_data, true, false))
+        < 0) {
         m_err_msg += __FUNCTION__;
         m_err_msg += std::string (": error from emit_vtx: ") + strerror (errno);
         goto done;
@@ -1053,7 +1058,7 @@ int dfu_impl_t::enforce (subsystem_t subsystem, scoring_api_t &dfu, bool enforce
                 for (auto &e : egroup.edges) {
                     (*m_graph)[e.edge].idata.set_for_trav_update (e.needs,
                                                                   e.exclusive,
-                                                                  m_best_k_cnt);
+                                                                  m_sequence_number);
                     // we need to resolve unconstrained resources up to the root in the dominant
                     // subsystem
                     if (enforce_unconstrained && subsystem == dom) {
@@ -1063,7 +1068,8 @@ int dfu_impl_t::enforce (subsystem_t subsystem, scoring_api_t &dfu, bool enforce
                         // only the root doesn't have one, so natural stop
                         while ((parent_e = find_parent_edge (parent_v, *m_graph, subsystem))) {
                             // if this parent is already marked, all of its will be too
-                            if ((*m_graph)[*parent_e].idata.get_trav_token () == m_best_k_cnt) {
+                            if ((*m_graph)[*parent_e].idata.get_sequence_number ()
+                                == m_sequence_number) {
                                 break;
                             }
                             parent_v = source (*parent_e, *m_graph);
@@ -1078,7 +1084,7 @@ int dfu_impl_t::enforce (subsystem_t subsystem, scoring_api_t &dfu, bool enforce
                             }
                             (*m_graph)[*parent_e].idata.set_for_trav_update ((*m_graph)[tgt].size,
                                                                              false,
-                                                                             m_best_k_cnt);
+                                                                             m_sequence_number);
                         }
                     }
                 }
@@ -1277,7 +1283,7 @@ int dfu_impl_t::select (Jobspec::Jobspec &j, vtx_t root, jobmeta_t &meta, bool e
         egrp.edges.push_back (ev_edg);
         dfu.add (dom, (*m_graph)[root].type, egrp);
         rc = resolve_graph (root, j.resources, dfu, excl, &needs);
-        m_graph_db->metadata.v_rt_edges[dom].set_for_trav_update (needs, x_in, m_best_k_cnt);
+        m_graph_db->metadata.v_rt_edges[dom].set_for_trav_update (needs, x_in, m_sequence_number);
     }
     return rc;
 }
@@ -1289,7 +1295,7 @@ int dfu_impl_t::find (std::shared_ptr<match_writers_t> &writers, const std::stri
     expr_eval_vtx_target_t target;
     vtx_predicates_override_t p_overridden;
     bool agfilter = false;
-    uint64_t jobid = 0;
+    flux_jobid_t jobid = 0;
     std::vector<std::pair<std::string, std::string>> predicates;
 
     if (!m_match || !m_graph || !m_graph_db || !writers) {
@@ -1316,8 +1322,8 @@ int dfu_impl_t::find (std::shared_ptr<match_writers_t> &writers, const std::stri
     for (auto const &p : predicates) {
         if (p.first == "jobid-alloc" || p.first == "jobid-span" || p.first == "jobid-tag"
             || p.first == "jobid-reserved") {
-            // Don't need try; catch here since validate () succeeded
-            jobid = std::stoul (p.second);
+            // Don't need to check returncode since validate () succeeded
+            flux_job_id_parse (p.second.c_str (), &jobid);
         } else if (p.first == "agfilter") {
             if (p.second == "true" || p.second == "t") {
                 agfilter = true;

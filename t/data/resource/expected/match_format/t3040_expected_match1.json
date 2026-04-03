@@ -185,5 +185,6 @@
         }
       }
     ]
-  }
+  },
+  "writer": "fluxion:jgf_shorthand"
 }

@@ -530,8 +530,12 @@ class dfu_impl_t {
      *                                                                      *
      ************************************************************************/
     // Emit matched resource set
-    int emit_vtx (vtx_t u, std::shared_ptr<match_writers_t> &w, unsigned int needs, bool exclusive);
-    int emit_edg (edg_t e, std::shared_ptr<match_writers_t> &w);
+    int emit_vtx (vtx_t u,
+                  std::shared_ptr<match_writers_t> &w,
+                  unsigned int needs,
+                  bool exclusive,
+                  bool excl_parent);
+    int emit_edg (edg_t e, std::shared_ptr<match_writers_t> &w, bool excl_parent);
 
     // Update resource graph data store
     int upd_txfilter (vtx_t u,
@@ -627,7 +631,7 @@ class dfu_impl_t {
      *                                                                      *
      ************************************************************************/
     color_t m_color;
-    uint64_t m_best_k_cnt = 0;
+    uint64_t m_sequence_number = 0;
     unsigned int m_trav_level = 0;
     unsigned int m_preorder = 0;
     unsigned int m_postorder = 0;

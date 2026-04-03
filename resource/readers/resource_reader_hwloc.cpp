@@ -511,7 +511,7 @@ int resource_reader_hwloc_t::update (resource_graph_t &g,
                                      int64_t at,
                                      uint64_t dur,
                                      bool rsv,
-                                     uint64_t token)
+                                     uint64_t sequence_number)
 {
     errno = ENOTSUP;  // GRUG reader currently does not support update
     return -1;
