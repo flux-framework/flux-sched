@@ -1,3 +1,17 @@
+flux-sched version 0.50.0 - 2026-04-02
+--------------------------------------
+
+### New Features
+ * writers: treat rabbits as execution targets in R (#1439)
+ * writers: add rv1_shorthand match format (#1432)
+
+### Fixes
+ * writers: use flux-core idset library (#1438)
+
+### Build/Testsuite/Documentation
+ * CMake: match hwloc version requirement to README (#1430)
+
+
 flux-sched version 0.49.0 - 2026-02-10
 --------------------------------------
 
