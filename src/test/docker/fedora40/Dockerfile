@@ -4,12 +4,13 @@ LABEL maintainer="Tom Scogland <scogland1@llnl.gov>"
 
 ARG USER=flux
 ARG UID=1000
+USER root
 
 # copy scripts into image
 COPY scripts/ /scripts
 #  Install flux-sched dependencies
-RUN sudo /scripts/install-deps.sh -y \
- && sudo dnf clean all
+RUN /scripts/install-deps.sh -y \
+ && dnf clean all
 
 # Add configured user to image with sudo access:
 #
