@@ -2,13 +2,14 @@ FROM fluxrm/flux-core:jammy
 
 ARG USER=flux
 ARG UID=1000
+USER root
 
 # copy scripts into image
 COPY scripts/ /scripts
 # Install extra buildrequires for flux-sched:
-RUN sudo apt update \
- && sudo /scripts/install-deps.sh -y \
- && sudo rm -rf /var/lib/apt/lists/*
+RUN apt update \
+ && /scripts/install-deps.sh -y \
+ && rm -rf /var/lib/apt/lists/*
 
 # Add configured user to image with sudo access:
 #
