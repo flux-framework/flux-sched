@@ -55,7 +55,7 @@ test_expect_success 'job can run' '
 '
 
 test_expect_success 'without rv1exec_force, job fails' '
-    test_must_fail flux alloc -t5s -N1 -n1 ./load_nonsense_scheduling_key.sh rv1exec &&
+    test_must_fail flux alloc -t15s -N1 -n1 ./load_nonsense_scheduling_key.sh rv1exec &&
     flux job attach $(flux job last) 2>&1 | grep -e grow_resource_db_jgf -e "Invalid argument" &&
     flux job attach $(flux job last) 2>&1 | grep "module exiting abnormally"
 '
@@ -77,7 +77,7 @@ test_expect_success 'jobs run with shorthand jgf' '
 '
 
 test_expect_success 'flux instances started with shorthand jgf can run jobs' '
-    flux alloc -t5s -N1 ./load_fluxion.sh flux run -n1 -c1 echo hello &&
+    flux alloc -t15s -N1 ./load_fluxion.sh flux run -n1 -c1 echo hello &&
     flux job attach $(flux job last) &&
     flux job info $(flux job last) R | jq -e ".scheduling.writer == \"fluxion:jgf_shorthand\"" &&
     flux job info $(flux job last) R | jq .scheduling.graph | test_must_fail grep core

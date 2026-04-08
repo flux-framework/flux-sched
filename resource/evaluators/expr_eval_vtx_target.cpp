@@ -36,7 +36,7 @@ void vtx_predicates_override_t::set (bool sd, bool sna, bool sfr)
 int expr_eval_vtx_target_t::validate (const std::string &p, const std::string &x) const
 {
     int rc = -1;
-    std::string lcx = x;
+    std::string lcx = x;  // lowercase version of x
     struct hostlist *hlist;
     flux_jobid_t id;
 
@@ -52,7 +52,7 @@ int expr_eval_vtx_target_t::validate (const std::string &p, const std::string &x
     else if (p == "sched-future")
         rc = (lcx == "reserved" || lcx == "free") ? 0 : -1;
     else if (p == "jobid-alloc" || p == "jobid-span" || p == "jobid-tag" || p == "jobid-reserved") {
-        rc = flux_job_id_parse (lcx.c_str (), &id);
+        rc = flux_job_id_parse (x.c_str (), &id);  // must use non-lowercased version
     } else if (p == "agfilter") {
         rc = (lcx == "true" || lcx == "t" || lcx == "false" || lcx == "f") ? 0 : -1;
     } else if (p == "names") {
@@ -107,19 +107,19 @@ int expr_eval_vtx_target_t::evaluate (const std::string &p,
                 !m_overridden.sched_future_reserved && (*m_g)[m_u].schedule.reservations.empty ();
         }
     } else if (p == "jobid-alloc") {
-        result = (flux_job_id_parse (lcx.c_str (), &jobid) == 0
+        result = (flux_job_id_parse (x.c_str (), &jobid) == 0  // must use non-lowercased version
                   && (*m_g)[m_u].schedule.allocations.contains (jobid));
     } else if (p == "jobid-reserved") {
-        result = (flux_job_id_parse (lcx.c_str (), &jobid) == 0
+        result = (flux_job_id_parse (x.c_str (), &jobid) == 0  // must use non-lowercased version
                   && (*m_g)[m_u].schedule.reservations.contains (jobid));
     } else if (p == "jobid-span") {
-        if ((flux_job_id_parse (lcx.c_str (), &jobid) != 0
+        if ((flux_job_id_parse (x.c_str (), &jobid) != 0  // must use non-lowercased version
              || !(*m_g)[m_u].idata.job2span.contains (jobid))) {
             goto done;
         }
         result = true;
     } else if (p == "jobid-tag") {
-        if ((flux_job_id_parse (lcx.c_str (), &jobid) != 0
+        if ((flux_job_id_parse (x.c_str (), &jobid) != 0  // must use non-lowercased version
              || !(*m_g)[m_u].idata.tags.contains (jobid))) {
             goto done;
         }
