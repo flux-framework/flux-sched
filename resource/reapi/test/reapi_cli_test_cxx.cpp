@@ -3,6 +3,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <resource/reapi/bindings/c++/reapi_cli.hpp>
 #include <fstream>
+#include <cstdlib>
 
 #include "resource/schema/resource_graph.hpp"
 #include "resource/policies/base/match_op.h"
@@ -13,7 +14,8 @@ TEST_CASE ("Initialize REAPI CLI", "[initialize C++]")
 {
     const std::string options = "{}";
     std::stringstream buffer;
-    std::ifstream inputFile ("../../../t/data/resource/grugs/tiny.graphml");
+    std::string sharness_test_srcdir = std::getenv ("SHARNESS_TEST_SRCDIR");
+    std::ifstream inputFile (sharness_test_srcdir + "/data/resource/grugs/tiny.graphml");
 
     if (!inputFile.is_open ()) {
         std::cerr << "Error opening file!" << std::endl;
@@ -31,12 +33,12 @@ TEST_CASE ("Convert between strings and match_op_ts", "[match C++]")
 {
     // string <-> match_op_t idempotence
     // (excluding START_ AND END_ vals, which count as MATCH_UNKNOWN)
-    for (int op = START_MATCH_OP_T+1; op != END_MATCH_OP_T; op++)
+    for (int op = START_MATCH_OP_T + 1; op != END_MATCH_OP_T; op++)
         REQUIRE (string_to_match_op (match_op_to_string ((match_op_t)op)) == op);
 
     // valid match_op_t are valid (assuming the enum order:
     // [start, unknown, valid..., end])
-    for (int op = START_MATCH_OP_T+2; op != END_MATCH_OP_T; op++) {
+    for (int op = START_MATCH_OP_T + 2; op != END_MATCH_OP_T; op++) {
         REQUIRE (match_op_valid ((match_op_t)op));
     }
 
@@ -52,8 +54,10 @@ TEST_CASE ("Match basic jobspec", "[match C++]")
     int rc = -1;
     const std::string options = "{}";
     std::stringstream gbuffer, jbuffer;
-    std::ifstream graphfile ("../../../t/data/resource/grugs/tiny.graphml");
-    std::ifstream jobspecfile ("../../../t/data/resource/jobspecs/basics/test006.yaml");
+    std::string sharness_test_srcdir = std::getenv ("SHARNESS_TEST_SRCDIR");
+    std::ifstream graphfile (sharness_test_srcdir + "/data/resource/grugs/tiny.graphml");
+    std::ifstream jobspecfile (sharness_test_srcdir
+                               + "/data/resource/jobspecs/basics/test006.yaml");
 
     if (!graphfile.is_open ()) {
         std::cerr << "Error opening file!" << std::endl;
@@ -98,8 +102,10 @@ TEST_CASE ("Match basic jobspec without allocating", "[match C++]")
     int rc = -1;
     const std::string options = "{}";
     std::stringstream gbuffer, jbuffer;
-    std::ifstream graphfile ("../../../t/data/resource/grugs/tiny.graphml");
-    std::ifstream jobspecfile ("../../../t/data/resource/jobspecs/basics/test006.yaml");
+    std::string sharness_test_srcdir = std::getenv ("SHARNESS_TEST_SRCDIR");
+    std::ifstream graphfile (sharness_test_srcdir + "/data/resource/grugs/tiny.graphml");
+    std::ifstream jobspecfile (sharness_test_srcdir
+                               + "/data/resource/jobspecs/basics/test006.yaml");
 
     if (!graphfile.is_open ()) {
         std::cerr << "Error opening file!" << std::endl;
