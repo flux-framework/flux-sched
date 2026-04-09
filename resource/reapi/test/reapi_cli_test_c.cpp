@@ -11,8 +11,10 @@ TEST_CASE ("Initialize REAPI CLI", "[initialize C]")
 {
     const std::string options = "{}";
     std::stringstream buffer;
-    std::ifstream inputFile ("../../../t/data/resource/grugs/tiny.graphml");
+    const char *test_srcdir = std::getenv ("SHARNESS_TEST_SRCDIR");
+    REQUIRE (test_srcdir);
 
+    std::ifstream inputFile (std::string (test_srcdir) + "/data/resource/grugs/tiny.graphml");
     REQUIRE (inputFile.is_open ());
 
     buffer << inputFile.rdbuf ();
@@ -28,18 +30,21 @@ TEST_CASE ("Match basic jobspec", "[match C]")
     int rc = -1;
     const std::string options = "{}";
     std::stringstream gbuffer, jbuffer;
-    std::ifstream graphfile ("../../../t/data/resource/grugs/tiny.graphml");
-    std::ifstream jobspecfile ("../../../t/data/resource/jobspecs/basics/test006.yaml");
+    const char *test_srcdir = std::getenv ("SHARNESS_TEST_SRCDIR");
+    REQUIRE (test_srcdir);
 
+    std::ifstream graphfile (std::string (test_srcdir) + "/data/resource/grugs/tiny.graphml");
     REQUIRE (graphfile.is_open ());
-
-    jbuffer << jobspecfile.rdbuf ();
-    std::string jobspec = jbuffer.str ();
-
-    REQUIRE (jobspecfile.is_open ());
 
     gbuffer << graphfile.rdbuf ();
     std::string rgraph = gbuffer.str ();
+
+    std::ifstream jobspecfile (std::string (test_srcdir)
+                               + "/data/resource/jobspecs/basics/test006.yaml");
+    REQUIRE (jobspecfile.is_open ());
+
+    jbuffer << jobspecfile.rdbuf ();
+    std::string jobspec = jbuffer.str ();
 
     reapi_cli_ctx_t *ctx = nullptr;
     ctx = reapi_cli_new ();
