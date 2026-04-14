@@ -108,6 +108,11 @@ class dfu_flexible_t : public dfu_impl_t {
     void prime_jobspec (std::vector<Jobspec::Resource> &resources,
                         std::unordered_map<resource_type_t, int64_t> &to_parent);
 
+    std::vector<std::vector<Jobspec::Resource>> split_xor_slots (
+        const std::vector<Jobspec::Resource> &resources) const;
+
+    bool exceeds_max_expansion (size_t size) const;
+
     int prune_resources (const jobmeta_t &meta,
                          bool excl,
                          subsystem_t subsystem,
