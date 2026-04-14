@@ -165,7 +165,7 @@ void dfu_flexible_t::prime_jobspec (std::vector<Resource> &resources,
 
         // Or slots should use a minimum of values rather than an accumulation
         // otherwise possible matches may be filtered out
-        if (resource.type == slot_rt) {
+        if (resource.type == slot_rt or resource.type == xor_slot_rt) {
             for (const auto &aggregate : resource.user_data) {
                 min_if (subsystem,
                         aggregate.first,
@@ -189,6 +189,34 @@ void dfu_flexible_t::prime_jobspec (std::vector<Resource> &resources,
             }
         }
     }
+}
+
+int dfu_flexible_t::select (std::vector<Jobspec::Resource> &resources,
+                            vtx_t root,
+                            jobmeta_t &meta,
+                            bool excl)
+{
+    auto xor_resources = split_xor_slots (resources);
+
+    if (xor_resources.empty ()) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": split_xor_slots failed.\n";
+        if (errno != 0) {
+            m_err_msg += strerror (errno);
+            m_err_msg += "\n";
+        }
+        return -1;
+    }
+
+    for (auto &variant : xor_resources) {
+        if (dfu_impl_t::select (variant, root, meta, excl) == 0) {
+            // Success - update the passed resources to the matching variant
+            resources = variant;
+            return 0;
+        }
+    }
+
+    return -1;
 }
 
 std::vector<std::vector<Resource>> dfu_flexible_t::split_xor_slots (
