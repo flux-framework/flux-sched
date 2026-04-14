@@ -12,9 +12,11 @@ extern "C" {
 #if HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include <errno.h>
 }
 
 #include "resource/traversers/dfu_flexible.hpp"
+#include "resource/config/system_defaults.hpp"
 
 using namespace Flux::Jobspec;
 using namespace Flux::resource_model;
@@ -187,6 +189,92 @@ void dfu_flexible_t::prime_jobspec (std::vector<Resource> &resources,
             }
         }
     }
+}
+
+std::vector<std::vector<Resource>> dfu_flexible_t::split_xor_slots (
+    const std::vector<Resource> &resources) const
+{
+    // Start with one empty variant and expand it as each sibling resource
+    // contributes either a single normalized subtree or multiple xor choices.
+    std::vector<std::vector<Resource>> base_variants (1);
+    std::vector<Resource> xor_options;
+
+    for (const auto &resource : resources) {
+        // Normalize nested xor_slot descendants before combining this sibling
+        // with the variants accumulated so far.
+        auto child_variants = split_xor_slots (resource.with);
+
+        // Check if recursive expansion failed
+        if (child_variants.empty ()) {
+            return {};
+        }
+
+        if (resource.type == xor_slot_rt) {
+            // xor_slot siblings are alternatives: convert each expanded child
+            // into a normal slot option and defer combining until the end.
+            for (const auto &child_variant : child_variants) {
+                Resource option = resource;
+                option.type = slot_rt;
+                option.with = child_variant;
+                xor_options.push_back (option);
+
+                // Check if xor_options collection exceeds the limit
+                if (exceeds_max_expansion (xor_options.size ()))
+                    return {};
+            }
+
+            continue;
+        }
+
+        std::vector<std::vector<Resource>> next_variants;
+        for (const auto &variant : base_variants) {
+            for (const auto &child_variant : child_variants) {
+                // Non-xor resources are required together, so build the
+                // cross-product of prior siblings with each child expansion.
+                Resource expanded = resource;
+                expanded.with = child_variant;
+
+                auto next = variant;
+                next.push_back (expanded);
+                next_variants.push_back (std::move (next));
+
+                // Check if expansion exceeds the limit
+                if (exceeds_max_expansion (next_variants.size ()))
+                    return {};
+            }
+        }
+
+        base_variants = std::move (next_variants);
+    }
+
+    if (xor_options.empty ())
+        return base_variants;
+
+    std::vector<std::vector<Resource>> results;
+    for (const auto &variant : base_variants) {
+        for (const auto &option : xor_options) {
+            // Attach exactly one xor choice to each fully expanded required
+            // sibling set to produce the final candidate jobspec resources.
+            auto next = variant;
+            next.push_back (option);
+            results.push_back (std::move (next));
+
+            // Check if final expansion exceeds the limit
+            if (exceeds_max_expansion (results.size ()))
+                return {};
+        }
+    }
+
+    return results;
+}
+
+bool dfu_flexible_t::exceeds_max_expansion (size_t size) const
+{
+    if (size > detail::SYSTEM_MAX_XOR_EXPANSION) {
+        errno = EOVERFLOW;
+        return true;
+    }
+    return false;
 }
 
 std::tuple<dfu_flexible_t::Key, int, int> dfu_flexible_t::select_or_config (
