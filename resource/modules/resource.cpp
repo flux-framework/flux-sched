@@ -1545,6 +1545,8 @@ extern "C" int mod_main (flux_t *h, int argc, char **argv)
     }
 
 done:
+    subsystem_t::storage_t::unfinalize ();
+    resource_type_t::storage_t::unfinalize ();
     return rc;
 }
 
