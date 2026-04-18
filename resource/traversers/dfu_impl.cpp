@@ -225,9 +225,10 @@ int dfu_impl_t::by_status (const jobmeta_t &meta, vtx_t u)
 int dfu_impl_t::by_constraint (const jobmeta_t &meta, vtx_t u)
 {
     int rc = 0;
-    //  RFC 31 constraints only match against type == "node"
+    //  RFC 31 constraints only match against type == "node" and type == "storage_node"
     //  unspecified constraint matches everything
-    if (meta.constraint != nullptr && (*m_graph)[u].type == node_rt
+    if (meta.constraint != nullptr
+        && ((*m_graph)[u].type == node_rt || (*m_graph)[u].type == storage_node_rt)
         && !meta.constraint->match ((*m_graph)[u])) {
         rc = -1;
     }
