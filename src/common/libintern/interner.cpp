@@ -66,6 +66,11 @@ void dense_storage_finalize (dense_inner_storage &storage)
     auto ul = std::unique_lock (*storage.mtx);
     storage.finalized = true;
 }
+void dense_storage_unfinalize (dense_inner_storage &storage)
+{
+    auto ul = std::unique_lock (*storage.mtx);
+    storage.finalized = false;
+}
 void dense_storage_open (dense_inner_storage &storage)
 {
     auto ul = std::unique_lock (*storage.mtx);

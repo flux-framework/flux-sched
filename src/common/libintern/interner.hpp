@@ -38,6 +38,7 @@ view_and_id get_both (dense_inner_storage &ds, std::string_view s, char bytes_su
 const std::string *get_by_id (dense_inner_storage &ds, size_t string_id);
 
 void dense_storage_finalize (dense_inner_storage &storage);
+void dense_storage_unfinalize (dense_inner_storage &storage);
 void dense_storage_open (dense_inner_storage &storage);
 void dense_storage_close (dense_inner_storage &storage);
 
@@ -91,6 +92,14 @@ struct dense_storage {
     {
         detail::dense_storage_finalize (get_storage ());
     }
+
+    /// allow new strings to be added again, only call this when the owning module or agent is
+    /// ending
+    static void unfinalize ()
+    {
+        detail::dense_storage_unfinalize (get_storage ());
+    }
+
     /// open the interner for additions and auto-close on scope exit
     [[nodiscard]] static auto open_for_scope ()
     {

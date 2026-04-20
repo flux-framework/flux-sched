@@ -293,9 +293,9 @@ static int init_resource_graph (std::shared_ptr<resource_ctx_t> &ctx)
         return -1;
     }
 
-    // prevent users from consuming unbounded memory with arbitrary resource types
-    subsystem_t::storage_t::finalize ();
-    resource_type_t::storage_t::finalize ();
+    // No finalize for string interners here, because the graph was initialized
+    // by resource, and this one has to match. Finalizing again here may work,
+    // but could cause a race condition in rare cases.
     return 0;
 }
 

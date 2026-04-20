@@ -12,7 +12,8 @@ using namespace std::string_view_literals;
 struct tag1 {};
 struct tag2 {};
 using tt1 = interned_string<dense_storage<tag1, uint8_t>>;
-using tt2 = interned_string<dense_storage<tag2, uint32_t>>;
+using ds2 = dense_storage<tag2, uint32_t>;
+using tt2 = interned_string<ds2>;
 
 TEST_CASE ("interner: intern a single literal, get back the same", "[interner]")
 {
@@ -40,6 +41,20 @@ TEST_CASE ("interner: strings with different tags compare different", "[interner
     REQUIRE (l.get () == r.get ());
     REQUIRE (l.id () == r.id ());
     REQUIRE (l.get ().data () != r.get ().data ());
+}
+
+TEST_CASE ("interner: finalize prevents new strings, open and unfinalize open", "[interner]")
+{
+    auto t = tt2 ("test"sv);
+    ds2::finalize ();
+    CHECK_THROWS (tt2 ("test5"sv));
+    {
+        auto _ = ds2::open_for_scope ();
+
+        REQUIRE_NOTHROW (tt2 ("test5"sv));
+    }
+    ds2::unfinalize ();
+    REQUIRE_NOTHROW (tt2 ("test6"sv));
 }
 
 TEST_CASE ("interner: smaller ID limits properly", "[interner]")
