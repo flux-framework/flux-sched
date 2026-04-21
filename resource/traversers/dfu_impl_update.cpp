@@ -861,8 +861,8 @@ int dfu_impl_t::update (vtx_t root, std::shared_ptr<match_writers_t> &writers, j
     bool emit_shadow = modify_traversal (root, false);
     // Regardless of value of `x`, value for `excl_parent` parameter starts as `false`
     if ((rc = upd_dfv (root, writers, needs, x, jobmeta, true, dfu, emit_shadow, false)) > 0) {
-        uint64_t starttime = jobmeta.at;
-        uint64_t endtime = jobmeta.at + jobmeta.duration;
+        int64_t starttime = jobmeta.at;
+        int64_t endtime = jobmeta.at + jobmeta.duration;
         if (writers->emit_tm (starttime, endtime) == -1) {
             m_err_msg += __FUNCTION__;
             m_err_msg += ": emit_tm returned -1.\n";
@@ -927,8 +927,8 @@ int dfu_impl_t::update (vtx_t root,
     bool emit_shadow = modify_traversal (root, false);
     // Regardless of value of `x`, value for `excl_parent` parameter starts as `false`
     if ((rc = upd_dfv (root, writers, needs, x, jobmeta, false, dfu, emit_shadow, false)) > 0) {
-        uint64_t starttime = jobmeta.at;
-        uint64_t endtime = jobmeta.at + jobmeta.duration;
+        int64_t starttime = jobmeta.at;
+        int64_t endtime = jobmeta.at + jobmeta.duration;
         if (writers->emit_tm (starttime, endtime) == -1) {
             m_err_msg += __FUNCTION__;
             m_err_msg += ": emit_tm returned -1.\n";

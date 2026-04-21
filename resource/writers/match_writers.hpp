@@ -61,7 +61,7 @@ class match_writers_t {
     {
         return 0;
     }
-    virtual int emit_tm (uint64_t starttime, uint64_t expiration)
+    virtual int emit_tm (int64_t starttime, int64_t expiration)
     {
         return 0;
     }
@@ -274,7 +274,7 @@ class rv1_match_writers_t : public match_writers_t {
                   const resource_graph_t &g,
                   const edg_t &e,
                   bool excl_parent) override;
-    virtual int emit_tm (uint64_t start_tm, uint64_t end_tm);
+    virtual int emit_tm (int64_t start_tm, int64_t end_tm);
     virtual int emit_attrs (const std::string &k, const std::string &v);
 
    protected:
@@ -304,7 +304,7 @@ class rv1_nosched_match_writers_t : public match_writers_t {
                   const std::map<std::string, std::string> &agfilter_data,
                   bool exclusive,
                   bool excl_parent) override;
-    virtual int emit_tm (uint64_t start_tm, uint64_t end_tm);
+    virtual int emit_tm (int64_t start_tm, int64_t end_tm);
 
    private:
     rlite_match_writers_t rlite;
