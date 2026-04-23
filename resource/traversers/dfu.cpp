@@ -141,7 +141,7 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
                                std::unordered_map<resource_type_t, int64_t> &dfv)
 {
     int64_t t = 0;
-    int64_t sched_iters = 1;  // Track the schedule iterations in perf stats
+    int64_t sched_iters = 0;  // Track the schedule iterations in perf stats
     int rc = -1;
     size_t len = 0;
     std::vector<uint64_t> agg;
@@ -154,6 +154,7 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
     if ((rc = request_feasible (meta, op, root, dfv)) < 0)
         goto out;
 
+    sched_iters++;
     if ((rc = traverser->select (jobspec, root, meta, x)) == 0) {
         m_total_preorder = traverser->get_preorder_count ();
         m_total_postorder = traverser->get_postorder_count ();
