@@ -277,6 +277,21 @@ class reapi_t {
     {
         return -1;
     }
+
+    /*! Find a subgraph based on input criteria.
+     *
+     *  \param h         Opaque handle. How it is used is an implementation
+     *                   detail. However, when it is used within a Flux's
+     *                   service module, it is expected to be a pointer
+     *                   to a flux_t object.
+     *  \param criteria  input string of criteria to match.
+     *  \param out       return string
+     *  \return          0 on success; -1 on error.
+     */
+    static int find (void *h, const std::string &criteria, std::string &out)
+    {
+        return -1;
+    }
 };
 
 }  // namespace resource_model

@@ -233,11 +233,14 @@ out:
     return rc;
 }
 
-int reapi_cli_t::find (void *h, std::string criteria, json_t *&o)
+int reapi_cli_t::find (void *h, const std::string &criteria, std::string &out)
 {
     int rc = -1;
     resource_query_t *rq = static_cast<resource_query_t *> (h);
+    json_t *o = nullptr;
+    char *json_str = nullptr;
 
+    out = "";
     if ((rc = rq->traverser_find (criteria)) < 0) {
         if (rq->get_traverser_err_msg () != "") {
             m_err_msg += __FUNCTION__;
@@ -253,6 +256,23 @@ int reapi_cli_t::find (void *h, std::string criteria, json_t *&o)
         return rc;
     }
 
+    if (o) {
+        if (json_is_string (o)) {
+            out = json_string_value (o);
+        } else if (!(json_str = json_dumps (o, JSON_INDENT (0)))) {
+            json_decref (o);
+            o = NULL;
+            errno = ENOMEM;
+            rc = -1;
+            goto done;
+        } else if (json_str) {
+            out = json_str;
+            free (json_str);
+        }
+        json_decref (o);
+    }
+
+done:
     return rc;
 }
 
