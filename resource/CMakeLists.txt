@@ -90,6 +90,7 @@ add_library(resource STATIC
 target_include_directories(resource PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(resource PRIVATE
     planner
+    match_option
     )
 target_link_libraries(resource PUBLIC
     flux::hostlist
