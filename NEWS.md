@@ -1,3 +1,18 @@
+flux-sched version 0.50.1 - 2026-04-24
+--------------------------------------
+
+### Fixes
+ * traversers: `storage_node` constraints (#1454)
+ * resource: match int types (#1457)
+ * leave interner open after resource module unload (#1453)
+ * t: fix intermittent t1029 failures (#1446)
+
+### Build/Testsuite/Documentation
+ * cmake: bump jansson requirement to v2.11 (#1455)
+ * cmake preset: use colons to separate ASAN options (#1458)
+ * ci: add el10 build (#1444)
+
+
 flux-sched version 0.50.0 - 2026-04-02
 --------------------------------------
 
