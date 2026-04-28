@@ -82,12 +82,12 @@ class ResourceModuleInterface:
         payload = {"jobid": jobid, "R": rv1exec}
         return self.handle.rpc("sched-fluxion-resource.partial-cancel", payload).get()
 
-    def rpc_set_property(self, sp_resource_path, sp_keyval):
-        payload = {"sp_resource_path": sp_resource_path, "sp_keyval": sp_keyval}
+    def rpc_set_property(self, sp_resource_paths, sp_keyval):
+        payload = {"sp_resource_path": sp_resource_paths, "sp_keyval": sp_keyval}
         return self.handle.rpc("sched-fluxion-resource.set_property", payload).get()
 
-    def rpc_remove_property(self, rp_resource_path, rp_key):
-        payload = {"resource_path": rp_resource_path, "key": rp_key}
+    def rpc_remove_property(self, rp_resource_paths, rp_key):
+        payload = {"resource_path": rp_resource_paths, "key": rp_key}
         return self.handle.rpc("sched-fluxion-resource.remove_property", payload).get()
 
     def rpc_get_property(self, gp_resource_path, gp_key):
@@ -333,9 +333,9 @@ def set_property_action(args):
     """
 
     rmod = ResourceModuleInterface()
-    sp_resource_path = args.sp_resource_path
+    sp_resource_paths = args.sp_resource_paths
     sp_keyval = args.sp_keyval
-    rmod.rpc_set_property(sp_resource_path, sp_keyval)
+    rmod.rpc_set_property(sp_resource_paths, sp_keyval)
 
 
 def remove_property_action(args):
@@ -343,7 +343,7 @@ def remove_property_action(args):
     Action for remove-property sub-command
     """
     rmod = ResourceModuleInterface()
-    rmod.rpc_remove_property(args.rp_resource_path, args.rp_key)
+    rmod.rpc_remove_property(args.rp_resource_paths, args.rp_key)
 
 
 def get_property_action(args):
@@ -589,32 +589,34 @@ def main():
     # Positional arguments for set-property sub-command
     #
     parser_sp.add_argument(
-        "sp_resource_path",
+        "sp_resource_paths",
         metavar="ResourcePath",
         type=str,
-        help="set-property resource_path property-key=val",
+        nargs="+",
+        help="set-property resource_path [resource_path...] property-key=val",
     )
     parser_sp.add_argument(
         "sp_keyval",
         metavar="PropertyKeyVal",
         type=str,
-        help="set-property resource_path property-key=val",
+        help="set-property resource_path [resource_path...] property-key=val",
     )
     parser_sp.set_defaults(func=set_property_action)
 
     # Positional arguments for remove-property sub-command
     #
     parser_rp.add_argument(
-        "rp_resource_path",
+        "rp_resource_paths",
         metavar="ResourcePath",
         type=str,
-        help="remove-property resource_path property-key=val",
+        nargs="+",
+        help="remove-property resource_path [resource_path...] property-key",
     )
     parser_rp.add_argument(
         "rp_key",
         metavar="PropertyKey",
         type=str,
-        help="remove-property resource_path property-key",
+        help="remove-property resource_path [resource_path...] property-key",
     )
     parser_rp.set_defaults(func=remove_property_action)
 
