@@ -858,23 +858,58 @@ static void set_property_request_cb (flux_t *h,
                                      const flux_msg_t *msg,
                                      void *arg)
 {
-    const char *rp = NULL, *kv = NULL;
-    std::string resource_path = "", keyval = "", errmsg = "";
+    const char *kv = NULL;
+    json_t *paths_json = NULL;
+    std::string keyval = "", errmsg = "";
     std::string property_key = "", property_value = "";
+    std::vector<std::string> resource_paths;
     size_t pos;
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
     std::map<std::string, std::vector<vtx_t>>::const_iterator it;
     std::pair<std::map<std::string, std::string>::iterator, bool> ret;
     vtx_t v;
 
-    if (flux_request_unpack (msg, NULL, "{s:s s:s}", "sp_resource_path", &rp, "sp_keyval", &kv)
+    // Try to unpack with sp_resource_path as a json object to check its type
+    if (flux_request_unpack (msg,
+                             NULL,
+                             "{s:o s:s}",
+                             "sp_resource_path",
+                             &paths_json,
+                             "sp_keyval",
+                             &kv)
         < 0) {
         errmsg = "could not unpack payload";
         goto error;
     }
 
-    resource_path = rp;
     keyval = kv;
+
+    // Check if sp_resource_path is a string (old format) or array (new format)
+    if (json_is_string (paths_json)) {
+        // Backwards compatibility: single path as string
+        resource_paths.push_back (json_string_value (paths_json));
+    } else if (json_is_array (paths_json)) {
+        // New format: array of paths
+        size_t index;
+        json_t *value;
+        json_array_foreach (paths_json, index, value) {
+            if (!json_is_string (value)) {
+                errno = EINVAL;
+                errmsg = "sp_resource_path array must contain only strings";
+                goto error;
+            }
+            resource_paths.push_back (json_string_value (value));
+        }
+        if (resource_paths.empty ()) {
+            errno = EINVAL;
+            errmsg = "sp_resource_path array cannot be empty";
+            goto error;
+        }
+    } else {
+        errno = EINVAL;
+        errmsg = "sp_resource_path must be a string or array of strings";
+        goto error;
+    }
 
     pos = keyval.find ('=');
 
@@ -887,22 +922,25 @@ static void set_property_request_cb (flux_t *h,
     property_key = keyval.substr (0, pos);
     property_value = keyval.substr (pos + 1);
 
-    it = ctx->db->metadata.by_path.find (resource_path);
+    // Process each resource path
+    for (const auto &resource_path : resource_paths) {
+        it = ctx->db->metadata.by_path.find (resource_path);
 
-    if (it == ctx->db->metadata.by_path.end ()) {
-        errno = ENOENT;
-        errmsg = "Couldn't find '" + resource_path + "' in resource graph";
-        goto error;
-    }
+        if (it == ctx->db->metadata.by_path.end ()) {
+            errno = ENOENT;
+            errmsg = "Couldn't find '" + resource_path + "' in resource graph";
+            goto error;
+        }
 
-    for (auto &v : it->second) {
-        ret = ctx->db->resource_graph[v].properties.insert (
-            std::pair<std::string, std::string> (property_key, property_value));
-
-        if (ret.second == false) {
-            ctx->db->resource_graph[v].properties.erase (property_key);
-            ctx->db->resource_graph[v].properties.insert (
+        for (auto &v : it->second) {
+            ret = ctx->db->resource_graph[v].properties.insert (
                 std::pair<std::string, std::string> (property_key, property_value));
+
+            if (ret.second == false) {
+                ctx->db->resource_graph[v].properties.erase (property_key);
+                ctx->db->resource_graph[v].properties.insert (
+                    std::pair<std::string, std::string> (property_key, property_value));
+            }
         }
     }
 
@@ -921,31 +959,63 @@ static void remove_property_request_cb (flux_t *h,
                                         const flux_msg_t *msg,
                                         void *arg)
 {
-    const char *rp = NULL, *kv = NULL;
-    std::string resource_path = "", property_key = "", errmsg = "";
+    const char *kv = NULL;
+    json_t *paths_json = NULL;
+    std::string property_key = "", errmsg = "";
+    std::vector<std::string> resource_paths;
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
     std::map<std::string, std::vector<vtx_t>>::const_iterator it;
-    std::pair<std::map<std::string, std::string>::iterator, bool> ret;
     vtx_t v;
 
-    if (flux_request_unpack (msg, NULL, "{s:s s:s}", "resource_path", &rp, "key", &kv) < 0) {
+    // Try to unpack with resource_path as a json object to check its type
+    if (flux_request_unpack (msg, NULL, "{s:o s:s}", "resource_path", &paths_json, "key", &kv)
+        < 0) {
         errmsg = "could not unpack payload";
         goto error;
     }
 
-    resource_path = rp;
     property_key = kv;
 
-    it = ctx->db->metadata.by_path.find (resource_path);
-
-    if (it == ctx->db->metadata.by_path.end ()) {
-        errno = ENOENT;
-        errmsg = "Couldn't find '" + resource_path + "' in resource graph";
+    // Check if resource_path is a string (old format) or array (new format)
+    if (json_is_string (paths_json)) {
+        // Backwards compatibility: single path as string
+        resource_paths.push_back (json_string_value (paths_json));
+    } else if (json_is_array (paths_json)) {
+        // New format: array of paths
+        size_t index;
+        json_t *value;
+        json_array_foreach (paths_json, index, value) {
+            if (!json_is_string (value)) {
+                errno = EINVAL;
+                errmsg = "resource_path array must contain only strings";
+                goto error;
+            }
+            resource_paths.push_back (json_string_value (value));
+        }
+        if (resource_paths.empty ()) {
+            errno = EINVAL;
+            errmsg = "resource_path array cannot be empty";
+            goto error;
+        }
+    } else {
+        errno = EINVAL;
+        errmsg = "resource_path must be a string or array of strings";
         goto error;
     }
 
-    for (auto &v : it->second) {
-        ctx->db->resource_graph[v].properties.erase (property_key);
+    // Process each resource path
+    for (const auto &resource_path : resource_paths) {
+        it = ctx->db->metadata.by_path.find (resource_path);
+
+        if (it == ctx->db->metadata.by_path.end ()) {
+            errno = ENOENT;
+            errmsg = "Couldn't find '" + resource_path + "' in resource graph";
+            goto error;
+        }
+
+        for (auto &v : it->second) {
+            ctx->db->resource_graph[v].properties.erase (property_key);
+        }
     }
 
     if (flux_respond_pack (h, msg, "{}") < 0)
