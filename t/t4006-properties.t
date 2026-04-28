@@ -192,6 +192,65 @@ test_expect_success 'tests fail when payloads are missing' '
 	send_rpc remove_property 2>&1 | grep "could not unpack payload"
 '
 
+test_expect_success 'set property on multiple paths at once works' "
+	flux ion-resource set-property /tiny0/rack0/node0 /tiny0/rack0/node1 multiclass=batch &&
+	flux ion-resource get-property /tiny0/rack0/node0 multiclass > sp.multi1 &&
+	flux ion-resource get-property /tiny0/rack0/node1 multiclass >> sp.multi1 &&
+	cat <<-EOF >expected &&
+	multiclass = ['batch']
+	multiclass = ['batch']
+	EOF
+	test_cmp expected sp.multi1 &&
+	flux ion-resource find property=multiclass --format simple | grep node0 &&
+	flux ion-resource find property=multiclass --format simple | grep node1
+"
+
+test_expect_success 'remove property from multiple paths at once works' "
+	flux ion-resource remove-property /tiny0/rack0/node0 /tiny0/rack0/node1 multiclass &&
+	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node0 multiclass &&
+	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node1 multiclass &&
+	flux ion-resource find property=multiclass --format simple | test_must_fail grep node0 &&
+	flux ion-resource find property=multiclass --format simple | test_must_fail grep node1
+"
+
+test_expect_success 'set property on multiple resource types works' "
+	flux ion-resource set-property /tiny0/rack0/node0 /tiny0/rack0/node0/socket0 /tiny0/rack0/node1/socket0/core16 mixed=1 &&
+	flux ion-resource get-property /tiny0/rack0/node0 mixed > sp.mixed &&
+	flux ion-resource get-property /tiny0/rack0/node0/socket0 mixed >> sp.mixed &&
+	flux ion-resource get-property /tiny0/rack0/node1/socket0/core16 mixed >> sp.mixed &&
+	cat <<-EOF >expected &&
+	mixed = ['1']
+	mixed = ['1']
+	mixed = ['1']
+	EOF
+	test_cmp expected sp.mixed &&
+	flux ion-resource find property=mixed --format simple | grep node0 &&
+	flux ion-resource find property=mixed --format simple | grep socket0 &&
+	flux ion-resource find property=mixed --format simple | grep core16
+"
+
+test_expect_success 'remove property from multiple resource types works' "
+	flux ion-resource remove-property /tiny0/rack0/node0 /tiny0/rack0/node0/socket0 /tiny0/rack0/node1/socket0/core16 mixed &&
+	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node0 mixed &&
+	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node0/socket0 mixed &&
+	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node1/socket0/core16 mixed
+"
+
+test_expect_success 'set property with one invalid path fails' "
+	test_expect_code 3 flux ion-resource set-property /dont/exist /tiny0/rack0/node0 testprop=1 &&
+	flux ion-resource set-property /tiny0/rack0/node0 /dont/exist testprop=1 2>&1 | grep \"Couldn't find '/dont/exist'\" &&
+	# remove property, since it was set before /dont/exist failed
+	flux ion-resource remove-property /tiny0/rack0/node0 testprop
+"
+
+test_expect_success 'remove property with one invalid path fails' "
+	flux ion-resource set-property /tiny0/rack0/node0 testprop2=2 &&
+	test_expect_code 3 flux ion-resource remove-property /dont/exist /tiny0/rack0/node0 testprop2 &&
+	flux ion-resource remove-property /tiny0/rack0/node0 /dont/exist testprop2 2>&1 | grep \"Couldn't find '/dont/exist'\" &&
+	flux ion-resource get-property /tiny0/rack0/node0 testprop2 | grep 2 &&
+	flux ion-resource remove-property /tiny0/rack0/node0 testprop2
+"
+
 test_expect_success 'removing resource works' '
 	remove_resource
 '
