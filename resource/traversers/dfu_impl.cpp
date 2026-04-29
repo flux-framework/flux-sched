@@ -59,17 +59,31 @@ bool dfu_impl_t::stop_explore (edg_t e, subsystem_t subsystem) const
             || m_color.is_black ((*m_graph)[u].idata.colors[subsystem]));
 }
 
-bool dfu_impl_t::exclusivity (const std::vector<Jobspec::Resource> &resources, vtx_t u)
+bool dfu_impl_t::resolve_tristate_excl (Jobspec::tristate_t tristate, bool parent_excl)
 {
-    // If one of the resources matches with the visiting vertex, u
-    // and it requested exclusive access, return true;
-    bool exclusive = false;
+    if (tristate == Jobspec::tristate_t::TRUE)
+        return true;
+    if (tristate == Jobspec::tristate_t::FALSE)
+        return false;
+    // UNSPECIFIED: inherit from parent
+    return parent_excl;
+}
+
+bool dfu_impl_t::resolve_exclusivity (const std::vector<Jobspec::Resource> &resources,
+                                      vtx_t u,
+                                      bool parent_excl)
+{
+    // Resolve exclusivity for vertex u in a single pass:
+    // - If resource matches and has explicit TRUE -> return true
+    // - If resource matches and has explicit FALSE -> return false
+    // - If resource matches and has UNSPECIFIED -> inherit from parent
+    // - If no match found -> inherit from parent
     for (auto &resource : resources) {
-        if (resource_type_t{resource.type} == (*m_graph)[u].type)
-            if (resource.exclusive == Jobspec::tristate_t::TRUE)
-                exclusive = true;
+        if (resource_type_t{resource.type} == (*m_graph)[u].type) {
+            return resolve_tristate_excl (resource.exclusive, parent_excl);
+        }
     }
-    return exclusive;
+    return parent_excl;
 }
 
 int dfu_impl_t::by_avail (const jobmeta_t &meta,
@@ -108,19 +122,11 @@ int dfu_impl_t::by_excl (const jobmeta_t &meta,
     int64_t njobs = -1;
     uint64_t duration = meta.duration;
 
-    // If a non-exclusive resource request is explicitly given on a
-    // resource that lies under slot, this spec is invalid.
-    if (exclusive_in && resource.exclusive == Jobspec::tristate_t::FALSE) {
-        errno = EINVAL;
-        m_err_msg += "by_excl: exclusivity conflicts at jobspec=";
-        m_err_msg += resource.label + " : vertex=" + (*m_graph)[u].name;
-        return -1;
-    }
-
-    // If a resource request is under slot or an explicit exclusivity is
-    // requested, we check the validity of the visiting vertex using
-    // its x_checker planner.
-    if (exclusive_in || resource.exclusive == Jobspec::tristate_t::TRUE) {
+    // Check exclusivity if:
+    // 1. Explicitly requested as TRUE, OR
+    // 2. Inherited from parent (exclusive_in) AND not explicitly set to FALSE
+    // This allows explicit FALSE to override inherited slot exclusivity.
+    if (resolve_tristate_excl (resource.exclusive, exclusive_in)) {
         // If it's exclusive, the traversal type is an allocation, and
         // there are no other allocations on the vertex, then proceed. This
         // check prevents the observed multiple booking issue, where
@@ -602,7 +608,9 @@ int dfu_impl_t::aux_upv (const jobmeta_t &meta,
     int64_t avail = 0, at = meta.at;
     uint64_t duration = meta.duration;
     planner_t *p = NULL;
-    bool x_in = *excl;
+    // Resolve exclusivity for this vertex, allowing explicit FALSE to override
+    // inherited exclusivity from parent.
+    bool x_in = resolve_exclusivity (resources, u, *excl);
 
     static const auto &root = m_graph_db->metadata.roots.find (aux);
     if (root == m_graph_db->metadata.roots.end ())
@@ -667,6 +675,10 @@ int dfu_impl_t::cnt_slot (const std::vector<Resource> &slot_shape, scoring_api_t
     // In this case, you don't have 128 slots available because the match
     // granularity is 64 units. Instead, you have only 2 slots available each
     // with 64 units, and your request will get 1 whole resource vertex.
+    //
+    // However, for resources explicitly marked as non-exclusive (shared),
+    // the granule constraint should not apply - multiple slots can share
+    // the same pooled resource vertex.
     qual_num_slots = UINT_MAX;
     for (auto &slot_elem : slot_shape) {
         qc = dfu_slot.qualified_count (dom, slot_elem.type);
@@ -675,7 +687,11 @@ int dfu_impl_t::cnt_slot (const std::vector<Resource> &slot_shape, scoring_api_t
         // constraint check against qualified amounts
         fit = (count == 0) ? count : (qc / count);
         // constraint check against qualified granules
-        fit = (fit > qg) ? qg : fit;
+        // Skip granule constraint for explicitly non-exclusive (shared) resources
+        // since multiple slots can share the same resource vertex
+        if (slot_elem.exclusive != Jobspec::tristate_t::FALSE) {
+            fit = (fit > qg) ? qg : fit;
+        }
         qual_num_slots = (qual_num_slots > fit) ? fit : qual_num_slots;
         dfu_slot.eval_egroups_iter_reset (dom, slot_elem.type);
     }
@@ -715,14 +731,21 @@ int dfu_impl_t::dom_slot (const jobmeta_t &meta,
             while (j < count) {
                 auto egroup_i = dfu_slot.eval_egroups_iter_next (dom, slot_elem.type);
                 if (egroup_i == dfu_slot.eval_egroups_end (dom, slot_elem.type)) {
-                    m_err_msg += __FUNCTION__;
-                    m_err_msg += ": not enough slots.\n";
-                    qual_num_slots = 0;
-                    goto done;
+                    // Shared resources can reuse vertices across slots; reset and retry once.
+                    if (slot_elem.exclusive == Jobspec::tristate_t::FALSE) {
+                        dfu_slot.eval_egroups_iter_reset (dom, slot_elem.type);
+                        egroup_i = dfu_slot.eval_egroups_iter_next (dom, slot_elem.type);
+                    }
+                    if (egroup_i == dfu_slot.eval_egroups_end (dom, slot_elem.type)) {
+                        m_err_msg += __FUNCTION__;
+                        m_err_msg += ": not enough slots.\n";
+                        qual_num_slots = 0;
+                        goto done;
+                    }
                 }
                 eval_edg_t ev_edg ((*egroup_i).edges[0].count,
                                    (*egroup_i).edges[0].count,
-                                   1,
+                                   (*egroup_i).edges[0].exclusive,
                                    (*egroup_i).edges[0].edge);
                 score += (*egroup_i).score;
                 edg_group.edges.push_back (ev_edg);
@@ -752,7 +775,9 @@ int dfu_impl_t::dom_dfv (const jobmeta_t &meta,
     match_kind_t sm;
     int64_t avail = 0, at = meta.at;
     uint64_t duration = meta.duration;
-    bool x_in = *excl || exclusivity (resources, u);
+    // Resolve exclusivity for this vertex, allowing explicit FALSE to override
+    // inherited exclusivity from parent.
+    bool x_in = resolve_exclusivity (resources, u, *excl);
     bool x_inout = x_in;
     bool check_pres = pristine;
     unsigned int nslots = 0;
