@@ -1,0 +1,26 @@
+version: 9999
+# Test non-pooled shared resources (cores without units, explicit exclusive:false)
+# Multiple jobs requesting cores on the same core with exclusive:false
+resources:
+  - type: slot
+    count: 1
+    label: default
+    with:
+      - type: node
+        count: 1
+        with:
+          - type: slot
+            label: task
+            count: 1
+            with:
+              - type: core
+                count: 1
+                exclusive: false
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: task
+    count:
+      per_slot: 1

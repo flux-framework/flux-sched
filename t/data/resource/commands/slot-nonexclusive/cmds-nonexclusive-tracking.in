@@ -1,0 +1,9 @@
+# Test that non-exclusive SSDs are properly tracked in the planner
+# With 4 SSDs (size=793 each), requesting 1 SSD with exclusive:false
+# should allow exactly 4 allocations (one per SSD), then the 5th fails
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/ssd-nonexclusive-limit.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/ssd-nonexclusive-limit.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/ssd-nonexclusive-limit.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/ssd-nonexclusive-limit.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/ssd-nonexclusive-limit.yaml
+quit
