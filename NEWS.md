@@ -1,3 +1,26 @@
+flux-sched version 0.51.0 - 2026-05-11
+--------------------------------------
+
+### New Features
+ * resource: bulk set- and remove-property rpcs (#1463)
+ * resource: support amending R with JGF in a subinstance (#1470)
+
+### Fixes
+ * traversers: `storage_node` constraints (#1454)
+ * resource: match int types (#1457)
+ * leave interner open after resource module unload (#1453)
+ * t: fix intermittent t1029 failures (#1446)
+
+### Build/Testsuite/Documentation
+ * docker: remove unused Dockerfiles (#1462)
+ * cmake: bump jansson requirement to v2.11 (#1455)
+ * cmake preset: use colons to separate ASAN options (#1458)
+ * ci: add el10 build (#1444)
+ * doc: document rv1_shorthand (#1473)
+ * docker: remove unnecessary `sudo` from el9 (#1474)
+ * ci: fix fluxrm/flux-sched:latest docker image tag (#1480)
+
+
 flux-sched version 0.50.0 - 2026-04-02
 --------------------------------------
 
