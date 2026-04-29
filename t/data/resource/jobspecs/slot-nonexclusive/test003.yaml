@@ -1,0 +1,19 @@
+version: 9999
+resources:
+  - type: slot
+    count: 1
+    label: testslot
+    with:
+      - type: node
+        count: 1
+        with:
+          - type: core
+            count: 2
+attributes:
+  system:
+    duration: 1800
+tasks:
+  - command: [ "cpu_app" ]
+    slot: testslot
+    count:
+      per_slot: 1
