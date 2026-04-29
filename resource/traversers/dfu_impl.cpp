@@ -63,13 +63,24 @@ bool dfu_impl_t::exclusivity (const std::vector<Jobspec::Resource> &resources, v
 {
     // If one of the resources matches with the visiting vertex, u
     // and it requested exclusive access, return true;
-    bool exclusive = false;
     for (auto &resource : resources) {
         if (resource_type_t{resource.type} == (*m_graph)[u].type)
             if (resource.exclusive == Jobspec::tristate_t::TRUE)
-                exclusive = true;
+                return true;
     }
-    return exclusive;
+    return false;
+}
+
+bool dfu_impl_t::non_exclusivity (const std::vector<Jobspec::Resource> &resources, vtx_t u)
+{
+    // If one of the resources matches with the visiting vertex, u
+    // and it explicitly requested non-exclusive access, return true;
+    for (auto &resource : resources) {
+        if (resource_type_t{resource.type} == (*m_graph)[u].type)
+            if (resource.exclusive == Jobspec::tristate_t::FALSE)
+                return true;
+    }
+    return false;
 }
 
 int dfu_impl_t::by_avail (const jobmeta_t &meta,
@@ -118,19 +129,12 @@ int dfu_impl_t::by_excl (const jobmeta_t &meta,
     int saved_errno = errno;
     uint64_t duration = meta.duration;
 
-    // If a non-exclusive resource request is explicitly given on a
-    // resource that lies under slot, this spec is invalid.
-    if (exclusive_in && resource.exclusive == Jobspec::tristate_t::FALSE) {
-        errno = EINVAL;
-        m_err_msg += "by_excl: exclusivity conflicts at jobspec=";
-        m_err_msg += resource.label + " : vertex=" + (*m_graph)[u].name;
-        goto done;
-    }
-
-    // If a resource request is under slot or an explicit exclusivity is
-    // requested, we check the validity of the visiting vertex using
-    // its x_checker planner.
-    if (exclusive_in || resource.exclusive == Jobspec::tristate_t::TRUE) {
+    // Check exclusivity if:
+    // 1. Explicitly requested as TRUE, OR
+    // 2. Inherited from parent (exclusive_in) AND not explicitly set to FALSE
+    // This allows explicit FALSE to override inherited slot exclusivity.
+    if (resource.exclusive == Jobspec::tristate_t::TRUE ||
+        (exclusive_in && resource.exclusive != Jobspec::tristate_t::FALSE)) {
         // If it's exclusive, the traversal type is an allocation, and
         // there are no other allocations on the vertex, then proceed. This
         // check prevents the observed multiple booking issue, where
@@ -608,7 +612,9 @@ int dfu_impl_t::aux_upv (const jobmeta_t &meta,
     int64_t avail = 0, at = meta.at;
     uint64_t duration = meta.duration;
     planner_t *p = NULL;
-    bool x_in = *excl;
+    // Check if this resource explicitly requests non-exclusive access.
+    // If so, override inherited exclusivity for this subtree.
+    bool x_in = non_exclusivity (resources, u) ? false : (*excl || exclusivity (resources, u));
 
     static const auto &root = m_graph_db->metadata.roots.find (aux);
     if (root == m_graph_db->metadata.roots.end ())
@@ -728,7 +734,7 @@ int dfu_impl_t::dom_slot (const jobmeta_t &meta,
                 }
                 eval_edg_t ev_edg ((*egroup_i).edges[0].count,
                                    (*egroup_i).edges[0].count,
-                                   1,
+                                   (*egroup_i).edges[0].exclusive,
                                    (*egroup_i).edges[0].edge);
                 score += (*egroup_i).score;
                 edg_group.edges.push_back (ev_edg);
@@ -758,7 +764,9 @@ int dfu_impl_t::dom_dfv (const jobmeta_t &meta,
     match_kind_t sm;
     int64_t avail = 0, at = meta.at;
     uint64_t duration = meta.duration;
-    bool x_in = *excl || exclusivity (resources, u);
+    // Check if this resource explicitly requests non-exclusive access.
+    // If so, override inherited exclusivity for this subtree.
+    bool x_in = non_exclusivity (resources, u) ? false : (*excl || exclusivity (resources, u));
     bool x_inout = x_in;
     bool check_pres = pristine;
     unsigned int nslots = 0;

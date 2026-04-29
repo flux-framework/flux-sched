@@ -142,6 +142,16 @@ class dfu_impl_t {
      */
     bool exclusivity (const std::vector<Jobspec::Resource> &resources, vtx_t u);
 
+    /*! Non-exclusive request? Return true if a resource in resources vector
+     *  matches resource vertex u and its exclusivity field value is FALSE.
+     *  This allows resources under slots to opt-out of inherited exclusivity.
+     *
+     *  \param resources Resource request vector.
+     *  \param u         visiting resource vertex.
+     *  \return          true or false.
+     */
+    bool non_exclusivity (const std::vector<Jobspec::Resource> &resources, vtx_t u);
+
     /*! Prime the resource graph with subtree plans. The subtree plans are
      *  instantiated on certain resource vertices and updated with the
      *  information on their subtree resources. For example, the subtree plan
