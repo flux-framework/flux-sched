@@ -1,0 +1,4 @@
+# Test shared GPU without slot specification
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/test004.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/test004.yaml
+quit

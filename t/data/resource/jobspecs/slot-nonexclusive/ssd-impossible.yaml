@@ -1,0 +1,15 @@
+version: 9999
+resources:
+  - type: chassis
+    count: 1
+    with:
+      - type: ssd
+        count: 999
+        # Request more SSDs than exist - should fail
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    count:
+      per_slot: 1

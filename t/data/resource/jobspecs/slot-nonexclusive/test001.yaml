@@ -1,0 +1,28 @@
+version: 9999
+resources:
+  - type: slot
+    count: 1
+    label: testslot
+    with:
+      - type: node
+        count: 1
+        with:
+          - type: socket
+            count: 1
+            with: 
+              - type: core
+                count: 4
+                exclusive: false
+              - type: gpu
+                count: 1
+                exclusive: false
+              - type: memory
+                count: 1
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: testslot
+    count:
+      per_slot: 1
