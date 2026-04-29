@@ -7,8 +7,8 @@ USER root
 # copy scripts into image
 COPY scripts/ /scripts
 # Install extra buildrequires for flux-sched:
-RUN sudo /scripts/install-deps.sh -y --allowerasing gcc-toolset-13-{gcc,gcc-c++,gdb} \
- && sudo dnf clean all
+RUN /scripts/install-deps.sh -y --allowerasing gcc-toolset-13-{gcc,gcc-c++,gdb} \
+ && dnf clean all
 
 # Add configured user to image with sudo access:
 #
