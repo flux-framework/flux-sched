@@ -1,0 +1,21 @@
+version: 9999
+# Test that non-exclusive SSDs are properly tracked and not over-allocated
+# rabbit.json has 4 SSD vertices (2 per chassis), each with size=793 GiB
+# With exclusive:false on SSD, requesting 793 GiB consumes one SSD vertex capacity
+# This should allow 4 allocations (one per SSD), then the 5th should fail
+resources:
+  - type: slot
+    count: 1
+    label: testslot
+    with:
+      - type: ssd
+        count: 1
+        exclusive: false
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: testslot
+    count:
+      per_slot: 1

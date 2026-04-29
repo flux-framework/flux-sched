@@ -1,0 +1,27 @@
+version: 9999
+# Test non-pooled shared GPU - request all 18 cores on a socket
+# This exhausts the cores but the GPU can still be shared
+resources:
+  - type: node
+    count: 1
+    with:
+      - type: slot
+        count: 1
+        label: task
+        with:
+          - type: socket
+            count: 1
+            with:
+              - type: gpu
+                count: 1
+                exclusive: false
+              - type: core
+                count: 18
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: task
+    count:
+      per_slot: 1
