@@ -368,7 +368,7 @@ int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
                             .count ();
     detail::jobmeta_t meta;
     vtx_t root = get_graph_db ()->metadata.roots.at (dom);
-    bool x = traverser->exclusivity (jobspec.resources, root);
+    bool x = traverser->resolve_exclusivity (jobspec.resources, root, false);
     const auto exclusive_types = traverser->get_exclusive_resource_types ();
     std::unordered_map<resource_type_t, int64_t> dfv;
 
