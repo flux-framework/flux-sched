@@ -1,0 +1,22 @@
+      ------------core1[1:x]
+      ---------hetchy1018[1:x]
+      ------chassis1[1:x]
+      ---hetchy[1:s]
+INFO: =============================
+INFO: JOBID=1
+INFO: RESOURCES=ALLOCATED
+INFO: SCHEDULED AT=Now
+INFO: =============================
+      ------------core1[1:x]
+      ---------hetchy1002[1:x]
+      ------chassis0[1:x]
+      ---hetchy[1:s]
+INFO: =============================
+INFO: JOBID=2
+INFO: RESOURCES=ALLOCATED
+INFO: SCHEDULED AT=Now
+INFO: =============================
+INFO: =============================
+INFO: No matching resources found
+INFO: JOBID=3
+INFO: =============================

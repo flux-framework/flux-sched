@@ -1,0 +1,5 @@
+# Test 1: Allocate with exclusive SSDs (implicit), should succeed
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/ssd-exclusive.yaml
+# Test 2: Try to allocate again with exclusive SSDs, should fail (no more chassis)
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/ssd-exclusive.yaml
+quit

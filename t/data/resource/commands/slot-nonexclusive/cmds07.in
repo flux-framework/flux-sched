@@ -1,0 +1,4 @@
+# Test mixed resources under slot (cores, GPU, memory with exclusive: false)
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/test001.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/test001.yaml
+quit
