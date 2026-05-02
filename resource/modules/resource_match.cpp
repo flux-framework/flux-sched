@@ -930,6 +930,13 @@ static int grow_resource_db_jgf (std::shared_ptr<resource_ctx_t> &ctx, json_t *r
     char *jgf_str = NULL;
     vtx_t v = boost::graph_traits<resource_graph_t>::null_vertex ();
 
+    // Validate that jgf is a proper JGF object with a graph key
+    if (!jgf || !json_is_object (jgf) || !json_object_get (jgf, "graph")) {
+        errno = EINVAL;
+        flux_log_error (ctx->h, "%s: invalid JGF in scheduling section", __FUNCTION__);
+        goto done;
+    }
+
     if ((rc = unpack_parent_job_resources (ctx, &p_r_lite, &parent_has_jgf)) < 0) {
         // Parent resources unavailable or no parent - this is OK
         // JGF ranks should already be correct
