@@ -883,7 +883,9 @@ done:
     return rc;
 }
 
-static int unpack_parent_job_resources (std::shared_ptr<resource_ctx_t> &ctx, json_t **p_r_lite_p)
+static int unpack_parent_job_resources (std::shared_ptr<resource_ctx_t> &ctx,
+                                        json_t **p_r_lite_p,
+                                        bool *parent_has_jgf_p)
 {
     int rc = 0;
     int saved_errno;
@@ -897,11 +899,13 @@ static int unpack_parent_job_resources (std::shared_ptr<resource_ctx_t> &ctx, js
         goto done;
     if ((rc = unpack_resources (p_resources, &p_grow_set, &p_r_lite, &p_jgf, duration)) < 0)
         goto done;
-    if (!p_grow_set || !p_r_lite || !p_jgf) {
+    if (!p_grow_set || !p_r_lite) {
+        // Parent must have R_lite, but JGF is optional
         errno = EINVAL;
         rc = -1;
         goto done;
     }
+    *parent_has_jgf_p = (p_jgf != NULL);
     if ((*p_r_lite_p = json_deep_copy (p_r_lite)) == NULL) {
         errno = ENOMEM;
         rc = -1;
@@ -921,16 +925,24 @@ static int grow_resource_db_jgf (std::shared_ptr<resource_ctx_t> &ctx, json_t *r
     int rc = -1;
     int saved_errno;
     json_t *p_r_lite = NULL;
+    bool parent_has_jgf = false;
     resource_graph_db_t &db = *(ctx->db);
     char *jgf_str = NULL;
     vtx_t v = boost::graph_traits<resource_graph_t>::null_vertex ();
 
-    if ((rc = unpack_parent_job_resources (ctx, &p_r_lite)) < 0) {
-        flux_log_error (ctx->h, "%s: unpack_parent_job_resources", __FUNCTION__);
-        goto done;
+    if ((rc = unpack_parent_job_resources (ctx, &p_r_lite, &parent_has_jgf)) < 0) {
+        // Parent resources unavailable or no parent - this is OK
+        // JGF ranks should already be correct
+        flux_log (ctx->h,
+                  LOG_DEBUG,
+                  "%s: parent resources unavailable, skipping remapping",
+                  __FUNCTION__);
+        p_r_lite = NULL;
+        rc = 0;
     }
     if (db.metadata.roots.find (containment_sub) == db.metadata.roots.end ()) {
-        if (p_r_lite && (rc = remap_jgf_namespace (ctx, r_lite, p_r_lite)) < 0) {
+        // Only remap if parent has JGF - otherwise assume JGF ranks match R_lite
+        if (p_r_lite && parent_has_jgf && (rc = remap_jgf_namespace (ctx, r_lite, p_r_lite)) < 0) {
             flux_log_error (ctx->h, "%s: remap_jgf_namespace", __FUNCTION__);
             goto done;
         }
