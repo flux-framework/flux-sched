@@ -97,6 +97,7 @@ set(ALL_TESTS
   t4016-match-flexible.t
   t5000-valgrind.t
   t5100-issues-test-driver.t
+  t5200-jgf-load-no-parent-jgf.t
   t6000-graph-size.t
   t6001-match-formats.t
   t6002-graph-hwloc.t
