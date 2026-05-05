@@ -1,0 +1,48 @@
+version: 9999
+resources:
+  - type: cluster
+    count: 1
+    with:
+      - type: rack
+        count: 1
+        with:
+          - type: node
+            count: 1
+            with:
+              - type: socket
+                count: 1
+                with:
+                  - type: xor_slot
+                    count: 1
+                    label: gpu-branch
+                    with:
+                      - type: core
+                        count: 8
+                      - type: gpu
+                        count: 1
+                  - type: xor_slot
+                    count: 1
+                    label: mem-branch
+                    with:
+                      - type: core
+                        count: 10
+                      - type: memory
+                        count: 2
+                  - type: xor_slot
+                    count: 1
+                    label: compact-branch
+                    with:
+                      - type: core
+                        count: 12
+                      - type: memory
+                        count: 1
+
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: default
+    count:
+      per_slot: 1
+

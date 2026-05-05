@@ -205,7 +205,7 @@ class dfu_impl_t {
      *  vertex does not have an incoming edge and thus "needs" are passed as
      *  the output from this method to handle the root special case.
      *
-     *  \param jobspec   Jobspec object.
+     *  \param resources resource request vector.
      *  \param root      root resource vertex.
      *  \param meta      metadata on this job.
      *  \param exclusive true if exclusive access is requested for root.
@@ -214,7 +214,10 @@ class dfu_impl_t {
      *  \return          0 on success; -1 on error -- call err_message ()
      *                   for detail.
      */
-    int select (Jobspec::Jobspec &jobspec, vtx_t root, jobmeta_t &meta, bool exclusive);
+    virtual int select (std::vector<Jobspec::Resource> &resources,
+                        vtx_t root,
+                        jobmeta_t &meta,
+                        bool exclusive);
 
     /*! Traverse the resource graph and emit those resources whose
      *  status is matched with the matching criteria.
@@ -490,12 +493,12 @@ class dfu_impl_t {
                  bool pristine,
                  bool *excl,
                  scoring_api_t &to_parent);
-    int dom_dfv (const jobmeta_t &meta,
-                 vtx_t u,
-                 const std::vector<Jobspec::Resource> &resources,
-                 bool pristine,
-                 bool *excl,
-                 scoring_api_t &to_parent);
+    virtual int dom_dfv (const jobmeta_t &meta,
+                         vtx_t u,
+                         const std::vector<Jobspec::Resource> &resources,
+                         bool pristine,
+                         bool *excl,
+                         scoring_api_t &to_parent);
     int dom_find_dfv (std::shared_ptr<match_writers_t> &writers,
                       const std::string &criteria,
                       vtx_t u,

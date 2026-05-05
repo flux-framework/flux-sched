@@ -17,6 +17,7 @@ namespace resource_model {
 namespace detail {
 const int64_t SYSTEM_DEFAULT_DURATION = 43200;   // 12 hours
 const int64_t SYSTEM_MAX_DURATION = 3153600000;  // 100 years
+const size_t SYSTEM_MAX_XOR_EXPANSION = 1000;    // max xor slot expansion variants
 }  // namespace detail
 }  // namespace resource_model
 }  // namespace Flux
