@@ -21,17 +21,15 @@ match-policy
 
 match-format
     (optional) String name of match format to use.
-    "rv1" and "rv1_nosched" are currently supported.
+    "rv1", "rv1_shorthand", and "rv1_nosched" are currently supported.
     When a job is allocated, its resource set is encoded
     in RFC 20 Resource Set Specification Version 1.
     It has an optional ``scheduling`` key and this is
-    only encoded by "rv1".
+    only encoded by "rv1" and "rv1_shorthand".
     By omitting the ``scheduling`` key, "rv1_nosched" will
-    result in higher scheduling performance. However,
-    this format will not contain sufficient
-    information to reconstruct the state
-    of ``sched-fluxion-resource`` on module reload (as
-    required for system instance failure recovery).
+    result in higher scheduling performance. However, "rv1_nosched"
+    is limited to describing only nodes, cores, and GPUs, while
+    "rv1" and "rv1_shorthand" can describe arbitrary resource types.
     The default is "rv1_nosched".
 
 load-allowlist
