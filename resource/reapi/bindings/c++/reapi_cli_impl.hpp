@@ -55,7 +55,8 @@ int reapi_cli_t::match_allocate (void *h,
                                  bool &reserved,
                                  std::string &R,
                                  int64_t &at,
-                                 double &ov)
+                                 double &ov,
+                                 int64_t within)
 {
     resource_query_t *rq = static_cast<resource_query_t *> (h);
     int rc = -1;
@@ -84,7 +85,7 @@ int reapi_cli_t::match_allocate (void *h,
             goto out;
         }
 
-        rc = rq->traverser_run (job, match_op, (int64_t)jobid, at);
+        rc = rq->traverser_run (job, match_op, (int64_t)jobid, at, within);
 
         if (rq->get_traverser_err_msg () != "") {
             m_err_msg += __FUNCTION__;
@@ -101,11 +102,16 @@ int reapi_cli_t::match_allocate (void *h,
         goto out;
     }
 
-    if ((rc != 0) && (errno == ENOMEM)) {
-        m_err_msg += __FUNCTION__;
-        m_err_msg += ": ERROR: Memory error for " + std::to_string (rq->get_job_counter ());
+    if (rc != 0) {
         rc = -1;
-        goto out;
+
+        if (errno == ENOMEM) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": ERROR: Memory error for " + std::to_string (rq->get_job_counter ());
+            goto out;
+        } else {
+            goto incrout;  // Generic failures must increment jobid
+        }
     }
 
     // Check for an unsuccessful match
@@ -131,24 +137,30 @@ int reapi_cli_t::match_allocate (void *h,
     ov = get_elapsed_time (start_time, end_time);
 
     if (matched) {
-        reserved = (at != 0) ? true : false;
-        st = (reserved) ? job_lifecycle_t::RESERVED : job_lifecycle_t::ALLOCATED;
-        if (reserved)
-            rq->set_reservation (jobid);
-        else
-            rq->set_allocation (jobid);
+        if (match_op == match_op_t::MATCH_WITHOUT_ALLOCATING) {
+            reserved = false;
+        } else {
+            reserved = (at != 0) ? true : false;
+            st = (reserved) ? job_lifecycle_t::RESERVED : job_lifecycle_t::ALLOCATED;
+            if (reserved)
+                rq->set_reservation (jobid);
+            else
+                rq->set_allocation (jobid);
 
-        job_info = std::make_shared<job_info_t> (jobid, st, at, "", "", ov);
-        if (job_info == nullptr) {
-            errno = ENOMEM;
-            m_err_msg += __FUNCTION__;
-            m_err_msg += ": ERROR: can't allocate memory: " + std::string (strerror (errno)) + "\n";
-            rc = -1;
-            goto out;
+            job_info = std::make_shared<job_info_t> (jobid, st, at, "", "", ov);
+            if (job_info == nullptr) {
+                errno = ENOMEM;
+                m_err_msg += __FUNCTION__;
+                m_err_msg +=
+                    ": ERROR: can't allocate memory: " + std::string (strerror (errno)) + "\n";
+                rc = -1;
+                goto out;
+            }
+            rq->set_job (jobid, job_info);
         }
-        rq->set_job (jobid, job_info);
     }
 
+incrout:
     if (match_op != match_op_t::MATCH_SATISFIABILITY)
         rq->incr_job_counter ();
 
@@ -747,9 +759,10 @@ void resource_query_t::incr_job_counter ()
 int resource_query_t::traverser_run (Flux::Jobspec::Jobspec &job,
                                      match_op_t op,
                                      int64_t jobid,
-                                     int64_t &at)
+                                     int64_t &at,
+                                     int64_t within)
 {
-    return traverser->run (job, writers, op, jobid, &at);
+    return traverser->run (job, writers, op, jobid, &at, at + within);
 }
 
 int resource_query_t::traverser_find (std::string criteria)
