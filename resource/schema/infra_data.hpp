@@ -53,6 +53,8 @@ struct pool_infra_t : public infra_base_t {
 
 class relation_infra_t : public infra_base_t {
    public:
+    enum class slot_role_t : int { NONE = -1, MEMBER = 0, LEADER = 1 };
+
     relation_infra_t ();
     relation_infra_t (const relation_infra_t &o);
     relation_infra_t &operator= (const relation_infra_t &o);
@@ -66,12 +68,16 @@ class relation_infra_t : public infra_base_t {
     uint64_t get_sequence_number () const;
     uint64_t get_weight () const;
     void set_weight (uint64_t);
+    slot_role_t get_slot_role () const;
+    void set_slot_role (slot_role_t);
+    bool is_slot_leader ();
 
    private:
     uint64_t m_needs = 0;
     uint64_t m_sequence_number = 0;
     uint64_t m_weight = std::numeric_limits<uint64_t>::max ();
     int m_exclusive = 0;
+    slot_role_t m_slot_role = slot_role_t::NONE;
 };
 
 }  // namespace resource_model
