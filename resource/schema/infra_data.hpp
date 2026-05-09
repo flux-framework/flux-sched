@@ -71,7 +71,7 @@ class relation_infra_t : public infra_base_t {
     void set_weight (uint64_t);
     slot_role_t get_slot_role () const;
     void set_slot_role (slot_role_t);
-    bool is_slot_leader ();
+    bool is_slot_leader () const;
 
    private:
     uint64_t m_needs = 0;

@@ -207,7 +207,7 @@ void relation_infra_t::set_slot_role (relation_infra_t::slot_role_t slot_role)
     m_slot_role = slot_role;
 }
 
-bool relation_infra_t::is_slot_leader ()
+bool relation_infra_t::is_slot_leader () const
 {
     return m_slot_role == relation_infra_t::slot_role_t::LEADER;
 }

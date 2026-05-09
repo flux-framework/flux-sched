@@ -849,6 +849,7 @@ int resource_query_t::set_resource_ctx_params (const std::string &options)
     params.matcher_name = "CA";
     params.matcher_policy = "first";
     params.traverser_policy = "simple";
+    params.emit_nslots = 0;
     params.o_fname = "";
     params.r_fname = "";
     params.o_fext = "dot";
@@ -943,6 +944,9 @@ int resource_query_t::set_resource_ctx_params (const std::string &options)
     if ((tmp_json = json_object_get (opt_json, "elapse_time")))
         // No need for check here; returns 0 on failure
         params.elapse_time = json_boolean_value (tmp_json);
+    if ((tmp_json = json_object_get (opt_json, "emit_nslots")))
+        // No need for check here; returns 0 on failure
+        params.emit_nslots = json_integer_value (tmp_json);
 
     rc = 0;
 
@@ -995,7 +999,8 @@ static void initialize_matchers_and_traversers (resource_query_t *rq)
 
     // Create fresh writers (stateless: only carry output format config).
     match_format_t format = match_writers_factory_t::get_writers_type (rq->params.match_format);
-    if (!(rq->writers = match_writers_factory_t::create (format))) {
+    int emit_nslots = rq->params.emit_nslots;
+    if (!(rq->writers = match_writers_factory_t::create (format, emit_nslots))) {
         tmp_err = __FUNCTION__;
         tmp_err += ": ERROR: can't create match writers\n";
         throw std::runtime_error (tmp_err);
