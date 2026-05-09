@@ -999,7 +999,7 @@ int rv1_match_writers_t::emit_json (json_t **j_o, json_t **aux)
         goto ret;
     }
     if (json_object_get (rlite_aux_o, "properties")) {
-        if (!(o = json_pack ("{s:i s:{s:o s:O s:O s:I s:I} s:o}",
+        if (!(o = json_pack ("{s:i s:{s:o s:O s:O s:I s:I s:o*} s:o}",
                              "version",
                              1,
                              "execution",
@@ -1013,6 +1013,8 @@ int rv1_match_writers_t::emit_json (json_t **j_o, json_t **aux)
                              m_starttime,
                              "expiration",
                              m_expiration,
+                             "nslots",
+                             m_nslots > 0 ? json_integer (m_nslots) : NULL,
                              "scheduling",
                              jgf_o))) {
             json_decref (rlite_o);
@@ -1023,7 +1025,7 @@ int rv1_match_writers_t::emit_json (json_t **j_o, json_t **aux)
             goto ret;
         }
     } else {
-        if (!(o = json_pack ("{s:i s:{s:o s:O s:I s:I} s:o}",
+        if (!(o = json_pack ("{s:i s:{s:o s:O s:I s:I s:o*} s:o}",
                              "version",
                              1,
                              "execution",
@@ -1035,6 +1037,8 @@ int rv1_match_writers_t::emit_json (json_t **j_o, json_t **aux)
                              m_starttime,
                              "expiration",
                              m_expiration,
+                             "nslots",
+                             m_nslots > 0 ? json_integer (m_nslots) : NULL,
                              "scheduling",
                              jgf_o))) {
             json_decref (rlite_o);
@@ -1130,6 +1134,19 @@ int rv1_match_writers_t::emit_attrs (const std::string &k, const std::string &v)
     return 0;
 }
 
+int rv1_match_writers_t::emit_nslots (int64_t nslots)
+{
+    if (m_nslots >= 0)
+        m_nslots = nslots;
+    return 0;
+}
+
+int rv1_match_writers_t::set_nslots (int64_t nslots)
+{
+    m_nslots = nslots;
+    return 0;
+}
+
 jgf_match_writers_t &rv1_match_writers_t::get_jgf ()
 {
     return jgf_writer;
@@ -1155,7 +1172,7 @@ int rv1_nosched_match_writers_t::emit_json (json_t **j_o, json_t **aux)
     if ((rc = rlite.emit_json (&rlite_o, &rlite_aux_o)) < 0)
         goto ret;
     if (json_object_get (rlite_aux_o, "properties")) {
-        if (!(*j_o = json_pack ("{s:i s:{s:o s:O s:O s:I s:I}}",
+        if (!(*j_o = json_pack ("{s:i s:{s:o s:O s:O s:I s:I s:o*}}",
                                 "version",
                                 1,
                                 "execution",
@@ -1168,7 +1185,9 @@ int rv1_nosched_match_writers_t::emit_json (json_t **j_o, json_t **aux)
                                 "starttime",
                                 m_starttime,
                                 "expiration",
-                                m_expiration))) {
+                                m_expiration,
+                                "nslots",
+                                m_nslots > 0 ? json_integer (m_nslots) : NULL))) {
             json_decref (rlite_o);
             json_decref (rlite_aux_o);
             rc = -1;
@@ -1176,7 +1195,7 @@ int rv1_nosched_match_writers_t::emit_json (json_t **j_o, json_t **aux)
             goto ret;
         }
     } else {
-        if (!(*j_o = json_pack ("{s:i s:{s:o s:O s:I s:I}}",
+        if (!(*j_o = json_pack ("{s:i s:{s:o s:O s:I s:I s:o*}}",
                                 "version",
                                 1,
                                 "execution",
@@ -1187,7 +1206,9 @@ int rv1_nosched_match_writers_t::emit_json (json_t **j_o, json_t **aux)
                                 "starttime",
                                 m_starttime,
                                 "expiration",
-                                m_expiration))) {
+                                m_expiration,
+                                "nslots",
+                                m_nslots > 0 ? json_integer (m_nslots) : NULL))) {
             json_decref (rlite_o);
             json_decref (rlite_aux_o);
             rc = -1;
@@ -1245,8 +1266,21 @@ int rv1_nosched_match_writers_t::emit_tm (int64_t start_tm, int64_t end_tm)
     return 0;
 }
 
+int rv1_nosched_match_writers_t::emit_nslots (int64_t nslots)
+{
+    if (m_nslots >= 0)
+        m_nslots = nslots;
+    return 0;
+}
+
+int rv1_nosched_match_writers_t::set_nslots (int64_t nslots)
+{
+    m_nslots = nslots;
+    return 0;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
-// RV1 Nosched Writers Class Method Definitions
+// RV1 Shorthand Writers Class Method Definitions
 ////////////////////////////////////////////////////////////////////////////////
 
 jgf_match_writers_t &rv1_shorthand_match_writers_t::get_jgf ()
@@ -1315,7 +1349,7 @@ int pretty_sim_match_writers_t::emit_vtx (const std::string &prefix,
 // Match Writers Factory Class Method Definitions
 ////////////////////////////////////////////////////////////////////////////////
 
-std::shared_ptr<match_writers_t> match_writers_factory_t::create (match_format_t f)
+std::shared_ptr<match_writers_t> match_writers_factory_t::create (match_format_t f, int emit_nslots)
 {
     std::shared_ptr<match_writers_t> w = nullptr;
 
@@ -1335,9 +1369,11 @@ std::shared_ptr<match_writers_t> match_writers_factory_t::create (match_format_t
                 break;
             case match_format_t::RV1_NOSCHED:
                 w = std::make_shared<rv1_nosched_match_writers_t> ();
+                w->set_nslots (emit_nslots);
                 break;
             case match_format_t::RV1_SHORTHAND:
                 w = std::make_shared<rv1_shorthand_match_writers_t> ();
+                w->set_nslots (emit_nslots);
                 break;
             case match_format_t::PRETTY_SIMPLE:
                 w = std::make_shared<pretty_sim_match_writers_t> ();
@@ -1345,6 +1381,7 @@ std::shared_ptr<match_writers_t> match_writers_factory_t::create (match_format_t
             case match_format_t::RV1:
             default:
                 w = std::make_shared<rv1_match_writers_t> ();
+                w->set_nslots (emit_nslots);
                 break;
         }
     } catch (std::bad_alloc &e) {
@@ -1378,8 +1415,9 @@ match_format_t match_writers_factory_t::get_writers_type (const std::string &n)
 bool known_match_format (const std::string &format)
 {
     return (format == "simple" || format == "jgf" || format == "jgf_shorthand" || format == "rlite"
-            || format == "rv1" || format == "rv1_nosched" || format == "rv1_shorthand"
-            || format == "pretty_simple");
+            || format == "rv1" || format == "rv1_nslots" || format == "rv1_nosched"
+            || format == "rv1_nosched_nslots" || format == "rv1_shorthand"
+            || format == "rv1_shorthand_nslots" || format == "pretty_simple");
 }
 
 }  // namespace resource_model

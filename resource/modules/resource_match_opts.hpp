@@ -37,6 +37,7 @@ class resource_prop_t {
     const resource_prop_t &get_resource_prop () const;
     const int get_update_interval () const;
     const std::string &get_traverser_policy () const;
+    const int get_emit_nslots () const;
 
     void set_load_file (const std::string &o);
     bool set_load_format (const std::string &o);
@@ -49,6 +50,7 @@ class resource_prop_t {
     void add_to_prune_filters (const std::string &o);
     void set_update_interval (const int i);
     bool set_traverser_policy (const std::string &o);
+    void set_emit_nslots (const int i);
 
     bool is_load_file_set () const;
     bool is_load_format_set () const;
@@ -60,6 +62,7 @@ class resource_prop_t {
     bool is_prune_filters_set () const;
     bool is_update_interval_set () const;
     bool is_traverser_policy_set () const;
+    bool is_emit_nslots_set () const;
 
     json_t *jsonify () const;
 
@@ -74,6 +77,7 @@ class resource_prop_t {
     std::string m_prune_filters = RESOURCE_OPTS_UNSET_STR;
     int m_update_interval = 0;
     std::string m_traverser_policy = RESOURCE_OPTS_UNSET_STR;
+    int m_emit_nslots = -1;
 };
 
 /*! resource match option set class
@@ -91,6 +95,7 @@ class resource_opts_t : public optmgr_parse_t {
         PRUNE_FILTERS = 70,     // prune-filter
         UPDATE_INTERVAL = 80,   // update-interval
         TRAVERSER_POLICY = 90,  // traverser
+        EMIT_NSLOTS = 100,
         UNKNOWN = 5000
     };
 
@@ -113,6 +118,7 @@ class resource_opts_t : public optmgr_parse_t {
     const resource_prop_t &get_resource_prop () const;
     const int get_update_interval () const;
     const std::string &get_traverser_policy () const;
+    const int get_emit_nslots () const;
 
     void set_load_file (const std::string &o);
     bool set_load_format (const std::string &o);
@@ -124,6 +130,7 @@ class resource_opts_t : public optmgr_parse_t {
     void set_prune_filters (const std::string &o);
     void set_update_interval (const int i);
     bool set_traverser_policy (const std::string &o);
+    void set_emit_nslots (const int i);
 
     bool is_load_file_set () const;
     bool is_load_format_set () const;
@@ -135,6 +142,7 @@ class resource_opts_t : public optmgr_parse_t {
     bool is_prune_filters_set () const;
     bool is_update_interval_set () const;
     bool is_traverser_policy_set () const;
+    bool is_emit_nslots_set () const;
 
     /*! Canonicalize the option set -- apply the general resource properties
      */

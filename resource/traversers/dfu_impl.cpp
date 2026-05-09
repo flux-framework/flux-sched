@@ -355,7 +355,8 @@ const std::vector<Resource> &dfu_impl_t::test (vtx_t u,
                                                const std::vector<Resource> &resources,
                                                bool &pristine,
                                                unsigned int &nslots,
-                                               match_kind_t &spec)
+                                               match_kind_t &spec,
+                                               std::string &label)
 {
     /* Note on the purpose of pristine: we differentiate two similar but
      * distinct cases with this parameter.
@@ -385,6 +386,7 @@ const std::vector<Resource> &dfu_impl_t::test (vtx_t u,
     if ((slot = slot_match (u, slot_resources))) {
         spec = match_kind_t::SLOT_MATCH;
         pristine = false;
+        label = slot_resources->label;
         ret = &(slot_resources->with);
     } else if (match_resources) {
         spec = match_kind_t::RESOURCE_MATCH;
@@ -717,6 +719,7 @@ int dfu_impl_t::dom_slot (const jobmeta_t &meta,
                           unsigned int nslots,
                           bool pristine,
                           bool *excl,
+                          const std::string &label,
                           scoring_api_t &dfu)
 {
     int rc;
@@ -761,6 +764,7 @@ int dfu_impl_t::dom_slot (const jobmeta_t &meta,
         edg_group.score = score;
         edg_group.count = 1;
         edg_group.exclusive = 1;
+        edg_group.task_label = label;
         edg_group_vector.push_back (edg_group);
     }
     for (auto &edg_group : edg_group_vector)
@@ -785,10 +789,11 @@ int dfu_impl_t::dom_dfv (const jobmeta_t &meta,
     bool x_inout = x_in;
     bool check_pres = pristine;
     unsigned int nslots = 0;
+    std::string label;
     scoring_api_t dfu;
     planner_t *p = NULL;
     subsystem_t dom = m_match->dom_subsystem ();
-    const std::vector<Resource> &next = test (u, resources, check_pres, nslots, sm);
+    const std::vector<Resource> &next = test (u, resources, check_pres, nslots, sm, label);
 
     m_preorder++;
     if (sm == match_kind_t::NONE_MATCH) {
@@ -803,7 +808,7 @@ int dfu_impl_t::dom_dfv (const jobmeta_t &meta,
     }
     (*m_graph)[u].idata.colors[dom] = m_color.gray ();
     if (sm == match_kind_t::SLOT_MATCH)
-        dom_slot (meta, u, next, nslots, check_pres, &x_inout, dfu);
+        dom_slot (meta, u, next, nslots, check_pres, &x_inout, label, dfu);
     else
         dom_exp (meta, u, next, check_pres, &x_inout, dfu);
     *excl = x_in;
@@ -1091,10 +1096,22 @@ int dfu_impl_t::enforce (subsystem_t subsystem, scoring_api_t &dfu, bool enforce
                 if (dfu.at (subsystem, t, i).root)
                     continue;
                 const eval_egroup_t &egroup = dfu.at (subsystem, t, i);
+                bool eg_leader = true;
+                bool is_task_slot =
+                    (!egroup.task_label.empty ()
+                     && std::find (m_task_labels.begin (), m_task_labels.end (), egroup.task_label)
+                            != m_task_labels.end ());
                 for (auto &e : egroup.edges) {
                     (*m_graph)[e.edge].idata.set_for_trav_update (e.needs,
                                                                   e.exclusive,
                                                                   m_sequence_number);
+                    // if the egroup refers to a slot, set the edge group leader and members
+                    if (t == slot_rt && subsystem == dom && is_task_slot) {
+                        (*m_graph)[e.edge].idata.set_slot_role (
+                            eg_leader ? relation_infra_t::slot_role_t::LEADER
+                                      : relation_infra_t::slot_role_t::MEMBER);
+                        eg_leader = false;
+                    }
                     // we need to resolve unconstrained resources up to the root in the dominant
                     // subsystem
                     if (enforce_unconstrained && subsystem == dom) {
@@ -1192,6 +1209,14 @@ void dfu_impl_t::set_graph_db (std::shared_ptr<resource_graph_db_t> db)
 void dfu_impl_t::set_match_cb (std::shared_ptr<dfu_match_cb_t> m)
 {
     m_match = m;
+}
+
+void dfu_impl_t::set_task_labels (const std::vector<Jobspec::Task> &tasks)
+{
+    m_task_labels.clear ();
+    for (auto task : tasks) {
+        m_task_labels.push_back (task.slot);
+    }
 }
 
 void dfu_impl_t::clear_err_message ()

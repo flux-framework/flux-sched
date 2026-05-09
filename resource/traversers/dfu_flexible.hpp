@@ -63,7 +63,8 @@ class dfu_flexible_t : public dfu_impl_t {
                                                 const std::vector<Jobspec::Resource> &resources,
                                                 bool &pristine,
                                                 unsigned int &nslots,
-                                                match_kind_t &ko);
+                                                match_kind_t &ko,
+                                                std::string &label);
     std::tuple<dfu_flexible_t::Key, int, int> select_or_config (
         const std::vector<Jobspec::Resource> &slots,
         const std::map<resource_type_t, int> &resource_counts,
@@ -89,6 +90,7 @@ class dfu_flexible_t : public dfu_impl_t {
                   unsigned int nslots,
                   bool pristine,
                   bool *excl,
+                  const std::string &label,
                   scoring_api_t &dfu);
 
     /*! Prime the resource section of the jobspec. Aggregate configured

@@ -1590,7 +1590,8 @@ static int init_resource_graph (std::shared_ptr<resource_ctx_t> &ctx)
     // Create a writers object for matched vertices and edges
     match_format_t format =
         match_writers_factory_t::get_writers_type (ctx->opts.get_opt ().get_match_format ());
-    if (!(ctx->writers = match_writers_factory_t::create (format)))
+    int emit_nslots = ctx->opts.get_opt ().get_emit_nslots ();
+    if (!(ctx->writers = match_writers_factory_t::create (format, emit_nslots)))
         return -1;
 
     if (ctx->opts.get_opt ().is_prune_filters_set ()
