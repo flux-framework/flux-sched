@@ -21,6 +21,7 @@ extern "C" {
 #include <cerrno>
 #include "resource/reapi/bindings/c++/reapi_cli.hpp"
 #include "resource/reapi/bindings/c++/reapi_cli_impl.hpp"
+#include "resource/schema/data_std.hpp"
 
 using namespace Flux;
 using namespace Flux::resource_model;
@@ -309,6 +310,128 @@ extern "C" void reapi_cli_clear_err_msg (reapi_cli_ctx_t *ctx)
         ctx->rqt->clear_resource_query_err_msg ();
     reapi_cli_t::clear_err_message ();
     ctx->err_msg = "";
+}
+
+extern "C" int reapi_cli_set_status (reapi_cli_ctx_t *ctx,
+                                     const char *resource_path,
+                                     const char *status)
+{
+    if (!ctx || !ctx->rqt || !resource_path) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    try {
+        return reapi_cli_t::set_status (ctx->rqt, resource_path, status);
+    } catch (std::system_error &e) {
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: System error: " + std::string (e.what ()) + "\n";
+        errno = e.code ().value ();
+        return -1;
+    } catch (std::exception &e) {
+        // Translate C++ exceptions to errno - unexpected errors default to EINVAL.
+        // Note: C++ layer already translates not-found path to ENOENT via errno.
+        errno = EINVAL;
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: " + std::string (e.what ()) + "\n";
+        return -1;
+    } catch (...) {
+        errno = EINVAL;
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: unknown exception\n";
+        return -1;
+    }
+}
+
+extern "C" int reapi_cli_set_status_by_rank (reapi_cli_ctx_t *ctx, int64_t rank, const char *status)
+{
+    if (!ctx || !ctx->rqt) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    try {
+        return reapi_cli_t::set_status (ctx->rqt, rank, status);
+    } catch (std::system_error &e) {
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: System error: " + std::string (e.what ()) + "\n";
+        errno = e.code ().value ();
+        return -1;
+    } catch (std::exception &e) {
+        // Translate C++ exceptions to errno - unexpected errors default to EINVAL.
+        // Note: C++ layer already translates not-found rank to ENOENT via errno.
+        errno = EINVAL;
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: " + std::string (e.what ()) + "\n";
+        return -1;
+    } catch (...) {
+        errno = EINVAL;
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: unknown exception\n";
+        return -1;
+    }
+}
+
+extern "C" int reapi_cli_get_status (reapi_cli_ctx_t *ctx,
+                                     const char *resource_path,
+                                     const char **status)
+{
+    if (!ctx || !ctx->rqt || !resource_path || !status) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    try {
+        return reapi_cli_t::get_status (ctx->rqt, resource_path, *status);
+    } catch (std::system_error &e) {
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: System error: " + std::string (e.what ()) + "\n";
+        errno = e.code ().value ();
+        return -1;
+    } catch (std::exception &e) {
+        // Translate C++ exceptions to errno - unexpected errors default to EINVAL.
+        // Note: C++ layer already translates not-found path to ENOENT via errno.
+        errno = EINVAL;
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: " + std::string (e.what ()) + "\n";
+        return -1;
+    } catch (...) {
+        errno = EINVAL;
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: unknown exception\n";
+        return -1;
+    }
+}
+
+extern "C" int reapi_cli_get_status_by_rank (reapi_cli_ctx_t *ctx,
+                                             int64_t rank,
+                                             const char **status)
+{
+    if (!ctx || !ctx->rqt || !status) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    try {
+        return reapi_cli_t::get_status (ctx->rqt, rank, *status);
+    } catch (std::system_error &e) {
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: System error: " + std::string (e.what ()) + "\n";
+        errno = e.code ().value ();
+        return -1;
+    } catch (std::exception &e) {
+        // Translate C++ exceptions to errno - unexpected errors default to EINVAL.
+        // Note: C++ layer already translates not-found rank to ENOENT via errno.
+        errno = EINVAL;
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: " + std::string (e.what ()) + "\n";
+        return -1;
+    } catch (...) {
+        errno = EINVAL;
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: unknown exception\n";
+        return -1;
+    }
 }
 
 /*

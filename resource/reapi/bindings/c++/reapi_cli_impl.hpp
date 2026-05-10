@@ -367,6 +367,150 @@ int reapi_cli_t::stat (void *h,
     return -1;
 }
 
+static int parse_rpstatus (const char *status, resource_pool_t::status_t &rpstatus)
+{
+    if (!status)
+        return -1;
+    if (strcasecmp (status, "up") == 0)
+        rpstatus = resource_pool_t::status_t::UP;
+    else if (strcasecmp (status, "down") == 0)
+        rpstatus = resource_pool_t::status_t::DOWN;
+    else
+        return -1;
+    return 0;
+}
+
+int reapi_cli_t::set_status (void *h, const std::string &resource_path, const char *status)
+{
+    int rc = -1;
+    resource_query_t *rq = static_cast<resource_query_t *> (h);
+    resource_pool_t::status_t rpstatus;
+
+    if (!rq || resource_path.empty () || parse_rpstatus (status, rpstatus) < 0) {
+        errno = EINVAL;
+        return -1;
+    }
+    rc = rq->traverser->mark (resource_path, rpstatus);
+    if (rc < 0) {
+        if (errno == 0)
+            errno = EINVAL;
+        m_err_msg = __FUNCTION__;
+        m_err_msg += ": " + rq->traverser->err_message ();
+    }
+    return rc;
+}
+
+int reapi_cli_t::set_status (void *h, int64_t rank, const char *status)
+{
+    int rc = -1;
+    resource_query_t *rq = static_cast<resource_query_t *> (h);
+    resource_pool_t::status_t rpstatus;
+
+    if (!rq || parse_rpstatus (status, rpstatus) < 0) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    // Note: traverser->mark() can throw std::out_of_range
+    std::set<int64_t> ranks;
+    if (rank == FLUX_NODEID_ANY) {
+        for (const auto &kv : rq->db->metadata.by_rank)
+            if (kv.first >= 0)
+                ranks.insert (kv.first);
+    } else {
+        if (rq->db->metadata.by_rank.find (rank) == rq->db->metadata.by_rank.end ()) {
+            errno = ENOENT;
+            m_err_msg = __FUNCTION__;
+            m_err_msg += ": rank not found: " + std::to_string (rank);
+            return -1;
+        }
+        ranks.insert (rank);
+    }
+
+    rc = rq->traverser->mark (ranks, rpstatus);
+    if (rc < 0) {
+        if (errno == 0)
+            errno = EINVAL;
+        m_err_msg = __FUNCTION__;
+        m_err_msg += ": failed to mark rank " + std::to_string (rank);
+    }
+    return rc;
+}
+
+int reapi_cli_t::get_status (void *h, const std::string &resource_path, const char *&status)
+{
+    resource_query_t *rq = static_cast<resource_query_t *> (h);
+
+    if (!rq || resource_path.empty ()) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    auto vit = rq->db->metadata.by_path.find (resource_path);
+    if (vit == rq->db->metadata.by_path.end ()) {
+        errno = ENOENT;
+        m_err_msg = __FUNCTION__;
+        m_err_msg += ": resource path not found: " + resource_path;
+        return -1;
+    }
+
+    // Get the first vertex at this path
+    if (vit->second.empty ()) {
+        errno = EINVAL;
+        m_err_msg = __FUNCTION__;
+        m_err_msg += ": no vertices at path: " + resource_path;
+        return -1;
+    }
+
+    vtx_t v = vit->second.front ();
+    // Note: can throw std::out_of_range if status field not in vertex
+    status = resource_pool_t::status_to_str (rq->db->resource_graph[v].status);
+    return 0;
+}
+
+int reapi_cli_t::get_status (void *h, int64_t rank, const char *&status)
+{
+    resource_query_t *rq = static_cast<resource_query_t *> (h);
+
+    if (!rq || rank == FLUX_NODEID_ANY) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    auto vit = rq->db->metadata.by_rank.find (rank);
+    if (vit == rq->db->metadata.by_rank.end ()) {
+        errno = ENOENT;
+        m_err_msg = __FUNCTION__;
+        m_err_msg += ": rank not found: " + std::to_string (rank);
+        return -1;
+    }
+
+    // Get the node vertex (subtree root) at this rank
+    if (vit->second.empty ()) {
+        errno = EINVAL;
+        m_err_msg = __FUNCTION__;
+        m_err_msg += ": no vertices at rank: " + std::to_string (rank);
+        return -1;
+    }
+
+    // Find the subtree root (shortest path = node vertex)
+    vtx_t subtree_root = vit->second.front ();
+    subsystem_t dom = rq->matcher->dom_subsystem ();
+    const resource_graph_t &g = rq->db->resource_graph;
+
+    // Note: paths.at() can throw std::out_of_range
+    for (vtx_t v : vit->second) {
+        std::string path = g[v].paths.at (dom);
+        std::string root_path = g[subtree_root].paths.at (dom);
+        if (path.length () < root_path.length ()) {
+            subtree_root = v;
+        }
+    }
+
+    status = resource_pool_t::status_to_str (g[subtree_root].status);
+    return 0;
+}
+
 const std::string &reapi_cli_t::get_err_message ()
 {
     return m_err_msg;
