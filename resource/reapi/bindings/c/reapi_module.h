@@ -20,6 +20,7 @@ extern "C" {
 #endif
 #include <flux/core.h>
 #include "resource/policies/base/match_op.h"
+#include "resource_status.h"
 
 typedef struct reapi_module_ctx reapi_module_ctx_t;
 
@@ -212,6 +213,58 @@ int reapi_module_set_handle (reapi_module_ctx_t *ctx, void *handle);
  *  \return          handle
  */
 void *reapi_module_get_handle (reapi_module_ctx_t *ctx);
+
+/*! Set resource status (up or down) for a resource at the specified path.
+ *
+ *  \param ctx           reapi_cli_ctx_t context object
+ *  \param resource_path Path to resource (e.g., "/cluster0/rack0/node3")
+ *  \param status        RESOURCE_UP or RESOURCE_DOWN
+ *  \return              0 on success; -1 on error with errno set:
+ *                           EINVAL: invalid parameters, resource path not found,
+ *                                   or unexpected internal error
+ */
+int reapi_module_set_status (reapi_module_ctx_t *ctx,
+                             const char *resource_path,
+                             resource_status_t status);
+
+/*! Get resource status for a resource at the specified path.
+ *
+ *  \param ctx           reapi_module_ctx_t context object
+ *  \param resource_path Path to resource (e.g., "/cluster0/rack0/node3")
+ *  \param status        Pointer to receive status
+ *  \return              0 on success; -1 on error with errno set:
+ *                           EINVAL: invalid parameters, resource path not found,
+ *                                   or unexpected internal error
+ */
+int reapi_module_get_status (reapi_module_ctx_t *ctx,
+                             const char *resource_path,
+                             resource_status_t *status);
+
+/*! Set resource status (up or down) for all resources at each rank in a set.
+ *  Unknown ranks are silently ignored.
+ *
+ *  \param ctx           reapi_module_ctx_t context object
+ *  \param ranks         RFC 22 idset string representing a set of ranks, or "all"
+ *  \param status        RESOURCE_UP or RESOURCE_DOWN
+ *  \return              0 on success; -1 on error with errno set:
+ *                           EINVAL: invalid parameters or unexpected internal error
+ */
+int reapi_module_set_rank_status (reapi_module_ctx_t *ctx,
+                                  const char *ranks,
+                                  resource_status_t status);
+
+/*! Get resource status for the node at a rank.
+ *
+ *  \param ctx           reapi_module_ctx_t context object
+ *  \param rank          Rank in string form, e.g. "2"
+ *  \param status        Pointer to receive status
+ *  \return              0 on success; -1 on error with errno set:
+ *                           EINVAL: invalid parameters, rank not found,
+ *                                   or unexpected internal error
+ */
+int reapi_module_get_rank_status (reapi_module_ctx_t *ctx,
+                                  const char *rank,
+                                  resource_status_t *status);
 
 #ifdef __cplusplus
 }

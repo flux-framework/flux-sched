@@ -19,12 +19,48 @@ extern "C" {
 #include <cstdlib>
 #include <cstdint>
 #include <cerrno>
+#include <cstring>
 #include "resource/reapi/bindings/c++/reapi_cli.hpp"
 #include "resource/reapi/bindings/c++/reapi_cli_impl.hpp"
+#include "resource/schema/data_std.hpp"
+#include "resource/reapi/bindings/c/resource_status.h"
 
 using namespace Flux;
 using namespace Flux::resource_model;
 using namespace Flux::resource_model::detail;
+
+// Conversion helpers between C and C++ status enums
+// Returns 0 on success, -1 on error with errno set
+static inline int resource_status_to_cpp (resource_status_t status, resource_pool_t::status_t &out)
+{
+    switch (status) {
+        case RESOURCE_UP:
+            out = resource_pool_t::status_t::UP;
+            return 0;
+        case RESOURCE_DOWN:
+            out = resource_pool_t::status_t::DOWN;
+            return 0;
+        default:
+            errno = EINVAL;
+            return -1;
+    }
+}
+
+static inline int resource_status_from_cpp (resource_pool_t::status_t status,
+                                            resource_status_t &out)
+{
+    switch (status) {
+        case resource_pool_t::status_t::UP:
+            out = RESOURCE_UP;
+            return 0;
+        case resource_pool_t::status_t::DOWN:
+            out = RESOURCE_DOWN;
+            return 0;
+        default:
+            errno = EINVAL;
+            return -1;
+    }
+}
 
 struct reapi_cli_ctx {
     resource_query_t *rqt;
@@ -328,6 +364,142 @@ extern "C" void reapi_cli_clear_err_msg (reapi_cli_ctx_t *ctx)
         ctx->rqt->clear_resource_query_err_msg ();
     reapi_cli_t::clear_err_message ();
     ctx->err_msg = "";
+}
+
+extern "C" int reapi_cli_set_status (reapi_cli_ctx_t *ctx,
+                                     const char *resource_path,
+                                     resource_status_t status)
+{
+    if (!ctx || !ctx->rqt || !resource_path) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    resource_pool_t::status_t cpp_status;
+    if (resource_status_to_cpp (status, cpp_status) < 0)
+        return -1;
+
+    try {
+        return reapi_cli_t::set_status (ctx->rqt, resource_path, cpp_status);
+    } catch (std::system_error &e) {
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: System error: " + std::string (e.what ()) + "\n";
+        errno = e.code ().value ();
+        return -1;
+    } catch (std::exception &e) {
+        // Translate C++ exceptions to errno - unexpected errors default to EINVAL.
+        errno = EINVAL;
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: " + std::string (e.what ()) + "\n";
+        return -1;
+    } catch (...) {
+        errno = EINVAL;
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: unknown exception\n";
+        return -1;
+    }
+}
+
+extern "C" int reapi_cli_get_status (reapi_cli_ctx_t *ctx,
+                                     const char *resource_path,
+                                     resource_status_t *status)
+{
+    if (!ctx || !ctx->rqt || !resource_path || !status) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    try {
+        resource_pool_t::status_t cpp_status;
+        int rc = reapi_cli_t::get_status (ctx->rqt, resource_path, cpp_status);
+        if (rc == 0 && resource_status_from_cpp (cpp_status, *status) < 0)
+            return -1;
+        return rc;
+    } catch (std::system_error &e) {
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: System error: " + std::string (e.what ()) + "\n";
+        errno = e.code ().value ();
+        return -1;
+    } catch (std::exception &e) {
+        // Translate C++ exceptions to errno - unexpected errors default to EINVAL.
+        errno = EINVAL;
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: " + std::string (e.what ()) + "\n";
+        return -1;
+    } catch (...) {
+        errno = EINVAL;
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: unknown exception\n";
+        return -1;
+    }
+}
+
+extern "C" int reapi_cli_set_rank_status (reapi_cli_ctx_t *ctx,
+                                          const char *ranks,
+                                          resource_status_t status)
+{
+    if (!ctx || !ctx->rqt) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    resource_pool_t::status_t cpp_status;
+    if (resource_status_to_cpp (status, cpp_status) < 0)
+        return -1;
+
+    try {
+        return reapi_cli_t::set_rank_status (ctx->rqt, ranks, cpp_status);
+    } catch (std::system_error &e) {
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: System error: " + std::string (e.what ()) + "\n";
+        errno = e.code ().value ();
+        return -1;
+    } catch (std::exception &e) {
+        // Translate C++ exceptions to errno - unexpected errors default to EINVAL.
+        errno = EINVAL;
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: " + std::string (e.what ()) + "\n";
+        return -1;
+    } catch (...) {
+        errno = EINVAL;
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: unknown exception\n";
+        return -1;
+    }
+}
+
+extern "C" int reapi_cli_get_rank_status (reapi_cli_ctx_t *ctx,
+                                          const char *rank,
+                                          resource_status_t *status)
+{
+    if (!ctx || !ctx->rqt || !status) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    try {
+        resource_pool_t::status_t cpp_status;
+        int rc = reapi_cli_t::get_rank_status (ctx->rqt, rank, cpp_status);
+        if (rc == 0 && resource_status_from_cpp (cpp_status, *status) < 0)
+            return -1;
+        return rc;
+    } catch (std::system_error &e) {
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: System error: " + std::string (e.what ()) + "\n";
+        errno = e.code ().value ();
+        return -1;
+    } catch (std::exception &e) {
+        // Translate C++ exceptions to errno - unexpected errors default to EINVAL.
+        errno = EINVAL;
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: " + std::string (e.what ()) + "\n";
+        return -1;
+    } catch (...) {
+        errno = EINVAL;
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: unknown exception\n";
+        return -1;
+    }
 }
 
 /*

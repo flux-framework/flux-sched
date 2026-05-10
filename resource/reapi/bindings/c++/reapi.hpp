@@ -17,10 +17,12 @@ extern "C" {
 #include "config.h"
 #endif
 #include <flux/core.h>
+#include <flux/idset.h>
 }
 
 #include <cstdint>
 #include <string>
+#include "resource/schema/resource_data.hpp"
 
 namespace Flux {
 namespace resource_model {
@@ -277,6 +279,66 @@ class reapi_t {
     {
         return -1;
     }
+
+    /*! Set resource status (up or down) for a resource at the specified path.
+     *
+     *  \param h         Opaque handle. How it is used is an implementation
+     *                   detail. However, when it is used within a Flux's
+     *                   service module, it is expected to be a pointer
+     *                   to a flux_t object.
+     *  \param resource_path    Path to resource (e.g., "/cluster0/rack0/node3")
+     *  \param status    resource_pool_t::status_t::UP or resource_pool_t::status_t::DOWN
+     *  \return          0 on success; -1 on error with errno set:
+     *                       EINVAL: invalid parameters, resource path not found,
+     *                               or unexpected internal error
+     */
+    static int set_status (void *h,
+                           const std::string &resource_path,
+                           resource_pool_t::status_t status);
+
+    /*! Get resource status for a resource at the specified path.
+     *
+     *  \param h         Opaque handle. How it is used is an implementation
+     *                   detail. However, when it is used within a Flux's
+     *                   service module, it is expected to be a pointer
+     *                   to a flux_t object.
+     *  \param resource_path    Path to resource (e.g., "/cluster0/rack0/node3")
+     *  \param status    Reference to receive status
+     *  \return          0 on success; -1 on error with errno set:
+     *                       EINVAL: invalid parameters, resource path not found,
+     *                               or unexpected internal error
+     */
+    static int get_status (void *h,
+                           const std::string &resource_path,
+                           resource_pool_t::status_t &status);
+
+    /*! Set resource status (up or down) for the subtree root (typically node) at each ranks in a
+     * set. Unknown ranks are silently ignored.
+     *
+     *  \param h         Opaque handle. How it is used is an implementation
+     *                   detail. However, when it is used within a Flux's
+     *                   service module, it is expected to be a pointer
+     *                   to a flux_t object.
+     *  \param ranks     RFC 22 idset string representing a set of ranks, or "all".
+     *  \param status    resource_pool_t::status_t::UP or resource_pool_t::status_t::DOWN
+     *  \return          0 on success; -1 on error with errno set:
+     *                       EINVAL: invalid parameters or unexpected internal error
+     */
+    static int set_rank_status (void *h, std::string_view ranks, resource_pool_t::status_t status);
+
+    /*! Get resource status for the node at a rank.
+     *
+     *  \param h         Opaque handle. How it is used is an implementation
+     *                   detail. However, when it is used within a Flux's
+     *                   service module, it is expected to be a pointer
+     *                   to a flux_t object.
+     *  \param rank      Rank number as a string, e.g. "1"
+     *  \param status    Reference to receive status
+     *  \return          0 on success; -1 on error with errno set:
+     *                       EINVAL: invalid parameters, rank not found,
+     *                               or unexpected internal error
+     */
+    static int get_rank_status (void *h, std::string_view rank, resource_pool_t::status_t &status);
 };
 
 }  // namespace resource_model

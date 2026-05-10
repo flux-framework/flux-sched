@@ -202,6 +202,38 @@ extern "C" void *reapi_module_get_handle (reapi_module_ctx_t *ctx)
     return ctx->h;
 }
 
+extern "C" int reapi_module_set_status (reapi_module_ctx_t *ctx,
+                                        const char *resource_path,
+                                        resource_status_t status)
+{
+    errno = ENOSYS;  // unimplemented
+    return -1;
+}
+
+extern "C" int reapi_module_get_status (reapi_module_ctx_t *ctx,
+                                        const char *resource_path,
+                                        resource_status_t *status)
+{
+    errno = ENOSYS;  // unimplemented
+    return -1;
+}
+
+extern "C" int reapi_module_set_rank_status (reapi_module_ctx_t *ctx,
+                                             const char *ranks,
+                                             resource_status_t status)
+{
+    errno = ENOSYS;  // unimplemented
+    return -1;
+}
+
+extern "C" int reapi_module_get_rank_status (reapi_module_ctx_t *ctx,
+                                             const char *rank,
+                                             resource_status_t *status)
+{
+    errno = ENOSYS;  // unimplemented
+    return -1;
+}
+
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab
  */

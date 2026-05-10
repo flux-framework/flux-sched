@@ -407,6 +407,38 @@ out:
     return rc;
 }
 
+int reapi_module_t::set_status (void *h,
+                                const std::string &resource_path,
+                                resource_pool_t::status_t status)
+{
+    errno = ENOSYS;  // unimplemented
+    return -1;
+}
+
+int reapi_module_t::get_status (void *h,
+                                const std::string &resource_path,
+                                resource_pool_t::status_t &status)
+{
+    errno = ENOSYS;  // unimplemented
+    return -1;
+}
+
+int reapi_module_t::set_rank_status (void *h,
+                                     std::string_view ranks,
+                                     resource_pool_t::status_t status)
+{
+    errno = ENOSYS;  // unimplemented
+    return -1;
+}
+
+int reapi_module_t::get_rank_status (void *h,
+                                     std::string_view rank,
+                                     resource_pool_t::status_t &status)
+{
+    errno = ENOSYS;  // unimplemented
+    return -1;
+}
+
 }  // namespace detail
 }  // namespace resource_model
 }  // namespace Flux
