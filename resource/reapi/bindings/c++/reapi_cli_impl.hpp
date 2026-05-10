@@ -16,6 +16,7 @@ extern "C" {
 #include "config.h"
 #endif
 #include <flux/core.h>
+#include <flux/idset.h>
 }
 
 #include <stdexcept>
@@ -41,6 +42,52 @@ static double get_elapsed_time (timeval &st, timeval &et)
 ////////////////////////////////////////////////////////////////////////////////
 
 std::string reapi_cli_t::m_err_msg = "";
+
+// Helper: parse RFC 22 idset string to std::set<int64_t>
+// Handles "all" as a special case (returns all ranks from rq->db->metadata.by_rank)
+// Unknown ranks are not rejected here (mark() tolerates them to support a
+// future "grow" operation).
+// Returns 0 on success, -1 on error with errno set
+static int parse_ranks (resource_query_t *rq,
+                        std::string_view idset_str,
+                        std::set<int64_t> &ranks_out,
+                        std::string &err_msg)
+{
+    ranks_out.clear ();
+
+    // Check for empty string
+    if (idset_str.empty ()) {
+        errno = EINVAL;
+        err_msg = "empty idset string";
+        return -1;
+    }
+
+    // Handle "all" special case
+    if (idset_str == "all") {
+        for (const auto &kv : rq->db->metadata.by_rank) {
+            if (kv.first >= 0)
+                ranks_out.insert (kv.first);
+        }
+        return 0;
+    }
+
+    // Parse regular idset string using idset_decode_ex with explicit length
+    struct idset *ids = idset_decode_ex (idset_str.data (), idset_str.length (), 0, 0, NULL);
+    if (!ids) {
+        errno = EINVAL;
+        err_msg = std::string ("invalid idset string: ") + std::string (idset_str);
+        return -1;
+    }
+
+    unsigned int rank = idset_first (ids);
+    while (rank != IDSET_INVALID_ID) {
+        ranks_out.insert (static_cast<int64_t> (rank));
+        rank = idset_next (ids, rank);
+    }
+
+    idset_destroy (ids);
+    return 0;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // REAPI CLI Class Public API Definitions
@@ -364,6 +411,144 @@ int reapi_cli_t::stat (void *h,
                        double &avg)
 {
     errno = ENOSYS;  // not implemented
+    return -1;
+}
+
+int reapi_cli_t::set_status (void *h,
+                             const std::string &resource_path,
+                             resource_pool_t::status_t status)
+{
+    int rc = -1;
+    resource_query_t *rq = static_cast<resource_query_t *> (h);
+
+    if (!rq || resource_path.empty ()) {
+        errno = EINVAL;
+        return -1;
+    }
+    rc = rq->traverser->mark (resource_path, status);
+    if (rc < 0) {
+        m_err_msg = __FUNCTION__;
+        m_err_msg += ": " + rq->traverser->err_message ();
+    }
+    return rc;
+}
+
+int reapi_cli_t::get_status (void *h,
+                             const std::string &resource_path,
+                             resource_pool_t::status_t &status)
+{
+    resource_query_t *rq = static_cast<resource_query_t *> (h);
+
+    if (!rq || resource_path.empty ()) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    auto vit = rq->db->metadata.by_path.find (resource_path);
+    if (vit == rq->db->metadata.by_path.end ()) {
+        errno = EINVAL;
+        m_err_msg = __FUNCTION__;
+        m_err_msg += ": resource path not found: " + resource_path;
+        return -1;
+    }
+
+    // Get the first vertex at this path
+    if (vit->second.empty ()) {
+        errno = EINVAL;
+        m_err_msg = __FUNCTION__;
+        m_err_msg += ": no vertices at path: " + resource_path;
+        return -1;
+    }
+
+    vtx_t v = vit->second.front ();
+    status = rq->db->resource_graph[v].status;
+    return 0;
+}
+
+int reapi_cli_t::set_rank_status (void *h,
+                                  std::string_view ranks_str,
+                                  resource_pool_t::status_t status)
+{
+    resource_query_t *rq = static_cast<resource_query_t *> (h);
+    std::set<int64_t> ranks;
+    std::string err_msg;
+
+    if (!rq) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    if (parse_ranks (rq, ranks_str, ranks, err_msg) < 0) {
+        m_err_msg = __FUNCTION__;
+        m_err_msg += ": " + err_msg;
+        return -1;
+    }
+
+    // Mark the ranks
+    int rc = rq->traverser->mark (ranks, status);
+    if (rc < 0) {
+        m_err_msg = __FUNCTION__;
+        m_err_msg += ": failed to mark ranks " + std::string (ranks_str);
+    }
+    return rc;
+}
+
+int reapi_cli_t::get_rank_status (void *h,
+                                  std::string_view rank_str,
+                                  resource_pool_t::status_t &status)
+{
+    resource_query_t *rq = static_cast<resource_query_t *> (h);
+    std::set<int64_t> ranks;
+    std::string err_msg;
+
+    if (!rq) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    if (parse_ranks (rq, rank_str, ranks, err_msg) < 0) {
+        m_err_msg = __FUNCTION__;
+        m_err_msg += ": " + err_msg;
+        return -1;
+    }
+
+    // Ensure exactly one rank is specified
+    if (ranks.size () != 1) {
+        errno = EINVAL;
+        m_err_msg = __FUNCTION__;
+        m_err_msg += ": must specify exactly one rank, got ";
+        m_err_msg += rank_str;
+        return -1;
+    }
+
+    int64_t rank = *ranks.begin ();
+
+    // Look up the rank
+    auto it = rq->db->metadata.by_rank.find (rank);
+    if (it == rq->db->metadata.by_rank.end ()) {
+        errno = EINVAL;
+        m_err_msg = __FUNCTION__;
+        m_err_msg += ": rank not found: ";
+        m_err_msg += rank_str;
+        return -1;
+    }
+
+    // Report status at node granularity, matching how the resource module
+    // reports rank status (it walks node vertices and reads their status; see
+    // status_request_cb() in resource/modules/resource.cpp).  A rank maps to a
+    // broker that owns one node, so read the status of that node vertex.
+    for (vtx_t v : it->second) {
+        auto type = rq->db->resource_graph[v].type;
+        if (type == node_rt || type == storage_node_rt) {
+            status = rq->db->resource_graph[v].status;
+            return 0;
+        }
+    }
+
+    errno = EINVAL;
+    m_err_msg = __FUNCTION__;
+    m_err_msg += ": no node vertex at rank: ";
+    m_err_msg += rank_str;
     return -1;
 }
 

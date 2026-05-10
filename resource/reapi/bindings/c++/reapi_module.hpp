@@ -17,6 +17,7 @@ extern "C" {
 #endif
 #include <flux/core.h>
 #include <jansson.h>
+#include <flux/idset.h>
 }
 
 #include <cstdint>
@@ -75,6 +76,16 @@ class reapi_module_t : public reapi_t {
                      double &min,
                      double &max,
                      double &avg);
+
+    static int set_status (void *h,
+                           const std::string &resource_path,
+                           resource_pool_t::status_t status);
+    static int get_status (void *h,
+                           const std::string &resource_path,
+                           resource_pool_t::status_t &status);
+
+    static int set_rank_status (void *h, std::string_view ranks, resource_pool_t::status_t status);
+    static int get_rank_status (void *h, std::string_view rank, resource_pool_t::status_t &status);
 };
 
 }  // namespace detail
