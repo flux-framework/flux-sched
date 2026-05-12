@@ -28,6 +28,7 @@ set_target_properties(_reapi_cli PROPERTIES
 
 # Copy Python source files to build tree for build-tree testing
 set(FLUXION_PY_FILES
+  fluxion/__init__.py
   fluxion/resourcegraph/V1.py
   fluxion/resourcegraph/__init__.py
   fluxion/jsongraph/objects/edge.py
@@ -38,6 +39,9 @@ set(FLUXION_PY_FILES
   fluxion/reapi/__init__.py
   fluxion/reapi/cli.py
   _fluxion/__init__.py
+  fluxion/pool/jgf.py
+  fluxion/pool/rv1exec.py
+  fluxion/pool/__init__.py
 )
 foreach(py_file ${FLUXION_PY_FILES})
   configure_file(

@@ -105,6 +105,7 @@ set(ALL_TESTS
   t9001-golang-basic.t
   python/t10001-resourcegraph.py
   python/t11001-reapi-cli.py
+  python/t11002-resource-pool.py
   )
 foreach(test ${ALL_TESTS})
   flux_add_test(NAME ${test}
