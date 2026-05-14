@@ -121,14 +121,14 @@ extern "C" reapi_cli_ctx_t *reapi_cli_clone (reapi_cli_ctx_t *ctx)
     }
 }
 
-extern "C" int reapi_cli_match (reapi_cli_ctx_t *ctx,
-                                match_op_t match_op,
-                                const char *jobspec,
-                                uint64_t *jobid,
-                                bool *reserved,
-                                char **R,
-                                int64_t *at,
-                                double *ov)
+extern "C" int reapi_cli_match_with_jobid (reapi_cli_ctx_t *ctx,
+                                           match_op_t match_op,
+                                           const char *jobspec,
+                                           uint64_t jobid,
+                                           bool *reserved,
+                                           char **R,
+                                           int64_t *at,
+                                           double *ov)
 {
     int rc = -1;
     std::string R_buf = "";
@@ -139,9 +139,8 @@ extern "C" int reapi_cli_match (reapi_cli_ctx_t *ctx,
         goto out;
     }
 
-    *jobid = ctx->rqt->get_job_counter ();
     if ((rc = reapi_cli_t::
-             match_allocate (ctx->rqt, match_op, jobspec, *jobid, *reserved, R_buf, *at, *ov))
+             match_allocate (ctx->rqt, match_op, jobspec, jobid, *reserved, R_buf, *at, *ov))
         < 0) {
         goto out;
     }
@@ -156,6 +155,26 @@ extern "C" int reapi_cli_match (reapi_cli_ctx_t *ctx,
     (*R) = R_buf_c;
 
 out:
+    return rc;
+}
+
+extern "C" int reapi_cli_match (reapi_cli_ctx_t *ctx,
+                                match_op_t match_op,
+                                const char *jobspec,
+                                uint64_t *jobid,
+                                bool *reserved,
+                                char **R,
+                                int64_t *at,
+                                double *ov)
+{
+    uint64_t seq = ctx->rqt->get_job_counter ();
+    int rc = -1;
+
+    if ((rc = reapi_cli_match_with_jobid (ctx, match_op, jobspec, seq, reserved, R, at, ov)) < 0)
+        goto done;
+    *jobid = seq;
+
+done:
     return rc;
 }
 
