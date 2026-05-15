@@ -53,6 +53,40 @@ void resource_graph_metadata_t::initialize_node_stats (resource_graph_t const &g
     }
 }
 
+static void rebuild_by_outedges (resource_graph_t &g, resource_graph_metadata_t &meta)
+{
+    // Boost adjacency_list<vecS,vecS> edge descriptors hold raw pointers
+    // (m_eproperty) into the stored-edge array, which are NOT stable across
+    // graph copies.  Rebuild by_outedges from the graph we actually own so
+    // enforce() and upd_by_outedges() mark the right edges.
+    meta.by_outedges.clear ();
+    edg_iterator_t ei, ei_end;
+    for (boost::tie (ei, ei_end) = boost::edges (g); ei != ei_end; ++ei) {
+        edg_t e = *ei;
+        vtx_t src_v = source (e, g);
+        vtx_t tgt_v = target (e, g);
+        std::pair<uint64_t, int64_t> key =
+            std::make_pair (g[e].idata.get_weight (), g[tgt_v].uniq_id);
+        meta.by_outedges[src_v][key] = e;
+    }
+}
+
+resource_graph_db_t::resource_graph_db_t (const resource_graph_db_t &o)
+    : resource_graph (o.resource_graph), metadata (o.metadata)
+{
+    rebuild_by_outedges (resource_graph, metadata);
+}
+
+resource_graph_db_t &resource_graph_db_t::operator= (const resource_graph_db_t &o)
+{
+    if (this != &o) {
+        resource_graph = o.resource_graph;
+        metadata = o.metadata;
+        rebuild_by_outedges (resource_graph, metadata);
+    }
+    return *this;
+}
+
 bool resource_graph_db_t::known_subsystem (subsystem_t s)
 {
     return (metadata.roots.find (s) != metadata.roots.end ()) ? true : false;

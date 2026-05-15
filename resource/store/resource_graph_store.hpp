@@ -66,6 +66,10 @@ struct resource_graph_db_t {
     resource_graph_t resource_graph;
     resource_graph_metadata_t metadata;
 
+    resource_graph_db_t () = default;
+    resource_graph_db_t (const resource_graph_db_t &o);
+    resource_graph_db_t &operator= (const resource_graph_db_t &o);
+
     /*! Return true if s is known subsystem
      */
     bool known_subsystem (subsystem_t s);
