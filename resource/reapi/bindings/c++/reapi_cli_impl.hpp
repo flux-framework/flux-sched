@@ -566,6 +566,77 @@ resource_query_t::~resource_query_t ()
 {
 }
 
+static void initialize_matchers_and_traversers (resource_query_t *rq)
+{
+    std::string tmp_err = "";
+
+    if (!(rq->matcher = create_match_cb (rq->params.matcher_policy))) {
+        tmp_err = __FUNCTION__;
+        tmp_err += ": ERROR: can't create matcher\n";
+        throw std::runtime_error (tmp_err);
+    }
+    if (rq->set_subsystems_use (rq->params.matcher_name) != 0) {
+        tmp_err = __FUNCTION__;
+        tmp_err += ": ERROR: can't set subsystems\n";
+        throw std::runtime_error (tmp_err);
+    }
+    if (rq->params.prune_filters != ""
+        && rq->matcher->set_pruning_types_w_spec (rq->matcher->dom_subsystem (),
+                                                  rq->params.prune_filters)
+               < 0) {
+        tmp_err = __FUNCTION__;
+        tmp_err += ": ERROR: can't set pruning filters\n";
+        throw std::runtime_error (tmp_err);
+    }
+
+    // Wire a fresh traverser to the new db and matcher.
+    rq->traverser = std::make_shared<dfu_traverser_t> (rq->params.traverser_policy);
+    if (rq->traverser->initialize (rq->db, rq->matcher) != 0) {
+        tmp_err = __FUNCTION__;
+        tmp_err += ": ERROR: can't initialize traverser\n";
+        throw std::runtime_error (tmp_err);
+    }
+
+    // Create fresh writers (stateless: only carry output format config).
+    match_format_t format = match_writers_factory_t::get_writers_type (rq->params.match_format);
+    if (!(rq->writers = match_writers_factory_t::create (format))) {
+        tmp_err = __FUNCTION__;
+        tmp_err += ": ERROR: can't create match writers\n";
+        throw std::runtime_error (tmp_err);
+    }
+}
+
+resource_query_t::resource_query_t (const resource_query_t &o)
+{
+    std::string tmp_err = "";
+
+    params = o.params;
+    m_err_msg = o.m_err_msg;
+    jobid_counter = o.jobid_counter;
+    perf = o.perf;
+    jobs = o.jobs;
+    allocations = o.allocations;
+    reservations = o.reservations;
+
+    // Deep-copy the resource graph database; resource_graph_db_t's copy
+    // constructor rebuilds by_outedges with stable descriptors from the new
+    // graph, preserving all allocation state and up/down status.
+    db = std::make_shared<resource_graph_db_t> (*o.db);
+
+    // Reset vertex colors: deep-copied idata.colors hold old-epoch values
+    // from the source traverser.  initialize() bumps m_color_base, making
+    // the old black values appear black again and causing stop_explore to
+    // skip every vertex in prime_pruning_filter, zeroing subtree planners.
+    resource_graph_t &g = db->resource_graph;
+    vtx_iterator_t vi, vi_end;
+    for (boost::tie (vi, vi_end) = boost::vertices (g); vi != vi_end; ++vi)
+        g[*vi].idata.colors.clear ();
+
+    // Re-create the matcher from the stored policy rather than copying
+    // through the base-class pointer, which would slice the concrete subtype.
+    initialize_matchers_and_traversers (this);
+}
+
 resource_query_t::resource_query_t (const std::string &rgraph, const std::string &options)
 {
     m_err_msg = "";
@@ -616,33 +687,8 @@ resource_query_t::resource_query_t (const std::string &rgraph, const std::string
         throw std::runtime_error (tmp_err);
     }
 
-    if (set_subsystems_use (params.matcher_name) != 0) {
-        tmp_err = __FUNCTION__;
-        tmp_err += ": ERROR: can't set subsystem\n";
-        throw std::runtime_error (tmp_err);
-    }
-
     jobid_counter = 1;
-    if (params.prune_filters != ""
-        && matcher->set_pruning_types_w_spec (matcher->dom_subsystem (), params.prune_filters)
-               < 0) {
-        tmp_err = __FUNCTION__;
-        tmp_err += ": ERROR: can't initialize pruning filters\n";
-        throw std::runtime_error (tmp_err);
-    }
-
-    if (traverser->initialize (db, matcher) != 0) {
-        tmp_err = __FUNCTION__;
-        tmp_err += ": ERROR: can't initialize traverser\n";
-        throw std::runtime_error (tmp_err);
-    }
-
-    format = match_writers_factory_t::get_writers_type (params.match_format);
-    if (!(writers = match_writers_factory_t::create (format))) {
-        tmp_err = __FUNCTION__;
-        tmp_err += ": ERROR: can't create match writer\n";
-        throw std::runtime_error (tmp_err);
-    }
+    initialize_matchers_and_traversers (this);
 
     subsystem_t::storage_t::finalize ();
     resource_type_t::storage_t::finalize ();

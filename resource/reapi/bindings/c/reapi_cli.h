@@ -27,6 +27,16 @@ typedef struct reapi_cli_ctx reapi_cli_ctx_t;
  */
 reapi_cli_ctx_t *reapi_cli_new ();
 
+/*! Deep-copy a reapi_cli context, including the full resource graph state,
+ *  all allocations and reservations, and up/down status.  The returned context
+ *  is completely independent of the original: operations on the clone do not
+ *  affect the original, making it suitable for forward simulation.
+ *
+ * \param ctx           source reapi_cli_ctx_t context object
+ * \return              new independent context on success; NULL on error
+ */
+reapi_cli_ctx_t *reapi_cli_clone (reapi_cli_ctx_t *ctx);
+
 /*! Destroy reapi cli context
  *
  * \param ctx           reapi_cli_ctx_t context object

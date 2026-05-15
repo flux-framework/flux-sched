@@ -66,6 +66,7 @@ class resource_query_t {
    public:
     resource_query_t ();
     resource_query_t (const std::string &rgraph, const std::string &options);
+    resource_query_t (const resource_query_t &o);
     ~resource_query_t ();
 
     /* Accessors */
