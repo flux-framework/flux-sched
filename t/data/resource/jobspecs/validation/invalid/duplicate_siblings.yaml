@@ -1,0 +1,28 @@
+version: 9999
+# Invalid: two same-type (ssd) siblings under a slot. The scheduler resolves
+# requests per type at each level, so duplicate same-type siblings under a
+# slot are ambiguous and rejected at parse time.
+resources:
+  - type: slot
+    count: 1
+    label: default
+    exclusive: false
+    with:
+      - type: ssd
+        count: 5
+        unit: GiB
+        exclusive: false
+      - type: ssd
+        count: 10
+        unit: GiB
+        exclusive: false
+      - type: node
+        count: 1
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: default
+    count:
+      per_slot: 1

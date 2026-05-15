@@ -1,0 +1,27 @@
+version: 9999
+# Invalid: a non-exclusive resource with a unit (pooled capacity) requests a
+# stepped range. Pooled draws must be a fixed amount.
+resources:
+  - type: slot
+    count: 1
+    label: default
+    exclusive: false
+    with:
+      - type: ssd
+        count:
+          min: 2
+          max: 8
+          operator: '+'
+          operand: 2
+        unit: GiB
+        exclusive: false
+      - type: node
+        count: 1
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: default
+    count:
+      per_slot: 1
