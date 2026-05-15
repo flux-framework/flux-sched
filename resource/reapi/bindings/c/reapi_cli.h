@@ -200,6 +200,25 @@ int reapi_cli_update_allocate (reapi_cli_ctx_t *ctx,
  */
 int reapi_cli_cancel (reapi_cli_ctx_t *ctx, const uint64_t jobid, bool noent_ok);
 
+/*! Cancel the allocation or reservation corresponding to jobid, with optional
+ *  partial release and explicit R format.
+ *
+ *  \param ctx          reapi_cli_ctx_t context object
+ *  \param jobid        jobid of the uint64_t type.
+ *  \param R            R string to remove (NULL releases all jobid resources)
+ *  \param format       reader format for R (NULL defaults to load format);
+ *                      valid values: "rv1exec", "jgf", "jgf_shorthand"
+ *  \param noent_ok     don't return an error on nonexistent jobid
+ *  \param full_removal output: set to true if all resources removed
+ *  \return             0 on success; -1 on error.
+ */
+int reapi_cli_cancel_ex (reapi_cli_ctx_t *ctx,
+                         const uint64_t jobid,
+                         const char *R,
+                         const char *format,
+                         bool noent_ok,
+                         bool *full_removal);
+
 /*! Cancel the allocation or reservation corresponding to jobid.
  *
  *  \param ctx       reapi_module_ctx_t context object

@@ -261,6 +261,38 @@ out:
     return rc;
 }
 
+int reapi_cli_t::cancel (void *h,
+                         const uint64_t jobid,
+                         const std::string &R,
+                         const std::string &format,
+                         bool noent_ok,
+                         bool &full_removal)
+{
+    resource_query_t *rq = static_cast<resource_query_t *> (h);
+    int rc = -1;
+
+    if (rq->allocation_exists (jobid)) {
+        if ((rc = rq->remove_job (jobid, R, format, full_removal)) == 0) {
+            if (full_removal)
+                rq->erase_allocation (jobid);
+        }
+    } else {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": WARNING: can't find allocation for jobid: " + std::to_string (jobid) + "\n";
+        rc = noent_ok ? 0 : -1;
+        goto out;
+    }
+
+    if (rc != 0) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg +=
+            ": ERROR: error encountered while removing job " + std::to_string (jobid) + "\n";
+    }
+
+out:
+    return rc;
+}
+
 int reapi_cli_t::find (void *h, std::string criteria, json_t *&o)
 {
     int rc = -1;
@@ -943,6 +975,14 @@ int resource_query_t::remove_job (const uint64_t jobid)
 
 int resource_query_t::remove_job (const uint64_t jobid, const std::string &R, bool &full_removal)
 {
+    return remove_job (jobid, R, params.load_format, full_removal);
+}
+
+int resource_query_t::remove_job (const uint64_t jobid,
+                                  const std::string &R,
+                                  const std::string &format,
+                                  bool &full_removal)
+{
     int rc = -1;
     std::shared_ptr<resource_reader_base_t> reader;
 
@@ -954,7 +994,7 @@ int resource_query_t::remove_job (const uint64_t jobid, const std::string &R, bo
         errno = EINVAL;
         return rc;
     }
-    if ((reader = create_resource_reader (params.load_format)) == nullptr) {
+    if ((reader = create_resource_reader (format)) == nullptr) {
         m_err_msg = __FUNCTION__;
         m_err_msg += ": ERROR: can't create reader\n";
         return rc;

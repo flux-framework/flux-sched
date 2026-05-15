@@ -263,6 +263,28 @@ extern "C" int reapi_cli_partial_cancel (reapi_cli_ctx_t *ctx,
     return reapi_cli_t::cancel (ctx->rqt, jobid, R, noent_ok, *full_removal);
 }
 
+extern "C" int reapi_cli_cancel_ex (reapi_cli_ctx_t *ctx,
+                                    const uint64_t jobid,
+                                    const char *R,
+                                    const char *format,
+                                    bool noent_ok,
+                                    bool *full_removal)
+{
+    if (!ctx || !ctx->rqt) {
+        errno = EINVAL;
+        return -1;
+    }
+    if (R && format)
+        return reapi_cli_t::cancel (ctx->rqt, jobid, R, format, noent_ok, *full_removal);
+    if (R)
+        return reapi_cli_t::cancel (ctx->rqt, jobid, R, noent_ok, *full_removal);
+    if (reapi_cli_t::cancel (ctx->rqt, jobid, noent_ok) < 0)
+        return -1;
+    if (full_removal)
+        *full_removal = true;
+    return 0;
+}
+
 extern "C" int reapi_cli_info (reapi_cli_ctx_t *ctx,
                                const uint64_t jobid,
                                char **mode,
