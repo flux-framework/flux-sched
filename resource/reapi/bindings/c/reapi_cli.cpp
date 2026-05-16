@@ -39,8 +39,6 @@ extern "C" reapi_cli_ctx_t *reapi_cli_new ()
     try {
         ctx = new reapi_cli_ctx_t;
     } catch (const std::bad_alloc &e) {
-        ctx->err_msg = __FUNCTION__;
-        ctx->err_msg += ": ERROR: can't allocate memory: " + std::string (e.what ()) + "\n";
         errno = ENOMEM;
         goto out;
     }
