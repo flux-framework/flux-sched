@@ -273,6 +273,13 @@ add_custom_target(distcheck
   COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target check
   COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target dist
   )
+if(NOT DEFINED ENV{DEB_BUILD_OPTIONS})
+  set(DEB_BUILD_OPTIONS_DEFAULT "nocheck terse")
+else()
+  set(DEB_BUILD_OPTIONS_DEFAULT "$ENV{DEB_BUILD_OPTIONS}")
+endif()
+
 add_custom_target(deb
-  COMMAND ${CMAKE_SOURCE_DIR}/scripts/debbuild.sh ${CMAKE_SOURCE_DIR}
+  COMMAND ${CMAKE_COMMAND} -E env DEB_BUILD_OPTIONS=${DEB_BUILD_OPTIONS_DEFAULT}
+    ${CMAKE_SOURCE_DIR}/scripts/debbuild.sh ${CMAKE_SOURCE_DIR}
   )
