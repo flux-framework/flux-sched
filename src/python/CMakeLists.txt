@@ -61,6 +61,26 @@ install(DIRECTORY _fluxion
   FILES_MATCHING PATTERN "*.py"
   PATTERN "*_build.py" EXCLUDE)
 
+# Byte-compile installed Python files
+install(CODE "
+  message(STATUS \"Byte-compiling Python modules...\")
+  execute_process(
+    COMMAND ${Python_EXECUTABLE} -m compileall -q
+      \$ENV{DESTDIR}${PYTHON_INSTALL_SITELIB}/fluxion
+      \$ENV{DESTDIR}${PYTHON_INSTALL_SITELIB}/_fluxion
+  )
+  execute_process(
+    COMMAND ${Python_EXECUTABLE} -O -m compileall -q
+      \$ENV{DESTDIR}${PYTHON_INSTALL_SITELIB}/fluxion
+      \$ENV{DESTDIR}${PYTHON_INSTALL_SITELIB}/_fluxion
+  )
+  execute_process(
+    COMMAND ${Python_EXECUTABLE} -OO -m compileall -q
+      \$ENV{DESTDIR}${PYTHON_INSTALL_SITELIB}/fluxion
+      \$ENV{DESTDIR}${PYTHON_INSTALL_SITELIB}/_fluxion
+  )
+")
+
 set(PYNAME "python${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}")
 set(PYDIR "${CMAKE_INSTALL_FULL_LIBDIR}/flux/${PYNAME}")
 set(LINKTARGET_FLUXION "${PYTHON_INSTALL_SITELIB}/fluxion")
