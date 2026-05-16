@@ -164,37 +164,57 @@ int dfu_impl_t::upd_plan (vtx_t u,
             // If not full mode, plan has already been updated, thus return.
             return 0;
         }
-
-        if ((plans = (*m_graph)[u].schedule.plans) == NULL) {
-            m_err_msg += __FUNCTION__;
-            m_err_msg += ": plans not installed.\n";
+    } else {
+        // For non-exclusive resources, only track pooled resources with units.
+        // Resources with units (e.g., ssd with "GiB", memory with "MB") represent
+        // measurable capacity that can be shared and must be tracked to prevent
+        // over-allocation. Structural resources without units (chassis, node, core, slot)
+        // use instance-based allocation and don't need planner tracking when non-exclusive.
+        if ((*m_graph)[u].unit.empty ()) {
+            return 0;
         }
-        if ((span = planner_add_span (plans, jobmeta.at, jobmeta.duration, (const uint64_t)needs))
-            == -1) {
-            m_err_msg += __FUNCTION__;
-            m_err_msg += ": planner_add_span returned -1.\n";
-            if (errno != 0) {
-                m_err_msg += strerror (errno);
-                m_err_msg += "\n";
-            }
+        // For non-exclusive pooled resources, always increment n to ensure agfilter tracking.
+        // In full mode, also update the planner.
+        // In non-full mode (reconstruction), the reader has already updated the planner,
+        // but we still need to update agfilters, so increment n.
+        n++;
+        if (!full) {
+            // Reader already updated the planner during reconstruction
+            return 0;
+        }
+    }
+
+    if ((plans = (*m_graph)[u].schedule.plans) == NULL) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": plans not installed.\n";
+        rc = -1;
+        goto done;
+    }
+    if ((span = planner_add_span (plans, jobmeta.at, jobmeta.duration, (const uint64_t)needs))
+        == -1) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": planner_add_span returned -1.\n";
+        if (errno != 0) {
+            m_err_msg += strerror (errno);
+            m_err_msg += "\n";
+        }
+        rc = -1;
+        goto done;
+    }
+
+    switch (jobmeta.alloc_type) {
+        case jobmeta_t::alloc_type_t::AT_ALLOC:
+            (*m_graph)[u].schedule.allocations[jobmeta.jobid] = span;
+            break;
+        case jobmeta_t::alloc_type_t::AT_ALLOC_ORELSE_RESERVE:
+            (*m_graph)[u].schedule.reservations[jobmeta.jobid] = span;
+            break;
+        case jobmeta_t::alloc_type_t::AT_SATISFIABILITY:
+            break;
+        default:
             rc = -1;
-            goto done;
-        }
-
-        switch (jobmeta.alloc_type) {
-            case jobmeta_t::alloc_type_t::AT_ALLOC:
-                (*m_graph)[u].schedule.allocations[jobmeta.jobid] = span;
-                break;
-            case jobmeta_t::alloc_type_t::AT_ALLOC_ORELSE_RESERVE:
-                (*m_graph)[u].schedule.reservations[jobmeta.jobid] = span;
-                break;
-            case jobmeta_t::alloc_type_t::AT_SATISFIABILITY:
-                break;
-            default:
-                rc = -1;
-                errno = EINVAL;
-                break;
-        }
+            errno = EINVAL;
+            break;
     }
 
 done:
