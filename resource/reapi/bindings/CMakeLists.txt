@@ -8,6 +8,7 @@ add_library ( reapi_cli SHARED
 target_link_libraries( reapi_cli PRIVATE
     resource
     jobspec_conv
+    match_option
     flux::core
     )
 install(TARGETS reapi_cli LIBRARY DESTINATION "${FLUX_LIB_DIR}")
