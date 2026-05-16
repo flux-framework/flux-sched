@@ -158,43 +158,51 @@ int dfu_impl_t::upd_plan (vtx_t u,
     int64_t span = -1;
     planner_t *plans = NULL;
 
-    if (excl) {
-        n++;
-        if (!full) {
-            // If not full mode, plan has already been updated, thus return.
-            return 0;
-        }
+    // Exclusive resources and non-exclusive POOLED resources (a non-empty
+    // unit, e.g. ssd capacity in GiB) are planner-tracked: capacity that can
+    // be shared must be recorded to prevent over-allocation. Non-exclusive
+    // structural resources without units (chassis, node, core) are
+    // instance-tracked and skip the planner.
+    if (!excl && (*m_graph)[u].unit.empty ())
+        return 0;
+    // Count the vertex so the match is recognized and agfilters update via
+    // upd_idata () -- also during reconstruction (!full), where the reader
+    // has already added the planner span, so only the counting remains.
+    n++;
+    if (!full)
+        return 0;
 
-        if ((plans = (*m_graph)[u].schedule.plans) == NULL) {
-            m_err_msg += __FUNCTION__;
-            m_err_msg += ": plans not installed.\n";
+    if ((plans = (*m_graph)[u].schedule.plans) == NULL) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": plans not installed.\n";
+        rc = -1;
+        goto done;
+    }
+    if ((span = planner_add_span (plans, jobmeta.at, jobmeta.duration, (const uint64_t)needs))
+        == -1) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": planner_add_span returned -1.\n";
+        if (errno != 0) {
+            m_err_msg += strerror (errno);
+            m_err_msg += "\n";
         }
-        if ((span = planner_add_span (plans, jobmeta.at, jobmeta.duration, (const uint64_t)needs))
-            == -1) {
-            m_err_msg += __FUNCTION__;
-            m_err_msg += ": planner_add_span returned -1.\n";
-            if (errno != 0) {
-                m_err_msg += strerror (errno);
-                m_err_msg += "\n";
-            }
+        rc = -1;
+        goto done;
+    }
+
+    switch (jobmeta.alloc_type) {
+        case jobmeta_t::alloc_type_t::AT_ALLOC:
+            (*m_graph)[u].schedule.allocations[jobmeta.jobid] = span;
+            break;
+        case jobmeta_t::alloc_type_t::AT_ALLOC_ORELSE_RESERVE:
+            (*m_graph)[u].schedule.reservations[jobmeta.jobid] = span;
+            break;
+        case jobmeta_t::alloc_type_t::AT_SATISFIABILITY:
+            break;
+        default:
             rc = -1;
-            goto done;
-        }
-
-        switch (jobmeta.alloc_type) {
-            case jobmeta_t::alloc_type_t::AT_ALLOC:
-                (*m_graph)[u].schedule.allocations[jobmeta.jobid] = span;
-                break;
-            case jobmeta_t::alloc_type_t::AT_ALLOC_ORELSE_RESERVE:
-                (*m_graph)[u].schedule.reservations[jobmeta.jobid] = span;
-                break;
-            case jobmeta_t::alloc_type_t::AT_SATISFIABILITY:
-                break;
-            default:
-                rc = -1;
-                errno = EINVAL;
-                break;
-        }
+            errno = EINVAL;
+            break;
     }
 
 done:

@@ -475,6 +475,7 @@ vtx_t resource_reader_jgf_t::create_vtx (resource_graph_t &g, const fetch_helper
     g[v].status = fetcher.status;
     g[v].id = fetcher.get_proper_id ();
     g[v].name = fetcher.get_proper_name ();
+    g[v].unit = fetcher.unit ? fetcher.unit : "";
     g[v].properties = fetcher.properties;
     g[v].paths = fetcher.paths;
     g[v].schedule.plans = plans;
@@ -712,9 +713,12 @@ int resource_reader_jgf_t::update_vtx_plan (vtx_t v,
         goto done;
     }
 
-    if (fetcher.exclusive) {
+    if (fetcher.exclusive || !g[v].unit.empty ()) {
         // Update the vertex plan here (not in traverser code) so vertices
         // that the traverser won't walk still get their plans updated.
+        // Non-exclusive resources have units (!g[v].unit.empty ()) (e.g.,
+        // SSD with GiB, memory with MB). These need planner tracking to prevent
+        // over-allocation when non-exclusive.
         if ((span = planner_add_span (plans,
                                       update_data.at,
                                       update_data.duration,
@@ -728,7 +732,8 @@ int resource_reader_jgf_t::update_vtx_plan (vtx_t v,
             g[v].schedule.reservations[update_data.jobid] = span;
         else
             g[v].schedule.allocations[update_data.jobid] = span;
-    } else {
+    } else {  // must be (!fetcher.exclusive && g[v].unit.empty ())
+        // Structural resource without units - just check availability
         if (avail < g[v].size) {
             // if g[v] has already been allocated/reserved, this is an error
             m_err_msg += __FUNCTION__;
