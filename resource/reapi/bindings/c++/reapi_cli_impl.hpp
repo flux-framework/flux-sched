@@ -24,6 +24,7 @@ extern "C" {
 #include <boost/algorithm/string.hpp>
 #include "resource/reapi/bindings/c++/reapi_cli.hpp"
 #include "resource/readers/resource_reader_factory.hpp"
+#include "resource/config/system_defaults.hpp"
 
 namespace Flux {
 namespace resource_model {
@@ -171,7 +172,143 @@ int reapi_cli_t::update_allocate (void *h,
                                   double &ov,
                                   std::string &R_out)
 {
-    return NOT_YET_IMPLEMENTED;
+    resource_query_t *rq = static_cast<resource_query_t *> (h);
+    int rc = -1;
+    std::string fmt;
+    std::string R_sched;  // only populated when RFC 20 has a scheduling section
+    int64_t at_parsed = 0;
+    uint64_t duration = 0;
+    std::shared_ptr<resource_reader_base_t> rd;
+    struct timeval st, et;
+    json_t *o = nullptr;
+    json_t *scheduling = nullptr;
+    int version = 0;
+    double tstart = 0.0, expiration = 0.0;
+    double max_exp = static_cast<double> (std::numeric_limits<int64_t>::max ());
+
+    if (!rq || R.empty ()) {
+        errno = EINVAL;
+        goto out;
+    }
+    if (rq->allocation_exists (jobid) || rq->reservation_exists (jobid)) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": ERROR: existing jobid " + std::to_string (jobid) + "\n";
+        errno = EEXIST;
+        goto out;
+    }
+
+    if (!(o = json_loads (R.c_str (), 0, nullptr))) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": ERROR: failed to parse R string\n";
+        errno = EINVAL;
+        goto out;
+    }
+
+    // RFC 20 envelope: extract timing from execution section
+    if (json_unpack (o,
+                     "{s:i s:{s?F s?F} s?o}",
+                     "version",
+                     &version,
+                     "execution",
+                     "starttime",
+                     &tstart,
+                     "expiration",
+                     &expiration,
+                     "scheduling",
+                     &scheduling)
+            == 0
+        && version == 1) {
+        if (expiration == 0.0)
+            expiration = max_exp;
+        at_parsed = static_cast<int64_t> (tstart);
+        uint64_t dur = (expiration > tstart) ? static_cast<uint64_t> (expiration - tstart) : 0;
+        duration = dur ? dur : static_cast<uint64_t> (SYSTEM_MAX_DURATION);
+
+        // scheduling JGF present: re-encode it as the traverser input string
+        if (scheduling) {
+            char *s = nullptr;
+            if (!(s = json_dumps (scheduling, JSON_COMPACT))) {
+                m_err_msg += __FUNCTION__;
+                m_err_msg += ": ERROR: can't encode scheduling JGF\n";
+                errno = ENOMEM;
+                goto out;
+            }
+            R_sched = s;
+            free (s);
+            const char *writer = nullptr;
+            json_unpack (scheduling, "{s?s}", "writer", &writer);
+            if (writer && std::string (writer) == "fluxion:jgf_shorthand")
+                fmt = "jgf_shorthand";
+            else
+                fmt = "jgf";
+        } else {
+            fmt = "rv1exec";  // R passed directly below
+        }
+    } else {
+        // bare JGF or unrecognised: pass R directly with the load format
+        at_parsed = 0;
+        duration = static_cast<uint64_t> (SYSTEM_MAX_DURATION);
+        fmt = rq->params.load_format;
+    }
+
+    json_decref (o);
+    o = nullptr;
+
+    if ((rd = create_resource_reader (fmt)) == nullptr) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": ERROR: can't create reader: " + fmt + "\n";
+        errno = EINVAL;
+        goto out;
+    }
+
+    gettimeofday (&st, NULL);
+
+    {
+        // Use the extracted scheduling JGF string when present; otherwise pass R
+        // directly to avoid an unnecessary copy.
+        const std::string &to_traverse = R_sched.empty () ? R : R_sched;
+        auto guard = resource_type_t::storage_t::open_for_scope ();
+        rc = rq->traverser->run (to_traverse, rq->writers, rd, (int64_t)jobid, at_parsed, duration);
+    }
+
+    if (rq->get_traverser_err_msg () != "") {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": ERROR: " + rq->get_traverser_err_msg () + "\n";
+        rq->clear_traverser_err_msg ();
+    }
+    if (rc != 0)
+        goto out;
+
+    {
+        std::stringstream o;
+        if (rq->writers->emit (o) < 0) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": ERROR: writer emit failed\n";
+            rc = -1;
+            goto out;
+        }
+        R_out = o.str ();
+    }
+
+    gettimeofday (&et, NULL);
+    ov = get_elapsed_time (st, et);
+    at = at_parsed;
+
+    rq->set_allocation (jobid);
+    {
+        auto job_info =
+            std::make_shared<job_info_t> (jobid, job_lifecycle_t::ALLOCATED, at_parsed, "", "", ov);
+        if (!job_info) {
+            errno = ENOMEM;
+            rc = -1;
+            goto out;
+        }
+        rq->set_job (jobid, job_info);
+    }
+
+out:
+    json_decref (o);
+    return rc;
 }
 
 int reapi_cli_t::match_allocate_multi (void *h,
