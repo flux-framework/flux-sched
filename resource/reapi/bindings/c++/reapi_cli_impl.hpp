@@ -143,7 +143,7 @@ int reapi_cli_t::match_allocate (void *h,
         else
             rq->set_allocation (jobid);
 
-        job_info = std::make_shared<job_info_t> (jobid, st, at, "", "", ov);
+        job_info = std::make_shared<job_info_t> (jobid, st, at, "", "", R, ov);
         if (job_info == nullptr) {
             errno = ENOMEM;
             m_err_msg += __FUNCTION__;
@@ -294,8 +294,13 @@ int reapi_cli_t::update_allocate (void *h,
 
     rq->set_allocation (jobid);
     {
-        auto job_info =
-            std::make_shared<job_info_t> (jobid, job_lifecycle_t::ALLOCATED, at_parsed, "", "", ov);
+        auto job_info = std::make_shared<job_info_t> (jobid,
+                                                      job_lifecycle_t::ALLOCATED,
+                                                      at_parsed,
+                                                      "",
+                                                      "",
+                                                      R_out,
+                                                      ov);
         if (!job_info) {
             errno = ENOMEM;
             rc = -1;
@@ -462,28 +467,39 @@ int reapi_cli_t::info (void *h,
                        std::string &mode,
                        bool &reserved,
                        int64_t &at,
+                       double &ov,
+                       std::string &R)
+{
+    std::shared_ptr<job_info_t> job = nullptr;
+    int rc = info (h, jobid, job);
+    if (rc < 0)
+        return rc;
+
+    mode = get_jobstate_str (job->state);
+    reserved = (job->state == job_lifecycle_t::RESERVED) ? true : false;
+    at = job->scheduled_at;
+    ov = job->overhead;
+    R = job->R;
+
+    return 0;
+}
+
+int reapi_cli_t::info (void *h,
+                       const uint64_t jobid,
+                       std::string &mode,
+                       bool &reserved,
+                       int64_t &at,
                        double &ov)
 {
-    resource_query_t *rq = static_cast<resource_query_t *> (h);
-    std::shared_ptr<job_info_t> info = nullptr;
+    std::shared_ptr<job_info_t> job = nullptr;
+    int rc = info (h, jobid, job);
+    if (rc < 0)
+        return rc;
 
-    if (!rq) {
-        errno = EINVAL;
-        return -1;
-    }
-
-    if (!(rq->job_exists (jobid))) {
-        m_err_msg += __FUNCTION__;
-        m_err_msg += ": ERROR: nonexistent job " + std::to_string (jobid) + "\n";
-        errno = ENOENT;
-        return -1;
-    }
-
-    info = rq->get_job (jobid);
-    mode = get_jobstate_str (info->state);
-    reserved = (info->state == job_lifecycle_t::RESERVED) ? true : false;
-    at = info->scheduled_at;
-    ov = info->overhead;
+    mode = get_jobstate_str (job->state);
+    reserved = (job->state == job_lifecycle_t::RESERVED) ? true : false;
+    at = job->scheduled_at;
+    ov = job->overhead;
 
     return 0;
 }

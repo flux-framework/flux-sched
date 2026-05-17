@@ -173,6 +173,13 @@ class reapi_cli_t : public reapi_t {
                      bool &reserved,
                      int64_t &at,
                      double &ov);
+    static int info (void *h,
+                     const uint64_t jobid,
+                     std::string &mode,
+                     bool &reserved,
+                     int64_t &at,
+                     double &ov,
+                     std::string &R);
     static int info (void *h, const uint64_t jobid, std::shared_ptr<job_info_t> &job);
     static unsigned int preorder_count (void *h);
     static unsigned int postorder_count (void *h);
