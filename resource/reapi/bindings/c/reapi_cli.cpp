@@ -292,13 +292,14 @@ extern "C" int reapi_cli_info (reapi_cli_ctx_t *ctx,
 {
     int rc = -1;
     std::string mode_buf = "";
+    std::string R_buf = "";
     char *mode_buf_c = nullptr;
 
     if (!ctx || !ctx->rqt) {
         errno = EINVAL;
         return -1;
     }
-    if ((rc = reapi_cli_t::info (ctx->rqt, jobid, mode_buf, *reserved, *at, *ov)) < 0)
+    if ((rc = reapi_cli_t::info (ctx->rqt, jobid, mode_buf, *reserved, *at, *ov, R_buf)) < 0)
         goto out;
     if (!(mode_buf_c = strdup (mode_buf.c_str ()))) {
         ctx->err_msg = __FUNCTION__;
@@ -312,6 +313,35 @@ extern "C" int reapi_cli_info (reapi_cli_ctx_t *ctx,
 
 out:
     return rc;
+}
+
+extern "C" int reapi_cli_info_ex (reapi_cli_ctx_t *ctx,
+                                  const uint64_t jobid,
+                                  const char **mode,
+                                  bool *reserved,
+                                  int64_t *at,
+                                  double *ov,
+                                  const char **R)
+{
+    std::shared_ptr<job_info_t> job = nullptr;
+
+    if (!ctx || !ctx->rqt) {
+        errno = EINVAL;
+        return -1;
+    }
+    if (reapi_cli_t::info (ctx->rqt, jobid, job) < 0) {
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: nonexistent job " + std::to_string (jobid) + "\n";
+        return -1;
+    }
+
+    *mode = get_jobstate_str (job->state);
+    *reserved = (job->state == job_lifecycle_t::RESERVED);
+    *at = job->scheduled_at;
+    *ov = job->overhead;
+    *R = job->R.c_str ();
+
+    return 0;
 }
 
 extern "C" int reapi_cli_stat (reapi_cli_ctx_t *ctx,

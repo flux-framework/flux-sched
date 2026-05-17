@@ -256,6 +256,33 @@ int reapi_cli_info (reapi_cli_ctx_t *ctx,
                     int64_t *at,
                     double *ov);
 
+/*! Get the information on the allocation or reservation corresponding
+ *  to jobid.  Unlike reapi_cli_info(), the returned strings are pointers
+ *  into context-owned storage (no allocation, no free required), valid
+ *  until the job is removed or the context is destroyed.
+ *
+ *  \param ctx       reapi_cli_ctx_t context object
+ *  \param jobid     const jobid of the uint64_t type.
+ *  \param mode      set to a string constant for the job state
+ *                   ("ALLOCATED", "RESERVED", "CANCELED", "ERROR", "INIT").
+ *  \param reserved  set to true if job is reserved rather than allocated.
+ *  \param at        set to 0 if allocated; reservation time if reserved.
+ *  \param ov        set to match overhead in seconds.
+ *  \param R         set to the allocated R string in match_format.
+ *                   Pointer into context storage — do not free.
+ *                   Note: after a partial cancel (reapi_cli_cancel_ex with
+ *                   a subset R), this field still reflects the original
+ *                   full allocation and is not updated.
+ *  \return          0 on success; -1 on error.
+ */
+int reapi_cli_info_ex (reapi_cli_ctx_t *ctx,
+                       const uint64_t jobid,
+                       const char **mode,
+                       bool *reserved,
+                       int64_t *at,
+                       double *ov,
+                       const char **R);
+
 /*! Get the performance information about the resource infrastructure.
  *
  *  \param ctx       reapi_cli_ctx_t context object
