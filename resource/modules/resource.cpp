@@ -303,7 +303,7 @@ static void update_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
         elapsed = std::chrono::system_clock::now () - start;
         // If a jobid with matching R exists, no need to update
         overhead = elapsed.count ();
-        get_jobstate_str (ctx->jobs[jobid]->state, status);
+        status = get_jobstate_str (ctx->jobs[jobid]->state);
         o << ctx->jobs[jobid]->R;
         at = ctx->jobs[jobid]->scheduled_at;
         flux_log (ctx->h,
@@ -591,7 +591,6 @@ static void info_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t 
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
     int64_t jobid = -1;
     std::shared_ptr<job_info_t> info = NULL;
-    std::string status = "";
 
     if (flux_request_unpack (msg, NULL, "{s:I}", "jobid", &jobid) < 0)
         goto error;
@@ -602,14 +601,13 @@ static void info_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t 
     }
 
     info = ctx->jobs[jobid];
-    get_jobstate_str (info->state, status);
     if (flux_respond_pack (h,
                            msg,
                            "{s:I s:s s:I s:f}",
                            "jobid",
                            jobid,
                            "status",
-                           status.c_str (),
+                           get_jobstate_str (info->state),
                            "at",
                            info->scheduled_at,
                            "overhead",

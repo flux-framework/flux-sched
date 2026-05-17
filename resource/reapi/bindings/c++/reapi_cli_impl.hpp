@@ -312,7 +312,7 @@ int reapi_cli_t::info (void *h,
     }
 
     info = rq->get_job (jobid);
-    get_jobstate_str (info->state, mode);
+    mode = get_jobstate_str (info->state);
     reserved = (info->state == job_lifecycle_t::RESERVED) ? true : false;
     at = info->scheduled_at;
     ov = info->overhead;

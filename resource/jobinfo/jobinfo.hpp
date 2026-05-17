@@ -44,7 +44,7 @@ struct job_info_t {
     double overhead = 0.0f;
 };
 
-void get_jobstate_str (job_lifecycle_t state, std::string &status);
+const char *get_jobstate_str (job_lifecycle_t state);
 
 }  // namespace resource_model
 }  // namespace Flux
