@@ -71,16 +71,16 @@ int dfu_impl_t::upd_txfilter (vtx_t u,
 int dfu_impl_t::upd_agfilter (vtx_t u,
                               subsystem_t s,
                               jobmeta_t jobmeta,
-                              const std::map<resource_type_t, int64_t> &dfu)
+                              const std::map<resource_type_t, int64_t> &usage)
 {
     // idata subtree aggregate pruning filter
     boost::optional<planner_multi_t *&> opt_subtree_plan = (*m_graph)[u].idata.subplans.try_at (s);
-    if (opt_subtree_plan && *opt_subtree_plan && !dfu.empty ()) {
+    if (opt_subtree_plan && *opt_subtree_plan && !usage.empty ()) {
         int64_t span = -1;
         std::vector<uint64_t> aggregate;
-        // Update the subtree aggregate pruning filter of this vertex
-        // using the new aggregates passed by dfu.
-        count_relevant_types (*opt_subtree_plan, dfu, aggregate);
+        // Update the subtree aggregate filter of this vertex
+        // using the usage aggregates (what's actually being used)
+        count_relevant_types (*opt_subtree_plan, usage, aggregate);
         span = planner_multi_add_span (*opt_subtree_plan,
                                        jobmeta.at,
                                        jobmeta.duration,
@@ -101,12 +101,13 @@ int dfu_impl_t::upd_agfilter (vtx_t u,
 int dfu_impl_t::upd_idata (vtx_t u,
                            subsystem_t s,
                            jobmeta_t jobmeta,
-                           const std::map<resource_type_t, int64_t> &dfu)
+                           const std::map<resource_type_t, int64_t> &dfu,
+                           const std::map<resource_type_t, int64_t> &usage)
 {
     int rc = 0;
     if ((rc = upd_txfilter (u, jobmeta, dfu)) != 0)
         goto done;
-    if ((rc = upd_agfilter (u, s, jobmeta, dfu)) != 0)
+    if ((rc = upd_agfilter (u, s, jobmeta, usage)) != 0)
         goto done;
 done:
     return rc;
@@ -217,7 +218,9 @@ int dfu_impl_t::accum_to_parent (vtx_t u,
                                  unsigned int needs,
                                  bool excl,
                                  const std::map<resource_type_t, int64_t> &dfu,
-                                 std::map<resource_type_t, int64_t> &to_parent)
+                                 std::map<resource_type_t, int64_t> &to_parent,
+                                 const std::map<resource_type_t, int64_t> &usage,
+                                 std::map<resource_type_t, int64_t> &usage_to_parent)
 {
     // Build up the new aggregates that will be used by subtree
     // aggregate pruning filter. If exclusive, none of the vertex's resource
@@ -231,6 +234,20 @@ int dfu_impl_t::accum_to_parent (vtx_t u,
     for (auto &kv : dfu)
         accum_if (subsystem, kv.first, kv.second, to_parent);
 
+    // Build up the usage aggregates used by the agfilters: what is actually
+    // consumed, as opposed to the availability view above. Exclusive vertices
+    // consume their full size; non-exclusive POOLED vertices (non-empty unit)
+    // consume only the requested capacity (needs); non-exclusive structural
+    // vertices are instance-tracked and contribute nothing.
+    if (excl)
+        accum_if (subsystem, (*m_graph)[u].type, (*m_graph)[u].size, usage_to_parent);
+    else if (!(*m_graph)[u].unit.empty ())
+        accum_if (subsystem, (*m_graph)[u].type, needs, usage_to_parent);
+
+    // Pass up child usage aggregates
+    for (auto &kv : usage)
+        accum_if (subsystem, kv.first, kv.second, usage_to_parent);
+
     return 0;
 }
 
@@ -241,14 +258,16 @@ int dfu_impl_t::upd_meta (vtx_t u,
                           int n,
                           const jobmeta_t &jobmeta,
                           const std::map<resource_type_t, int64_t> &dfu,
-                          std::map<resource_type_t, int64_t> &to_parent)
+                          std::map<resource_type_t, int64_t> &to_parent,
+                          const std::map<resource_type_t, int64_t> &usage,
+                          std::map<resource_type_t, int64_t> &usage_to_parent)
 {
     int rc = 0;
     if (n == 0)
         goto done;
-    if ((rc = upd_idata (u, s, jobmeta, dfu)) == -1)
+    if ((rc = upd_idata (u, s, jobmeta, dfu, usage)) == -1)
         goto done;
-    if ((rc = accum_to_parent (u, s, needs, excl, dfu, to_parent)) == -1)
+    if ((rc = accum_to_parent (u, s, needs, excl, dfu, to_parent, usage, usage_to_parent)) == -1)
         goto done;
 done:
     return rc;
@@ -264,12 +283,15 @@ int dfu_impl_t::upd_sched (vtx_t u,
                            bool full,
                            const std::map<resource_type_t, int64_t> &dfu,
                            std::map<resource_type_t, int64_t> &to_parent,
+                           const std::map<resource_type_t, int64_t> &usage,
+                           std::map<resource_type_t, int64_t> &usage_to_parent,
                            bool excl_parent)
 {
     int rc = -1;
     if ((rc = upd_plan (u, s, needs, excl, jobmeta, full, n)) == -1)
         goto done;
-    if ((rc = upd_meta (u, s, needs, excl, n, jobmeta, dfu, to_parent)) == -1) {
+    if ((rc = upd_meta (u, s, needs, excl, n, jobmeta, dfu, to_parent, usage, usage_to_parent))
+        == -1) {
         goto done;
     }
     if (n > 0) {
@@ -326,11 +348,13 @@ int dfu_impl_t::upd_dfv (vtx_t u,
                          const jobmeta_t &jobmeta,
                          bool full,
                          std::map<resource_type_t, int64_t> &to_parent,
+                         std::map<resource_type_t, int64_t> &usage_to_parent,
                          bool emit_shadow,
                          bool excl_parent)
 {
     int n_plans = 0;
     std::map<resource_type_t, int64_t> dfu;
+    std::map<resource_type_t, int64_t> usage;
     subsystem_t dom = m_match->dom_subsystem ();
     f_out_edg_iterator_t ei, ei_end;
     bool mod = modify_traversal (u, emit_shadow);
@@ -353,7 +377,8 @@ int dfu_impl_t::upd_dfv (vtx_t u,
 
             if (subsystem == dom) {
                 // Value of `excl_parent` for child vertex is the value of `excl` for its parent
-                n_plan_sub += upd_dfv (tgt, writers, needs, x, jobmeta, full, dfu, mod, excl);
+                n_plan_sub +=
+                    upd_dfv (tgt, writers, needs, x, jobmeta, full, dfu, usage, mod, excl);
             } else {
                 n_plan_sub += upd_upv (tgt, writers, subsystem, needs, x, jobmeta, full, dfu);
             }
@@ -383,6 +408,8 @@ int dfu_impl_t::upd_dfv (vtx_t u,
                       full,
                       dfu,
                       to_parent,
+                      usage,
+                      usage_to_parent,
                       excl_parent);
 }
 
@@ -872,8 +899,10 @@ int dfu_impl_t::update (vtx_t root, std::shared_ptr<match_writers_t> &writers, j
     m_color.reset ();
 
     bool emit_shadow = modify_traversal (root, false);
+    std::map<resource_type_t, int64_t> usage;
     // Regardless of value of `x`, value for `excl_parent` parameter starts as `false`
-    if ((rc = upd_dfv (root, writers, needs, x, jobmeta, true, dfu, emit_shadow, false)) > 0) {
+    if ((rc = upd_dfv (root, writers, needs, x, jobmeta, true, dfu, usage, emit_shadow, false))
+        > 0) {
         int64_t starttime = jobmeta.at;
         int64_t endtime = jobmeta.at + jobmeta.duration;
         if (writers->emit_tm (starttime, endtime) == -1) {
@@ -938,8 +967,19 @@ int dfu_impl_t::update (vtx_t root,
     needs = static_cast<unsigned int> (m_graph_db->metadata.v_rt_edges[dom].get_needs ());
     m_color.reset ();
     bool emit_shadow = modify_traversal (root, false);
+    std::map<resource_type_t, int64_t> usage_reserve;
     // Regardless of value of `x`, value for `excl_parent` parameter starts as `false`
-    if ((rc = upd_dfv (root, writers, needs, x, jobmeta, false, dfu, emit_shadow, false)) > 0) {
+    if ((rc = upd_dfv (root,
+                       writers,
+                       needs,
+                       x,
+                       jobmeta,
+                       false,
+                       dfu,
+                       usage_reserve,
+                       emit_shadow,
+                       false))
+        > 0) {
         int64_t starttime = jobmeta.at;
         int64_t endtime = jobmeta.at + jobmeta.duration;
         if (writers->emit_tm (starttime, endtime) == -1) {
