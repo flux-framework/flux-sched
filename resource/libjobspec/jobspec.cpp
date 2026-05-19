@@ -125,7 +125,40 @@ void parse_yaml_count (Resource &res, const YAML::Node &cnode)
 
 namespace {
 std::vector<Resource> parse_yaml_resources (const YAML::Node &resources);
+
+/*  Reject any resource that explicitly sets exclusive: false beneath an
+ *  ancestor that explicitly sets exclusive: true.  Such combinations
+ *  produce ambiguous allocation behavior, and historically the traverser
+ *  caught them at match time; with explicit-false overrides now allowed
+ *  under slots, the conflict must be rejected at parse time instead.
+ *
+ *  Operates on the already-parsed Resource tree so it uses tristate_t
+ *  values directly (no string/bool coercion), runs in a single O(tree)
+ *  pass, and is decoupled from YAML node lifetime.  The trade-off is
+ *  that errors carry the offending resource's label rather than a YAML
+ *  source mark; the ancestor's label is appended to make the conflict
+ *  locatable in non-trivial jobspecs.
+ */
+void validate_exclusivity_tree (const std::vector<Resource> &resources,
+                                bool ancestor_excl_explicit,
+                                const std::string &ancestor_label)
+{
+    for (const auto &res : resources) {
+        if (ancestor_excl_explicit && res.exclusive == tristate_t::FALSE) {
+            std::string msg =
+                "Resource cannot explicitly set exclusive: false when an "
+                "ancestor resource has explicitly set exclusive: true "
+                "(resource '"
+                + res.label + "' under ancestor '" + ancestor_label + "')";
+            throw parse_error (YAML::Node (), msg.c_str ());
+        }
+        bool subtree_excl = ancestor_excl_explicit || res.exclusive == tristate_t::TRUE;
+        const std::string &next_ancestor =
+            (res.exclusive == tristate_t::TRUE) ? res.label : ancestor_label;
+        validate_exclusivity_tree (res.with, subtree_excl, next_ancestor);
+    }
 }
+}  // namespace
 
 Resource::Resource (const YAML::Node &resnode)
 {
@@ -388,6 +421,7 @@ Jobspec::Jobspec (const YAML::Node &top)
 
         /* Import resources section */
         resources = parse_yaml_resources (top["resources"]);
+        validate_exclusivity_tree (resources, false, "");
 
         /* Import tasks section */
         tasks = parse_yaml_tasks (top["tasks"]);
