@@ -589,6 +589,30 @@ specification, `resource-query` will choose the highest-scored node at the
 `rack` level in the same manner as how it enforces the lower-level constraints
 (e.g., `socket`).
 
+## Jobspec Resource Validation
+
+Fluxion validates the resources section of a jobspec at parse time and
+rejects the following combinations as invalid:
+
+- `exclusive: false` on a resource beneath an ancestor that explicitly
+  sets `exclusive: true`.  The ancestor's explicit claim to the whole
+  subtree makes the child's shareability ambiguous.
+- A resource type that occurs more than once among non-slot siblings
+  within a `slot` subtree.  The match traverser resolves each level's
+  requests per resource type, so a second same-type sibling cannot be
+  represented and would be silently mis-accounted.  Sibling `slot`
+  resources are exempt: they are distinguished by their labels.  Duplicate
+  same-type siblings outside a slot subtree are not rejected for
+  historical compatibility, but they are not meaningfully supported by
+  the match traverser either.
+- A ranged or stepped `count` (`min` != `max`) on a non-exclusive
+  resource with a `unit` (pooled capacity).  A pooled count is a fixed
+  capacity draw from a single vertex's pool; elastic pooled counts are
+  not supported.
+
+Validation errors report the offending resource's path from the root of
+the resources section, e.g. `/slot[default]/ssd`.
+
 ## Flexible Traverser, Or Slots, and Xor Slots
 
 The default DFU traverser assumes that each jobspec level describes one

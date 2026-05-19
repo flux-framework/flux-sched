@@ -21,6 +21,7 @@ extern "C" {
 #include <string>
 #include <string_view>
 #include <unordered_map>
+#include <unordered_set>
 
 using namespace Flux::Jobspec;
 using namespace std::string_view_literals;
@@ -125,7 +126,77 @@ void parse_yaml_count (Resource &res, const YAML::Node &cnode)
 
 namespace {
 std::vector<Resource> parse_yaml_resources (const YAML::Node &resources);
+
+/*  Validate the parsed Resource tree in a single O(tree) pass:
+ *
+ *  1. Reject any resource that explicitly sets exclusive: false beneath
+ *     an ancestor that explicitly sets exclusive: true.  Such
+ *     combinations produce ambiguous allocation behavior, and
+ *     historically the traverser caught them at match time; with
+ *     explicit-false overrides now allowed under slots, the conflict
+ *     must be rejected at parse time instead.
+ *
+ *  2. Within a slot's subtree, reject a resource type that occurs more
+ *     than once among non-slot siblings.  The traverser resolves a
+ *     level's requests per resource type (exclusivity resolution,
+ *     per-slot capacity needs, and pooled slot bindings are all keyed by
+ *     type), so a second same-type sibling cannot be represented and
+ *     would be silently mis-accounted.  Sibling slots are exempt: they
+ *     are distinguished by their labels.
+ *
+ *  3. Reject non-fixed counts (count.min != count.max) on shared pooled
+ *     resources (exclusive: false with a unit).  A pooled count is a
+ *     capacity draw from a single vertex's pool and the traverser draws
+ *     exactly the requested amount, so an elastic range would be
+ *     silently truncated to its minimum rather than maximized as
+ *     RFC 14 requires.
+ *
+ *  Operates on the already-parsed Resource tree so it uses tristate_t
+ *  values directly (no string/bool coercion) and is decoupled from YAML
+ *  node lifetime.  The trade-off is that errors carry the offending
+ *  resource's path from the root (types plus labels where present)
+ *  rather than a YAML source mark.
+ */
+void validate_resource_tree (const std::vector<Resource> &resources,
+                             bool ancestor_excl_explicit,
+                             bool in_slot,
+                             const std::string &path)
+{
+    std::unordered_set<Flux::resource_model::resource_type_t> sibling_types;
+    for (const auto &res : resources) {
+        bool is_slot = res.type == Flux::resource_model::slot_rt
+                       || res.type == Flux::resource_model::xor_slot_rt;
+        std::string res_path = path + "/" + std::string{res.type.get ()}
+                               + (res.label.empty () ? "" : "[" + res.label + "]");
+        if (ancestor_excl_explicit && res.exclusive == tristate_t::FALSE) {
+            std::string msg =
+                "Resource cannot explicitly set exclusive: false when an "
+                "ancestor resource has explicitly set exclusive: true (at '"
+                + res_path + "')";
+            throw parse_error (YAML::Node (), msg.c_str ());
+        }
+        if (in_slot && !is_slot && !sibling_types.insert (res.type).second) {
+            std::string msg = "Resource type '" + std::string{res.type.get ()}
+                              + "' occurs more than once among siblings under a slot (at '"
+                              + res_path + "')";
+            throw parse_error (YAML::Node (), msg.c_str ());
+        }
+        if (res.exclusive == tristate_t::FALSE && !res.unit.empty ()
+            && res.count.min != res.count.max) {
+            std::string msg =
+                "Non-exclusive resource with a unit (pooled capacity) "
+                "requires a fixed count; ranged or stepped counts are not "
+                "supported (at '"
+                + res_path + "')";
+            throw parse_error (YAML::Node (), msg.c_str ());
+        }
+        validate_resource_tree (res.with,
+                                ancestor_excl_explicit || res.exclusive == tristate_t::TRUE,
+                                in_slot || is_slot,
+                                res_path);
+    }
 }
+}  // namespace
 
 Resource::Resource (const YAML::Node &resnode)
 {
@@ -388,6 +459,7 @@ Jobspec::Jobspec (const YAML::Node &top)
 
         /* Import resources section */
         resources = parse_yaml_resources (top["resources"]);
+        validate_resource_tree (resources, false, false, "");
 
         /* Import tasks section */
         tasks = parse_yaml_tasks (top["tasks"]);
