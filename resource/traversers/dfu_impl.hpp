@@ -562,11 +562,12 @@ class dfu_impl_t {
     int upd_agfilter (vtx_t u,
                       subsystem_t s,
                       jobmeta_t jobmeta,
-                      const std::map<resource_type_t, int64_t> &dfu);
+                      const std::map<resource_type_t, int64_t> &usage);
     int upd_idata (vtx_t u,
                    subsystem_t s,
                    jobmeta_t jobmeta,
-                   const std::map<resource_type_t, int64_t> &dfu);
+                   const std::map<resource_type_t, int64_t> &dfu,
+                   const std::map<resource_type_t, int64_t> &usage);
     int upd_by_outedges (subsystem_t subsystem, jobmeta_t jobmeta, vtx_t u, edg_t e);
     int upd_plan (vtx_t u,
                   subsystem_t s,
@@ -580,7 +581,9 @@ class dfu_impl_t {
                          unsigned int needs,
                          bool excl,
                          const std::map<resource_type_t, int64_t> &dfu,
-                         std::map<resource_type_t, int64_t> &to_parent);
+                         std::map<resource_type_t, int64_t> &to_parent,
+                         const std::map<resource_type_t, int64_t> &usage,
+                         std::map<resource_type_t, int64_t> &usage_to_parent);
     int upd_meta (vtx_t u,
                   subsystem_t s,
                   unsigned int needs,
@@ -588,7 +591,9 @@ class dfu_impl_t {
                   int n,
                   const jobmeta_t &jobmeta,
                   const std::map<resource_type_t, int64_t> &dfu,
-                  std::map<resource_type_t, int64_t> &to_parent);
+                  std::map<resource_type_t, int64_t> &to_parent,
+                  const std::map<resource_type_t, int64_t> &usage,
+                  std::map<resource_type_t, int64_t> &usage_to_parent);
     int upd_sched (vtx_t u,
                    std::shared_ptr<match_writers_t> &writers,
                    subsystem_t s,
@@ -599,6 +604,8 @@ class dfu_impl_t {
                    bool full,
                    const std::map<resource_type_t, int64_t> &dfu,
                    std::map<resource_type_t, int64_t> &to_parent,
+                   const std::map<resource_type_t, int64_t> &usage,
+                   std::map<resource_type_t, int64_t> &usage_to_parent,
                    bool excl_parent);
     int upd_upv (vtx_t u,
                  std::shared_ptr<match_writers_t> &writers,
@@ -615,6 +622,7 @@ class dfu_impl_t {
                  const jobmeta_t &jobmeta,
                  bool full,
                  std::map<resource_type_t, int64_t> &to_parent,
+                 std::map<resource_type_t, int64_t> &usage_to_parent,
                  bool emit_shadow,
                  bool excl_parent);
     bool rem_tag (vtx_t u, int64_t jobid);
