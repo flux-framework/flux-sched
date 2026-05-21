@@ -6,6 +6,8 @@ test_description='Test the functionality of match --within FSD'
 
 grug="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/tiny.graphml"
 jobspec="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/basics/test001.yaml"
+within_3579_js="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/user_attributes/within_duration.yaml"
+within_infinity_js="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/user_attributes/within_infinity.yaml"
 query="../../resource/utilities/resource-query"
 
 test_under_flux 1
@@ -25,7 +27,7 @@ test_expect_success 'ion-resource successfully matches within 0 units' '
 '
 
 # A negative value should be interpreted as infinity
-test_expect_success 'ion-resource successfully matches  within negative units' '
+test_expect_success 'ion-resource successfully matches within negative units' '
     flux ion-resource match without_allocating_future ${jobspec} --within -1 &&
     flux ion-resource match without_allocating_future ${jobspec} --within \"-1d\"
 '
@@ -42,9 +44,41 @@ test_expect_success 'ion-resource fails to match within 3579 units (first avail 
     test_expect_code 16 flux ion-resource match without_allocating_future ${jobspec} -w 3579
 '
 
+test_expect_success 'ion-resource fails to match when the match-within user attribute = 3579' '
+    # All slots are already allocated
+    test_expect_code 16 flux ion-resource match allocate ${within_3579_js} &&
+    test_expect_code 16 flux ion-resource match allocate_with_satisfiability ${within_3579_js} &&
+    test_expect_code 16 flux ion-resource match allocate_orelse_reserve ${within_3579_js} &&
+    test_expect_code 16 flux ion-resource match without_allocating_future ${within_3579_js}
+'
+
+test_expect_success 'ion-resource fails to match within 3579 units (overridden jobspec usrattr)' '
+    # All slots are already allocated
+    test_expect_code 16 \
+        flux ion-resource match allocate ${within_infinity_js} --within=3579 &&
+    test_expect_code 16 \
+        flux ion-resource match allocate_with_satisfiability ${within_infinity_js} -w=3579 &&
+    test_expect_code 16 \
+        flux ion-resource match allocate_orelse_reserve ${within_infinity_js} --within 3579 &&
+    test_expect_code 16 \
+        flux ion-resource match without_allocating_future ${within_infinity_js} -w 3579
+'
+
 test_expect_success 'ion-resource successfully matches within 3600 units (first avail at 3600)' '
     flux ion-resource match allocate_orelse_reserve ${jobspec} --within=3600 | grep RESERVED &&
     flux ion-resource match without_allocating_future ${jobspec} -w=3600 | grep MATCHED
+'
+
+test_expect_success 'ion-resource matches within 3600 units (overriding the jobspec user attr)' '
+    flux ion-resource match allocate_orelse_reserve ${within_3579_js} -w=3600 | grep RESERVED &&
+    flux ion-resource match without_allocating_future ${within_3579_js} -w=3600 | grep MATCHED
+'
+
+test_expect_success 'ion-resource matches eventually (w/wo jobspec user attr match_within=-1)' '
+    flux ion-resource match allocate_orelse_reserve ${jobspec} &&
+    flux ion-resource match without_allocating_future ${jobspec} &&
+    flux ion-resource match allocate_orelse_reserve ${within_infinity_js} &&
+    flux ion-resource match without_allocating_future ${within_infinity_js}
 '
 
 test_expect_success 'removing resource works' '
