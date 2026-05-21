@@ -33,6 +33,7 @@ set(ALL_TESTS
   t1028-rv1-partial-release-across-racks.t
   t1029-resource-force-load-format.t
   t1030-rv1-shorthand.t
+  t1031-without-alloc-check.t
   t2317-resource-shrink.t
   t3000-jobspec.t
   t3001-resource-basic.t
