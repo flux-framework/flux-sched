@@ -211,6 +211,10 @@ static scheduled_point_t *avail_resources_during (planner_t *ctx, int64_t at, ui
     }
 
     scheduled_point_t *point = ctx->plan->sp_tree_get_state (at);
+    if (!point) {
+        errno = EINVAL;
+        return nullptr;
+    }
     scheduled_point_t *min = point;
     while (point) {
         if (point->at >= (at + (int64_t)duration))
@@ -484,6 +488,8 @@ extern "C" int64_t planner_avail_resources_during (planner_t *ctx, int64_t at, u
         return -1;
     }
     min_point = avail_resources_during (ctx, at, duration);
+    if (!min_point)
+        return -1;
     return min_point->remaining;
 }
 
