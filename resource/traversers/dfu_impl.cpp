@@ -187,10 +187,9 @@ int dfu_impl_t::by_subplan (const jobmeta_t &meta,
         goto done;
     }
     count_relevant_types (p, resource.user_data, aggs);
-    errno = 0;
     len = aggs.size ();
     if ((rc = planner_multi_avail_during (p, at, d, aggs.data (), len)) == -1) {
-        if (errno != 0 && errno != ERANGE) {
+        if (errno != ERANGE) {
             m_err_msg += "by_subplan: planner_multi_avail_during returned -1.\n";
             m_err_msg += strerror (errno);
             m_err_msg += ".\n";
