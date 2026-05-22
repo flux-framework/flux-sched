@@ -84,7 +84,6 @@ int dfu_impl_t::by_avail (const jobmeta_t &meta,
     int saved_errno = errno;
     uint64_t duration = meta.duration;
 
-    errno = 0;
     // Prune by the visiting resource vertex's availability
     // if rack has been allocated exclusively, no reason to descend further.
     p = (*m_graph)[u].schedule.plans;
@@ -92,10 +91,8 @@ int dfu_impl_t::by_avail (const jobmeta_t &meta,
         goto done;
     } else if (avail == -1) {
         m_err_msg += "by_avail: planner_avail_resources_during returned -1.\n";
-        if (errno != 0) {
-            m_err_msg += strerror (errno);
-            m_err_msg += ".\n";
-        }
+        m_err_msg += strerror (errno);
+        m_err_msg += ".\n";
         goto done;
     }
     rc = 0;
