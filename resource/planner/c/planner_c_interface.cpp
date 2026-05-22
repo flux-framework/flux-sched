@@ -185,7 +185,7 @@ static bool avail_during (planner_t *ctx, int64_t at, uint64_t duration, const i
     bool ok = true;
     if (static_cast<int64_t> (at + duration) > ctx->plan->get_plan_end ()) {
         errno = ERANGE;
-        return -1;
+        return false;
     }
 
     scheduled_point_t *point = ctx->plan->sp_tree_get_state (at);
