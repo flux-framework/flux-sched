@@ -793,15 +793,11 @@ int dfu_impl_t::dom_dfv (const jobmeta_t &meta,
         goto done;
     }
     if (m_match->dom_finish_vtx (u, dom, resources, *m_graph, dfu) != 0) {
-        // errno should be set by dom_finish_vtx, but if not, use EINVAL
-        if (errno == 0)
-            errno = EINVAL;
+        // errno set by dom_finish_vtx
         goto done;
     }
     if ((rc = resolve (dfu, to_parent)) != 0) {
-        // errno should be set by resolve, but if not, use EINVAL
-        if (errno == 0)
-            errno = EINVAL;
+        // errno set by resolve/enforce
         goto done;
     }
     to_parent.set_avail (avail);
