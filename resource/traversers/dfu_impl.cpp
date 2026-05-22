@@ -902,6 +902,7 @@ int dfu_impl_t::dom_find_dfv (std::shared_ptr<match_writers_t> &w,
             auto &job2span = (*m_graph)[u].idata.job2span;
             auto span_it = job2span.find (jobid);
             if (span_it == (*m_graph)[u].idata.job2span.end ()) {
+                errno = ENOENT;
                 m_err_msg += __FUNCTION__;
                 m_err_msg += ": span missing in job2span ";
                 m_err_msg += " for vertex: " + (*m_graph)[u].name + "\n";
