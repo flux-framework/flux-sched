@@ -255,17 +255,22 @@ static int run_match (std::shared_ptr<detail::resource_query_t> &ctx,
 
     jobspec_in.close ();
 
-    detail::reapi_cli_t::match_allocate (ctx.get (), match_op, jobspec, jobid, reserved, R, at, ov);
+    rc = detail::reapi_cli_t::match_allocate (ctx.get (),
+                                              match_op,
+                                              jobspec,
+                                              jobid,
+                                              reserved,
+                                              R,
+                                              at,
+                                              ov);
 
-    // check for match success
-    if ((errno == ENODEV) || (errno == EBUSY) || (errno == EINVAL) || (errno == ENOENT)) {
+    // check for match success - only check errno if match_allocate failed
+    if (rc < 0) {
         matched = false;
-        rc = -1;
+        // check for satisfiability
+        if (errno == ENODEV || errno == ENOENT)
+            sat = false;
     }
-
-    // check for satisfiability
-    if (errno == ENODEV || (errno == ENOENT))
-        sat = false;
 
     if (detail::reapi_cli_t::get_err_message () != "") {
         std::cerr << detail::reapi_cli_t::get_err_message ();
