@@ -139,15 +139,12 @@ int dfu_impl_t::by_excl (const jobmeta_t &meta,
         if (meta.alloc_type == jobmeta_t::alloc_type_t::AT_ALLOC
             && !(*m_graph)[u].schedule.allocations.empty ())
             goto done;
-        errno = 0;
         p = (*m_graph)[u].idata.x_checker;
         njobs = planner_avail_resources_during (p, at, duration);
         if (njobs == -1) {
             m_err_msg += "by_excl: planner_avail_resources_during.\n";
-            if (errno != 0) {
-                m_err_msg += strerror (errno);
-                m_err_msg += ".\n";
-            }
+            m_err_msg += strerror (errno);
+            m_err_msg += ".\n";
             goto restore_errno;
         } else if (njobs < X_CHECKER_NJOBS) {
             goto restore_errno;
