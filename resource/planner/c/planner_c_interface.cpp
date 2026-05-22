@@ -194,6 +194,7 @@ static bool avail_during (planner_t *ctx, int64_t at, uint64_t duration, const i
             ok = true;
             break;
         } else if (request > point->remaining) {
+            errno = EBUSY;
             ok = false;
             break;
         }
