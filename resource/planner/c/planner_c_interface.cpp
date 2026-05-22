@@ -496,11 +496,19 @@ extern "C" int64_t planner_avail_resources_during (planner_t *ctx, int64_t at, u
 extern "C" int64_t planner_avail_resources_at (planner_t *ctx, int64_t at)
 {
     const scheduled_point_t *state = nullptr;
-    if (!ctx || at > ctx->plan->get_plan_end () || at < ctx->plan->get_plan_start ()) {
+    if (!ctx) {
         errno = EINVAL;
         return -1;
     }
+    if (at > ctx->plan->get_plan_end () || at < ctx->plan->get_plan_start ()) {
+        errno = ERANGE;
+        return -1;
+    }
     state = ctx->plan->sp_tree_get_state (at);
+    if (!state) {
+        errno = ENOENT;
+        return -1;
+    }
     return state->remaining;
 }
 
