@@ -189,8 +189,10 @@ int multilevel_id_t<FOLD>::dom_finish_vtx (vtx_t u,
 template<typename FOLD>
 int multilevel_id_t<FOLD>::set_stop_on_k_matches (unsigned k)
 {
-    if (k > 1)
+    if (k > 1) {
+        errno = EINVAL;
         return -1;
+    }
     m_stop_on_k_matches = k;
     return 0;
 }
