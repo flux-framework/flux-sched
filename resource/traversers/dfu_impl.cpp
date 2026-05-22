@@ -1189,7 +1189,6 @@ int dfu_impl_t::prime_pruning_filter (subsystem_t s,
                                       std::map<resource_type_t, int64_t> &to_parent)
 {
     int rc = -1;
-    int saved_errno = errno;
     std::vector<uint64_t> avail;
     std::vector<const char *> types;
     std::map<resource_type_t, int64_t> dfv;
@@ -1234,11 +1233,11 @@ int dfu_impl_t::prime_pruning_filter (subsystem_t s,
     }
 
     if ((*m_graph)[u].idata.subplans[s] == NULL) {
-        errno = 0;
         planner_multi_t *p = NULL;
         if (!(p = subtree_plan (u, avail, types))) {
             m_err_msg += "prime: error initializing a multi-planner. ";
             m_err_msg += strerror (errno);
+            // errno should be set by subtree_plan/planner_multi_new
             goto done;
         }
         (*m_graph)[u].idata.subplans[s] = p;
@@ -1250,7 +1249,6 @@ int dfu_impl_t::prime_pruning_filter (subsystem_t s,
     }
     rc = 0;
 done:
-    errno = saved_errno;
     (*m_graph)[u].idata.colors[s] = m_color.black ();
     return rc;
 }
