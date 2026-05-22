@@ -58,6 +58,10 @@ static scheduled_point_t *get_or_new_point (planner_t *ctx, int64_t at)
     try {
         if (!(point = ctx->plan->sp_tree_search (at))) {
             scheduled_point_t *state = ctx->plan->sp_tree_get_state (at);
+            if (!state) {
+                errno = EINVAL;
+                return nullptr;
+            }
             point = new scheduled_point_t ();
             point->at = at;
             point->in_mt_resource_tree = 0;
