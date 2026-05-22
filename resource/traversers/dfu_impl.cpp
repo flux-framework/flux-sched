@@ -1278,6 +1278,11 @@ int dfu_impl_t::select (Jobspec::Jobspec &j, vtx_t root, jobmeta_t &meta, bool e
         egrp.edges.push_back (ev_edg);
         dfu.add (dom, (*m_graph)[root].type, egrp);
         rc = resolve_graph (root, j.resources, dfu, excl, &needs);
+        if (rc < 0) {
+            // resolve_graph() doesn't have an errno contract.
+            // Set errno = ENODEV (unsatisfiable) when it fails.
+            errno = ENODEV;
+        }
         m_graph_db->metadata.v_rt_edges[dom].set_for_trav_update (needs, x_in, m_sequence_number);
     }
     return rc;
