@@ -58,74 +58,75 @@ int reapi_cli_t::match_allocate (void *h,
                                  double &ov)
 {
     resource_query_t *rq = static_cast<resource_query_t *> (h);
-    int rc = -1;
+    int traverser_rc;
     at = 0;
     ov = 0.0f;
     job_lifecycle_t st;
     std::shared_ptr<job_info_t> job_info = nullptr;
     struct timeval start_time, end_time;
     std::stringstream o;
+    int traverser_errno;
     bool matched = false;
 
     if (!match_op_valid (match_op)) {
         m_err_msg += __FUNCTION__;
         m_err_msg +=
             ": ERROR: Invalid Match Option: " + std::string (match_op_to_string (match_op)) + "\n";
-        rc = -1;
-        goto out;
+        errno = EINVAL;
+        return -1;
     }
 
+    if (gettimeofday (&start_time, NULL) < 0) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": ERROR: gettimeofday: " + std::string (strerror (errno)) + "\n";
+        return -1;
+    }
+
+    Flux::Jobspec::Jobspec job;
     try {
-        Flux::Jobspec::Jobspec job{jobspec};
-
-        if ((rc = gettimeofday (&start_time, NULL)) < 0) {
-            m_err_msg += __FUNCTION__;
-            m_err_msg += ": ERROR: gettimeofday: " + std::string (strerror (errno)) + "\n";
-            goto out;
-        }
-
-        rc = rq->traverser_run (job, match_op, (int64_t)jobid, at);
-
-        if (rq->get_traverser_err_msg () != "") {
-            m_err_msg += __FUNCTION__;
-            m_err_msg += ": ERROR: " + rq->get_traverser_err_msg () + "\n";
-            rq->clear_traverser_err_msg ();
-            rc = -1;
-            goto out;
-        }
+        job = Flux::Jobspec::Jobspec{jobspec};
     } catch (Flux::Jobspec::parse_error &e) {
         m_err_msg += __FUNCTION__;
         m_err_msg += ": ERROR: Jobspec error for " + std::to_string (rq->get_job_counter ()) + ": "
                      + std::string (e.what ()) + "\n";
-        rc = -1;
-        goto out;
+        errno = EINVAL;
+        return -1;
     }
 
-    if ((rc != 0) && (errno == ENOMEM)) {
-        m_err_msg += __FUNCTION__;
-        m_err_msg += ": ERROR: Memory error for " + std::to_string (rq->get_job_counter ());
-        rc = -1;
-        goto out;
-    }
-
-    // Check for an unsuccessful match
-    if ((rc == 0) && (match_op != match_op_t::MATCH_SATISFIABILITY)) {
+    /* The traverser returns -1 with errno set on failure.  It does not throw.
+     * Continue on (but ultimately return -1) if errno is one of
+     * EBUSY - temporarily unavailable
+     * ENODEV - unsatisfiable
+     * Otherwise, return immediately.
+     */
+    if ((traverser_rc = rq->traverser_run (job, match_op, (int64_t)jobid, at)) < 0) {
+        traverser_errno = errno;
+        if (rq->get_traverser_err_msg () != "") {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": ERROR: " + rq->get_traverser_err_msg () + "\n";
+            rq->clear_traverser_err_msg ();  // clear error for next call
+        } else if (traverser_errno != EBUSY && traverser_errno != ENODEV) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": ERROR: traverser: " + std::string (strerror (traverser_errno)) + "\n";
+        }
+        if (traverser_errno != EBUSY && traverser_errno != ENODEV)
+            return -1;
+    } else if (match_op != match_op_t::MATCH_SATISFIABILITY) {
         matched = true;
-        errno = 0;
     }
 
-    if ((rc = rq->writers->emit (o)) < 0) {
+    if (rq->writers->emit (o) < 0) {
         m_err_msg += __FUNCTION__;
         m_err_msg += ": ERROR: match writer emit: " + std::string (strerror (errno)) + "\n";
-        goto out;
+        return -1;
     }
 
     R = o.str ();
 
-    if ((rc = gettimeofday (&end_time, NULL)) < 0) {
+    if (gettimeofday (&end_time, NULL) < 0) {
         m_err_msg += __FUNCTION__;
         m_err_msg += ": ERROR: gettimeofday: " + std::string (strerror (errno)) + "\n";
-        goto out;
+        return -1;
     }
 
     ov = get_elapsed_time (start_time, end_time);
@@ -143,8 +144,7 @@ int reapi_cli_t::match_allocate (void *h,
             errno = ENOMEM;
             m_err_msg += __FUNCTION__;
             m_err_msg += ": ERROR: can't allocate memory: " + std::string (strerror (errno)) + "\n";
-            rc = -1;
-            goto out;
+            return -1;
         }
         rq->set_job (jobid, job_info);
     }
@@ -152,8 +152,11 @@ int reapi_cli_t::match_allocate (void *h,
     if (match_op != match_op_t::MATCH_SATISFIABILITY)
         rq->incr_job_counter ();
 
-out:
-    return rc;
+    if (traverser_rc < 0) {
+        errno = traverser_errno;
+        return -1;
+    }
+    return 0;
 }
 
 int reapi_cli_t::update_allocate (void *h,

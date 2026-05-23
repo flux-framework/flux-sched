@@ -1,0 +1,4 @@
+add_executable(reapi_cli_errno_test reapi_cli_errno_test.cpp)
+add_sanitizers(reapi_cli_errno_test)
+target_link_libraries(reapi_cli_errno_test PRIVATE reapi_cli libtap PkgConfig::JANSSON)
+flux_add_test(NAME reapi_cli_errno_test COMMAND reapi_cli_errno_test)

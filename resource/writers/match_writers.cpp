@@ -38,7 +38,12 @@ int match_writers_t::compress_ids (std::stringstream &o, const std::vector<int64
         return -1;
     }
     for (auto &id : ids) {
-        if (id < 0 || idset_set (idset, id) < 0) {
+        if (id < 0) {
+            errno = EINVAL;
+            idset_destroy (idset);
+            return -1;
+        }
+        if (idset_set (idset, id) < 0) {
             idset_destroy (idset);
             return -1;
         }

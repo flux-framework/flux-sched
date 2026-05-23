@@ -244,7 +244,6 @@ int queue_policy_bf_base_t<reapi_type>::cancel_sched_loop ()
     m_scheduled_cnt = m_queue_depth;
     // we want the actual cancel deferred until the loop exits, it simplifies
     // the handling and coherence a great deal
-    errno = 0;
     return -1;
 }
 

@@ -848,6 +848,7 @@ int dfu_impl_t::update (vtx_t root, std::shared_ptr<match_writers_t> &writers, j
     subsystem_t dom = m_match->dom_subsystem ();
 
     if (m_graph_db->metadata.v_rt_edges[dom].get_sequence_number () != m_sequence_number) {
+        errno = EINVAL;
         m_err_msg += __FUNCTION__;
         m_err_msg += ": resource state wasn't properly set up for update.\n";
         return -1;
