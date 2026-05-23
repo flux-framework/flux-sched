@@ -12,3 +12,9 @@ target_link_libraries(matcher_util_api_test PRIVATE libtap resource
   )
 add_sanitizers(matcher_util_api_test)
 flux_add_test(NAME matcher_util_api_test COMMAND matcher_util_api_test)
+add_executable(policy_errno_test
+  ${CMAKE_CURRENT_SOURCE_DIR}/policy_errno_test.cpp
+  )
+target_link_libraries(policy_errno_test PRIVATE libtap resource)
+add_sanitizers(policy_errno_test)
+flux_add_test(NAME policy_errno_test COMMAND policy_errno_test)
