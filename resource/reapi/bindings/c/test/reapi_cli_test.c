@@ -242,6 +242,161 @@ static int test_null_parameters ()
     rc = reapi_cli_get_status (ctx, NULL, &status);
     ok (rc == -1 && errno == EINVAL,
         "reapi_cli_get_status returns -1 with errno=EINVAL for NULL path");
+    reapi_cli_destroy (ctx);
+    return 0;
+}
+
+static int test_info_ex ()
+{
+    reapi_cli_ctx_t *ctx = reapi_cli_new ();
+    if (!ctx)
+        BAIL_OUT ("reapi_cli_new failed");
+
+    int rc = reapi_cli_initialize (ctx, tiny_jgf, tiny_params);
+    if (rc < 0)
+        BAIL_OUT ("reapi_cli_initialize failed: %s", reapi_cli_get_err_msg (ctx));
+
+    uint64_t jobid = 1;
+    bool reserved = false;
+    char *R = NULL;
+    int64_t at = 0;
+    double ov = 0.0;
+
+    // Allocate a job first
+    rc = reapi_cli_match_allocate (ctx, false, simple_jobspec, &jobid, &reserved, &R, &at, &ov);
+    if (rc < 0)
+        BAIL_OUT ("reapi_cli_match_allocate failed: %s", reapi_cli_get_err_msg (ctx));
+    free (R);
+    R = NULL;
+
+    // Test reapi_cli_info_ex
+    const char *mode = NULL;
+    const char *R_ex = NULL;
+    bool reserved_ex = false;
+    int64_t at_ex = 0;
+    double ov_ex = 0.0;
+
+    errno = 0;
+    rc = reapi_cli_info_ex (ctx, jobid, &mode, &reserved_ex, &at_ex, &ov_ex, &R_ex);
+    ok (rc == 0, "reapi_cli_info_ex succeeded");
+    ok (mode != NULL && R_ex != NULL, "reapi_cli_info_ex returned mode and R");
+    ok (reserved_ex == false, "reapi_cli_info_ex shows job is allocated");
+
+    // Test with nonexistent job
+    errno = 0;
+    rc = reapi_cli_info_ex (ctx, 99999, &mode, &reserved_ex, &at_ex, &ov_ex, &R_ex);
+    ok (rc == -1 && errno == ENOENT,
+        "reapi_cli_info_ex returns -1 with errno=ENOENT for nonexistent job");
+
+    // Test with NULL context
+    errno = 0;
+    rc = reapi_cli_info_ex (NULL, jobid, &mode, &reserved_ex, &at_ex, &ov_ex, &R_ex);
+    ok (rc == -1 && errno == EINVAL,
+        "reapi_cli_info_ex returns -1 with errno=EINVAL for NULL context");
+
+    reapi_cli_destroy (ctx);
+    return 0;
+}
+
+static int test_update_allocate ()
+{
+    reapi_cli_ctx_t *ctx = reapi_cli_new ();
+    if (!ctx)
+        BAIL_OUT ("reapi_cli_new failed");
+
+    int rc = reapi_cli_initialize (ctx, tiny_jgf, tiny_params);
+    if (rc < 0)
+        BAIL_OUT ("reapi_cli_initialize failed: %s", reapi_cli_get_err_msg (ctx));
+
+    uint64_t jobid = 1;
+    bool reserved = false;
+    char *R = NULL;
+    int64_t at = 0;
+    double ov = 0.0;
+
+    // Allocate a job to get an R string we can use
+    rc = reapi_cli_match_allocate (ctx, false, simple_jobspec, &jobid, &reserved, &R, &at, &ov);
+    if (rc < 0)
+        BAIL_OUT ("reapi_cli_match_allocate failed: %s", reapi_cli_get_err_msg (ctx));
+
+    // Cancel the first job to free up resources
+    rc = reapi_cli_cancel (ctx, jobid, false);
+    if (rc < 0)
+        BAIL_OUT ("reapi_cli_cancel failed: %s", reapi_cli_get_err_msg (ctx));
+
+    // Test reapi_cli_update_allocate with a different jobid
+    // (update_allocate adds a pre-existing allocation, so jobid must not already exist)
+    const char *R_out = NULL;
+    uint64_t jobid2 = 2;
+    errno = 0;
+    rc = reapi_cli_update_allocate (ctx, jobid2, R, &at, &ov, &R_out);
+    ok (rc == 0, "reapi_cli_update_allocate succeeded");
+    ok (R_out != NULL, "reapi_cli_update_allocate returned R_out");
+
+    free (R);
+
+    // Test with NULL context
+    errno = 0;
+    rc = reapi_cli_update_allocate (NULL, jobid2, R_out, &at, &ov, &R_out);
+    ok (rc == -1 && errno == EINVAL,
+        "reapi_cli_update_allocate returns -1 with errno=EINVAL for NULL context");
+
+    // Test with existing jobid - should fail with EEXIST
+    errno = 0;
+    rc = reapi_cli_update_allocate (ctx, jobid2, R, &at, &ov, &R_out);
+    ok (rc == -1 && errno == EEXIST,
+        "reapi_cli_update_allocate returns -1 with errno=EEXIST for existing jobid");
+
+    reapi_cli_destroy (ctx);
+    return 0;
+}
+
+static int test_cancel_ex ()
+{
+    reapi_cli_ctx_t *ctx = reapi_cli_new ();
+    if (!ctx)
+        BAIL_OUT ("reapi_cli_new failed");
+
+    int rc = reapi_cli_initialize (ctx, tiny_jgf, tiny_params);
+    if (rc < 0)
+        BAIL_OUT ("reapi_cli_initialize failed: %s", reapi_cli_get_err_msg (ctx));
+
+    uint64_t jobid = 1;
+    bool reserved = false;
+    char *R = NULL;
+    int64_t at = 0;
+    double ov = 0.0;
+
+    // Allocate a job first
+    rc = reapi_cli_match_allocate (ctx, false, simple_jobspec, &jobid, &reserved, &R, &at, &ov);
+    if (rc < 0)
+        BAIL_OUT ("reapi_cli_match_allocate failed: %s", reapi_cli_get_err_msg (ctx));
+
+    // Test reapi_cli_cancel_ex with full cancel (NULL R)
+    bool full_removal = false;
+    errno = 0;
+    rc = reapi_cli_cancel_ex (ctx, jobid, NULL, NULL, false, &full_removal);
+    ok (rc == 0, "reapi_cli_cancel_ex succeeded");
+    ok (full_removal == true, "reapi_cli_cancel_ex reported full removal");
+
+    free (R);
+
+    // Test with nonexistent job and noent_ok=false
+    errno = 0;
+    rc = reapi_cli_cancel_ex (ctx, 99999, NULL, NULL, false, &full_removal);
+    ok (rc == -1 && errno == ENOENT,
+        "reapi_cli_cancel_ex returns -1 with errno=ENOENT for nonexistent job");
+
+    // Test with nonexistent job and noent_ok=true
+    errno = 0;
+    rc = reapi_cli_cancel_ex (ctx, 99999, NULL, NULL, true, &full_removal);
+    ok (rc == 0, "reapi_cli_cancel_ex succeeds with noent_ok=true for nonexistent job");
+
+    // Test with NULL context
+    errno = 0;
+    rc = reapi_cli_cancel_ex (NULL, 1, NULL, NULL, false, &full_removal);
+    ok (rc == -1 && errno == EINVAL,
+        "reapi_cli_cancel_ex returns -1 with errno=EINVAL for NULL context");
 
     reapi_cli_destroy (ctx);
     return 0;
@@ -311,6 +466,9 @@ int main (int argc, char *argv[])
     test_status_by_path ();
     test_null_parameters ();
     test_match_with_jobid ();
+    test_info_ex ();
+    test_update_allocate ();
+    test_cancel_ex ();
 
     done_testing ();
     return EXIT_SUCCESS;
