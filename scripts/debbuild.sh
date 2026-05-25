@@ -27,7 +27,12 @@ test -z "$USER" && die "User name not set in git-config"
 test -z "$EMAIL" && die "User email not set in git-config"
 
 log "Running make dist"
-make dist >/dev/null || exit 1
+if test -f Makefile; then
+    make dist >/dev/null || exit 1
+else
+    log "No Makefile found, using cmake"
+    cmake --build . --target dist >/dev/null || exit 1
+fi
 
 log "Building package from latest dist tarball"
 tarball=$(ls -tr *.tar.gz | tail -1)
