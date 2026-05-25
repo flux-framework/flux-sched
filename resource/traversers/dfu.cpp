@@ -38,24 +38,25 @@ int dfu_traverser_t::is_satisfiable (Jobspec::Jobspec &jobspec,
 {
     int rc = 0;
     std::vector<uint64_t> agg;
-    int saved_errno = errno;
     subsystem_t dom = get_match_cb ()->dom_subsystem ();
 
     meta.alloc_type = jobmeta_t::alloc_type_t::AT_SATISFIABILITY;
     planner_multi_t *p = (*get_graph ())[root].idata.subplans.at (dom);
     meta.at = planner_multi_base_time (p) + planner_multi_duration (p) - meta.duration - 1;
     traverser->count_relevant_types (p, dfv, agg);
-    errno = 0;
     if ((rc = traverser->select (jobspec, root, meta, x)) < 0) {
+        // Translate resource unavailability to unsatisfiable
+        // EBUSY: not available even at far future
+        // ERANGE: exceeds total capacity
+        if (errno == EBUSY || errno == ERANGE) {
+            errno = ENODEV;
+        }
         rc = -1;
-        errno = (!errno) ? ENODEV : errno;
         traverser->update ();
     }
     m_total_preorder = traverser->get_preorder_count ();
     m_total_postorder = traverser->get_postorder_count ();
 
-    if (!errno)
-        errno = saved_errno;
     return rc;
 }
 
@@ -146,7 +147,6 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
     size_t len = 0;
     std::vector<uint64_t> agg;
     uint64_t duration = 0;
-    int saved_errno = errno;
     planner_multi_t *p = NULL;
     subsystem_t dom = get_match_cb ()->dom_subsystem ();
 
@@ -171,7 +171,12 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
             meta.at = planner_multi_base_time (p) + planner_multi_duration (p) - meta.duration - 1;
             traverser->count_relevant_types (p, dfv, agg);
             if (traverser->select (jobspec, root, meta, x) < 0) {
-                errno = (errno == EBUSY) ? ENODEV : errno;
+                // Translate resource unavailability to unsatisfiable
+                // EBUSY: not available even at far future
+                // ERANGE: exceeds total capacity
+                if (errno == EBUSY || errno == ERANGE) {
+                    errno = ENODEV;
+                }
                 traverser->update ();
             }
             m_total_preorder += traverser->get_preorder_count ();
@@ -182,7 +187,6 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
         }
         case match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE: {
             /* Or else reserve */
-            errno = 0;
             meta.alloc_type = jobmeta_t::alloc_type_t::AT_ALLOC_ORELSE_RESERVE;
             t = meta.at + 1;
             p = (*get_graph ())[root].idata.subplans.at (dom);
@@ -190,7 +194,7 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
             duration = meta.duration;
             traverser->count_relevant_types (p, dfv, agg);
             for (t = planner_multi_avail_time_first (p, t, duration, agg.data (), len);
-                 (t != -1 && rc && !errno);
+                 (t != -1 && rc);
                  t = planner_multi_avail_time_next (p)) {
                 meta.at = t;
                 rc = traverser->select (jobspec, root, meta, x);
@@ -207,9 +211,15 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
                 meta.alloc_type = jobmeta_t::alloc_type_t::AT_SATISFIABILITY;
                 meta.at = planner_multi_base_time (p) + planner_multi_duration (p) - duration - 1;
                 if (traverser->select (jobspec, root, meta, x) < 0) {
-                    errno = (errno == EBUSY) ? ENODEV : errno;
+                    // Translate resource unavailability to unsatisfiable
+                    // EBUSY: not available even at far future
+                    // ERANGE: exceeds total capacity
+                    if (errno == EBUSY || errno == ERANGE) {
+                        errno = ENODEV;
+                    }
                     traverser->update ();
                 }
+            } else if (rc < 0) {
                 m_total_preorder += traverser->get_preorder_count ();
                 m_total_postorder += traverser->get_postorder_count ();
                 // increment match traversal loop count
@@ -225,7 +235,6 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
     }
 
 out:
-    errno = (!errno) ? saved_errno : errno;
     // Update the perf temporary iteration count. If this schedule invocation
     // corresponds to the max match time this value will be output in the
     // stats RPC.
@@ -377,9 +386,11 @@ int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
         < 0)
         return -1;
 
-    if ((op == match_op_t::MATCH_SATISFIABILITY)
-        && (rc = is_satisfiable (jobspec, meta, x, root, dfv)) == 0) {
-        traverser->update ();
+    if (op == match_op_t::MATCH_SATISFIABILITY) {
+        rc = is_satisfiable (jobspec, meta, x, root, dfv);
+        if (rc == 0) {
+            traverser->update ();
+        }
     } else if ((rc = schedule (jobspec, meta, x, op, root, dfv)) == 0) {
         *at = meta.at;
         if (*at == graph_end) {

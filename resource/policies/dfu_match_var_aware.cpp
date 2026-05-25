@@ -59,7 +59,11 @@ int var_aware_t::dom_finish_graph (subsystem_t subsystem,
         dfu.choose_accum_best_k (subsystem, resource.type, count, comp);
     }
     dfu.set_overall_score (score);
-    return (score == MATCH_MET) ? 0 : -1;
+    if (score != MATCH_MET) {
+        errno = EBUSY;
+        return -1;
+    }
+    return 0;
 }
 
 int var_aware_t::dom_finish_slot (subsystem_t subsystem, scoring_api_t &dfu)
@@ -119,7 +123,11 @@ int var_aware_t::dom_finish_vtx (vtx_t u,
     overall = (score == MATCH_MET) ? (score + perf_class) : score;
     dfu.set_overall_score (overall);
     decr ();
-    return (score == MATCH_MET) ? 0 : -1;
+    if (score != MATCH_MET) {
+        errno = EBUSY;
+        return -1;
+    }
+    return 0;
 }
 
 }  // namespace resource_model

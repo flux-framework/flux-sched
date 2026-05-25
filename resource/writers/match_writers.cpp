@@ -466,12 +466,14 @@ json_t *jgf_match_writers_t::emit_vtx_base (const resource_graph_t &g,
         if (exclusive) {
             if (json_object_set_new (o, "exclusive", json_true ()) < 0) {
                 json_decref (o);
+                errno = ENOMEM;
                 return nullptr;
             }
         }
         if (needs != 1) {
             if (json_object_set_new (o, "size", json_integer (needs)) < 0) {
                 json_decref (o);
+                errno = ENOMEM;
                 return nullptr;
             }
         }

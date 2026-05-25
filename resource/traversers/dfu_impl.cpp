@@ -77,32 +77,24 @@ int dfu_impl_t::by_avail (const jobmeta_t &meta,
                           vtx_t u,
                           const std::vector<Jobspec::Resource> &resources)
 {
-    int rc = -1;
     int64_t avail = -1;
     planner_t *p = NULL;
     int64_t at = meta.at;
-    int saved_errno = errno;
     uint64_t duration = meta.duration;
 
-    errno = 0;
     // Prune by the visiting resource vertex's availability
     // if rack has been allocated exclusively, no reason to descend further.
     p = (*m_graph)[u].schedule.plans;
     if ((avail = planner_avail_resources_during (p, at, duration)) == 0) {
-        goto done;
+        errno = EBUSY;
+        return -1;
     } else if (avail == -1) {
         m_err_msg += "by_avail: planner_avail_resources_during returned -1.\n";
-        if (errno != 0) {
-            m_err_msg += strerror (errno);
-            m_err_msg += ".\n";
-        }
-        goto done;
+        m_err_msg += strerror (errno);
+        m_err_msg += ".\n";
+        return -1;
     }
-    rc = 0;
-
-done:
-    errno = saved_errno;
-    return rc;
+    return 0;
 }
 
 int dfu_impl_t::by_excl (const jobmeta_t &meta,
@@ -111,11 +103,9 @@ int dfu_impl_t::by_excl (const jobmeta_t &meta,
                          bool exclusive_in,
                          const Jobspec::Resource &resource)
 {
-    int rc = -1;
     planner_t *p = NULL;
     int64_t at = meta.at;
     int64_t njobs = -1;
-    int saved_errno = errno;
     uint64_t duration = meta.duration;
 
     // If a non-exclusive resource request is explicitly given on a
@@ -124,7 +114,7 @@ int dfu_impl_t::by_excl (const jobmeta_t &meta,
         errno = EINVAL;
         m_err_msg += "by_excl: exclusivity conflicts at jobspec=";
         m_err_msg += resource.label + " : vertex=" + (*m_graph)[u].name;
-        goto done;
+        return -1;
     }
 
     // If a resource request is under slot or an explicit exclusivity is
@@ -140,30 +130,25 @@ int dfu_impl_t::by_excl (const jobmeta_t &meta,
         // resources at the leaf level this check will not catch
         // multiple booking.
         if (meta.alloc_type == jobmeta_t::alloc_type_t::AT_ALLOC
-            && !(*m_graph)[u].schedule.allocations.empty ())
-            goto done;
-        errno = 0;
+            && !(*m_graph)[u].schedule.allocations.empty ()) {
+            errno = EBUSY;
+            return -1;
+        }
         p = (*m_graph)[u].idata.x_checker;
         njobs = planner_avail_resources_during (p, at, duration);
         if (njobs == -1) {
             m_err_msg += "by_excl: planner_avail_resources_during.\n";
-            if (errno != 0) {
-                m_err_msg += strerror (errno);
-                m_err_msg += ".\n";
-            }
-            goto restore_errno;
+            m_err_msg += strerror (errno);
+            m_err_msg += ".\n";
+            return -1;
         } else if (njobs < X_CHECKER_NJOBS) {
-            goto restore_errno;
+            errno = EBUSY;
+            return -1;
         }
     }
 
     // All cases reached this point indicate further walk is needed.
-    rc = 0;
-
-restore_errno:
-    errno = saved_errno;
-done:
-    return rc;
+    return 0;
 }
 
 int dfu_impl_t::by_subplan (const jobmeta_t &meta,
@@ -176,7 +161,6 @@ int dfu_impl_t::by_subplan (const jobmeta_t &meta,
     int64_t at = meta.at;
     uint64_t d = meta.duration;
     std::vector<uint64_t> aggs;
-    int saved_errno = errno;
     planner_multi_t *p = (*m_graph)[u].idata.subplans[s];
 
     if (!p) {
@@ -184,29 +168,28 @@ int dfu_impl_t::by_subplan (const jobmeta_t &meta,
         // TODO: handle the unlikely case
         // where the subplan is null for another
         // reason
-        rc = 0;
-        goto done;
+        return 0;
     }
     if (resource.user_data.empty ()) {
         // If user_data is empty, no data is available to prune with.
-        rc = 0;
-        goto done;
+        return 0;
     }
     count_relevant_types (p, resource.user_data, aggs);
-    errno = 0;
     len = aggs.size ();
     if ((rc = planner_multi_avail_during (p, at, d, aggs.data (), len)) == -1) {
-        if (errno != 0 && errno != ERANGE) {
+        // Don't log ERANGE or EBUSY - these are expected conditions:
+        // ERANGE: request exceeds capacity (unsatisfiable)
+        // EBUSY: resources temporarily unavailable
+        if (errno != ERANGE && errno != EBUSY) {
             m_err_msg += "by_subplan: planner_multi_avail_during returned -1.\n";
             m_err_msg += strerror (errno);
             m_err_msg += ".\n";
         }
-        goto done;
+        // errno already set by planner_multi_avail_during (ERANGE, EBUSY, etc)
+        return -1;
     }
 
-done:
-    errno = saved_errno;
-    return rc;
+    return 0;
 }
 
 int dfu_impl_t::by_status (const jobmeta_t &meta, vtx_t u)
@@ -265,21 +248,31 @@ int dfu_impl_t::prune (const jobmeta_t &meta,
 {
     int rc = 0;
 
-    if ((rc = by_status (meta, u)) == -1)
-        goto done;
+    if ((rc = by_status (meta, u)) == -1) {
+        errno = EBUSY;
+        return rc;
+    }
 
-    if ((rc = by_constraint (meta, u)) == -1)
-        goto done;
+    if ((rc = by_constraint (meta, u)) == -1) {
+        // Constraint mismatch on this vertex - set EBUSY not ENODEV
+        // because it doesn't mean the job is globally unsatisfiable,
+        // just that this particular vertex doesn't match
+        errno = EBUSY;
+        return rc;
+    }
 
     // if rack has been allocated exclusively, no reason to descend further.
-    if ((rc = by_avail (meta, s, u, resources)) == -1)
-        goto done;
+    if ((rc = by_avail (meta, s, u, resources)) == -1) {
+        // errno already set by by_avail
+        return rc;
+    }
 
-    if ((rc = prune_resources (meta, exclusive, s, u, resources)) == -1)
-        goto done;
+    if ((rc = prune_resources (meta, exclusive, s, u, resources)) == -1) {
+        // errno already set by prune_resources
+        return rc;
+    }
 
-done:
-    return rc;
+    return 0;
 }
 
 planner_multi_t *dfu_impl_t::subtree_plan (vtx_t u,
@@ -769,11 +762,16 @@ int dfu_impl_t::dom_dfv (const jobmeta_t &meta,
     const std::vector<Resource> &next = test (u, resources, check_pres, nslots, sm);
 
     m_preorder++;
-    if (sm == match_kind_t::NONE_MATCH)
+    if (sm == match_kind_t::NONE_MATCH) {
+        // Vertex type doesn't match - no resources here
+        errno = EBUSY;
         goto done;
+    }
     if ((prune (meta, x_in, dom, u, resources) == -1)
-        || (m_match->dom_discover_vtx (u, dom, resources, *m_graph) != 0))
+        || (m_match->dom_discover_vtx (u, dom, resources, *m_graph) != 0)) {
+        // errno already set by prune() or dom_discover_vtx()
         goto done;
+    }
     (*m_graph)[u].idata.colors[dom] = m_color.gray ();
     if (sm == match_kind_t::SLOT_MATCH)
         dom_slot (meta, u, next, nslots, check_pres, &x_inout, dfu);
@@ -784,17 +782,24 @@ int dfu_impl_t::dom_dfv (const jobmeta_t &meta,
 
     p = (*m_graph)[u].schedule.plans;
     if ((avail = planner_avail_resources_during (p, at, duration)) == 0) {
+        // No resources available at this vertex
+        errno = EBUSY;
         goto done;
     } else if (avail == -1) {
         m_err_msg += "dom_dfv: planner_avail_resources_during returned -1.\n";
         m_err_msg += strerror (errno);
         m_err_msg += ".\n";
+        // errno already set by planner
         goto done;
     }
-    if (m_match->dom_finish_vtx (u, dom, resources, *m_graph, dfu) != 0)
+    if (m_match->dom_finish_vtx (u, dom, resources, *m_graph, dfu) != 0) {
+        // errno set by dom_finish_vtx
         goto done;
-    if ((rc = resolve (dfu, to_parent)) != 0)
+    }
+    if ((rc = resolve (dfu, to_parent)) != 0) {
+        // errno set by resolve/enforce
         goto done;
+    }
     to_parent.set_avail (avail);
     to_parent.set_overall_score (dfu.overall_score ());
 
@@ -1180,7 +1185,6 @@ int dfu_impl_t::prime_pruning_filter (subsystem_t s,
                                       std::map<resource_type_t, int64_t> &to_parent)
 {
     int rc = -1;
-    int saved_errno = errno;
     std::vector<uint64_t> avail;
     std::vector<const char *> types;
     std::map<resource_type_t, int64_t> dfv;
@@ -1225,11 +1229,11 @@ int dfu_impl_t::prime_pruning_filter (subsystem_t s,
     }
 
     if ((*m_graph)[u].idata.subplans[s] == NULL) {
-        errno = 0;
         planner_multi_t *p = NULL;
         if (!(p = subtree_plan (u, avail, types))) {
             m_err_msg += "prime: error initializing a multi-planner. ";
             m_err_msg += strerror (errno);
+            // errno should be set by subtree_plan/planner_multi_new
             goto done;
         }
         (*m_graph)[u].idata.subplans[s] = p;
@@ -1241,7 +1245,6 @@ int dfu_impl_t::prime_pruning_filter (subsystem_t s,
     }
     rc = 0;
 done:
-    errno = saved_errno;
     (*m_graph)[u].idata.colors[s] = m_color.black ();
     return rc;
 }
@@ -1285,6 +1288,11 @@ int dfu_impl_t::select (Jobspec::Jobspec &j, vtx_t root, jobmeta_t &meta, bool e
         egrp.edges.push_back (ev_edg);
         dfu.add (dom, (*m_graph)[root].type, egrp);
         rc = resolve_graph (root, j.resources, dfu, excl, &needs);
+        if (rc < 0) {
+            // resolve_graph() doesn't have an errno contract.
+            // Set errno = ENODEV (unsatisfiable) when it fails.
+            errno = ENODEV;
+        }
         m_graph_db->metadata.v_rt_edges[dom].set_for_trav_update (needs, x_in, m_sequence_number);
     }
     return rc;

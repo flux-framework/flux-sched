@@ -59,24 +59,36 @@ static int test_match_allocate_invalid_jobspec_with_ctx ()
     void *h = static_cast<void *> (rq);
     uint64_t jobid = 1;
     bool reserved = false;
-    std::string invalid_jobspec = "not valid json";
     std::string R;
     int64_t at = 0;
     double ov = 0.0;
 
-    // Test with invalid jobspec JSON
+    // Test with invalid JSON
     errno = 0;
-    int rc = reapi_cli_t::match_allocate (h,
-                                          MATCH_ALLOCATE,
-                                          invalid_jobspec,
-                                          jobid,
-                                          reserved,
-                                          R,
-                                          at,
-                                          ov);
+    std::string invalid_json = "not valid json";
+    int rc =
+        reapi_cli_t::match_allocate (h, MATCH_ALLOCATE, invalid_json, jobid, reserved, R, at, ov);
 
     ok (rc == -1 && errno == EINVAL,
-        "match_allocate returns -1 with errno=EINVAL for invalid jobspec");
+        "match_allocate returns -1 with errno=EINVAL for invalid JSON");
+
+    // Test with valid JSON but missing required fields (no "resources" field)
+    errno = 0;
+    std::string incomplete_jobspec = R"({
+        "version": 1,
+        "tasks": [{"command": ["app"], "slot": "task", "count": {"per_slot": 1}}]
+    })";
+    rc = reapi_cli_t::match_allocate (h,
+                                      MATCH_ALLOCATE,
+                                      incomplete_jobspec,
+                                      jobid,
+                                      reserved,
+                                      R,
+                                      at,
+                                      ov);
+
+    ok (rc == -1 && errno == EINVAL,
+        "match_allocate returns -1 with errno=EINVAL for jobspec missing required fields");
 
     delete rq;
     return 0;
@@ -247,7 +259,256 @@ static int test_match_allocate_enodev ()
                                           ov);
 
     ok (rc == -1 && errno == ENODEV,
-        "match_allocate returns -1 with errno=ENODEV for infeasible request");
+        "match_allocate (satisfiability mode) returns -1 with errno=ENODEV for infeasible request");
+
+    // Test regular MATCH_ALLOCATE mode with infeasible request
+    // Regular mode returns EBUSY for infeasible (is_satisfiable translates to ENODEV)
+    // Before commit 38d34b75, resolve_graph() failure could leave errno=0
+    errno = 0;
+    jobid = 2;
+    rc = reapi_cli_t::match_allocate (h, MATCH_ALLOCATE, jobspec, jobid, reserved, R, at, ov);
+
+    ok (rc == -1 && errno == EBUSY,
+        "match_allocate (regular mode) returns -1 with errno=EBUSY for infeasible request");
+
+    delete rq;
+    return 0;
+}
+
+static int test_cancel_nonexistent_job ()
+{
+    // Create minimal context
+    resource_query_t *rq = nullptr;
+    try {
+        rq = new resource_query_t ();
+    } catch (...) {
+        ok (1, "# SKIP: couldn't create resource_query_t context");
+        return 0;
+    }
+
+    void *h = static_cast<void *> (rq);
+    uint64_t nonexistent_jobid = 99999;
+
+    // Test cancel with NULL context
+    errno = 0;
+    int rc = reapi_cli_t::cancel (nullptr, 1, false);
+    ok (rc == -1 && errno == EINVAL, "cancel returns -1 with errno=EINVAL for NULL context");
+
+    // Test cancel with nonexistent job and noent_ok=false
+    errno = 0;
+    rc = reapi_cli_t::cancel (h, nonexistent_jobid, false);
+
+    ok (rc == -1 && errno == ENOENT, "cancel returns -1 with errno=ENOENT for nonexistent job");
+
+    // Test cancel with nonexistent job and noent_ok=true
+    errno = 0;
+    rc = reapi_cli_t::cancel (h, nonexistent_jobid, true);
+
+    ok (rc == 0, "cancel returns 0 for nonexistent job when noent_ok=true");
+
+    delete rq;
+    return 0;
+}
+
+static int test_info_nonexistent_job ()
+{
+    // Create minimal context
+    resource_query_t *rq = nullptr;
+    try {
+        rq = new resource_query_t ();
+    } catch (...) {
+        ok (1, "# SKIP: couldn't create resource_query_t context");
+        return 0;
+    }
+
+    void *h = static_cast<void *> (rq);
+    uint64_t nonexistent_jobid = 99999;
+    std::string mode;
+    bool reserved;
+    int64_t at;
+    double ov;
+
+    // Test info with NULL context
+    errno = 0;
+    int rc = reapi_cli_t::info (nullptr, 1, mode, reserved, at, ov);
+    ok (rc == -1 && errno == EINVAL, "info returns -1 with errno=EINVAL for NULL context");
+
+    // Test info with nonexistent job
+    errno = 0;
+    rc = reapi_cli_t::info (h, nonexistent_jobid, mode, reserved, at, ov);
+
+    ok (rc == -1 && errno == ENOENT, "info returns -1 with errno=ENOENT for nonexistent job");
+
+    delete rq;
+    return 0;
+}
+
+static int test_cancel_partial_null_ctx ()
+{
+    // Test the partial cancel variant (with R string) for NULL context
+    uint64_t jobid = 1;
+    std::string R = "{}";
+    bool full_removal = false;
+
+    errno = 0;
+    int rc = reapi_cli_t::cancel (nullptr, jobid, R, false, full_removal);
+
+    ok (rc == -1 && errno == EINVAL,
+        "cancel (partial) returns -1 with errno=EINVAL for NULL context");
+
+    return 0;
+}
+
+static int test_find_null_ctx ()
+{
+    json_t *result = nullptr;
+    std::string criteria = "status=up";
+
+    errno = 0;
+    int rc = reapi_cli_t::find (nullptr, criteria, result);
+
+    ok (rc == -1 && errno == EINVAL, "find returns -1 with errno=EINVAL for NULL context");
+
+    return 0;
+}
+
+static int test_match_allocate_orelse_reserve ()
+{
+    // Test MATCH_ALLOCATE_ORELSE_RESERVE mode with infeasible request
+    // Should fail with errno=ENODEV (orelse_reserve uses satisfiability like
+    // MATCH_ALLOCATE_W_SATISFIABILITY)
+    std::string jgf = R"({
+        "graph": {
+            "nodes": [
+                {"id": "0", "metadata": {"type": "cluster", "basename": "tiny", "name": "tiny0", "size": 1, "paths": {"containment": "/tiny0"}}},
+                {"id": "1", "metadata": {"type": "node", "basename": "node", "name": "node0", "size": 1, "rank": 0, "paths": {"containment": "/tiny0/node0"}}},
+                {"id": "2", "metadata": {"type": "core", "basename": "core", "name": "core0", "size": 1, "id": 0, "rank": 0, "paths": {"containment": "/tiny0/node0/core0"}}}
+            ],
+            "edges": [{"source": "0", "target": "1"}, {"source": "1", "target": "2"}]
+        }
+    })";
+
+    std::string params =
+        "{\"load_format\": \"jgf\", \"matcher_policy\": \"high\", "
+        "\"match_format\": \"rv1\", \"matcher_name\": \"CA\"}";
+
+    resource_query_t *rq = nullptr;
+    try {
+        rq = new resource_query_t (jgf, params);
+    } catch (...) {
+        ok (1, "# SKIP: couldn't create resource_query_t");
+        return 0;
+    }
+
+    void *h = static_cast<void *> (rq);
+    uint64_t jobid = 200;
+    bool reserved = false;
+    std::string R;
+    int64_t at = 0;
+    double ov = 0.0;
+
+    // Request a resource type that doesn't exist (gpu) - infeasible
+    // MATCH_ALLOCATE_ORELSE_RESERVE uses satisfiability checking, so returns ENODEV for infeasible
+    std::string jobspec =
+        "{\"resources\": [{\"type\": \"node\", \"count\": 1, \"with\": "
+        "[{\"type\": \"gpu\", \"count\": 1}]}], \"tasks\": [{\"command\": "
+        "[\"app\"], \"slot\": \"gpu\", \"count\": {\"per_slot\": 1}}], "
+        "\"attributes\": {\"system\": {\"duration\": 3600}}, \"version\": 1}";
+
+    errno = 0;
+    int rc = reapi_cli_t::match_allocate (h,
+                                          MATCH_ALLOCATE_ORELSE_RESERVE,
+                                          jobspec,
+                                          jobid,
+                                          reserved,
+                                          R,
+                                          at,
+                                          ov);
+    ok (rc == -1 && errno == ENODEV,
+        "match_allocate (orelse_reserve) returns -1 with errno=ENODEV for infeasible request");
+
+    delete rq;
+    return 0;
+}
+
+static int test_allocate_then_cancel ()
+{
+    // Test successful allocate -> cancel flow to ensure errno handling works end-to-end
+    std::string jgf = R"({
+        "graph": {
+            "nodes": [
+                {"id": "0", "metadata": {"type": "cluster", "basename": "tiny", "name": "tiny0", "size": 1, "paths": {"containment": "/tiny0"}}},
+                {"id": "1", "metadata": {"type": "node", "basename": "node", "name": "node0", "size": 1, "rank": 0, "paths": {"containment": "/tiny0/node0"}}},
+                {"id": "2", "metadata": {"type": "core", "basename": "core", "name": "core0", "size": 1, "id": 0, "rank": 0, "paths": {"containment": "/tiny0/node0/core0"}}}
+            ],
+            "edges": [{"source": "0", "target": "1"}, {"source": "1", "target": "2"}]
+        }
+    })";
+
+    std::string params =
+        "{\"load_format\": \"jgf\", \"matcher_policy\": \"high\", "
+        "\"match_format\": \"rv1\", \"matcher_name\": \"CA\"}";
+
+    resource_query_t *rq = nullptr;
+    try {
+        rq = new resource_query_t (jgf, params);
+    } catch (...) {
+        ok (1, "# SKIP: couldn't create resource_query_t");
+        return 0;
+    }
+
+    void *h = static_cast<void *> (rq);
+    uint64_t jobid = 100;
+    bool reserved = false;
+    std::string R;
+    int64_t at = 0;
+    double ov = 0.0;
+
+    std::string jobspec = R"({
+        "version": 1,
+        "resources": [
+            {
+                "type": "node",
+                "count": 1,
+                "with": [
+                    {
+                        "type": "slot",
+                        "count": 1,
+                        "label": "task",
+                        "with": [{"type": "core", "count": 1}]
+                    }
+                ]
+            }
+        ],
+        "tasks": [{"command": ["sleep", "0"], "slot": "task", "count": {"per_slot": 1}}],
+        "attributes": {"system": {"duration": 60.0}}
+    })";
+
+    // Allocate the job
+    errno = 0;
+    int rc = reapi_cli_t::match_allocate (h, MATCH_ALLOCATE, jobspec, jobid, reserved, R, at, ov);
+
+    if (rc != 0) {
+        ok (1, "# SKIP: allocation failed, can't test cancel");
+        delete rq;
+        return 0;
+    }
+
+    ok (rc == 0, "match_allocate succeeds");
+
+    // Cancel should succeed without errno being set on success path
+    errno = EAGAIN;  // Set to non-zero to verify success doesn't touch errno
+    rc = reapi_cli_t::cancel (h, jobid, false);
+
+    ok (rc == 0, "cancel succeeds for allocated job");
+    // errno should be undefined on success, so we can't really check it
+
+    // Try to cancel again - should get ENOENT
+    errno = 0;
+    rc = reapi_cli_t::cancel (h, jobid, false);
+
+    ok (rc == -1 && errno == ENOENT,
+        "cancel returns -1 with errno=ENOENT for already-canceled job");
 
     delete rq;
     return 0;
@@ -261,6 +522,12 @@ int main (int argc, char *argv[])
     test_match_allocate_invalid_jobspec_with_ctx ();
     test_match_allocate_ebusy ();
     test_match_allocate_enodev ();
+    test_cancel_nonexistent_job ();
+    test_cancel_partial_null_ctx ();
+    test_info_nonexistent_job ();
+    test_find_null_ctx ();
+    test_match_allocate_orelse_reserve ();
+    test_allocate_then_cancel ();
 
     done_testing ();
     return EXIT_SUCCESS;

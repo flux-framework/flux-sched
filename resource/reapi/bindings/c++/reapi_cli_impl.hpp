@@ -68,6 +68,11 @@ int reapi_cli_t::match_allocate (void *h,
     int traverser_errno;
     bool matched = false;
 
+    if (!rq) {
+        errno = EINVAL;
+        return -1;
+    }
+
     if (!match_op_valid (match_op)) {
         m_err_msg += __FUNCTION__;
         m_err_msg +=
@@ -182,6 +187,11 @@ int reapi_cli_t::cancel (void *h, const uint64_t jobid, bool noent_ok)
     resource_query_t *rq = static_cast<resource_query_t *> (h);
     int rc = -1;
 
+    if (!rq) {
+        errno = EINVAL;
+        return -1;
+    }
+
     if (rq->allocation_exists (jobid)) {
         if ((rc = rq->remove_job (jobid)) == 0)
             rq->erase_allocation (jobid);
@@ -191,7 +201,12 @@ int reapi_cli_t::cancel (void *h, const uint64_t jobid, bool noent_ok)
     } else {
         m_err_msg += __FUNCTION__;
         m_err_msg += ": ERROR: nonexistent job " + std::to_string (jobid) + "\n";
-        rc = noent_ok ? 0 : -1;
+        if (noent_ok) {
+            rc = 0;
+        } else {
+            errno = ENOENT;
+            rc = -1;
+        }
         goto out;
     }
 
@@ -214,6 +229,11 @@ int reapi_cli_t::cancel (void *h,
     resource_query_t *rq = static_cast<resource_query_t *> (h);
     int rc = -1;
 
+    if (!rq) {
+        errno = EINVAL;
+        return -1;
+    }
+
     if (rq->allocation_exists (jobid)) {
         if ((rc = rq->remove_job (jobid, R, full_removal)) == 0) {
             if (full_removal)
@@ -222,7 +242,12 @@ int reapi_cli_t::cancel (void *h,
     } else {
         m_err_msg += __FUNCTION__;
         m_err_msg += ": WARNING: can't find allocation for jobid: " + std::to_string (jobid) + "\n";
-        rc = noent_ok ? 0 : -1;
+        if (noent_ok) {
+            rc = 0;
+        } else {
+            errno = ENOENT;
+            rc = -1;
+        }
         goto out;
     }
 
@@ -240,6 +265,11 @@ int reapi_cli_t::find (void *h, std::string criteria, json_t *&o)
 {
     int rc = -1;
     resource_query_t *rq = static_cast<resource_query_t *> (h);
+
+    if (!rq) {
+        errno = EINVAL;
+        return -1;
+    }
 
     if ((rc = rq->traverser_find (criteria)) < 0) {
         if (rq->get_traverser_err_msg () != "") {
@@ -269,9 +299,15 @@ int reapi_cli_t::info (void *h,
     resource_query_t *rq = static_cast<resource_query_t *> (h);
     std::shared_ptr<job_info_t> info = nullptr;
 
+    if (!rq) {
+        errno = EINVAL;
+        return -1;
+    }
+
     if (!(rq->job_exists (jobid))) {
         m_err_msg += __FUNCTION__;
         m_err_msg += ": ERROR: nonexistent job " + std::to_string (jobid) + "\n";
+        errno = ENOENT;
         return -1;
     }
 
@@ -288,9 +324,15 @@ int reapi_cli_t::info (void *h, const uint64_t jobid, std::shared_ptr<job_info_t
 {
     resource_query_t *rq = static_cast<resource_query_t *> (h);
 
+    if (!rq) {
+        errno = EINVAL;
+        return -1;
+    }
+
     if (!(rq->job_exists (jobid))) {
         m_err_msg += __FUNCTION__;
         m_err_msg += ": ERROR: nonexistent job " + std::to_string (jobid) + "\n";
+        errno = ENOENT;
         return -1;
     }
 

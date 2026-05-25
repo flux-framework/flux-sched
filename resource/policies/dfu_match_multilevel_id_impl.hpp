@@ -179,14 +179,20 @@ int multilevel_id_t<FOLD>::dom_finish_vtx (vtx_t u,
     overall = (score == MATCH_MET) ? (score + m_multilevel_scores + g[u].id + 1) : score;
     dfu.set_overall_score (overall);
     decr ();
-    return (score == MATCH_MET) ? 0 : -1;
+    if (score != MATCH_MET) {
+        errno = EBUSY;
+        return -1;
+    }
+    return 0;
 }
 
 template<typename FOLD>
 int multilevel_id_t<FOLD>::set_stop_on_k_matches (unsigned k)
 {
-    if (k > 1)
+    if (k > 1) {
+        errno = EINVAL;
         return -1;
+    }
     m_stop_on_k_matches = k;
     return 0;
 }

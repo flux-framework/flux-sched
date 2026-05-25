@@ -58,6 +58,10 @@ static scheduled_point_t *get_or_new_point (planner_t *ctx, int64_t at)
     try {
         if (!(point = ctx->plan->sp_tree_search (at))) {
             scheduled_point_t *state = ctx->plan->sp_tree_get_state (at);
+            if (!state) {
+                errno = EINVAL;
+                return nullptr;
+            }
             point = new scheduled_point_t ();
             point->at = at;
             point->in_mt_resource_tree = 0;
@@ -185,7 +189,7 @@ static bool avail_during (planner_t *ctx, int64_t at, uint64_t duration, const i
     bool ok = true;
     if (static_cast<int64_t> (at + duration) > ctx->plan->get_plan_end ()) {
         errno = ERANGE;
-        return -1;
+        return false;
     }
 
     scheduled_point_t *point = ctx->plan->sp_tree_get_state (at);
@@ -194,6 +198,7 @@ static bool avail_during (planner_t *ctx, int64_t at, uint64_t duration, const i
             ok = true;
             break;
         } else if (request > point->remaining) {
+            errno = EBUSY;
             ok = false;
             break;
         }
@@ -210,6 +215,10 @@ static scheduled_point_t *avail_resources_during (planner_t *ctx, int64_t at, ui
     }
 
     scheduled_point_t *point = ctx->plan->sp_tree_get_state (at);
+    if (!point) {
+        errno = EINVAL;
+        return nullptr;
+    }
     scheduled_point_t *min = point;
     while (point) {
         if (point->at >= (at + (int64_t)duration))
@@ -483,17 +492,27 @@ extern "C" int64_t planner_avail_resources_during (planner_t *ctx, int64_t at, u
         return -1;
     }
     min_point = avail_resources_during (ctx, at, duration);
+    if (!min_point)
+        return -1;
     return min_point->remaining;
 }
 
 extern "C" int64_t planner_avail_resources_at (planner_t *ctx, int64_t at)
 {
     const scheduled_point_t *state = nullptr;
-    if (!ctx || at > ctx->plan->get_plan_end () || at < ctx->plan->get_plan_start ()) {
+    if (!ctx) {
         errno = EINVAL;
         return -1;
     }
+    if (at > ctx->plan->get_plan_end () || at < ctx->plan->get_plan_start ()) {
+        errno = ERANGE;
+        return -1;
+    }
     state = ctx->plan->sp_tree_get_state (at);
+    if (!state) {
+        errno = ENOENT;
+        return -1;
+    }
     return state->remaining;
 }
 
