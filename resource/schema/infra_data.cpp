@@ -157,21 +157,9 @@ void pool_infra_t::scrub ()
 
 relation_infra_t::relation_infra_t () = default;
 
-relation_infra_t::relation_infra_t (const relation_infra_t &o) : infra_base_t (o)
-{
-    m_needs = o.m_needs;
-    m_sequence_number = o.m_sequence_number;
-    m_exclusive = o.m_exclusive;
-}
+relation_infra_t::relation_infra_t (const relation_infra_t &o) = default;
 
-relation_infra_t &relation_infra_t::operator= (const relation_infra_t &o)
-{
-    infra_base_t::operator= (o);
-    m_needs = o.m_needs;
-    m_sequence_number = o.m_sequence_number;
-    m_exclusive = o.m_exclusive;
-    return *this;
-}
+relation_infra_t &relation_infra_t::operator= (const relation_infra_t &o) = default;
 
 relation_infra_t::~relation_infra_t ()
 {

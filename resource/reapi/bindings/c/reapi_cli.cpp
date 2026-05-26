@@ -85,6 +85,41 @@ out:
     return rc;
 }
 
+extern "C" reapi_cli_ctx_t *reapi_cli_clone (reapi_cli_ctx_t *ctx)
+{
+    if (!ctx || !ctx->rqt) {
+        errno = EINVAL;
+        return nullptr;
+    }
+
+    try {
+        auto clone = std::make_unique<reapi_cli_ctx_t> ();
+        clone->rqt = new resource_query_t (*ctx->rqt);
+        clone->err_msg = "";
+        return clone.release ();
+    } catch (std::bad_alloc &e) {
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: can't allocate memory: " + std::string (e.what ()) + "\n";
+        errno = ENOMEM;
+        return nullptr;
+    } catch (std::system_error &e) {
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: System error: " + std::string (e.what ()) + "\n";
+        errno = e.code ().value ();
+        return nullptr;
+    } catch (std::runtime_error &e) {
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: Runtime error: " + std::string (e.what ()) + "\n";
+        errno = EPROTO;
+        return nullptr;
+    } catch (...) {
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: unknown exception during clone\n";
+        errno = EINVAL;
+        return nullptr;
+    }
+}
+
 extern "C" int reapi_cli_match (reapi_cli_ctx_t *ctx,
                                 match_op_t match_op,
                                 const char *jobspec,
