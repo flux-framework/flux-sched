@@ -76,6 +76,9 @@ set(ALL_TESTS
   t3040-jgf-shorthand-match-format.t
   t3041-jgf-shorthand-load-format.t
   t3042-storage-node.t
+  t3043-rv1-nslots.t
+  t3044-rv1-nosched-nslots.t
+  t3045-rv1-shorthand-nslots.t
   t3300-system-dontblock.t
   t3301-system-latestart.t
   t4000-match-params.t
