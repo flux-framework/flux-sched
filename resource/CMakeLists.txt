@@ -9,7 +9,7 @@ set_target_properties(fluxion-data PROPERTIES
 install(TARGETS fluxion-data LIBRARY NAMELINK_SKIP)
 add_subdirectory(libjobspec)
 add_subdirectory(planner)
-set(RESOURCE_HEADERS 
+set(RESOURCE_HEADERS
     utilities/command.hpp
     policies/dfu_match_high_id_first.hpp
     policies/dfu_match_low_id_first.hpp
