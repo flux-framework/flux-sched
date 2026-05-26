@@ -623,8 +623,6 @@ void get_rgraph (std::string &rgraph, json_t *options)
 
 static void fini_resource_query (std::shared_ptr<detail::resource_query_t> &ctx)
 {
-    if (ctx->params.r_fname != "")
-        ctx->params.r_out.close ();
     if (ctx->params.o_fname != "")
         write_to_graph (ctx);
 }
