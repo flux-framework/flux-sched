@@ -26,6 +26,7 @@ target_link_libraries( reapi_module PRIVATE
     )
 
 if(BUILD_TESTING)
+    add_subdirectory( c/test )
     add_subdirectory( c++/test )
 endif()
 
