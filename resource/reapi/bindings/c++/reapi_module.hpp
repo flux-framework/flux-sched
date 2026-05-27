@@ -16,6 +16,7 @@ extern "C" {
 #include "config.h"
 #endif
 #include <flux/core.h>
+#include <jansson.h>
 }
 
 #include <cstdint>
@@ -47,11 +48,11 @@ class reapi_module_t : public reapi_t {
                                double &ov);
     static int match_allocate_multi (void *h,
                                      bool orelse_reserve,
-                                     const char *jobs,
+                                     json_t *jobs,
                                      queue_adapter_base_t *adapter);
     static int match_allocate_multi (void *h,
                                      match_op_t match_op,
-                                     const char *jobs,
+                                     json_t *jobs,
                                      queue_adapter_base_t *adapter);
     static int update_allocate (void *h,
                                 const uint64_t jobid,

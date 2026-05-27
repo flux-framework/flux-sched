@@ -418,45 +418,49 @@ static void match_multi_request_cb (flux_t *h,
 {
     size_t index;
     json_t *value;
-    json_error_t err;
     int saved_errno;
     json_t *jobs = nullptr;
     uint64_t jobid = 0;
     std::string errmsg;
     const char *cmd = nullptr;
-    const char *jobs_str = nullptr;
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
 
     if (!flux_msg_is_streaming (msg)) {
         errno = EPROTO;
         goto error;
     }
-    if (flux_request_unpack (msg, NULL, "{s:s s:s}", "cmd", &cmd, "jobs", &jobs_str) < 0)
+    if (flux_request_unpack (msg, NULL, "{s:s s:o}", "cmd", &cmd, "jobs", &jobs) < 0)
         goto error;
-    if (!(jobs = json_loads (jobs_str, 0, &err))) {
-        errno = ENOMEM;
+    if (!json_is_array (jobs)) {
+        errno = EPROTO;
         goto error;
     }
 
     json_array_foreach (jobs, index, value) {
-        const char *js_str;
+        json_t *jobspec_obj = nullptr;
+        char *jobspec_str = nullptr;
         int64_t at = 0;
         int64_t now = 0;
         double overhead = 0.0f;
         std::string status = "";
         std::stringstream R;
 
-        if (json_unpack (value, "{s:I s:s}", "jobid", &jobid, "jobspec", &js_str) < 0)
+        if (json_unpack (value, "{s:I s:o}", "jobid", &jobid, "jobspec", &jobspec_obj) < 0)
             goto error;
+        if (!(jobspec_str = json_dumps (jobspec_obj, JSON_COMPACT))) {
+            errno = ENOMEM;
+            goto error;
+        }
         if (is_existent_jobid (ctx, jobid)) {
             errno = EINVAL;
             flux_log_error (h,
                             "%s: existent job (%jd).",
                             __FUNCTION__,
                             static_cast<intmax_t> (jobid));
+            free (jobspec_str);
             goto error;
         }
-        if (run_match (ctx, jobid, cmd, js_str, &now, &at, &overhead, R, NULL) < 0) {
+        if (run_match (ctx, jobid, cmd, jobspec_str, &now, &at, &overhead, R, NULL) < 0) {
             if (errno != EBUSY && errno != ENODEV)
                 flux_log_error (ctx->h,
                                 "%s: match failed due to match error (id=%jd)",
@@ -467,9 +471,11 @@ static void match_multi_request_cb (flux_t *h,
             if (errno == EBUSY) {
                 ctx->jobs.erase (jobid);
             }
+            free (jobspec_str);
             goto error;
         }
 
+        free (jobspec_str);
         status = get_status_string (now, at);
         if (flux_respond_pack (h,
                                msg,
@@ -492,11 +498,9 @@ static void match_multi_request_cb (flux_t *h,
     errno = ENODATA;
     jobid = 0;
 error:
-    if (jobs) {
-        saved_errno = errno;
-        json_decref (jobs);
-        errno = saved_errno;
-    }
+    saved_errno = errno;
+    // jobs is borrowed from msg, no need to decref
+    errno = saved_errno;
     if (jobid != 0)
         errmsg += "jobid=" + std::to_string (jobid);
     if (flux_respond_error (h, msg, errno, !errmsg.empty () ? errmsg.c_str () : nullptr) < 0)
