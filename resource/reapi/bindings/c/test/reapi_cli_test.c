@@ -146,12 +146,195 @@ static int test_match_with_jobid ()
     return 0;
 }
 
+static int test_status_by_rank ()
+{
+    reapi_cli_ctx_t *ctx = reapi_cli_new ();
+    if (!ctx)
+        BAIL_OUT ("reapi_cli_new failed");
+
+    int rc = reapi_cli_initialize (ctx, tiny_jgf, tiny_params);
+    if (rc < 0)
+        BAIL_OUT ("reapi_cli_initialize failed: %s", reapi_cli_get_err_msg (ctx));
+
+    reapi_cli_clear_err_msg (ctx);
+
+    // Test setting rank 0 to down
+    errno = 0;
+    rc = reapi_cli_set_rank_status (ctx, "0", RESOURCE_DOWN);
+    ok (rc == 0, "reapi_cli_set_rank_status succeeded for rank 0 down");
+
+    // Verify it's down
+    resource_status_t status;
+    const char *err_msg;
+    rc = reapi_cli_get_rank_status (ctx, "0", &status);
+    ok (rc == 0 && status == RESOURCE_DOWN, "reapi_cli_get_rank_status returns DOWN for rank 0");
+
+    // Test setting rank 0 back to up
+    errno = 0;
+    rc = reapi_cli_set_rank_status (ctx, "0", RESOURCE_UP);
+    ok (rc == 0, "reapi_cli_set_rank_status succeeded for rank 0 up");
+
+    // Verify it's up
+    rc = reapi_cli_get_rank_status (ctx, "0", &status);
+    ok (rc == 0 && status == RESOURCE_UP, "reapi_cli_get_rank_status returns UP for rank 0");
+
+    // Test with nonexistent rank (should succeed since unknown ranks are silently ignored)
+    errno = 0;
+    rc = reapi_cli_set_rank_status (ctx, "999", RESOURCE_DOWN);
+    ok (rc == 0, "reapi_cli_set_rank_status succeeds for nonexistent rank (silently ignored)");
+
+    // Test get with nonexistent rank
+    errno = 0;
+    rc = reapi_cli_get_rank_status (ctx, "999", &status);
+    ok (rc == -1 && errno == EINVAL,
+        "reapi_cli_get_rank_status returns -1 with errno=EINVAL for nonexistent rank");
+
+    err_msg = reapi_cli_get_err_msg (ctx);
+    ok (err_msg != NULL && strlen (err_msg) > 0,
+        "error message is set after get_rank_status failure");
+    reapi_cli_clear_err_msg (ctx);
+
+    reapi_cli_destroy (ctx);
+    return 0;
+}
+
+static int test_status_by_path ()
+{
+    reapi_cli_ctx_t *ctx = reapi_cli_new ();
+    if (!ctx)
+        BAIL_OUT ("reapi_cli_new failed");
+
+    int rc = reapi_cli_initialize (ctx, tiny_jgf, tiny_params);
+    if (rc < 0)
+        BAIL_OUT ("reapi_cli_initialize failed: %s", reapi_cli_get_err_msg (ctx));
+
+    reapi_cli_clear_err_msg (ctx);
+
+    // Test setting node to down
+    errno = 0;
+    rc = reapi_cli_set_status (ctx, "/tiny0/node0", RESOURCE_DOWN);
+    ok (rc == 0, "reapi_cli_set_status succeeded for /tiny0/node0 down");
+
+    // Verify it's down
+    resource_status_t status;
+    rc = reapi_cli_get_status (ctx, "/tiny0/node0", &status);
+    ok (rc == 0 && status == RESOURCE_DOWN, "reapi_cli_get_status returns DOWN for /tiny0/node0");
+
+    // Test setting back to up
+    errno = 0;
+    rc = reapi_cli_set_status (ctx, "/tiny0/node0", RESOURCE_UP);
+    ok (rc == 0, "reapi_cli_set_status succeeded for /tiny0/node0 up");
+
+    // Verify it's up
+    rc = reapi_cli_get_status (ctx, "/tiny0/node0", &status);
+    ok (rc == 0 && status == RESOURCE_UP, "reapi_cli_get_status returns UP for /tiny0/node0");
+
+    // Test with invalid path
+    errno = 0;
+    rc = reapi_cli_set_status (ctx, "/nonexistent", RESOURCE_DOWN);
+    ok (rc == -1 && errno == EINVAL,
+        "reapi_cli_set_status returns -1 with errno=EINVAL for invalid path");
+
+    const char *err_msg = reapi_cli_get_err_msg (ctx);
+    ok (err_msg != NULL && strlen (err_msg) > 0, "error message is set after set_status failure");
+    reapi_cli_clear_err_msg (ctx);
+
+    // Test get with invalid path
+    errno = 0;
+    rc = reapi_cli_get_status (ctx, "/nonexistent", &status);
+    ok (rc == -1 && errno == EINVAL,
+        "reapi_cli_get_status returns -1 with errno=EINVAL for invalid path");
+
+    err_msg = reapi_cli_get_err_msg (ctx);
+    ok (err_msg != NULL && strlen (err_msg) > 0, "error message is set after get_status failure");
+    reapi_cli_clear_err_msg (ctx);
+
+    reapi_cli_destroy (ctx);
+    return 0;
+}
+
+static int test_null_parameters ()
+{
+    reapi_cli_ctx_t *ctx = reapi_cli_new ();
+    resource_status_t status;
+    int rc;
+
+    if (!ctx)
+        BAIL_OUT ("reapi_cli_new failed");
+
+    rc = reapi_cli_initialize (ctx, tiny_jgf, tiny_params);
+    if (rc < 0)
+        BAIL_OUT ("reapi_cli_initialize failed: %s", reapi_cli_get_err_msg (ctx));
+
+    reapi_cli_clear_err_msg (ctx);
+
+    // Test get_status with NULL status pointer
+    errno = 0;
+    rc = reapi_cli_get_status (ctx, "/tiny0/node0", NULL);
+    ok (rc == -1 && errno == EINVAL,
+        "reapi_cli_get_status returns -1 with errno=EINVAL for NULL status pointer");
+
+    // Test get_rank_status with NULL status pointer
+    errno = 0;
+    rc = reapi_cli_get_rank_status (ctx, "0", NULL);
+    ok (rc == -1 && errno == EINVAL,
+        "reapi_cli_get_rank_status returns -1 with errno=EINVAL for NULL status pointer");
+
+    // Test set_rank_status with empty string
+    errno = 0;
+    rc = reapi_cli_set_rank_status (ctx, "", RESOURCE_DOWN);
+    ok (rc == -1 && errno == EINVAL,
+        "reapi_cli_set_rank_status returns -1 with errno=EINVAL for empty string");
+
+    // Test get_rank_status with invalid idset
+    errno = 0;
+    rc = reapi_cli_get_rank_status (ctx, "not-a-rank", &status);
+    ok (rc == -1 && errno == EINVAL,
+        "reapi_cli_get_rank_status returns -1 with errno=EINVAL for invalid idset");
+
+    // Test get_rank_status with multiple ranks (requires exactly one rank)
+    errno = 0;
+    rc = reapi_cli_get_rank_status (ctx, "0-1", &status);
+    ok (rc == -1 && errno == EINVAL,
+        "reapi_cli_get_rank_status returns -1 with errno=EINVAL for multiple ranks");
+
+    // Test set_rank_status with NULL context
+    errno = 0;
+    rc = reapi_cli_set_rank_status (NULL, "0", RESOURCE_DOWN);
+    ok (rc == -1 && errno == EINVAL,
+        "reapi_cli_set_rank_status returns -1 with errno=EINVAL for NULL context");
+
+    // Test get_rank_status with NULL context
+    errno = 0;
+    rc = reapi_cli_get_rank_status (NULL, "0", &status);
+    ok (rc == -1 && errno == EINVAL,
+        "reapi_cli_get_rank_status returns -1 with errno=EINVAL for NULL context");
+
+    // Test set_status with NULL path
+    errno = 0;
+    rc = reapi_cli_set_status (ctx, NULL, RESOURCE_DOWN);
+    ok (rc == -1 && errno == EINVAL,
+        "reapi_cli_set_status returns -1 with errno=EINVAL for NULL path");
+
+    // Test get_status with NULL path
+    errno = 0;
+    rc = reapi_cli_get_status (ctx, NULL, &status);
+    ok (rc == -1 && errno == EINVAL,
+        "reapi_cli_get_status returns -1 with errno=EINVAL for NULL path");
+
+    reapi_cli_destroy (ctx);
+    return 0;
+}
+
 int main (int argc, char *argv[])
 {
     plan (NO_PLAN);
 
     test_clone ();
     test_match_with_jobid ();
+    test_status_by_rank ();
+    test_status_by_path ();
+    test_null_parameters ();
 
     done_testing ();
     return EXIT_SUCCESS;
