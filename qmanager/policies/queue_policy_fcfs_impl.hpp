@@ -31,9 +31,15 @@ int queue_policy_fcfs_t<reapi_type>::pack_jobs (json_t *jobs)
     auto iter = m_pending.begin ();
     while (iter != m_pending.end () && qd < m_queue_depth) {
         json_t *jobdesc;
+        json_t *jobspec_obj;
+        json_error_t err;
         job = m_jobs[iter->second];
-        if (!(jobdesc =
-                  json_pack ("{s:I s:s}", "jobid", job->id, "jobspec", job->jobspec.c_str ()))) {
+        if (!(jobspec_obj = json_loads (job->jobspec.c_str (), 0, &err))) {
+            json_decref (jobs);
+            errno = ENOMEM;
+            return -1;
+        }
+        if (!(jobdesc = json_pack ("{s:I s:o}", "jobid", job->id, "jobspec", jobspec_obj))) {
             json_decref (jobs);
             errno = ENOMEM;
             return -1;
@@ -56,7 +62,6 @@ template<class reapi_type>
 int queue_policy_fcfs_t<reapi_type>::allocate_jobs (void *h, bool use_alloced_queue)
 {
     json_t *jobs = nullptr;
-    char *jobs_str = nullptr;
     job_map_iter iter;
 
     // move jobs in m_pending_provisional queue into
@@ -76,19 +81,12 @@ int queue_policy_fcfs_t<reapi_type>::allocate_jobs (void *h, bool use_alloced_qu
         return -1;
 
     set_sched_loop_active (true);
-    if (!(jobs_str = json_dumps (jobs, JSON_INDENT (0)))) {
-        errno = ENOMEM;
+    if (reapi_type::match_allocate_multi (h, false, jobs, this) < 0) {
         json_decref (jobs);
-        return -1;
-    }
-    json_decref (jobs);
-    if (reapi_type::match_allocate_multi (h, false, jobs_str, this) < 0) {
-        free (jobs_str);
         set_sched_loop_active (false);
         return -1;
-        ;
     };
-    free (jobs_str);
+    json_decref (jobs);
     return 0;
 }
 
