@@ -351,9 +351,9 @@ static void match_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t
     int64_t now = 0;
     int64_t jobid = -1;
     double overhead = 0.0f;
-    std::string status = "";
     const char *cmd = NULL;
     const char *js_str = NULL;
+    const char *status = nullptr;
     std::stringstream R;
 
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
@@ -443,7 +443,6 @@ static void match_multi_request_cb (flux_t *h,
         int64_t at = 0;
         int64_t now = 0;
         double overhead = 0.0f;
-        std::string status = "";
         std::stringstream R;
 
         if (json_unpack (value, "{s:I s:s}", "jobid", &jobid, "jobspec", &js_str) < 0)
@@ -470,14 +469,13 @@ static void match_multi_request_cb (flux_t *h,
             goto error;
         }
 
-        status = get_status_string (now, at);
         if (flux_respond_pack (h,
                                msg,
                                "{s:I s:s s:f s:s s:I}",
                                "jobid",
                                jobid,
                                "status",
-                               status.c_str (),
+                               get_status_string (now, at),
                                "overhead",
                                overhead,
                                "R",
