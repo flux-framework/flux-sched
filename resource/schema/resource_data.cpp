@@ -44,22 +44,16 @@ resource_relation_t::~resource_relation_t () = default;
 const resource_pool_t::string_to_status resource_pool_t::str_to_status =
     {{"up", resource_pool_t::status_t::UP}, {"down", resource_pool_t::status_t::DOWN}};
 
-const std::string resource_pool_t::status_to_str (status_t s)
+const char *resource_pool_t::status_to_str (status_t s)
 {
-    std::string str;
     switch (s) {
         case status_t::UP:
-            str = "UP";
-            break;
+            return "UP";
         case status_t::DOWN:
-            str = "DOWN";
-            break;
+            return "DOWN";
         default:
-            str = "";
-            errno = EINVAL;
-            break;
+            return "UNKNOWN";
     }
-    return str;
 }
 
 }  // namespace resource_model

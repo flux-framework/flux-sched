@@ -275,7 +275,7 @@ static void update_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
     double overhead = 0.0f;
     int64_t jobid = 0;
     uint64_t duration = 0;
-    std::string status = "";
+    const char *status = nullptr;
     std::stringstream o;
     std::chrono::time_point<std::chrono::system_clock> start;
     std::chrono::duration<double> elapsed;
@@ -319,7 +319,7 @@ static void update_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
         goto error;
     }
 
-    if (status == "")
+    if (!status)
         status = get_status_string (at, at);
 
     if (flux_respond_pack (h,
@@ -328,7 +328,7 @@ static void update_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
                            "jobid",
                            jobid,
                            "status",
-                           status.c_str (),
+                           status,
                            "overhead",
                            overhead,
                            "R",
@@ -394,7 +394,7 @@ static void match_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t
                            "jobid",
                            jobid,
                            "status",
-                           status.c_str (),
+                           status,
                            "overhead",
                            overhead,
                            "R",
