@@ -915,8 +915,7 @@ int cmd_list (std::shared_ptr<detail::resource_query_t> &ctx,
 {
     for (auto &kv : ctx->jobs) {
         std::shared_ptr<job_info_t> info = kv.second;
-        std::string mode;
-        get_jobstate_str (info->state, mode);
+        const char *mode = get_jobstate_str (info->state);
         std::cout << "INFO: " << info->jobid << ", " << mode << ", " << info->scheduled_at << ", "
                   << info->jobspec_fn << ", " << info->overhead << std::endl;
     }
@@ -928,7 +927,6 @@ int cmd_info (std::shared_ptr<detail::resource_query_t> &ctx,
               std::ostream &out)
 {
     std::shared_ptr<job_info_t> info = nullptr;
-    std::string mode;
 
     if (args.size () != 2) {
         std::cerr << "ERROR: malformed command" << std::endl;
@@ -942,7 +940,7 @@ int cmd_info (std::shared_ptr<detail::resource_query_t> &ctx,
         return 0;
     }
 
-    get_jobstate_str (info->state, mode);
+    const char *mode = get_jobstate_str (info->state);
     std::cout << "INFO: " << info->jobid << ", " << mode << ", " << info->scheduled_at << ", "
               << info->jobspec_fn << ", " << info->overhead << std::endl;
     return 0;

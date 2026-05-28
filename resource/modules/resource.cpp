@@ -275,7 +275,7 @@ static void update_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
     double overhead = 0.0f;
     int64_t jobid = 0;
     uint64_t duration = 0;
-    std::string status = "";
+    const char *status = nullptr;
     std::stringstream o;
     std::chrono::time_point<std::chrono::system_clock> start;
     std::chrono::duration<double> elapsed;
@@ -303,7 +303,7 @@ static void update_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
         elapsed = std::chrono::system_clock::now () - start;
         // If a jobid with matching R exists, no need to update
         overhead = elapsed.count ();
-        get_jobstate_str (ctx->jobs[jobid]->state, status);
+        status = get_jobstate_str (ctx->jobs[jobid]->state);
         o << ctx->jobs[jobid]->R;
         at = ctx->jobs[jobid]->scheduled_at;
         flux_log (ctx->h,
@@ -319,7 +319,7 @@ static void update_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
         goto error;
     }
 
-    if (status == "")
+    if (!status)
         status = get_status_string (at, at);
 
     if (flux_respond_pack (h,
@@ -328,7 +328,7 @@ static void update_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
                            "jobid",
                            jobid,
                            "status",
-                           status.c_str (),
+                           status,
                            "overhead",
                            overhead,
                            "R",
@@ -351,9 +351,9 @@ static void match_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t
     int64_t now = 0;
     int64_t jobid = -1;
     double overhead = 0.0f;
-    std::string status = "";
     const char *cmd = NULL;
     const char *js_str = NULL;
+    const char *status = nullptr;
     std::stringstream R;
 
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
@@ -394,7 +394,7 @@ static void match_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t
                            "jobid",
                            jobid,
                            "status",
-                           status.c_str (),
+                           status,
                            "overhead",
                            overhead,
                            "R",
@@ -443,7 +443,6 @@ static void match_multi_request_cb (flux_t *h,
         int64_t at = 0;
         int64_t now = 0;
         double overhead = 0.0f;
-        std::string status = "";
         std::stringstream R;
 
         if (json_unpack (value, "{s:I s:s}", "jobid", &jobid, "jobspec", &js_str) < 0)
@@ -470,14 +469,13 @@ static void match_multi_request_cb (flux_t *h,
             goto error;
         }
 
-        status = get_status_string (now, at);
         if (flux_respond_pack (h,
                                msg,
                                "{s:I s:s s:f s:s s:I}",
                                "jobid",
                                jobid,
                                "status",
-                               status.c_str (),
+                               get_status_string (now, at),
                                "overhead",
                                overhead,
                                "R",
@@ -591,7 +589,6 @@ static void info_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t 
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
     int64_t jobid = -1;
     std::shared_ptr<job_info_t> info = NULL;
-    std::string status = "";
 
     if (flux_request_unpack (msg, NULL, "{s:I}", "jobid", &jobid) < 0)
         goto error;
@@ -602,14 +599,13 @@ static void info_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t 
     }
 
     info = ctx->jobs[jobid];
-    get_jobstate_str (info->state, status);
     if (flux_respond_pack (h,
                            msg,
                            "{s:I s:s s:I s:f}",
                            "jobid",
                            jobid,
                            "status",
-                           status.c_str (),
+                           get_jobstate_str (info->state),
                            "at",
                            info->scheduled_at,
                            "overhead",

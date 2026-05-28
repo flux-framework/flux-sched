@@ -40,7 +40,7 @@ struct resource_pool_t : public resource_t {
 
     typedef std::unordered_map<std::string, status_t> string_to_status;
     static const string_to_status str_to_status;
-    static const std::string status_to_str (status_t s);
+    static const char *status_to_str (status_t s);
 
     // Resource pool data
     std::map<subsystem_t, std::string> paths;

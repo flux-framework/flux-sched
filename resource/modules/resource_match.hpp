@@ -122,7 +122,7 @@ struct resource_ctx_t : public resource_interface_t {
 // Request Handler Routines
 ////////////////////////////////////////////////////////////////////////////////
 
-inline std::string get_status_string (int64_t now, int64_t at)
+inline const char *get_status_string (int64_t now, int64_t at)
 {
     return (at == now) ? "ALLOCATED" : "RESERVED";
 }
