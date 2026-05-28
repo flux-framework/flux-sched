@@ -29,8 +29,6 @@ namespace Flux {
 namespace resource_model {
 namespace detail {
 
-const int NOT_YET_IMPLEMENTED = -1;
-
 static double get_elapsed_time (timeval &st, timeval &et)
 {
     double ts1 = (double)st.tv_sec + (double)st.tv_usec / 1000000.0f;
@@ -171,7 +169,8 @@ int reapi_cli_t::update_allocate (void *h,
                                   double &ov,
                                   std::string &R_out)
 {
-    return NOT_YET_IMPLEMENTED;
+    errno = ENOSYS;  // not implemented
+    return -1;
 }
 
 int reapi_cli_t::match_allocate_multi (void *h,
@@ -179,7 +178,8 @@ int reapi_cli_t::match_allocate_multi (void *h,
                                        const char *jobs,
                                        queue_adapter_base_t *adapter)
 {
-    return NOT_YET_IMPLEMENTED;
+    errno = ENOSYS;  // not implemented
+    return -1;
 }
 
 int reapi_cli_t::cancel (void *h, const uint64_t jobid, bool noent_ok)
@@ -363,7 +363,8 @@ int reapi_cli_t::stat (void *h,
                        double &max,
                        double &avg)
 {
-    return NOT_YET_IMPLEMENTED;
+    errno = ENOSYS;  // not implemented
+    return -1;
 }
 
 const std::string &reapi_cli_t::get_err_message ()
