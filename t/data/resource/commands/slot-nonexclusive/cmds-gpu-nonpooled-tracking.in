@@ -1,0 +1,9 @@
+# Test that non-pooled non-exclusive resources (GPUs without units) can be tracked
+# tiny.json has 2 nodes, each with 2 sockets, each socket has 1 GPU and 18 cores
+# Request GPU (shared) + multiple cores (exclusive) to force sharing of GPU
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/gpu-multicores.yaml
+# Should succeed - same socket, same GPU (shared), different cores
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/gpu-multicores.yaml
+# Should fail after exhausting cores on the socket with shared GPU
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/gpu-multicores.yaml
+quit

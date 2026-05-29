@@ -1,0 +1,8 @@
+# Test allocate_orelse_reserve with mixed exclusive and non-exclusive resources
+# First allocate 2 chassis with exclusive cores and non-exclusive SSDs
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/ssd-shared.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/ssd-shared.yaml
+# Try to allocate a third - should fail immediately (only 2 chassis)
+# With allocate_orelse_reserve, should reserve at t=3600
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/ssd-shared.yaml
+quit

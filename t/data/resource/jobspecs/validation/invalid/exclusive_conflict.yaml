@@ -1,0 +1,22 @@
+version: 9999
+# Invalid: child explicitly sets exclusive: false when parent explicitly sets exclusive: true
+resources:
+  - type: slot
+    count: 1
+    label: testslot
+    with:
+      - type: node
+        count: 1
+        exclusive: true
+        with:
+          - type: core
+            count: 2
+            exclusive: false
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: testslot
+    count:
+      per_slot: 1

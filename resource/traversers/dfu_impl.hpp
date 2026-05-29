@@ -130,17 +130,35 @@ class dfu_impl_t {
     void reset_color ();
     int reset_exclusive_resource_types (const std::set<resource_type_t> &x_types);
 
-    /*! Exclusive request? Return true if a resource in resources vector
-     *  matches resource vertex u and its exclusivity field value is TRUE.
-     *  (Note that when the system default configuration is added, it can
-     *  return true even if the exclusive field value is UNSPECIFIED
-     *  if the system default is configured that way.
+    /*! Resolve a tristate exclusivity value with parent exclusivity.
+     *  Implements tristate logic:
+     *  - If explicit TRUE -> return true (exclusive)
+     *  - If explicit FALSE -> return false (not exclusive, overrides parent)
+     *  - If UNSPECIFIED -> return parent_excl (inherit from parent)
      *
-     *  \param resources Resource request vector.
-     *  \param u         visiting resource vertex.
-     *  \return          true or false.
+     *  \param tristate    Jobspec tristate exclusivity value.
+     *  \param parent_excl inherited exclusivity from parent.
+     *  \return            resolved exclusivity boolean.
      */
-    bool exclusivity (const std::vector<Jobspec::Resource> &resources, vtx_t u);
+    static bool resolve_tristate_excl (Jobspec::tristate_t tristate, bool parent_excl);
+
+    /*! Resolve exclusivity for a vertex in a single pass. Checks if a resource
+     *  in resources vector matches vertex u and returns:
+     *  - true if exclusivity field is TRUE
+     *  - false if exclusivity field is FALSE
+     *  - parent_excl if exclusivity is UNSPECIFIED or no match found
+     *
+     *  This allows explicit FALSE to override inherited slot exclusivity while
+     *  maintaining backward compatibility with UNSPECIFIED (inherit) behavior.
+     *
+     *  \param resources   Resource request vector.
+     *  \param u           visiting resource vertex.
+     *  \param parent_excl inherited exclusivity from parent.
+     *  \return            resolved exclusivity boolean.
+     */
+    bool resolve_exclusivity (const std::vector<Jobspec::Resource> &resources,
+                              vtx_t u,
+                              bool parent_excl);
 
     /*! Prime the resource graph with subtree plans. The subtree plans are
      *  instantiated on certain resource vertices and updated with the
@@ -544,11 +562,12 @@ class dfu_impl_t {
     int upd_agfilter (vtx_t u,
                       subsystem_t s,
                       jobmeta_t jobmeta,
-                      const std::map<resource_type_t, int64_t> &dfu);
+                      const std::map<resource_type_t, int64_t> &usage);
     int upd_idata (vtx_t u,
                    subsystem_t s,
                    jobmeta_t jobmeta,
-                   const std::map<resource_type_t, int64_t> &dfu);
+                   const std::map<resource_type_t, int64_t> &dfu,
+                   const std::map<resource_type_t, int64_t> &usage);
     int upd_by_outedges (subsystem_t subsystem, jobmeta_t jobmeta, vtx_t u, edg_t e);
     int upd_plan (vtx_t u,
                   subsystem_t s,
@@ -562,7 +581,9 @@ class dfu_impl_t {
                          unsigned int needs,
                          bool excl,
                          const std::map<resource_type_t, int64_t> &dfu,
-                         std::map<resource_type_t, int64_t> &to_parent);
+                         std::map<resource_type_t, int64_t> &to_parent,
+                         const std::map<resource_type_t, int64_t> &usage,
+                         std::map<resource_type_t, int64_t> &usage_to_parent);
     int upd_meta (vtx_t u,
                   subsystem_t s,
                   unsigned int needs,
@@ -570,7 +591,9 @@ class dfu_impl_t {
                   int n,
                   const jobmeta_t &jobmeta,
                   const std::map<resource_type_t, int64_t> &dfu,
-                  std::map<resource_type_t, int64_t> &to_parent);
+                  std::map<resource_type_t, int64_t> &to_parent,
+                  const std::map<resource_type_t, int64_t> &usage,
+                  std::map<resource_type_t, int64_t> &usage_to_parent);
     int upd_sched (vtx_t u,
                    std::shared_ptr<match_writers_t> &writers,
                    subsystem_t s,
@@ -581,6 +604,8 @@ class dfu_impl_t {
                    bool full,
                    const std::map<resource_type_t, int64_t> &dfu,
                    std::map<resource_type_t, int64_t> &to_parent,
+                   const std::map<resource_type_t, int64_t> &usage,
+                   std::map<resource_type_t, int64_t> &usage_to_parent,
                    bool excl_parent);
     int upd_upv (vtx_t u,
                  std::shared_ptr<match_writers_t> &writers,
@@ -597,6 +622,7 @@ class dfu_impl_t {
                  const jobmeta_t &jobmeta,
                  bool full,
                  std::map<resource_type_t, int64_t> &to_parent,
+                 std::map<resource_type_t, int64_t> &usage_to_parent,
                  bool emit_shadow,
                  bool excl_parent);
     bool rem_tag (vtx_t u, int64_t jobid);
