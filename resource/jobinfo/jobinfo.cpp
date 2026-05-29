@@ -47,27 +47,22 @@ job_info_t::job_info_t (uint64_t j,
 {
 }
 
-void get_jobstate_str (job_lifecycle_t state, std::string &status)
+const char *get_jobstate_str (job_lifecycle_t state)
 {
     switch (state) {
-        case job_lifecycle_t::ALLOCATED:
-            status = "ALLOCATED";
-            break;
-        case job_lifecycle_t::RESERVED:
-            status = "RESERVED";
-            break;
-        case job_lifecycle_t::CANCELED:
-            status = "CANCELED";
-            break;
-        case job_lifecycle_t::ERROR:
-            status = "ERROR";
-            break;
         case job_lifecycle_t::INIT:
+            return "INIT";
+        case job_lifecycle_t::ALLOCATED:
+            return "ALLOCATED";
+        case job_lifecycle_t::RESERVED:
+            return "RESERVED";
+        case job_lifecycle_t::CANCELED:
+            return "CANCELED";
+        case job_lifecycle_t::ERROR:
+            return "ERROR";
         default:
-            status = "INIT";
-            break;
+            return "UNKNOWN";
     }
-    return;
 }
 
 }  // namespace resource_model

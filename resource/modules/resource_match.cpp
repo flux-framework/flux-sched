@@ -1124,7 +1124,7 @@ static int mark_now (std::shared_ptr<resource_ctx_t> &ctx,
               LOG_DEBUG,
               "resource status changed (rankset=[%s] status=%s)",
               ids,
-              resource_pool_t::status_to_str (status).c_str ());
+              resource_pool_t::status_to_str (status));
 
     // Updated the ranks
     ctx->m_resources_down_updated = true;

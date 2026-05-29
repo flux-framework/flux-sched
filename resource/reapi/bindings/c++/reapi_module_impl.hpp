@@ -407,6 +407,30 @@ out:
     return rc;
 }
 
+int reapi_module_t::set_status (void *h, const std::string &resource_path, const char *status)
+{
+    errno = ENOSYS;  // unimplemented
+    return -1;
+}
+
+int reapi_module_t::set_status (void *h, int64_t rank, const char *status)
+{
+    errno = ENOSYS;  // unimplemented
+    return -1;
+}
+
+int reapi_module_t::get_status (void *h, const std::string &resource_path, const char *&status)
+{
+    errno = ENOSYS;  // unimplemented
+    return -1;
+}
+
+int reapi_module_t::get_status (void *h, int64_t rank, const char *&status)
+{
+    errno = ENOSYS;  // unimplemented
+    return -1;
+}
+
 }  // namespace detail
 }  // namespace resource_model
 }  // namespace Flux

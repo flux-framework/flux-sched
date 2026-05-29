@@ -121,6 +121,19 @@ static const char *long_jobspec = R"({
     "attributes": {"system": {"duration": 120.0}}
 })";
 
+static bool is_up (const char *status)
+{
+    if (status && !strcmp (status, "UP"))
+        return true;
+    return false;
+}
+static bool is_down (const char *status)
+{
+    if (status && !strcmp (status, "DOWN"))
+        return true;
+    return false;
+}
+
 static int test_clone_basic ()
 {
     // Setup: create original context
@@ -341,34 +354,37 @@ static int test_clone_copies_up_down_status ()
         BAIL_OUT ("resource_query_t constructor failed");
     }
 
-    // Mark the node (vertex 1) as DOWN
-    auto &g = rq->db->resource_graph;
-    vtx_iterator_t vi, vi_end;
-    vtx_t node_vtx = boost::graph_traits<resource_graph_t>::null_vertex ();
-    for (boost::tie (vi, vi_end) = boost::vertices (g); vi != vi_end; ++vi) {
-        if (g[*vi].type == node_rt) {
-            node_vtx = *vi;
-            g[*vi].status = resource_pool_t::status_t::DOWN;
-            break;
-        }
-    }
-    ok (node_vtx != boost::graph_traits<resource_graph_t>::null_vertex (),
-        "found node vertex to mark down");
+    void *h = static_cast<void *> (rq);
+
+    // Set rank 0 to DOWN using public API
+    int rc = reapi_cli_t::set_status (h, 0, "DOWN");
+    ok (rc == 0, "set rank 0 to DOWN succeeded");
+
+    // Verify it's down
+    const char *status;
+    rc = reapi_cli_t::get_status (h, 0, status);
+    ok (rc == 0 && is_down (status), "rank 0 is DOWN");
 
     // Clone the resource query
     resource_query_t *clone = new resource_query_t (*rq);
     ok (clone != nullptr, "clone succeeded");
 
-    // Verify the status was copied
-    auto &clone_g = clone->db->resource_graph;
-    ok (clone_g[node_vtx].status == resource_pool_t::status_t::DOWN,
-        "node status DOWN was copied to clone");
+    void *h_clone = static_cast<void *> (clone);
 
-    // Verify independence: mark original's node back UP
-    g[node_vtx].status = resource_pool_t::status_t::UP;
-    ok (g[node_vtx].status == resource_pool_t::status_t::UP, "original node marked UP");
-    ok (clone_g[node_vtx].status == resource_pool_t::status_t::DOWN,
-        "clone node remains DOWN (independent)");
+    // Verify the clone has rank 0 DOWN
+    rc = reapi_cli_t::get_status (h_clone, 0, status);
+    ok (rc == 0 && is_down (status), "clone preserves status: rank 0 is DOWN in clone");
+
+    // Verify independence: set rank 0 to UP in clone
+    rc = reapi_cli_t::set_status (h_clone, 0, "UP");
+    ok (rc == 0, "set rank 0 to UP in clone succeeded");
+
+    rc = reapi_cli_t::get_status (h_clone, 0, status);
+    ok (rc == 0 && is_up (status), "rank 0 is UP in clone");
+
+    // Verify original is still DOWN (independence)
+    rc = reapi_cli_t::get_status (h, 0, status);
+    ok (rc == 0 && is_down (status), "original rank 0 still DOWN (clone is independent)");
 
     delete clone;
     delete rq;

@@ -230,6 +230,50 @@ const char *reapi_cli_get_err_msg (reapi_cli_ctx_t *ctx);
  */
 void reapi_cli_clear_err_msg (reapi_cli_ctx_t *ctx);
 
+/*! Set resource status (up or down) for a resource at the specified path.
+ *
+ *  \param ctx           reapi_cli_ctx_t context object
+ *  \param resource_path Path to resource (e.g., "/cluster0/rack0/node3")
+ *  \param status        Status: "UP" or "DOWN"
+ *  \return              0 on success; -1 on error with errno set:
+ *                           ENOENT: resource path not found
+ *                           EINVAL: invalid parameters or unexpected internal error
+ */
+int reapi_cli_set_status (reapi_cli_ctx_t *ctx, const char *resource_path, const char *status);
+
+/*! Set resource status (up or down) for the subtree root (typically node) at a rank.
+ *
+ *  \param ctx           reapi_cli_ctx_t context object
+ *  \param rank          Rank number, or FLUX_NODEID_ANY to mark all ranks
+ *  \param status        Status: "UP" or "DOWN"
+ *  \return              0 on success; -1 on error with errno set:
+ *                           ENOENT: rank not found
+ *                           EINVAL: invalid parameters or unexpected internal error
+ */
+int reapi_cli_set_status_by_rank (reapi_cli_ctx_t *ctx, int64_t rank, const char *status);
+
+/*! Get resource status for a resource at the specified path.
+ *
+ *  \param ctx           reapi_cli_ctx_t context object
+ *  \param resource_path Path to resource (e.g., "/cluster0/rack0/node3")
+ *  \param status        Pointer to receive status ("UP" or "DOWN")
+ *  \return              0 on success; -1 on error with errno set:
+ *                           ENOENT: resource path not found
+ *                           EINVAL: invalid parameters or unexpected internal error
+ */
+int reapi_cli_get_status (reapi_cli_ctx_t *ctx, const char *resource_path, const char **status);
+
+/*! Get resource status for the node at a rank.
+ *
+ *  \param ctx           reapi_cli_ctx_t context object
+ *  \param rank          Rank number
+ *  \param status        Pointer to receive status ("UP" or "DOWN")
+ *  \return              0 on success; -1 on error with errno set:
+ *                           ENOENT: rank not found
+ *                           EINVAL: invalid parameters or unexpected internal error
+ */
+int reapi_cli_get_status_by_rank (reapi_cli_ctx_t *ctx, int64_t rank, const char **status);
+
 #ifdef __cplusplus
 }
 #endif

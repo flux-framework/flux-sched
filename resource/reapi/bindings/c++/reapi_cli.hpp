@@ -174,6 +174,10 @@ class reapi_cli_t : public reapi_t {
                      double &min,
                      double &max,
                      double &avg);
+    static int set_status (void *h, const std::string &resource_path, const char *status);
+    static int set_status (void *h, int64_t rank, const char *status);
+    static int get_status (void *h, const std::string &resource_path, const char *&status);
+    static int get_status (void *h, int64_t rank, const char *&status);
     static const std::string &get_err_message ();
     static void clear_err_message ();
 

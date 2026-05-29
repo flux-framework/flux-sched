@@ -277,6 +277,62 @@ class reapi_t {
     {
         return -1;
     }
+
+    /*! Set resource status (up or down) for a resource at the specified path.
+     *
+     *  \param h         Opaque handle. How it is used is an implementation
+     *                   detail. However, when it is used within a Flux's
+     *                   service module, it is expected to be a pointer
+     *                   to a flux_t object.
+     *  \param resource_path    Path to resource (e.g., "/cluster0/rack0/node3")
+     *  \param status    Status: "UP" or "DOWN"
+     *  \return          0 on success; -1 on error with errno set:
+     *                       ENOENT: resource path not found
+     *                       EINVAL: invalid parameters or unexpected internal error
+     */
+    static int set_status (void *h, const std::string &resource_path, const char *status);
+
+    /*! Set resource status (up or down) for the subtree root (typically node) at a rank.
+     *
+     *  \param h         Opaque handle. How it is used is an implementation
+     *                   detail. However, when it is used within a Flux's
+     *                   service module, it is expected to be a pointer
+     *                   to a flux_t object.
+     *  \param rank      Rank number, or FLUX_NODEID_ANY to mark all ranks
+     *  \param status    Status: "UP" or "DOWN"
+     *  \return          0 on success; -1 on error with errno set:
+     *                       ENOENT: resource path not found
+     *                       EINVAL: invalid parameters or unexpected internal error
+     */
+    static int set_status (void *h, int64_t rank, const char *status);
+
+    /*! Get resource status for a resource at the specified path.
+     *
+     *  \param h         Opaque handle. How it is used is an implementation
+     *                   detail. However, when it is used within a Flux's
+     *                   service module, it is expected to be a pointer
+     *                   to a flux_t object.
+     *  \param resource_path    Path to resource (e.g., "/cluster0/rack0/node3")
+     *  \param status     Pointer to receive status ("UP" or "DOWN")
+     *  \return           0 on success; -1 on error with errno set:
+     *                       ENOENT: resource path not found
+     *                       EINVAL: invalid parameters or unexpected internal error
+     */
+    static int get_status (void *h, const std::string &resource_path, const char *&status);
+
+    /*! Get resource status for the node at a rank.
+     *
+     *  \param h         Opaque handle. How it is used is an implementation
+     *                   detail. However, when it is used within a Flux's
+     *                   service module, it is expected to be a pointer
+     *                   to a flux_t object.
+     *  \param rank      Rank number
+     *  \param status     Pointer to receive status ("UP" or "DOWN")
+     *  \return           0 on success; -1 on error with errno set:
+     *                       ENOENT: resource path not found
+     *                       EINVAL: invalid parameters or unexpected internal error
+     */
+    static int get_status (void *h, int64_t rank, const char *&status);
 };
 
 }  // namespace resource_model
