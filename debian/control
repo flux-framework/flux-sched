@@ -12,6 +12,8 @@ Build-Depends:
   libboost-graph-dev,
   libedit-dev,
   libyaml-cpp-dev,
+  python3-dev,
+  python3-cffi,
   jq
 
 Homepage: https://github.com/flux-framework/flux-sched

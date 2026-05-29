@@ -21,6 +21,7 @@ extern "C" {
 #include <cerrno>
 #include "resource/reapi/bindings/c++/reapi_cli.hpp"
 #include "resource/reapi/bindings/c++/reapi_cli_impl.hpp"
+#include "resource/schema/data_std.hpp"
 
 using namespace Flux;
 using namespace Flux::resource_model;
@@ -38,8 +39,6 @@ extern "C" reapi_cli_ctx_t *reapi_cli_new ()
     try {
         ctx = new reapi_cli_ctx_t;
     } catch (const std::bad_alloc &e) {
-        ctx->err_msg = __FUNCTION__;
-        ctx->err_msg += ": ERROR: can't allocate memory: " + std::string (e.what ()) + "\n";
         errno = ENOMEM;
         goto out;
     }
@@ -120,14 +119,14 @@ extern "C" reapi_cli_ctx_t *reapi_cli_clone (reapi_cli_ctx_t *ctx)
     }
 }
 
-extern "C" int reapi_cli_match (reapi_cli_ctx_t *ctx,
-                                match_op_t match_op,
-                                const char *jobspec,
-                                uint64_t *jobid,
-                                bool *reserved,
-                                char **R,
-                                int64_t *at,
-                                double *ov)
+extern "C" int reapi_cli_match_with_jobid (reapi_cli_ctx_t *ctx,
+                                           match_op_t match_op,
+                                           const char *jobspec,
+                                           uint64_t jobid,
+                                           bool *reserved,
+                                           char **R,
+                                           int64_t *at,
+                                           double *ov)
 {
     int rc = -1;
     std::string R_buf = "";
@@ -138,9 +137,8 @@ extern "C" int reapi_cli_match (reapi_cli_ctx_t *ctx,
         goto out;
     }
 
-    *jobid = ctx->rqt->get_job_counter ();
     if ((rc = reapi_cli_t::
-             match_allocate (ctx->rqt, match_op, jobspec, *jobid, *reserved, R_buf, *at, *ov))
+             match_allocate (ctx->rqt, match_op, jobspec, jobid, *reserved, R_buf, *at, *ov))
         < 0) {
         goto out;
     }
@@ -155,6 +153,26 @@ extern "C" int reapi_cli_match (reapi_cli_ctx_t *ctx,
     (*R) = R_buf_c;
 
 out:
+    return rc;
+}
+
+extern "C" int reapi_cli_match (reapi_cli_ctx_t *ctx,
+                                match_op_t match_op,
+                                const char *jobspec,
+                                uint64_t *jobid,
+                                bool *reserved,
+                                char **R,
+                                int64_t *at,
+                                double *ov)
+{
+    uint64_t seq = ctx->rqt->get_job_counter ();
+    int rc = -1;
+
+    if ((rc = reapi_cli_match_with_jobid (ctx, match_op, jobspec, seq, reserved, R, at, ov)) < 0)
+        goto done;
+    *jobid = seq;
+
+done:
     return rc;
 }
 
@@ -243,6 +261,28 @@ extern "C" int reapi_cli_partial_cancel (reapi_cli_ctx_t *ctx,
     return reapi_cli_t::cancel (ctx->rqt, jobid, R, noent_ok, *full_removal);
 }
 
+extern "C" int reapi_cli_cancel_ex (reapi_cli_ctx_t *ctx,
+                                    const uint64_t jobid,
+                                    const char *R,
+                                    const char *format,
+                                    bool noent_ok,
+                                    bool *full_removal)
+{
+    if (!ctx || !ctx->rqt) {
+        errno = EINVAL;
+        return -1;
+    }
+    if (R && format)
+        return reapi_cli_t::cancel (ctx->rqt, jobid, R, format, noent_ok, *full_removal);
+    if (R)
+        return reapi_cli_t::cancel (ctx->rqt, jobid, R, noent_ok, *full_removal);
+    if (reapi_cli_t::cancel (ctx->rqt, jobid, noent_ok) < 0)
+        return -1;
+    if (full_removal)
+        *full_removal = true;
+    return 0;
+}
+
 extern "C" int reapi_cli_info (reapi_cli_ctx_t *ctx,
                                const uint64_t jobid,
                                char **mode,
@@ -252,13 +292,14 @@ extern "C" int reapi_cli_info (reapi_cli_ctx_t *ctx,
 {
     int rc = -1;
     std::string mode_buf = "";
+    std::string R_buf = "";
     char *mode_buf_c = nullptr;
 
     if (!ctx || !ctx->rqt) {
         errno = EINVAL;
         return -1;
     }
-    if ((rc = reapi_cli_t::info (ctx->rqt, jobid, mode_buf, *reserved, *at, *ov)) < 0)
+    if ((rc = reapi_cli_t::info (ctx->rqt, jobid, mode_buf, *reserved, *at, *ov, R_buf)) < 0)
         goto out;
     if (!(mode_buf_c = strdup (mode_buf.c_str ()))) {
         ctx->err_msg = __FUNCTION__;
@@ -272,6 +313,35 @@ extern "C" int reapi_cli_info (reapi_cli_ctx_t *ctx,
 
 out:
     return rc;
+}
+
+extern "C" int reapi_cli_info_ex (reapi_cli_ctx_t *ctx,
+                                  const uint64_t jobid,
+                                  const char **mode,
+                                  bool *reserved,
+                                  int64_t *at,
+                                  double *ov,
+                                  const char **R)
+{
+    std::shared_ptr<job_info_t> job = nullptr;
+
+    if (!ctx || !ctx->rqt) {
+        errno = EINVAL;
+        return -1;
+    }
+    if (reapi_cli_t::info (ctx->rqt, jobid, job) < 0) {
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: nonexistent job " + std::to_string (jobid) + "\n";
+        return -1;
+    }
+
+    *mode = get_jobstate_str (job->state);
+    *reserved = (job->state == job_lifecycle_t::RESERVED);
+    *at = job->scheduled_at;
+    *ov = job->overhead;
+    *R = job->R.c_str ();
+
+    return 0;
 }
 
 extern "C" int reapi_cli_stat (reapi_cli_ctx_t *ctx,
@@ -309,6 +379,128 @@ extern "C" void reapi_cli_clear_err_msg (reapi_cli_ctx_t *ctx)
         ctx->rqt->clear_resource_query_err_msg ();
     reapi_cli_t::clear_err_message ();
     ctx->err_msg = "";
+}
+
+extern "C" int reapi_cli_set_status (reapi_cli_ctx_t *ctx,
+                                     const char *resource_path,
+                                     const char *status)
+{
+    if (!ctx || !ctx->rqt || !resource_path) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    try {
+        return reapi_cli_t::set_status (ctx->rqt, resource_path, status);
+    } catch (std::system_error &e) {
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: System error: " + std::string (e.what ()) + "\n";
+        errno = e.code ().value ();
+        return -1;
+    } catch (std::exception &e) {
+        // Translate C++ exceptions to errno - unexpected errors default to EINVAL.
+        // Note: C++ layer already translates not-found path to ENOENT via errno.
+        errno = EINVAL;
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: " + std::string (e.what ()) + "\n";
+        return -1;
+    } catch (...) {
+        errno = EINVAL;
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: unknown exception\n";
+        return -1;
+    }
+}
+
+extern "C" int reapi_cli_set_status_by_rank (reapi_cli_ctx_t *ctx, int64_t rank, const char *status)
+{
+    if (!ctx || !ctx->rqt) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    try {
+        return reapi_cli_t::set_status (ctx->rqt, rank, status);
+    } catch (std::system_error &e) {
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: System error: " + std::string (e.what ()) + "\n";
+        errno = e.code ().value ();
+        return -1;
+    } catch (std::exception &e) {
+        // Translate C++ exceptions to errno - unexpected errors default to EINVAL.
+        // Note: C++ layer already translates not-found rank to ENOENT via errno.
+        errno = EINVAL;
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: " + std::string (e.what ()) + "\n";
+        return -1;
+    } catch (...) {
+        errno = EINVAL;
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: unknown exception\n";
+        return -1;
+    }
+}
+
+extern "C" int reapi_cli_get_status (reapi_cli_ctx_t *ctx,
+                                     const char *resource_path,
+                                     const char **status)
+{
+    if (!ctx || !ctx->rqt || !resource_path || !status) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    try {
+        return reapi_cli_t::get_status (ctx->rqt, resource_path, *status);
+    } catch (std::system_error &e) {
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: System error: " + std::string (e.what ()) + "\n";
+        errno = e.code ().value ();
+        return -1;
+    } catch (std::exception &e) {
+        // Translate C++ exceptions to errno - unexpected errors default to EINVAL.
+        // Note: C++ layer already translates not-found path to ENOENT via errno.
+        errno = EINVAL;
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: " + std::string (e.what ()) + "\n";
+        return -1;
+    } catch (...) {
+        errno = EINVAL;
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: unknown exception\n";
+        return -1;
+    }
+}
+
+extern "C" int reapi_cli_get_status_by_rank (reapi_cli_ctx_t *ctx,
+                                             int64_t rank,
+                                             const char **status)
+{
+    if (!ctx || !ctx->rqt || !status) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    try {
+        return reapi_cli_t::get_status (ctx->rqt, rank, *status);
+    } catch (std::system_error &e) {
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: System error: " + std::string (e.what ()) + "\n";
+        errno = e.code ().value ();
+        return -1;
+    } catch (std::exception &e) {
+        // Translate C++ exceptions to errno - unexpected errors default to EINVAL.
+        // Note: C++ layer already translates not-found rank to ENOENT via errno.
+        errno = EINVAL;
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: " + std::string (e.what ()) + "\n";
+        return -1;
+    } catch (...) {
+        errno = EINVAL;
+        ctx->err_msg = __FUNCTION__;
+        ctx->err_msg += ": ERROR: unknown exception\n";
+        return -1;
+    }
 }
 
 /*
