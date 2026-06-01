@@ -104,6 +104,7 @@ set(ALL_TESTS
   t7000-python-scheduler-basic.t
   t7001-python-scheduler-jgf.t
   t7002-python-scheduler-partial.t
+  t7003-python-scheduler-hello.t
   t8001-util-ion-R.t
   t9001-golang-basic.t
   python/t10001-resourcegraph.py
