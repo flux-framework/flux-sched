@@ -101,6 +101,7 @@ set(ALL_TESTS
   t6000-graph-size.t
   t6001-match-formats.t
   t6002-graph-hwloc.t
+  t7000-python-scheduler-basic.t
   t8001-util-ion-R.t
   t9001-golang-basic.t
   python/t10001-resourcegraph.py
