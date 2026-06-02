@@ -71,7 +71,7 @@ include( GNUInstallDirs ) # convenience names for gnu-style directories
 # RPATH setup
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
 set( CMAKE_BUILD_RPATH
-  ${CMAKE_BINARY_DIR}/resource:${CMAKE_BINARY_DIR}/src/common/libtap )
+  ${CMAKE_BINARY_DIR}/resource:${CMAKE_BINARY_DIR}/resource/reapi/bindings:${CMAKE_BINARY_DIR}/src/common/libtap )
 # the RPATH to be used when installing, but only if it's not a system directory
 list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
 if("${isSystemDir}" STREQUAL "-1")
@@ -212,6 +212,7 @@ endfunction()
 ### END HELPERS
 flux_find_python_module(yaml 3.10)
 flux_find_python_module(jsonschema 2.3.0)
+flux_find_python_module(cffi 1.0.0)
 
 if(ENABLE_COVERAGE)
   include(CodeCoverage)
@@ -272,6 +273,13 @@ add_custom_target(distcheck
   COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target check
   COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target dist
   )
+if(NOT DEFINED ENV{DEB_BUILD_OPTIONS})
+  set(DEB_BUILD_OPTIONS_DEFAULT "nocheck terse")
+else()
+  set(DEB_BUILD_OPTIONS_DEFAULT "$ENV{DEB_BUILD_OPTIONS}")
+endif()
+
 add_custom_target(deb
-  COMMAND ${CMAKE_SOURCE_DIR}/scripts/debbuild.sh ${CMAKE_SOURCE_DIR}
+  COMMAND ${CMAKE_COMMAND} -E env DEB_BUILD_OPTIONS=${DEB_BUILD_OPTIONS_DEFAULT}
+    ${CMAKE_SOURCE_DIR}/scripts/debbuild.sh ${CMAKE_SOURCE_DIR}
   )

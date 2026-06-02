@@ -90,6 +90,10 @@ class resource_query_t {
     void set_job (const uint64_t jobid, const std::shared_ptr<job_info_t> &job);
     int remove_job (const uint64_t jobid);
     int remove_job (const uint64_t jobid, const std::string &R, bool &full_removal);
+    int remove_job (const uint64_t jobid,
+                    const std::string &R,
+                    const std::string &format,
+                    bool &full_removal);
     void incr_job_counter ();
 
     /* Run the traverser to match the jobspec */
@@ -156,6 +160,12 @@ class reapi_cli_t : public reapi_t {
                        const std::string &R,
                        bool noent_ok,
                        bool &full_removal);
+    static int cancel (void *h,
+                       const uint64_t jobid,
+                       const std::string &R,
+                       const std::string &format,
+                       bool noent_ok,
+                       bool &full_removal);
     static int find (void *h, std::string criteria, json_t *&o);
     static int info (void *h,
                      const uint64_t jobid,
@@ -163,6 +173,13 @@ class reapi_cli_t : public reapi_t {
                      bool &reserved,
                      int64_t &at,
                      double &ov);
+    static int info (void *h,
+                     const uint64_t jobid,
+                     std::string &mode,
+                     bool &reserved,
+                     int64_t &at,
+                     double &ov,
+                     std::string &R);
     static int info (void *h, const uint64_t jobid, std::shared_ptr<job_info_t> &job);
     static unsigned int preorder_count (void *h);
     static unsigned int postorder_count (void *h);
@@ -174,6 +191,10 @@ class reapi_cli_t : public reapi_t {
                      double &min,
                      double &max,
                      double &avg);
+    static int set_status (void *h, const std::string &resource_path, const char *status);
+    static int set_status (void *h, int64_t rank, const char *status);
+    static int get_status (void *h, const std::string &resource_path, const char *&status);
+    static int get_status (void *h, int64_t rank, const char *&status);
     static const std::string &get_err_message ();
     static void clear_err_message ();
 

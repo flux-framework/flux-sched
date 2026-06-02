@@ -90,6 +90,47 @@ int reapi_cli_match (reapi_cli_ctx_t *ctx,
 
 /*! Match a jobspec to the "best" resources and either allocate
  *  orelse reserve them. The best resources are determined by
+ *  the selected match policy.  This function is identical to
+ *  reapi_cli_match() in all respects except the jobid is provided
+ *  by the caller, who is responsible for ensuring uniqueness.
+ *  N.B. To avoid jobid collisions, this call should not be mixed
+ *  with the other match calls that allocate them internally.
+ *
+ *  \param ctx       reapi_cli_ctx_t context object
+ *  \param match_op  match_op_t: set to specify the specific match option
+ *                   from 1 of 4 choices:
+ *                   MATCH_ALLOCATE: try to allocate now and fail if resources
+ *                   aren't available.
+ *                   MATCH_ALLOCATE_ORELSE_RESERVE : Try to allocate and reserve
+ *                   if resources aren't available now.
+ *                   MATCH_SATISFIABILITY: Do a satisfiablity check and do not
+ *                   allocate.
+ *                   MATCH_ALLOCATE_W_SATISFIABILITY: try to allocate and run
+ *                   satisfiability check if resources are not available.
+ *  \param jobspec   jobspec string.
+ *  \param jobid     jobid provided by caller
+ *  \param reserved  Boolean into which to return true if this job has been
+ *                   reserved instead of allocated.
+ *  \param R         String into which to return the resource set either
+ *                   allocated or reserved.
+ *  \param at        If allocated, 0 is returned; if reserved, actual time
+ *                   at which the job is reserved.
+ *  \param ov        Double into which to return performance overhead
+ *                   in terms of elapse time needed to complete
+ *                   the match operation.
+ *  \return          0 on success; -1 on error.
+ */
+int reapi_cli_match_with_jobid (reapi_cli_ctx_t *ctx,
+                                match_op_t match_op,
+                                const char *jobspec,
+                                uint64_t jobid,
+                                bool *reserved,
+                                char **R,
+                                int64_t *at,
+                                double *ov);
+
+/*! Match a jobspec to the "best" resources and either allocate
+ *  orelse reserve them. The best resources are determined by
  *  the selected match policy.
  *
  *  \param ctx       reapi_cli_ctx_t context object
@@ -159,6 +200,25 @@ int reapi_cli_update_allocate (reapi_cli_ctx_t *ctx,
  */
 int reapi_cli_cancel (reapi_cli_ctx_t *ctx, const uint64_t jobid, bool noent_ok);
 
+/*! Cancel the allocation or reservation corresponding to jobid, with optional
+ *  partial release and explicit R format.
+ *
+ *  \param ctx          reapi_cli_ctx_t context object
+ *  \param jobid        jobid of the uint64_t type.
+ *  \param R            R string to remove (NULL releases all jobid resources)
+ *  \param format       reader format for R (NULL defaults to load format);
+ *                      valid values: "rv1exec", "jgf", "jgf_shorthand"
+ *  \param noent_ok     don't return an error on nonexistent jobid
+ *  \param full_removal output: set to true if all resources removed
+ *  \return             0 on success; -1 on error.
+ */
+int reapi_cli_cancel_ex (reapi_cli_ctx_t *ctx,
+                         const uint64_t jobid,
+                         const char *R,
+                         const char *format,
+                         bool noent_ok,
+                         bool *full_removal);
+
 /*! Cancel the allocation or reservation corresponding to jobid.
  *
  *  \param ctx       reapi_module_ctx_t context object
@@ -196,6 +256,33 @@ int reapi_cli_info (reapi_cli_ctx_t *ctx,
                     int64_t *at,
                     double *ov);
 
+/*! Get the information on the allocation or reservation corresponding
+ *  to jobid.  Unlike reapi_cli_info(), the returned strings are pointers
+ *  into context-owned storage (no allocation, no free required), valid
+ *  until the job is removed or the context is destroyed.
+ *
+ *  \param ctx       reapi_cli_ctx_t context object
+ *  \param jobid     const jobid of the uint64_t type.
+ *  \param mode      set to a string constant for the job state
+ *                   ("ALLOCATED", "RESERVED", "CANCELED", "ERROR", "INIT").
+ *  \param reserved  set to true if job is reserved rather than allocated.
+ *  \param at        set to 0 if allocated; reservation time if reserved.
+ *  \param ov        set to match overhead in seconds.
+ *  \param R         set to the allocated R string in match_format.
+ *                   Pointer into context storage — do not free.
+ *                   Note: after a partial cancel (reapi_cli_cancel_ex with
+ *                   a subset R), this field still reflects the original
+ *                   full allocation and is not updated.
+ *  \return          0 on success; -1 on error.
+ */
+int reapi_cli_info_ex (reapi_cli_ctx_t *ctx,
+                       const uint64_t jobid,
+                       const char **mode,
+                       bool *reserved,
+                       int64_t *at,
+                       double *ov,
+                       const char **R);
+
 /*! Get the performance information about the resource infrastructure.
  *
  *  \param ctx       reapi_cli_ctx_t context object
@@ -229,6 +316,50 @@ const char *reapi_cli_get_err_msg (reapi_cli_ctx_t *ctx);
  *  \param ctx       reapi_cli_ctx_t context object
  */
 void reapi_cli_clear_err_msg (reapi_cli_ctx_t *ctx);
+
+/*! Set resource status (up or down) for a resource at the specified path.
+ *
+ *  \param ctx           reapi_cli_ctx_t context object
+ *  \param resource_path Path to resource (e.g., "/cluster0/rack0/node3")
+ *  \param status        Status: "UP" or "DOWN"
+ *  \return              0 on success; -1 on error with errno set:
+ *                           ENOENT: resource path not found
+ *                           EINVAL: invalid parameters or unexpected internal error
+ */
+int reapi_cli_set_status (reapi_cli_ctx_t *ctx, const char *resource_path, const char *status);
+
+/*! Set resource status (up or down) for the subtree root (typically node) at a rank.
+ *
+ *  \param ctx           reapi_cli_ctx_t context object
+ *  \param rank          Rank number, or FLUX_NODEID_ANY to mark all ranks
+ *  \param status        Status: "UP" or "DOWN"
+ *  \return              0 on success; -1 on error with errno set:
+ *                           ENOENT: rank not found
+ *                           EINVAL: invalid parameters or unexpected internal error
+ */
+int reapi_cli_set_status_by_rank (reapi_cli_ctx_t *ctx, int64_t rank, const char *status);
+
+/*! Get resource status for a resource at the specified path.
+ *
+ *  \param ctx           reapi_cli_ctx_t context object
+ *  \param resource_path Path to resource (e.g., "/cluster0/rack0/node3")
+ *  \param status        Pointer to receive status ("UP" or "DOWN")
+ *  \return              0 on success; -1 on error with errno set:
+ *                           ENOENT: resource path not found
+ *                           EINVAL: invalid parameters or unexpected internal error
+ */
+int reapi_cli_get_status (reapi_cli_ctx_t *ctx, const char *resource_path, const char **status);
+
+/*! Get resource status for the node at a rank.
+ *
+ *  \param ctx           reapi_cli_ctx_t context object
+ *  \param rank          Rank number
+ *  \param status        Pointer to receive status ("UP" or "DOWN")
+ *  \return              0 on success; -1 on error with errno set:
+ *                           ENOENT: rank not found
+ *                           EINVAL: invalid parameters or unexpected internal error
+ */
+int reapi_cli_get_status_by_rank (reapi_cli_ctx_t *ctx, int64_t rank, const char **status);
 
 #ifdef __cplusplus
 }

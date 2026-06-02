@@ -24,12 +24,11 @@ extern "C" {
 #include <boost/algorithm/string.hpp>
 #include "resource/reapi/bindings/c++/reapi_cli.hpp"
 #include "resource/readers/resource_reader_factory.hpp"
+#include "resource/config/system_defaults.hpp"
 
 namespace Flux {
 namespace resource_model {
 namespace detail {
-
-const int NOT_YET_IMPLEMENTED = -1;
 
 static double get_elapsed_time (timeval &st, timeval &et)
 {
@@ -144,7 +143,7 @@ int reapi_cli_t::match_allocate (void *h,
         else
             rq->set_allocation (jobid);
 
-        job_info = std::make_shared<job_info_t> (jobid, st, at, "", "", ov);
+        job_info = std::make_shared<job_info_t> (jobid, st, at, "", "", R, ov);
         if (job_info == nullptr) {
             errno = ENOMEM;
             m_err_msg += __FUNCTION__;
@@ -171,7 +170,148 @@ int reapi_cli_t::update_allocate (void *h,
                                   double &ov,
                                   std::string &R_out)
 {
-    return NOT_YET_IMPLEMENTED;
+    resource_query_t *rq = static_cast<resource_query_t *> (h);
+    int rc = -1;
+    std::string fmt;
+    std::string R_sched;  // only populated when RFC 20 has a scheduling section
+    int64_t at_parsed = 0;
+    uint64_t duration = 0;
+    std::shared_ptr<resource_reader_base_t> rd;
+    struct timeval st, et;
+    json_t *o = nullptr;
+    json_t *scheduling = nullptr;
+    int version = 0;
+    double tstart = 0.0, expiration = 0.0;
+    double max_exp = static_cast<double> (std::numeric_limits<int64_t>::max ());
+
+    if (!rq || R.empty ()) {
+        errno = EINVAL;
+        goto out;
+    }
+    if (rq->allocation_exists (jobid) || rq->reservation_exists (jobid)) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": ERROR: existing jobid " + std::to_string (jobid) + "\n";
+        errno = EEXIST;
+        goto out;
+    }
+
+    if (!(o = json_loads (R.c_str (), 0, nullptr))) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": ERROR: failed to parse R string\n";
+        errno = EINVAL;
+        goto out;
+    }
+
+    // RFC 20 envelope: extract timing from execution section
+    if (json_unpack (o,
+                     "{s:i s:{s?F s?F} s?o}",
+                     "version",
+                     &version,
+                     "execution",
+                     "starttime",
+                     &tstart,
+                     "expiration",
+                     &expiration,
+                     "scheduling",
+                     &scheduling)
+            == 0
+        && version == 1) {
+        if (expiration == 0.0)
+            expiration = max_exp;
+        at_parsed = static_cast<int64_t> (tstart);
+        uint64_t dur = (expiration > tstart) ? static_cast<uint64_t> (expiration - tstart) : 0;
+        duration = dur ? dur : static_cast<uint64_t> (SYSTEM_MAX_DURATION);
+
+        // scheduling JGF present: re-encode it as the traverser input string
+        if (scheduling) {
+            char *s = nullptr;
+            if (!(s = json_dumps (scheduling, JSON_COMPACT))) {
+                m_err_msg += __FUNCTION__;
+                m_err_msg += ": ERROR: can't encode scheduling JGF\n";
+                errno = ENOMEM;
+                goto out;
+            }
+            R_sched = s;
+            free (s);
+            const char *writer = nullptr;
+            json_unpack (scheduling, "{s?s}", "writer", &writer);
+            if (writer && std::string (writer) == "fluxion:jgf_shorthand")
+                fmt = "jgf_shorthand";
+            else
+                fmt = "jgf";
+        } else {
+            fmt = "rv1exec";  // R passed directly below
+        }
+    } else {
+        // bare JGF or unrecognised: pass R directly with the load format
+        at_parsed = 0;
+        duration = static_cast<uint64_t> (SYSTEM_MAX_DURATION);
+        fmt = rq->params.load_format;
+    }
+
+    json_decref (o);
+    o = nullptr;
+
+    if ((rd = create_resource_reader (fmt)) == nullptr) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": ERROR: can't create reader: " + fmt + "\n";
+        errno = EINVAL;
+        goto out;
+    }
+
+    gettimeofday (&st, NULL);
+
+    {
+        // Use the extracted scheduling JGF string when present; otherwise pass R
+        // directly to avoid an unnecessary copy.
+        const std::string &to_traverse = R_sched.empty () ? R : R_sched;
+        auto guard = resource_type_t::storage_t::open_for_scope ();
+        rc = rq->traverser->run (to_traverse, rq->writers, rd, (int64_t)jobid, at_parsed, duration);
+    }
+
+    if (rq->get_traverser_err_msg () != "") {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": ERROR: " + rq->get_traverser_err_msg () + "\n";
+        rq->clear_traverser_err_msg ();
+    }
+    if (rc != 0)
+        goto out;
+
+    {
+        std::stringstream o;
+        if (rq->writers->emit (o) < 0) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": ERROR: writer emit failed\n";
+            rc = -1;
+            goto out;
+        }
+        R_out = o.str ();
+    }
+
+    gettimeofday (&et, NULL);
+    ov = get_elapsed_time (st, et);
+    at = at_parsed;
+
+    rq->set_allocation (jobid);
+    {
+        auto job_info = std::make_shared<job_info_t> (jobid,
+                                                      job_lifecycle_t::ALLOCATED,
+                                                      at_parsed,
+                                                      "",
+                                                      "",
+                                                      R_out,
+                                                      ov);
+        if (!job_info) {
+            errno = ENOMEM;
+            rc = -1;
+            goto out;
+        }
+        rq->set_job (jobid, job_info);
+    }
+
+out:
+    json_decref (o);
+    return rc;
 }
 
 int reapi_cli_t::match_allocate_multi (void *h,
@@ -179,7 +319,8 @@ int reapi_cli_t::match_allocate_multi (void *h,
                                        const char *jobs,
                                        queue_adapter_base_t *adapter)
 {
-    return NOT_YET_IMPLEMENTED;
+    errno = ENOSYS;  // not implemented
+    return -1;
 }
 
 int reapi_cli_t::cancel (void *h, const uint64_t jobid, bool noent_ok)
@@ -261,6 +402,38 @@ out:
     return rc;
 }
 
+int reapi_cli_t::cancel (void *h,
+                         const uint64_t jobid,
+                         const std::string &R,
+                         const std::string &format,
+                         bool noent_ok,
+                         bool &full_removal)
+{
+    resource_query_t *rq = static_cast<resource_query_t *> (h);
+    int rc = -1;
+
+    if (rq->allocation_exists (jobid)) {
+        if ((rc = rq->remove_job (jobid, R, format, full_removal)) == 0) {
+            if (full_removal)
+                rq->erase_allocation (jobid);
+        }
+    } else {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": WARNING: can't find allocation for jobid: " + std::to_string (jobid) + "\n";
+        rc = noent_ok ? 0 : -1;
+        goto out;
+    }
+
+    if (rc != 0) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg +=
+            ": ERROR: error encountered while removing job " + std::to_string (jobid) + "\n";
+    }
+
+out:
+    return rc;
+}
+
 int reapi_cli_t::find (void *h, std::string criteria, json_t *&o)
 {
     int rc = -1;
@@ -294,28 +467,39 @@ int reapi_cli_t::info (void *h,
                        std::string &mode,
                        bool &reserved,
                        int64_t &at,
+                       double &ov,
+                       std::string &R)
+{
+    std::shared_ptr<job_info_t> job = nullptr;
+    int rc = info (h, jobid, job);
+    if (rc < 0)
+        return rc;
+
+    mode = get_jobstate_str (job->state);
+    reserved = (job->state == job_lifecycle_t::RESERVED) ? true : false;
+    at = job->scheduled_at;
+    ov = job->overhead;
+    R = job->R;
+
+    return 0;
+}
+
+int reapi_cli_t::info (void *h,
+                       const uint64_t jobid,
+                       std::string &mode,
+                       bool &reserved,
+                       int64_t &at,
                        double &ov)
 {
-    resource_query_t *rq = static_cast<resource_query_t *> (h);
-    std::shared_ptr<job_info_t> info = nullptr;
+    std::shared_ptr<job_info_t> job = nullptr;
+    int rc = info (h, jobid, job);
+    if (rc < 0)
+        return rc;
 
-    if (!rq) {
-        errno = EINVAL;
-        return -1;
-    }
-
-    if (!(rq->job_exists (jobid))) {
-        m_err_msg += __FUNCTION__;
-        m_err_msg += ": ERROR: nonexistent job " + std::to_string (jobid) + "\n";
-        errno = ENOENT;
-        return -1;
-    }
-
-    info = rq->get_job (jobid);
-    mode = get_jobstate_str (info->state);
-    reserved = (info->state == job_lifecycle_t::RESERVED) ? true : false;
-    at = info->scheduled_at;
-    ov = info->overhead;
+    mode = get_jobstate_str (job->state);
+    reserved = (job->state == job_lifecycle_t::RESERVED) ? true : false;
+    at = job->scheduled_at;
+    ov = job->overhead;
 
     return 0;
 }
@@ -363,7 +547,152 @@ int reapi_cli_t::stat (void *h,
                        double &max,
                        double &avg)
 {
-    return NOT_YET_IMPLEMENTED;
+    errno = ENOSYS;  // not implemented
+    return -1;
+}
+
+static int parse_rpstatus (const char *status, resource_pool_t::status_t &rpstatus)
+{
+    if (!status)
+        return -1;
+    if (strcasecmp (status, "up") == 0)
+        rpstatus = resource_pool_t::status_t::UP;
+    else if (strcasecmp (status, "down") == 0)
+        rpstatus = resource_pool_t::status_t::DOWN;
+    else
+        return -1;
+    return 0;
+}
+
+int reapi_cli_t::set_status (void *h, const std::string &resource_path, const char *status)
+{
+    int rc = -1;
+    resource_query_t *rq = static_cast<resource_query_t *> (h);
+    resource_pool_t::status_t rpstatus;
+
+    if (!rq || resource_path.empty () || parse_rpstatus (status, rpstatus) < 0) {
+        errno = EINVAL;
+        return -1;
+    }
+    rc = rq->traverser->mark (resource_path, rpstatus);
+    if (rc < 0) {
+        if (errno == 0)
+            errno = EINVAL;
+        m_err_msg = __FUNCTION__;
+        m_err_msg += ": " + rq->traverser->err_message ();
+    }
+    return rc;
+}
+
+int reapi_cli_t::set_status (void *h, int64_t rank, const char *status)
+{
+    int rc = -1;
+    resource_query_t *rq = static_cast<resource_query_t *> (h);
+    resource_pool_t::status_t rpstatus;
+
+    if (!rq || parse_rpstatus (status, rpstatus) < 0) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    // Note: traverser->mark() can throw std::out_of_range
+    std::set<int64_t> ranks;
+    if (rank == FLUX_NODEID_ANY) {
+        for (const auto &kv : rq->db->metadata.by_rank)
+            if (kv.first >= 0)
+                ranks.insert (kv.first);
+    } else {
+        if (rq->db->metadata.by_rank.find (rank) == rq->db->metadata.by_rank.end ()) {
+            errno = ENOENT;
+            m_err_msg = __FUNCTION__;
+            m_err_msg += ": rank not found: " + std::to_string (rank);
+            return -1;
+        }
+        ranks.insert (rank);
+    }
+
+    rc = rq->traverser->mark (ranks, rpstatus);
+    if (rc < 0) {
+        if (errno == 0)
+            errno = EINVAL;
+        m_err_msg = __FUNCTION__;
+        m_err_msg += ": failed to mark rank " + std::to_string (rank);
+    }
+    return rc;
+}
+
+int reapi_cli_t::get_status (void *h, const std::string &resource_path, const char *&status)
+{
+    resource_query_t *rq = static_cast<resource_query_t *> (h);
+
+    if (!rq || resource_path.empty ()) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    auto vit = rq->db->metadata.by_path.find (resource_path);
+    if (vit == rq->db->metadata.by_path.end ()) {
+        errno = ENOENT;
+        m_err_msg = __FUNCTION__;
+        m_err_msg += ": resource path not found: " + resource_path;
+        return -1;
+    }
+
+    // Get the first vertex at this path
+    if (vit->second.empty ()) {
+        errno = EINVAL;
+        m_err_msg = __FUNCTION__;
+        m_err_msg += ": no vertices at path: " + resource_path;
+        return -1;
+    }
+
+    vtx_t v = vit->second.front ();
+    // Note: can throw std::out_of_range if status field not in vertex
+    status = resource_pool_t::status_to_str (rq->db->resource_graph[v].status);
+    return 0;
+}
+
+int reapi_cli_t::get_status (void *h, int64_t rank, const char *&status)
+{
+    resource_query_t *rq = static_cast<resource_query_t *> (h);
+
+    if (!rq || rank == FLUX_NODEID_ANY) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    auto vit = rq->db->metadata.by_rank.find (rank);
+    if (vit == rq->db->metadata.by_rank.end ()) {
+        errno = ENOENT;
+        m_err_msg = __FUNCTION__;
+        m_err_msg += ": rank not found: " + std::to_string (rank);
+        return -1;
+    }
+
+    // Get the node vertex (subtree root) at this rank
+    if (vit->second.empty ()) {
+        errno = EINVAL;
+        m_err_msg = __FUNCTION__;
+        m_err_msg += ": no vertices at rank: " + std::to_string (rank);
+        return -1;
+    }
+
+    // Find the subtree root (shortest path = node vertex)
+    vtx_t subtree_root = vit->second.front ();
+    subsystem_t dom = rq->matcher->dom_subsystem ();
+    const resource_graph_t &g = rq->db->resource_graph;
+
+    // Note: paths.at() can throw std::out_of_range
+    for (vtx_t v : vit->second) {
+        std::string path = g[v].paths.at (dom);
+        std::string root_path = g[subtree_root].paths.at (dom);
+        if (path.length () < root_path.length ()) {
+            subtree_root = v;
+        }
+    }
+
+    status = resource_pool_t::status_to_str (g[subtree_root].status);
+    return 0;
 }
 
 const std::string &reapi_cli_t::get_err_message ()
@@ -798,6 +1127,14 @@ int resource_query_t::remove_job (const uint64_t jobid)
 
 int resource_query_t::remove_job (const uint64_t jobid, const std::string &R, bool &full_removal)
 {
+    return remove_job (jobid, R, params.load_format, full_removal);
+}
+
+int resource_query_t::remove_job (const uint64_t jobid,
+                                  const std::string &R,
+                                  const std::string &format,
+                                  bool &full_removal)
+{
     int rc = -1;
     std::shared_ptr<resource_reader_base_t> reader;
 
@@ -809,7 +1146,7 @@ int resource_query_t::remove_job (const uint64_t jobid, const std::string &R, bo
         errno = EINVAL;
         return rc;
     }
-    if ((reader = create_resource_reader (params.load_format)) == nullptr) {
+    if ((reader = create_resource_reader (format)) == nullptr) {
         m_err_msg = __FUNCTION__;
         m_err_msg += ": ERROR: can't create reader\n";
         return rc;

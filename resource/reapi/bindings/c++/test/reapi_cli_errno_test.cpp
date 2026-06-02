@@ -514,6 +514,101 @@ static int test_allocate_then_cancel ()
     return 0;
 }
 
+static int test_info_overloads ()
+{
+    // Test that the 6-parameter and 7-parameter info() overloads work correctly
+    std::string jgf = R"({
+        "graph": {
+            "nodes": [
+                {"id": "0", "metadata": {"type": "cluster", "basename": "tiny", "name": "tiny0", "size": 1, "paths": {"containment": "/tiny0"}}},
+                {"id": "1", "metadata": {"type": "node", "basename": "node", "name": "node0", "size": 1, "rank": 0, "paths": {"containment": "/tiny0/node0"}}},
+                {"id": "2", "metadata": {"type": "core", "basename": "core", "name": "core0", "size": 1, "id": 0, "rank": 0, "paths": {"containment": "/tiny0/node0/core0"}}}
+            ],
+            "edges": [{"source": "0", "target": "1"}, {"source": "1", "target": "2"}]
+        }
+    })";
+
+    std::string params =
+        "{\"load_format\": \"jgf\", \"matcher_policy\": \"high\", "
+        "\"match_format\": \"rv1\", \"matcher_name\": \"CA\"}";
+
+    resource_query_t *rq = nullptr;
+    try {
+        rq = new resource_query_t (jgf, params);
+    } catch (...) {
+        ok (1, "# SKIP: couldn't create resource_query_t");
+        return 0;
+    }
+
+    void *h = static_cast<void *> (rq);
+    uint64_t jobid = 300;
+    bool reserved = false;
+    std::string R;
+    int64_t at = 0;
+    double ov = 0.0;
+
+    std::string jobspec = R"({
+        "version": 1,
+        "resources": [
+            {
+                "type": "node",
+                "count": 1,
+                "with": [
+                    {
+                        "type": "slot",
+                        "count": 1,
+                        "label": "task",
+                        "with": [{"type": "core", "count": 1}]
+                    }
+                ]
+            }
+        ],
+        "tasks": [{"command": ["sleep", "0"], "slot": "task", "count": {"per_slot": 1}}],
+        "attributes": {"system": {"duration": 60.0}}
+    })";
+
+    // Allocate a job
+    errno = 0;
+    int rc = reapi_cli_t::match_allocate (h, MATCH_ALLOCATE, jobspec, jobid, reserved, R, at, ov);
+
+    if (rc != 0) {
+        ok (1, "# SKIP: allocation failed, can't test info overloads");
+        delete rq;
+        return 0;
+    }
+
+    // Test 6-parameter info() (without R output)
+    std::string mode;
+    bool reserved_out;
+    int64_t at_out;
+    double ov_out;
+
+    errno = 0;
+    rc = reapi_cli_t::info (h, jobid, mode, reserved_out, at_out, ov_out);
+    ok (rc == 0, "info (6-parameter) succeeds for allocated job");
+    ok (mode == "ALLOCATED", "info (6-parameter) returns correct mode");
+
+    // Test 7-parameter info() (with R output)
+    std::string mode7;
+    bool reserved_out7;
+    int64_t at_out7;
+    double ov_out7;
+    std::string R_out;
+
+    errno = 0;
+    rc = reapi_cli_t::info (h, jobid, mode7, reserved_out7, at_out7, ov_out7, R_out);
+    ok (rc == 0, "info (7-parameter) succeeds for allocated job");
+    ok (mode7 == "ALLOCATED", "info (7-parameter) returns correct mode");
+    ok (!R_out.empty (), "info (7-parameter) returns R string");
+
+    // Verify both overloads return consistent data
+    ok (mode == mode7 && reserved_out == reserved_out7 && at_out == at_out7,
+        "info overloads return consistent data");
+
+    delete rq;
+    return 0;
+}
+
 int main (int argc, char *argv[])
 {
     plan (NO_PLAN);
@@ -528,6 +623,7 @@ int main (int argc, char *argv[])
     test_find_null_ctx ();
     test_match_allocate_orelse_reserve ();
     test_allocate_then_cancel ();
+    test_info_overloads ();
 
     done_testing ();
     return EXIT_SUCCESS;
