@@ -116,10 +116,30 @@ void fetch_helper_t::scrub ()
 
 bool operator== (const resource_pool_t &r, const fetch_helper_t &f)
 {
-    // we explicitly exclude properties because they may be dynamic
-    return (r.type.get () == f.type && r.basename == f.basename
-            && r.size == static_cast<unsigned int> (f.size) && r.rank == static_cast<int> (f.rank)
-            && r.id == f.id && r.name == f.name && r.paths == f.paths);
+    // A non-exclusive record against a unit-carrying vertex is a POOLED
+    // record (e.g. a shared SSD): it carries the *allocated* capacity in
+    // f.size, which may be anything from a minimal draw up to the vertex's
+    // full pool size. Every pooled record -- including a full-pool one --
+    // must be a positive draw that fits within the pool AND carry the
+    // vertex's unit (the match writer always emits it; a mismatch or a
+    // missing unit indicates a hand-modified or corrupted fragment).
+    // Everything else (exclusive allocations and unit-less structural
+    // waypoints) is reconstructed at its full vertex size and must match
+    // exactly.
+    // We explicitly exclude properties because they may be dynamic.
+    // Compare sizes in the int64 domain: f.size is int64_t and narrowing it
+    // to unsigned int would wrap out-of-range fragment sizes (e.g. 2^32+2)
+    // into small values that falsely match.
+    // f.unit is normalized to "" by apply_defaults (), but guard the
+    // std::string comparison so a hand-built fetch_helper_t cannot turn it
+    // into undefined behavior.
+    bool pooled_record = !f.exclusive && !r.unit.empty ();
+    bool size_match = pooled_record ? (f.unit && r.unit == f.unit && f.size > 0
+                                       && f.size <= static_cast<int64_t> (r.size))
+                                    : (static_cast<int64_t> (r.size) == f.size);
+    return (r.type.get () == f.type && r.basename == f.basename && size_match
+            && r.rank == static_cast<int> (f.rank) && r.id == f.id && r.name == f.name
+            && r.paths == f.paths);
 }
 
 bool operator!= (const resource_pool_t &r, const fetch_helper_t &f)
@@ -136,6 +156,10 @@ std::string diff (const resource_pool_t &r, const fetch_helper_t &f)
         sstream << " basename=(" << r.basename << ", " << f.basename << ")";
     if (r.size != f.size)
         sstream << " size=(" << r.size << ", " << f.size << ")";
+    // f.unit is normalized to "" by apply_defaults (); guard anyway so a
+    // hand-built fetch_helper_t cannot make the comparison or insertion UB.
+    if (r.unit != (f.unit ? f.unit : ""))
+        sstream << " unit=(" << r.unit << ", " << (f.unit ? f.unit : "") << ")";
     if (r.id != f.id)
         sstream << " id=(" << r.id << ", " << f.id << ")";
     if (r.name != f.name)
@@ -721,10 +745,18 @@ int resource_reader_jgf_t::update_vtx_plan (vtx_t v,
         // Non-exclusive resources have units (!g[v].unit.empty ()) (e.g.,
         // SSD with GiB, memory with MB). These need planner tracking to prevent
         // over-allocation when non-exclusive.
-        if ((span = planner_add_span (plans,
-                                      update_data.at,
-                                      update_data.duration,
-                                      static_cast<const uint64_t> (g[v].size)))
+        //
+        // Exclusive allocations consume the whole vertex, so the span size is
+        // g[v].size. Non-exclusive pooled resources consume only the capacity
+        // that was actually allocated; the reconstructed JGF records that
+        // amount in fetcher.size (the writer emits it as the vertex `size`,
+        // defaulting to 1 when omitted). Using g[v].size here would
+        // over-allocate the pool (e.g. book a whole 793 GiB SSD for a
+        // count: 1 GiB request) and break reconstruction once capacity is
+        // shared across jobs.
+        const uint64_t span_size = fetcher.exclusive ? static_cast<uint64_t> (g[v].size)
+                                                     : static_cast<uint64_t> (fetcher.size);
+        if ((span = planner_add_span (plans, update_data.at, update_data.duration, span_size))
             == -1) {
             m_err_msg += __FUNCTION__;
             m_err_msg += ": can't add span into " + g[v].name + ".\n";
