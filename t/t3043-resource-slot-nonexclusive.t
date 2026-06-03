@@ -297,4 +297,26 @@ test_expect_success "${test025_desc}" '
     test_cmp 025.R.out ${exp_dir}/node-slot-multi-exclusive.R.out
 '
 
+#
+# Repeated pooled single-slot allocation: verifies the per-SSD floor
+# (floor(capacity/per_slot)) and that match-output indentation is stable across
+# successive allocations.
+#
+
+cmds026="${cmd_dir}/cmds-pooled-slot-single-500.in"
+test026_desc="pooled 500 GB slot: 1 alloc per SSD (4 succeed, 5th fails); stable output"
+test_expect_success "${test026_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds026} > cmds026 &&
+    ${query} -L ${jgf} -f jgf -t 026.R.out < cmds026 &&
+    test_cmp 026.R.out ${exp_dir}/pooled-slot-single-500.R.out
+'
+
+cmds027="${cmd_dir}/cmds-pooled-slot-half.in"
+test027_desc="pooled ~half (396 GB) slot: 2 allocs per SSD (8 succeed, 9th fails)"
+test_expect_success "${test027_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds027} > cmds027 &&
+    ${query} -L ${jgf} -f jgf -t 027.R.out < cmds027 &&
+    test_cmp 027.R.out ${exp_dir}/pooled-slot-half.R.out
+'
+
 test_done
