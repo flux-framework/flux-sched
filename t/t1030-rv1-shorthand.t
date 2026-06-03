@@ -150,10 +150,10 @@ test_expect_success 'verify both non-exclusive SSD jobs are still running' '
 test_expect_success 'agfilters should track non-exclusive SSD usage at cluster level' '
     flux ion-resource find -q --format=jgf agfilter=true \
         | jq . > agfilter_nonexcl_active.json &&
-    # With two jobs each allocating one 793 GiB SSD (non-exclusive),
-    # agfilter should show used:1586
+    # With two jobs each allocating count:1 SSD capacity (non-exclusive),
+    # agfilter should show used:2 (capacity-based, not full size)
     jq -e ".graph.nodes[].metadata | select(.type == \"cluster\") | .agfilter.ssd
-        | startswith(\"used:1586\")" agfilter_nonexcl_active.json
+        | startswith(\"used:2\")" agfilter_nonexcl_active.json
 '
 
 test_expect_success 'reload scheduler with non-exclusive SSD jobs running' '
@@ -175,9 +175,9 @@ test_expect_success 'jobs with non-exclusive SSDs should survive scheduler reloa
 test_expect_success 'after reload, agfilters should track non-exclusive SSD usage' '
     flux ion-resource find -q --format=jgf agfilter=true \
         | jq . > agfilter_nonexcl_after_reload.json &&
-    # After reload, cluster should still show used:1586 for SSDs
+    # After reload, cluster should still show used:2 for SSDs (capacity-based)
     jq -e ".graph.nodes[].metadata | select(.type == \"cluster\") | .agfilter.ssd
-        | startswith(\"used:1586\")" agfilter_nonexcl_after_reload.json
+        | startswith(\"used:2\")" agfilter_nonexcl_after_reload.json
 '
 
 test_expect_success 'cancel non-exclusive SSD jobs' '
