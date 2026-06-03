@@ -446,6 +446,38 @@ int dfu_impl_t::prime_exp (subsystem_t subsystem, vtx_t u, std::map<resource_typ
     return rc;
 }
 
+/*! Helper function to determine the "needs" value for a resource allocation.
+ *  For non-exclusive pooled resources with units (like SSD with GiB), the needs
+ *  should be the jobspec's count value (capacity request), not the full available amount.
+ *  For exclusive resources or resources without units, needs equals the full available count.
+ *
+ *  \param resources jobspec resource vector
+ *  \param tgt       target vertex
+ *  \param available available capacity from planner
+ *  \param exclusive whether resource is being allocated exclusively
+ *  \return          needs value (capacity to allocate)
+ */
+unsigned int dfu_impl_t::get_capacity_needs (const std::vector<Jobspec::Resource> &resources,
+                                             vtx_t tgt,
+                                             unsigned int available,
+                                             bool exclusive)
+{
+    // For exclusive allocations or resources without units, allocate the full amount
+    if (exclusive || (*m_graph)[tgt].unit.empty ())
+        return available;
+
+    // For non-exclusive pooled resources with units, use the jobspec's requested count
+    for (auto &resource : resources) {
+        if (resource.type == (*m_graph)[tgt].type) {
+            // Return the requested count (capacity) from the jobspec
+            return resource.count.min;
+        }
+    }
+
+    // If no matching resource in jobspec, default to full available
+    return available;
+}
+
 int dfu_impl_t::explore_statically (const jobmeta_t &meta,
                                     vtx_t u,
                                     subsystem_t subsystem,
@@ -475,7 +507,8 @@ int dfu_impl_t::explore_statically (const jobmeta_t &meta,
         }
         if (rc == 0) {
             unsigned int count = dfu.avail ();
-            eval_edg_t ev_edg (count, count, x_inout, *ei);
+            unsigned int needs = get_capacity_needs (resources, tgt, count, x_inout);
+            eval_edg_t ev_edg (count, needs, x_inout, *ei);
             eval_egroup_t egrp (dfu.overall_score (), dfu.avail (), 0, x_inout, false);
             egrp.edges.push_back (ev_edg);
             dfu.add (subsystem, (*m_graph)[tgt].type, egrp);
@@ -558,7 +591,8 @@ int dfu_impl_t::explore_dynamically (const jobmeta_t &meta,
         }
         if (rc == 0) {
             unsigned int count = dfu.avail ();
-            eval_edg_t ev_edg (count, count, x_inout, e);
+            unsigned int needs = get_capacity_needs (resources, tgt, count, x_inout);
+            eval_edg_t ev_edg (count, needs, x_inout, e);
             eval_egroup_t egrp (dfu.overall_score (), dfu.avail (), 0, x_inout, false);
             egrp.edges.push_back (ev_edg);
             dfu.add (subsystem, (*m_graph)[tgt].type, egrp);
@@ -744,7 +778,7 @@ int dfu_impl_t::dom_slot (const jobmeta_t &meta,
                     }
                 }
                 eval_edg_t ev_edg ((*egroup_i).edges[0].count,
-                                   (*egroup_i).edges[0].count,
+                                   (*egroup_i).edges[0].needs,
                                    (*egroup_i).edges[0].exclusive,
                                    (*egroup_i).edges[0].edge);
                 score += (*egroup_i).score;

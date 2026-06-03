@@ -160,6 +160,21 @@ class dfu_impl_t {
                               vtx_t u,
                               bool parent_excl);
 
+    /*! Determine the capacity needs for a resource allocation.
+     *  For non-exclusive pooled resources with units, returns the jobspec's count value.
+     *  For exclusive resources or resources without units, returns the full available amount.
+     *
+     *  \param resources jobspec resource vector.
+     *  \param tgt       target vertex.
+     *  \param available available capacity from planner.
+     *  \param exclusive whether resource is being allocated exclusively.
+     *  \return          needs value (capacity to allocate).
+     */
+    unsigned int get_capacity_needs (const std::vector<Jobspec::Resource> &resources,
+                                     vtx_t tgt,
+                                     unsigned int available,
+                                     bool exclusive);
+
     /*! Prime the resource graph with subtree plans. The subtree plans are
      *  instantiated on certain resource vertices and updated with the
      *  information on their subtree resources. For example, the subtree plan
