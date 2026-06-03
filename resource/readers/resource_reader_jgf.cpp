@@ -114,10 +114,21 @@ void fetch_helper_t::scrub ()
 
 bool operator== (const resource_pool_t &r, const fetch_helper_t &f)
 {
-    // we explicitly exclude properties because they may be dynamic
-    return (r.type.get () == f.type && r.basename == f.basename
-            && r.size == static_cast<unsigned int> (f.size) && r.rank == static_cast<int> (f.rank)
-            && r.id == f.id && r.name == f.name && r.paths == f.paths);
+    // Exclusive (and unit-less) resources are reconstructed at their full
+    // vertex size, so they must match exactly. Non-exclusive pooled resources
+    // (e.g. shared SSDs) carry only the *allocated* capacity in f.size, which
+    // may be smaller than the vertex's full pool size in the base graph; for
+    // those, the allocated amount must be a positive draw that fits within
+    // the pool and the R fragment's unit must match the vertex's unit (the
+    // match writer always emits the vertex unit; a mismatch or a missing
+    // unit indicates a hand-modified or corrupted fragment).
+    // We explicitly exclude properties because they may be dynamic
+    bool size_match = (r.size == static_cast<unsigned int> (f.size))
+                      || (!f.exclusive && !r.unit.empty () && r.unit == f.unit && f.size > 0
+                          && static_cast<unsigned int> (f.size) <= r.size);
+    return (r.type.get () == f.type && r.basename == f.basename && size_match
+            && r.rank == static_cast<int> (f.rank) && r.id == f.id && r.name == f.name
+            && r.paths == f.paths);
 }
 
 bool operator!= (const resource_pool_t &r, const fetch_helper_t &f)
@@ -134,6 +145,8 @@ std::string diff (const resource_pool_t &r, const fetch_helper_t &f)
         sstream << " basename=(" << r.basename << ", " << f.basename << ")";
     if (r.size != f.size)
         sstream << " size=(" << r.size << ", " << f.size << ")";
+    if (r.unit != f.unit)
+        sstream << " unit=(" << r.unit << ", " << f.unit << ")";
     if (r.id != f.id)
         sstream << " id=(" << r.id << ", " << f.id << ")";
     if (r.name != f.name)
@@ -719,10 +732,18 @@ int resource_reader_jgf_t::update_vtx_plan (vtx_t v,
         // Non-exclusive resources have units (!g[v].unit.empty ()) (e.g.,
         // SSD with GiB, memory with MB). These need planner tracking to prevent
         // over-allocation when non-exclusive.
-        if ((span = planner_add_span (plans,
-                                      update_data.at,
-                                      update_data.duration,
-                                      static_cast<const uint64_t> (g[v].size)))
+        //
+        // Exclusive allocations consume the whole vertex, so the span size is
+        // g[v].size. Non-exclusive pooled resources consume only the capacity
+        // that was actually allocated; the reconstructed JGF records that
+        // amount in fetcher.size (the writer emits it as the vertex `size`,
+        // defaulting to 1 when omitted). Using g[v].size here would
+        // over-allocate the pool (e.g. book a whole 793 GiB SSD for a
+        // count: 1 GiB request) and break reconstruction once capacity is
+        // shared across jobs.
+        const uint64_t span_size = fetcher.exclusive ? static_cast<uint64_t> (g[v].size)
+                                                     : static_cast<uint64_t> (fetcher.size);
+        if ((span = planner_add_span (plans, update_data.at, update_data.duration, span_size))
             == -1) {
             m_err_msg += __FUNCTION__;
             m_err_msg += ": can't add span into " + g[v].name + ".\n";
