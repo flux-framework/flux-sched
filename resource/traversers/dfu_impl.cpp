@@ -451,6 +451,99 @@ int dfu_impl_t::prime_exp (subsystem_t subsystem, vtx_t u, std::map<resource_typ
     return rc;
 }
 
+/*! Return (building and caching on first use) the jobspec type -> resource
+ *  request lookup for a level's resources vector. The map depends only on the
+ *  jobspec level, so it is built once per traversal and reused for every
+ *  candidate graph vertex instead of being rebuilt on each resolve_request()
+ *  call. The cache is keyed by the resources vector's address (stable for the
+ *  traversal; the vector lives in the Jobspec) and is cleared at the start of
+ *  each select(). Duplicate same-type siblings under a slot are rejected at
+ *  jobspec parse time; elsewhere the first entry wins, matching the
+ *  first-match behavior of resolve_exclusivity ().
+ *
+ *  \param resources jobspec resource vector for the current level.
+ *  \return          const ref to the cached type -> request map.
+ */
+const std::unordered_map<resource_type_t, const Resource *> &dfu_impl_t::requests_for (
+    const std::vector<Resource> &resources)
+{
+    auto [it, inserted] = m_level_requests.try_emplace (&resources);
+    if (inserted) {
+        auto &requests = it->second;
+        requests.reserve (resources.size ());
+        for (auto &resource : resources)
+            requests.emplace (resource_type_t{resource.type}, &resource);
+    }
+    return it->second;
+}
+
+/*! Resolve a jobspec resource request against a matched vertex: the needs
+ *  (how much of the vertex the match consumes) and the pooled classification
+ *  (whether the request draws from the vertex's capacity pool). This is the
+ *  one authoritative resolution of "pooled": a non-exclusive request against
+ *  a vertex that carries a unit. The result is recorded on the evaluation
+ *  edge so slot counting, binding, and enforcement all agree.
+ *
+ *  \param requests  precomputed jobspec type -> request lookup
+ *                   (see requests_for()).
+ *  \param tgt       target vertex.
+ *  \param available available capacity from planner.
+ *  \param exclusive whether the resource is being allocated exclusively.
+ *  \param resolved  resolved needs and pooled classification (out).
+ *  \return          0 on success; -1 when the vertex cannot serve the request.
+ */
+int dfu_impl_t::resolve_request (
+    const std::unordered_map<resource_type_t, const Resource *> &requests,
+    vtx_t tgt,
+    unsigned int available,
+    bool exclusive,
+    resolved_request_t &resolved)
+{
+    resolved.needs = available;
+    resolved.pooled = false;
+    // Exclusive matches consume the full available amount and the jobspec
+    // unit stays advisory -- the historical behavior.
+    if (exclusive)
+        return 0;
+    auto it = requests.find ((*m_graph)[tgt].type);
+    if (it == requests.end ())
+        return 0;
+    const Jobspec::Resource &req = *it->second;
+    const std::string &vtx_unit = (*m_graph)[tgt].unit;
+    // A shared request that specifies a unit must match the vertex's unit
+    // exactly: there is no unit conversion support, and drawing a
+    // differently-denominated amount from a pool would silently
+    // mis-account capacity.
+    if (!req.unit.empty () && req.unit != vtx_unit) {
+        errno = EINVAL;
+        return -1;
+    }
+    // A unit-less vertex has no capacity pool: the shared request is
+    // tracked by instance and consumes the full available amount.
+    if (vtx_unit.empty ())
+        return 0;
+    // POOLED: draw exactly the requested amount from the vertex's pool.
+    // The draw must be a fixed amount: parse-time validation rejects
+    // ranged counts on explicitly shared pooled requests, but the request
+    // can also become pooled here via inherited non-exclusivity or an
+    // omitted jobspec unit, which the parser cannot see.
+    if (req.count.min != req.count.max) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": pooled request for type '" + std::string{req.type.get ()}
+                     + "' requires a fixed count.\n";
+        errno = EINVAL;
+        return -1;
+    }
+    // The whole fixed draw must come from this vertex's pool.
+    if (available < req.count.min) {
+        errno = EBUSY;
+        return -1;
+    }
+    resolved.needs = req.count.min;
+    resolved.pooled = true;
+    return 0;
+}
+
 int dfu_impl_t::explore_statically (const jobmeta_t &meta,
                                     vtx_t u,
                                     subsystem_t subsystem,
@@ -463,6 +556,9 @@ int dfu_impl_t::explore_statically (const jobmeta_t &meta,
     int rc = -1;
     int rc2 = -1;
     f_out_edg_iterator_t ei, ei_end;
+    // Precompute jobspec type -> request once so resolve_request() is an
+    // O(1) lookup per out-edge rather than an O(resources) rescan.
+    const auto &requests = requests_for (resources);
     for (tie (ei, ei_end) = out_edges (u, *m_graph); ei != ei_end; ++ei) {
         if (stop_explore (*ei, subsystem) || !in_subsystem (*ei, subsystem))
             continue;
@@ -480,7 +576,11 @@ int dfu_impl_t::explore_statically (const jobmeta_t &meta,
         }
         if (rc == 0) {
             unsigned int count = dfu.avail ();
-            eval_edg_t ev_edg (count, count, x_inout, *ei);
+            resolved_request_t resolved;
+            if (resolve_request (requests, tgt, count, x_inout, resolved) < 0)
+                continue;
+            eval_edg_t ev_edg (count, resolved.needs, x_inout, *ei);
+            ev_edg.pooled = resolved.pooled;
             eval_egroup_t egrp (dfu.overall_score (), dfu.avail (), 0, x_inout, false);
             egrp.edges.push_back (ev_edg);
             dfu.add (subsystem, (*m_graph)[tgt].type, egrp);
@@ -556,6 +656,9 @@ int dfu_impl_t::explore_dynamically (const jobmeta_t &meta,
     share_tally_map_t tallies;
     for (auto &resource : resources)
         tallies[resource.type].per_share = m_match->calc_effective_max (resource);
+    // Precompute jobspec type -> request once so resolve_request() is an
+    // O(1) lookup per out-edge rather than an O(resources) rescan.
+    const auto &requests = requests_for (resources);
     // outedges contains outedge map for vertex u, sorted in available resources
     auto &outedges = iter->second;
     for (auto &kv : outedges) {
@@ -578,7 +681,11 @@ int dfu_impl_t::explore_dynamically (const jobmeta_t &meta,
         }
         if (rc == 0) {
             unsigned int count = dfu.avail ();
-            eval_edg_t ev_edg (count, count, x_inout, e);
+            resolved_request_t resolved;
+            if (resolve_request (requests, tgt, count, x_inout, resolved) < 0)
+                continue;
+            eval_edg_t ev_edg (count, resolved.needs, x_inout, e);
+            ev_edg.pooled = resolved.pooled;
             eval_egroup_t egrp (dfu.overall_score (), dfu.avail (), 0, x_inout, false);
             egrp.edges.push_back (ev_edg);
             dfu.add (subsystem, (*m_graph)[tgt].type, egrp);
@@ -777,7 +884,7 @@ int dfu_impl_t::dom_slot (const jobmeta_t &meta,
                     }
                 }
                 eval_edg_t ev_edg ((*egroup_i).edges[0].count,
-                                   (*egroup_i).edges[0].count,
+                                   (*egroup_i).edges[0].needs,
                                    (*egroup_i).edges[0].exclusive,
                                    (*egroup_i).edges[0].edge);
                 score += (*egroup_i).score;
@@ -1341,6 +1448,9 @@ int dfu_impl_t::select (std::vector<Jobspec::Resource> &resources,
     tick ();
     m_preorder = 0;
     m_postorder = 0;
+    // Reset the per-traversal request cache; entries are keyed by the
+    // address of jobspec resources vectors, which can be reused across jobs.
+    m_level_requests.clear ();
     rc = dom_dfv (meta, root, resources, true, &x_in, dfu);
     if (rc == 0) {
         unsigned int needs = 0;

@@ -160,6 +160,53 @@ class dfu_impl_t {
                               vtx_t u,
                               bool parent_excl);
 
+    /*! Return (building and caching on first use) the jobspec type -> resource
+     *  request lookup for a given level's resources vector. The map depends
+     *  only on the jobspec level, so it is computed once per traversal and
+     *  reused across every candidate graph vertex, rather than rebuilt on each
+     *  resolve_request() call. Keyed by the resources vector's address, which
+     *  is stable for the life of a traversal (it points into the Jobspec).
+     *
+     *  \param resources jobspec resource vector for the current level.
+     *  \return          const ref to the cached type -> request map.
+     */
+    const std::unordered_map<resource_type_t, const Jobspec::Resource *> &requests_for (
+        const std::vector<Jobspec::Resource> &resources);
+
+    /*! The per-vertex resolution of a jobspec resource request: how much of
+     *  the vertex the match consumes (needs) and whether the request draws
+     *  from the vertex's capacity pool (pooled).
+     */
+    struct resolved_request_t {
+        unsigned int needs = 0;
+        bool pooled = false;
+    };
+
+    /*! Resolve a jobspec resource request against a matched vertex.
+     *  Exclusive matches consume the full available amount (jobspec unit
+     *  stays advisory, the historical behavior). A non-exclusive request
+     *  against a vertex with a unit is POOLED: it consumes exactly the
+     *  requested count from the vertex's capacity pool, and if the jobspec
+     *  specifies a unit it must equal the vertex's unit (no conversion
+     *  support). A non-exclusive request against a unit-less vertex is
+     *  tracked by instance and consumes the full available amount.
+     *
+     *  \param requests  precomputed type -> request lookup (see requests_for()).
+     *  \param tgt       target vertex.
+     *  \param available available capacity from planner.
+     *  \param exclusive whether the resource is being allocated exclusively.
+     *  \param resolved  resolved needs and pooled classification (out).
+     *  \return          0 on success; -1 when the vertex cannot serve the
+     *                   request (unit mismatch, or a pooled request without
+     *                   a fixed count).
+     */
+    int resolve_request (const std::unordered_map<resource_type_t,
+                         const Jobspec::Resource *> &requests,
+                         vtx_t tgt,
+                         unsigned int available,
+                         bool exclusive,
+                         resolved_request_t &resolved);
+
     /*! Prime the resource graph with subtree plans. The subtree plans are
      *  instantiated on certain resource vertices and updated with the
      *  information on their subtree resources. For example, the subtree plan
@@ -704,6 +751,14 @@ class dfu_impl_t {
     std::shared_ptr<dfu_match_cb_t> m_match = nullptr;
     expr_eval_api_t m_expr_eval;
     std::string m_err_msg = "";
+    // Per-traversal cache of jobspec type -> resource request lookups, keyed
+    // by the address of the (jobspec-resident, stable) resources vector for
+    // each level. Populated lazily by requests_for() and cleared at the start
+    // of each select() so a single jobspec level is scanned once per traversal
+    // rather than once per visited vertex.
+    std::unordered_map<const std::vector<Jobspec::Resource> *,
+                       std::unordered_map<resource_type_t, const Jobspec::Resource *>>
+        m_level_requests;
 };  // the end of class dfu_impl_t
 
 template<class lookup_t>
