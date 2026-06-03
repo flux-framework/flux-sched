@@ -319,4 +319,19 @@ test_expect_success "${test027_desc}" '
     test_cmp 027.R.out ${exp_dir}/pooled-slot-half.R.out
 '
 
+#
+# Non-pooled shared GPU: multiple jobs share one GPU on a single socket, each
+# taking a different (exclusive) core. Complements test017, where each job
+# consumes all 18 cores of a socket and so never shares a GPU between jobs on
+# the same socket. Runs against tiny.json (4 sockets, 1 GPU + 18 cores each).
+#
+
+cmds028="${cmd_dir}/cmds-gpu-shared-test.in"
+test028_desc="non-pooled GPU shared by multiple jobs on one socket (distinct cores)"
+test_expect_success "${test028_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds028} > cmds028 &&
+    ${query} -L ${tiny_jgf} -f jgf -t 028.R.out < cmds028 &&
+    test_cmp 028.R.out ${exp_dir}/gpu-shared-test.R.out
+'
+
 test_done
