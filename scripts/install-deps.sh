@@ -40,6 +40,7 @@ libedit${DEV_SUFFIX}
 ${LIB_PREFIX}hwloc${DEV_SUFFIX}
 ${PY3_PREFIX}yaml
 ${LIB_PREFIX}yaml-cpp${DEV_SUFFIX}
+${PY3_PREFIX}jsonschema
 ninja-build
 cmake
 curl
