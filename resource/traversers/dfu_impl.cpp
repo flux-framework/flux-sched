@@ -799,18 +799,22 @@ int dfu_impl_t::dom_slot (const jobmeta_t &meta,
     unsigned int qual_num_slots = 0;
     std::vector<eval_egroup_t> edg_group_vector;
     subsystem_t dom = m_match->dom_subsystem ();
-    // Per-type cursor for non-exclusive POOLED slot elements. We walk a type's
-    // egroups (vertices) in score order, remembering how much capacity is left
-    // in the current vertex, so multiple slots can pack into one vertex while
-    // each slot draws its whole per-slot capacity from a SINGLE vertex (never
-    // aggregating partial capacity across vertices). Declared before the first
-    // `goto done` so the jumps do not bypass its initialization.
-    struct pooled_cursor_t {
-        std::vector<eval_egroup_t>::iterator cur;
-        bool started = false;
-        unsigned int remaining = 0;
+    // Per-slot binding for non-exclusive POOLED slot elements, precomputed after
+    // cnt_slot once qual_num_slots is known. A vertex's capacity may serve more
+    // than one slot, but enforce() OVERWRITES (does not sum) a runtime edge's
+    // needs and there is a single edge per parent->vertex; so every slot that
+    // lands on a vertex must carry that vertex's TOTAL needs for the overwrite
+    // to record the shared sum. Slots are assigned spread-first (to the vertex
+    // with the most remaining capacity), packing onto a vertex only when
+    // vertices run out. Declared before the first `goto done` so the jumps do
+    // not bypass its initialization.
+    struct pooled_bind_t {
+        edg_t edge;
+        int64_t score = 0;
+        unsigned int avail = 0;
+        unsigned int needs = 0;
     };
-    std::map<resource_type_t, pooled_cursor_t> pooled_cursors;
+    std::map<resource_type_t, std::vector<pooled_bind_t>> pooled_binding;
 
     if ((rc =
              explore (meta, u, dom, slot_shape, pristine, &x_inout, visit_t::DFV, dfu_slot, nslots))
@@ -820,34 +824,71 @@ int dfu_impl_t::dom_slot (const jobmeta_t &meta,
         goto done;
 
     qual_num_slots = cnt_slot (slot_shape, dfu_slot);
+    // Assign pooled slot elements to vertices (spread-first; pack on scarcity)
+    // and record each slot's (edge, score, avail, per-vertex-total needs).
+    for (auto &slot_elem : slot_shape) {
+        if (!(slot_elem.exclusive == Jobspec::tristate_t::FALSE && !slot_elem.unit.empty ()))
+            continue;
+        unsigned int per_slot = slot_elem.count.min;
+        struct cand_t {
+            edg_t edge;
+            int64_t score;
+            unsigned int avail;
+            unsigned int remaining;
+            unsigned int assigned;
+        };
+        std::vector<cand_t> cands;
+        dfu_slot.eval_egroups_iter_reset (dom, slot_elem.type);
+        for (auto it = dfu_slot.eval_egroups_iter_next (dom, slot_elem.type);
+             it != dfu_slot.eval_egroups_end (dom, slot_elem.type);
+             it = dfu_slot.eval_egroups_iter_next (dom, slot_elem.type)) {
+            unsigned int a = static_cast<unsigned int> ((*it).edges[0].count);
+            cands.push_back ({(*it).edges[0].edge, (*it).score, a, a, 0u});
+        }
+        dfu_slot.eval_egroups_iter_reset (dom, slot_elem.type);
+        std::vector<unsigned int> slot_cand (qual_num_slots, 0);
+        bool ok = (per_slot > 0);
+        for (unsigned int s = 0; ok && s < qual_num_slots; ++s) {
+            int best = -1;
+            for (unsigned int c = 0; c < cands.size (); ++c) {
+                if (cands[c].remaining < per_slot)
+                    continue;
+                if (best < 0 || cands[c].remaining > cands[best].remaining)
+                    best = static_cast<int> (c);
+            }
+            if (best < 0) {
+                ok = false;
+                break;
+            }
+            slot_cand[s] = static_cast<unsigned int> (best);
+            cands[best].remaining -= per_slot;
+            cands[best].assigned += 1;
+        }
+        if (!ok) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": not enough slots.\n";
+            qual_num_slots = 0;
+            goto done;
+        }
+        auto &binding = pooled_binding[slot_elem.type];
+        binding.resize (qual_num_slots);
+        for (unsigned int s = 0; s < qual_num_slots; ++s) {
+            cand_t &c = cands[slot_cand[s]];
+            binding[s] = pooled_bind_t{c.edge, c.score, c.avail, c.assigned * per_slot};
+        }
+    }
     for (unsigned int i = 0; i < qual_num_slots; ++i) {
         eval_egroup_t edg_group;
         int64_t score = MATCH_MET;
         for (auto &slot_elem : slot_shape) {
             if (slot_elem.exclusive == Jobspec::tristate_t::FALSE && !slot_elem.unit.empty ()) {
-                // Pooled: bind exactly one vertex that can supply per_slot,
-                // advancing to the next vertex once the current one is drained.
-                unsigned int per_slot = slot_elem.count.min;
-                auto &pc = pooled_cursors[slot_elem.type];
-                while (!pc.started || pc.remaining < per_slot) {
-                    auto it = dfu_slot.eval_egroups_iter_next (dom, slot_elem.type);
-                    if (it == dfu_slot.eval_egroups_end (dom, slot_elem.type)) {
-                        m_err_msg += __FUNCTION__;
-                        m_err_msg += ": not enough slots.\n";
-                        qual_num_slots = 0;
-                        goto done;
-                    }
-                    pc.cur = it;
-                    pc.started = true;
-                    pc.remaining = static_cast<unsigned int> ((*it).edges[0].count);
-                }
-                eval_edg_t ev_edg ((*pc.cur).edges[0].count,
-                                   per_slot,
-                                   (*pc.cur).edges[0].exclusive,
-                                   (*pc.cur).edges[0].edge);
-                score += (*pc.cur).score;
+                // Pooled: use the precomputed assignment for slot i. needs is the
+                // per-vertex TOTAL so enforce()'s overwrite of the (single)
+                // parent->vertex edge records the sum of all slots sharing it.
+                const pooled_bind_t &b = pooled_binding[slot_elem.type][i];
+                eval_edg_t ev_edg (b.avail, b.needs, false, b.edge);
+                score += b.score;
                 edg_group.edges.push_back (ev_edg);
-                pc.remaining -= per_slot;
                 continue;
             }
             unsigned int j = 0;
