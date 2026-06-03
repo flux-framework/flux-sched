@@ -160,20 +160,35 @@ class dfu_impl_t {
                               vtx_t u,
                               bool parent_excl);
 
+    /*! Return (building and caching on first use) the jobspec type -> requested
+     *  capacity (count.min) lookup for a given level's resources vector. The map
+     *  depends only on the jobspec level, so it is computed once per traversal
+     *  and reused across every candidate graph vertex, rather than rebuilt on
+     *  each get_capacity_needs() call. Keyed by the resources vector's address,
+     *  which is stable for the life of a traversal (it points into the Jobspec).
+     *
+     *  \param resources jobspec resource vector for the current level.
+     *  \return          const ref to the cached type -> requested capacity map.
+     */
+    const std::unordered_map<resource_type_t, unsigned int> &capacity_needs_for (
+        const std::vector<Jobspec::Resource> &resources);
+
     /*! Determine the capacity needs for a resource allocation.
      *  For non-exclusive pooled resources with units, returns the jobspec's count value.
      *  For exclusive resources or resources without units, returns the full available amount.
      *
-     *  \param resources jobspec resource vector.
-     *  \param tgt       target vertex.
-     *  \param available available capacity from planner.
-     *  \param exclusive whether resource is being allocated exclusively.
-     *  \return          needs value (capacity to allocate).
+     *  \param type_to_count precomputed type -> requested capacity lookup
+     *                       (see capacity_needs_for()).
+     *  \param tgt           target vertex.
+     *  \param available     available capacity from planner.
+     *  \param exclusive     whether resource is being allocated exclusively.
+     *  \return              needs value (capacity to allocate).
      */
-    unsigned int get_capacity_needs (const std::vector<Jobspec::Resource> &resources,
-                                     vtx_t tgt,
-                                     unsigned int available,
-                                     bool exclusive);
+    unsigned int get_capacity_needs (
+        const std::unordered_map<resource_type_t, unsigned int> &type_to_count,
+        vtx_t tgt,
+        unsigned int available,
+        bool exclusive);
 
     /*! Prime the resource graph with subtree plans. The subtree plans are
      *  instantiated on certain resource vertices and updated with the
@@ -681,6 +696,15 @@ class dfu_impl_t {
     std::shared_ptr<dfu_match_cb_t> m_match = nullptr;
     expr_eval_api_t m_expr_eval;
     std::string m_err_msg = "";
+    // Per-traversal cache of jobspec type -> requested capacity lookups, keyed
+    // by the address of the (jobspec-resident, stable) resources vector for each
+    // level. Populated lazily by capacity_needs_for() and cleared at the start
+    // of each select() so a single jobspec level is scanned once per traversal
+    // rather than once per visited vertex. Only feature jobspecs (non-exclusive
+    // pooled resources) ever populate it.
+    std::unordered_map<const std::vector<Jobspec::Resource> *,
+                       std::unordered_map<resource_type_t, unsigned int>>
+        m_capacity_needs;
 };  // the end of class dfu_impl_t
 
 template<class lookup_t>

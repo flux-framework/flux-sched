@@ -446,33 +446,57 @@ int dfu_impl_t::prime_exp (subsystem_t subsystem, vtx_t u, std::map<resource_typ
     return rc;
 }
 
+/*! Return (building and caching on first use) the jobspec type -> requested
+ *  capacity (count.min) lookup for a level's resources vector. The map depends
+ *  only on the jobspec level, so it is built once per traversal and reused for
+ *  every candidate graph vertex instead of being rebuilt on each
+ *  get_capacity_needs() call. The cache is keyed by the resources vector's
+ *  address (stable for the traversal; the vector lives in the Jobspec) and is
+ *  cleared at the start of each select(). On the (invalid) chance of duplicate
+ *  types, the first entry wins, matching the previous first-match-returns loop.
+ *
+ *  \param resources jobspec resource vector for the current level.
+ *  \return          const ref to the cached type -> requested capacity map.
+ */
+const std::unordered_map<resource_type_t, unsigned int> &dfu_impl_t::capacity_needs_for (
+    const std::vector<Jobspec::Resource> &resources)
+{
+    auto [it, inserted] = m_capacity_needs.try_emplace (&resources);
+    if (inserted) {
+        auto &type_to_count = it->second;
+        type_to_count.reserve (resources.size ());
+        for (auto &resource : resources)
+            type_to_count.emplace (resource_type_t{resource.type}, resource.count.min);
+    }
+    return it->second;
+}
+
 /*! Helper function to determine the "needs" value for a resource allocation.
  *  For non-exclusive pooled resources with units (like SSD with GiB), the needs
  *  should be the jobspec's count value (capacity request), not the full available amount.
  *  For exclusive resources or resources without units, needs equals the full available count.
  *
- *  \param resources jobspec resource vector
- *  \param tgt       target vertex
- *  \param available available capacity from planner
- *  \param exclusive whether resource is being allocated exclusively
- *  \return          needs value (capacity to allocate)
+ *  \param type_to_count precomputed jobspec type -> requested capacity lookup
+ *                       (see capacity_needs_for()).
+ *  \param tgt           target vertex
+ *  \param available     available capacity from planner
+ *  \param exclusive     whether resource is being allocated exclusively
+ *  \return              needs value (capacity to allocate)
  */
-unsigned int dfu_impl_t::get_capacity_needs (const std::vector<Jobspec::Resource> &resources,
-                                             vtx_t tgt,
-                                             unsigned int available,
-                                             bool exclusive)
+unsigned int dfu_impl_t::get_capacity_needs (
+    const std::unordered_map<resource_type_t, unsigned int> &type_to_count,
+    vtx_t tgt,
+    unsigned int available,
+    bool exclusive)
 {
     // For exclusive allocations or resources without units, allocate the full amount
     if (exclusive || (*m_graph)[tgt].unit.empty ())
         return available;
 
     // For non-exclusive pooled resources with units, use the jobspec's requested count
-    for (auto &resource : resources) {
-        if (resource.type == (*m_graph)[tgt].type) {
-            // Return the requested count (capacity) from the jobspec
-            return resource.count.min;
-        }
-    }
+    auto it = type_to_count.find ((*m_graph)[tgt].type);
+    if (it != type_to_count.end ())
+        return it->second;
 
     // If no matching resource in jobspec, default to full available
     return available;
@@ -490,6 +514,9 @@ int dfu_impl_t::explore_statically (const jobmeta_t &meta,
     int rc = -1;
     int rc2 = -1;
     f_out_edg_iterator_t ei, ei_end;
+    // Precompute jobspec type -> requested capacity once so get_capacity_needs()
+    // is an O(1) lookup per out-edge rather than an O(resources) rescan.
+    const auto &type_to_count = capacity_needs_for (resources);
     for (tie (ei, ei_end) = out_edges (u, *m_graph); ei != ei_end; ++ei) {
         if (stop_explore (*ei, subsystem) || !in_subsystem (*ei, subsystem))
             continue;
@@ -507,7 +534,7 @@ int dfu_impl_t::explore_statically (const jobmeta_t &meta,
         }
         if (rc == 0) {
             unsigned int count = dfu.avail ();
-            unsigned int needs = get_capacity_needs (resources, tgt, count, x_inout);
+            unsigned int needs = get_capacity_needs (type_to_count, tgt, count, x_inout);
             eval_edg_t ev_edg (count, needs, x_inout, *ei);
             eval_egroup_t egrp (dfu.overall_score (), dfu.avail (), 0, x_inout, false);
             egrp.edges.push_back (ev_edg);
@@ -569,6 +596,9 @@ int dfu_impl_t::explore_dynamically (const jobmeta_t &meta,
 
     // Once a resource type is sufficiently discovered, not need find more
     std::set<resource_type_t> sat_types;
+    // Precompute jobspec type -> requested capacity once so get_capacity_needs()
+    // is an O(1) lookup per out-edge rather than an O(resources) rescan.
+    const auto &type_to_count = capacity_needs_for (resources);
     // outedges contains outedge map for vertex u, sorted in available resources
     auto &outedges = iter->second;
     for (auto &kv : outedges) {
@@ -591,7 +621,7 @@ int dfu_impl_t::explore_dynamically (const jobmeta_t &meta,
         }
         if (rc == 0) {
             unsigned int count = dfu.avail ();
-            unsigned int needs = get_capacity_needs (resources, tgt, count, x_inout);
+            unsigned int needs = get_capacity_needs (type_to_count, tgt, count, x_inout);
             eval_edg_t ev_edg (count, needs, x_inout, e);
             eval_egroup_t egrp (dfu.overall_score (), dfu.avail (), 0, x_inout, false);
             egrp.edges.push_back (ev_edg);
@@ -1339,6 +1369,9 @@ int dfu_impl_t::select (Jobspec::Jobspec &j, vtx_t root, jobmeta_t &meta, bool e
     tick ();
     m_preorder = 0;
     m_postorder = 0;
+    // Reset the per-traversal capacity-needs cache; entries are keyed by the
+    // address of jobspec resources vectors, which can be reused across jobs.
+    m_capacity_needs.clear ();
     rc = dom_dfv (meta, root, j.resources, true, &x_in, dfu);
     if (rc == 0) {
         unsigned int needs = 0;
