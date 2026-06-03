@@ -747,14 +747,37 @@ int dfu_impl_t::cnt_slot (const std::vector<Resource> &slot_shape, scoring_api_t
     for (auto &slot_elem : slot_shape) {
         qc = dfu_slot.qualified_count (dom, slot_elem.type);
         qg = dfu_slot.qualified_granules (dom, slot_elem.type);
-        count = m_match->calc_count (slot_elem, qc);
-        // constraint check against qualified amounts
-        fit = (count == 0) ? count : (qc / count);
-        // constraint check against qualified granules
-        // Skip granule constraint for explicitly non-exclusive (shared) resources
-        // since multiple slots can share the same resource vertex
-        if (slot_elem.exclusive != Jobspec::tristate_t::FALSE) {
-            fit = (fit > qg) ? qg : fit;
+        if (slot_elem.exclusive == Jobspec::tristate_t::FALSE && !slot_elem.unit.empty ()) {
+            // Non-exclusive POOLED resource (capacity with a unit, e.g. a shared
+            // SSD). A single slot's per-slot capacity must be satisfied by ONE
+            // vertex, but one vertex may serve multiple slots up to its capacity.
+            // So the slot count is the sum over vertices of how many whole
+            // per-slot chunks each can supply -- NOT qualified_count/per_slot,
+            // which sums capacity across vertices and would fabricate a slot from
+            // capacity that is actually split between different vertices (the
+            // cause of phantom matches with no usable vertex).
+            unsigned int per_slot = slot_elem.count.min;
+            fit = 0;
+            if (per_slot > 0) {
+                dfu_slot.eval_egroups_iter_reset (dom, slot_elem.type);
+                for (auto i = dfu_slot.eval_egroups_iter_next (dom, slot_elem.type);
+                     i != dfu_slot.eval_egroups_end (dom, slot_elem.type);
+                     i = dfu_slot.eval_egroups_iter_next (dom, slot_elem.type)) {
+                    fit += static_cast<unsigned int> ((*i).edges[0].count) / per_slot;
+                }
+            }
+        } else {
+            count = m_match->calc_count (slot_elem, qc);
+            // constraint check against qualified amounts
+            fit = (count == 0) ? count : (qc / count);
+            // constraint check against qualified granules. Exclusive resources
+            // are bounded by the number of qualifying vertices (a slot's chunk
+            // spans whole vertices); non-exclusive resources WITHOUT a unit are
+            // instance-tracked and intentionally skip the granule cap so a vertex
+            // can be shared. Non-exclusive POOLED resources are handled above.
+            if (slot_elem.exclusive != Jobspec::tristate_t::FALSE) {
+                fit = (fit > qg) ? qg : fit;
+            }
         }
         qual_num_slots = (qual_num_slots > fit) ? fit : qual_num_slots;
         dfu_slot.eval_egroups_iter_reset (dom, slot_elem.type);
@@ -776,6 +799,18 @@ int dfu_impl_t::dom_slot (const jobmeta_t &meta,
     unsigned int qual_num_slots = 0;
     std::vector<eval_egroup_t> edg_group_vector;
     subsystem_t dom = m_match->dom_subsystem ();
+    // Per-type cursor for non-exclusive POOLED slot elements. We walk a type's
+    // egroups (vertices) in score order, remembering how much capacity is left
+    // in the current vertex, so multiple slots can pack into one vertex while
+    // each slot draws its whole per-slot capacity from a SINGLE vertex (never
+    // aggregating partial capacity across vertices). Declared before the first
+    // `goto done` so the jumps do not bypass its initialization.
+    struct pooled_cursor_t {
+        std::vector<eval_egroup_t>::iterator cur;
+        bool started = false;
+        unsigned int remaining = 0;
+    };
+    std::map<resource_type_t, pooled_cursor_t> pooled_cursors;
 
     if ((rc =
              explore (meta, u, dom, slot_shape, pristine, &x_inout, visit_t::DFV, dfu_slot, nslots))
@@ -789,6 +824,32 @@ int dfu_impl_t::dom_slot (const jobmeta_t &meta,
         eval_egroup_t edg_group;
         int64_t score = MATCH_MET;
         for (auto &slot_elem : slot_shape) {
+            if (slot_elem.exclusive == Jobspec::tristate_t::FALSE && !slot_elem.unit.empty ()) {
+                // Pooled: bind exactly one vertex that can supply per_slot,
+                // advancing to the next vertex once the current one is drained.
+                unsigned int per_slot = slot_elem.count.min;
+                auto &pc = pooled_cursors[slot_elem.type];
+                while (!pc.started || pc.remaining < per_slot) {
+                    auto it = dfu_slot.eval_egroups_iter_next (dom, slot_elem.type);
+                    if (it == dfu_slot.eval_egroups_end (dom, slot_elem.type)) {
+                        m_err_msg += __FUNCTION__;
+                        m_err_msg += ": not enough slots.\n";
+                        qual_num_slots = 0;
+                        goto done;
+                    }
+                    pc.cur = it;
+                    pc.started = true;
+                    pc.remaining = static_cast<unsigned int> ((*it).edges[0].count);
+                }
+                eval_edg_t ev_edg ((*pc.cur).edges[0].count,
+                                   per_slot,
+                                   (*pc.cur).edges[0].exclusive,
+                                   (*pc.cur).edges[0].edge);
+                score += (*pc.cur).score;
+                edg_group.edges.push_back (ev_edg);
+                pc.remaining -= per_slot;
+                continue;
+            }
             unsigned int j = 0;
             unsigned int qc = dfu_slot.qualified_count (dom, slot_elem.type);
             unsigned int count = m_match->calc_count (slot_elem, qc);
