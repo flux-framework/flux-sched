@@ -165,8 +165,12 @@ int dfu_impl_t::upd_plan (vtx_t u,
     // Exclusive resources and non-exclusive POOLED resources (a non-empty
     // unit, e.g. ssd capacity in GiB) are planner-tracked: capacity that can
     // be shared must be recorded to prevent over-allocation. Non-exclusive
-    // structural resources without units (chassis, node, core) are
-    // instance-tracked and skip the planner.
+    // unit-less resources (e.g. a shareable chassis or node) are WAYPOINTS
+    // (interior path vertices that only define containment constraints; see
+    // resolve_request ()) -- nothing is drawn from them -- and skip the
+    // planner.
+    // Non-pooled LEAF requests with exclusive:false never get here: the
+    // traverser rejects them at match time (see resolve_request ()).
     if (!excl && (*m_graph)[u].unit.empty ())
         return 0;
     // Count the vertex so the match is recognized and agfilters update via
@@ -237,8 +241,8 @@ int dfu_impl_t::accum_to_parent (vtx_t u,
     // Build up the usage aggregates used by the agfilters: what is actually
     // consumed, as opposed to the availability view above. Exclusive vertices
     // consume their full size; non-exclusive POOLED vertices (non-empty unit)
-    // consume only the requested capacity (needs); non-exclusive structural
-    // vertices are instance-tracked and contribute nothing.
+    // consume only the requested capacity (needs); non-exclusive unit-less
+    // vertices are interior waypoints and contribute nothing.
     if (excl)
         accum_if (subsystem, (*m_graph)[u].type, (*m_graph)[u].size, usage_to_parent);
     else if (!(*m_graph)[u].unit.empty ())

@@ -26,6 +26,12 @@ struct eval_edg_t {
     unsigned int count = 0;
     unsigned int needs = 0;
     unsigned int exclusive = 0;
+    // Resolved POOLED classification: true when a non-exclusive request
+    // draws capacity from this edge's target vertex pool (the vertex has a
+    // unit). Resolved once at edge-evaluation time from the jobspec request
+    // and the matched vertex so that scoring, slot counting, binding, and
+    // enforcement all share one authoritative predicate.
+    bool pooled = false;
     edg_t edge;
 };
 
