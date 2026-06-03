@@ -236,4 +236,65 @@ test_expect_success "${test019_desc}" '
     grep "Resource cannot explicitly set exclusive: false when an ancestor resource has explicitly set exclusive: true" 019.R.err
 '
 
+#
+# Pooled multi-slot: capacity sharing across slots of one job. Each slot binds
+# a pooled SSD by capacity; slots spread across distinct SSDs first and pack
+# (share a vertex) only when SSD vertices run out.
+#
+
+cmds020="${cmd_dir}/cmds-pooled-multislot-spread.in"
+test020_desc="pooled multi-slot spreads one SSD per slot when vertices suffice"
+test_expect_success "${test020_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds020} > cmds020 &&
+    ${query} -L ${jgf} -f jgf -t 020.R.out < cmds020 &&
+    test_cmp 020.R.out ${exp_dir}/pooled-multislot-spread.R.out
+'
+
+cmds021="${cmd_dir}/cmds-pooled-multislot-pack.in"
+test021_desc="pooled multi-slot packs slots onto shared SSDs under scarcity"
+test_expect_success "${test021_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds021} > cmds021 &&
+    ${query} -L ${jgf} -f jgf -t 021.R.out < cmds021 &&
+    test_cmp 021.R.out ${exp_dir}/pooled-multislot-pack.R.out
+'
+
+#
+# Node-only slot anchoring. A single-slot request for a bare node matches; the
+# count>1 cases document a known mixed-depth node-anchoring limitation (see
+# ISSUE-slot-node-anchoring-mixed-depth) and are expected to NOT match on
+# rabbit. Flip these to expect-match if that limitation is fixed.
+#
+
+cmds022="${cmd_dir}/cmds-node-slot-single.in"
+test022_desc="single slot with a bare node matches (cluster-direct node)"
+test_expect_success "${test022_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds022} > cmds022 &&
+    ${query} -L ${jgf} -f jgf -t 022.R.out < cmds022 &&
+    test_cmp 022.R.out ${exp_dir}/node-slot-single.R.out
+'
+
+cmds023="${cmd_dir}/cmds-node-slot-multi.in"
+test023_desc="KNOWN LIMITATION: count:7 bare-node slot does not match on rabbit"
+test_expect_success "${test023_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds023} > cmds023 &&
+    ${query} -L ${jgf} -f jgf -t 023.R.out < cmds023 &&
+    test_cmp 023.R.out ${exp_dir}/node-slot-multi.R.out
+'
+
+cmds024="${cmd_dir}/cmds-node-slot-multi-direct-core.in"
+test024_desc="KNOWN LIMITATION: count:7 bare-node slot, core direct, no match"
+test_expect_success "${test024_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds024} > cmds024 &&
+    ${query} -L ${jgf} -f jgf -t 024.R.out < cmds024 &&
+    test_cmp 024.R.out ${exp_dir}/node-slot-multi-direct-core.R.out
+'
+
+cmds025="${cmd_dir}/cmds-node-slot-multi-exclusive.in"
+test025_desc="KNOWN LIMITATION: count:7 bare-node exclusive slot, no match"
+test_expect_success "${test025_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds025} > cmds025 &&
+    ${query} -L ${jgf} -f jgf -t 025.R.out < cmds025 &&
+    test_cmp 025.R.out ${exp_dir}/node-slot-multi-exclusive.R.out
+'
+
 test_done

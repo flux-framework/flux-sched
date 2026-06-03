@@ -1,0 +1,31 @@
+version: 9999
+# Multi-slot (count:7) whose only element is a node (no pooled/chassis-level
+# resource). KNOWN LIMITATION: fails on rabbit ("No matching resources found")
+# because only hetchy1 is a node directly under the cluster, where this slot
+# anchors; the 18 chassis-nested nodes are not aggregated for count>1. See
+# ISSUE-slot-node-anchoring-mixed-depth. Flip to expect-match if that is fixed.
+resources:
+  - type: slot
+    count: 7
+    label: default
+    exclusive: false
+    with:
+      - type: node
+        count: 1
+        exclusive: false
+        with:
+          - type: slot
+            label: task
+            count: 1
+            exclusive: false
+            with:
+              - type: core
+                count: 1
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: task
+    count:
+      per_slot: 1

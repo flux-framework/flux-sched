@@ -1,0 +1,28 @@
+version: 9999
+# Same mixed-depth anchoring limitation as node-slot-multi, but with exclusive
+# slots (the pre-existing granule-capped path). Confirms the limitation is not
+# specific to the non-exclusive pooled feature. KNOWN LIMITATION: no match on
+# rabbit at count:7. See ISSUE-slot-node-anchoring-mixed-depth.
+resources:
+  - type: slot
+    count: 7
+    label: default
+    with:
+      - type: node
+        count: 1
+        with:
+          - type: slot
+            label: task
+            count: 1
+            exclusive: true
+            with:
+              - type: core
+                count: 1
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: task
+    count:
+      per_slot: 1
