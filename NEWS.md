@@ -1,3 +1,21 @@
+flux-sched version 0.52.0 - 2026-06-05
+--------------------------------------
+
+### New Features
+ * reapi: add reapi_cli_match_with_jobid() (#1491)
+ * reapi: add reapi_cli_clone() (#1487)
+
+### Fixes
+ * use constant strings where appropriate in some internal functions
+   (#1492)
+ * fix more errno violations (#1484)
+ * resource: fix errno violations (#1483)
+
+### Cleanup
+ * remove r_out (#1488)
+ * assorted minor build / test improvements (#1498)
+
+
 flux-sched version 0.51.0 - 2026-05-11
 --------------------------------------
 
