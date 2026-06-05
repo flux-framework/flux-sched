@@ -261,7 +261,7 @@ out:
     return rc;
 }
 
-int reapi_cli_t::find (void *h, std::string criteria, json_t *&o)
+int reapi_cli_t::find (void *h, std::string criteria, json_t *&o, std::optional<std::string> format)
 {
     resource_query_t *rq = static_cast<resource_query_t *> (h);
 
@@ -270,7 +270,25 @@ int reapi_cli_t::find (void *h, std::string criteria, json_t *&o)
         return -1;
     }
 
-    if (rq->traverser_find (criteria) < 0) {
+    std::shared_ptr<match_writers_t> writer;
+    if (format.has_value ()) {
+        // User specified a format - create temporary writer
+        match_format_t fmt = match_writers_factory_t::get_writers_type (format.value ());
+        writer = match_writers_factory_t::create (fmt);
+        if (!writer) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": ERROR: failed to create writer for format '";
+            m_err_msg += format.value ();
+            m_err_msg += "'\n";
+            errno = EINVAL;
+            return -1;
+        }
+    } else {
+        // Use context's configured writer
+        writer = rq->writers;
+    }
+
+    if (rq->traverser->find (writer, criteria) < 0) {
         if (rq->get_traverser_err_msg () != "") {
             m_err_msg += __FUNCTION__;
             m_err_msg += rq->get_traverser_err_msg ();
@@ -279,7 +297,7 @@ int reapi_cli_t::find (void *h, std::string criteria, json_t *&o)
         return -1;
     }
 
-    if (rq->writers->emit_json (&o) < 0) {
+    if (writer->emit_json (&o) < 0) {
         m_err_msg += __FUNCTION__;
         m_err_msg += ": ERROR: find writer emit: " + std::string (strerror (errno)) + "\n";
         return -1;
