@@ -16,6 +16,7 @@ extern "C" {
 #include "config.h"
 #endif
 #include <flux/core.h>
+#include <flux/idset.h>
 #include <cstdint>
 #include <cerrno>
 }
@@ -174,6 +175,16 @@ class reapi_cli_t : public reapi_t {
                      double &min,
                      double &max,
                      double &avg);
+    static int set_status (void *h,
+                           const std::string &resource_path,
+                           resource_pool_t::status_t status);
+    static int get_status (void *h,
+                           const std::string &resource_path,
+                           resource_pool_t::status_t &status);
+
+    static int set_rank_status (void *h, std::string_view ranks, resource_pool_t::status_t status);
+    static int get_rank_status (void *h, std::string_view rank, resource_pool_t::status_t &status);
+
     static const std::string &get_err_message ();
     static void clear_err_message ();
 
