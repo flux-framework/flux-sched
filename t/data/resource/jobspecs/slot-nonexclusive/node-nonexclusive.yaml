@@ -1,0 +1,22 @@
+version: 9999
+# Test non-pooled non-exclusive resources (node without units)
+# Request a node with explicit exclusive:false
+resources:
+  - type: slot
+    count: 1
+    label: testslot
+    with:
+      - type: node
+        count: 1
+        exclusive: false
+        with:
+          - type: core
+            count: 1
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: testslot
+    count:
+      per_slot: 1

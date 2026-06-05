@@ -1,0 +1,10 @@
+# Test non-pooled non-exclusive GPU sharing
+# Request GPU (shared) + all 18 cores per socket
+# tiny.json has 4 sockets, so we can allocate 4 jobs
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/gpu-18cores.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/gpu-18cores.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/gpu-18cores.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/gpu-18cores.yaml
+# 5th should fail - all sockets exhausted
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/gpu-18cores.yaml
+quit

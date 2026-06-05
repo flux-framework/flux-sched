@@ -1,0 +1,9 @@
+# Test allocate_orelse_reserve for pooled non-exclusive resources (SSDs with units)
+# Allocate all 4 SSDs immediately, then next request should reserve at future time
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/ssd-nonexclusive-limit.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/ssd-nonexclusive-limit.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/ssd-nonexclusive-limit.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/ssd-nonexclusive-limit.yaml
+# This should reserve at t=3600 (after first job completes)
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/ssd-nonexclusive-limit.yaml
+quit

@@ -1,0 +1,5 @@
+# Test allocating 3 slots with shared resources from only 2 SSD vertices
+# This verifies the bug fix: shared pooled resources allow vertex reuse across slots
+# even when there are fewer vertices than requested slots
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/test-rabbit-3slots.yaml
+quit

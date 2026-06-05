@@ -1,0 +1,25 @@
+version: 9999
+# Test non-pooled non-exclusive resources (chassis without units)
+# Request a chassis with explicit exclusive:false
+resources:
+  - type: slot
+    count: 1
+    label: testslot
+    with:
+      - type: chassis
+        count: 1
+        exclusive: false
+        with:
+          - type: node
+            count: 1
+            with:
+              - type: core
+                count: 1
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: testslot
+    count:
+      per_slot: 1
