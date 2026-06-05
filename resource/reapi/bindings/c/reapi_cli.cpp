@@ -19,6 +19,7 @@ extern "C" {
 #include <cstdlib>
 #include <cstdint>
 #include <cerrno>
+#include <jansson.h>
 #include "resource/reapi/bindings/c++/reapi_cli.hpp"
 #include "resource/reapi/bindings/c++/reapi_cli_impl.hpp"
 
@@ -288,6 +289,49 @@ extern "C" int reapi_cli_info (reapi_cli_ctx_t *ctx,
     }
 
     (*mode) = mode_buf_c;
+
+out:
+    return rc;
+}
+
+extern "C" int reapi_cli_find (reapi_cli_ctx_t *ctx,
+                               const char *criteria,
+                               const char *format,
+                               char **R)
+{
+    int rc = -1;
+    json_t *o = nullptr;
+    char *json_str = nullptr;
+    std::optional<std::string> format_opt = std::nullopt;
+
+    if (!ctx || !ctx->rqt || !criteria || !R) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    if (format)
+        format_opt = std::string (format);
+
+    if ((rc = reapi_cli_t::find (ctx->rqt, criteria, o, format_opt)) < 0) {
+        ctx->err_msg = reapi_cli_t::get_err_message ();
+        reapi_cli_t::clear_err_message ();
+        goto out;
+    }
+
+    if (o) {
+        if (!(json_str = json_dumps (o, JSON_COMPACT))) {
+            ctx->err_msg = __FUNCTION__;
+            ctx->err_msg += ": ERROR: can't serialize JSON\n";
+            json_decref (o);
+            errno = ENOMEM;
+            rc = -1;
+            goto out;
+        }
+        json_decref (o);
+        *R = json_str;
+    } else {
+        *R = nullptr;
+    }
 
 out:
     return rc;

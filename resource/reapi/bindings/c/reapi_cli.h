@@ -237,6 +237,19 @@ int reapi_cli_info (reapi_cli_ctx_t *ctx,
                     int64_t *at,
                     double *ov);
 
+/*! Find resources matching the criteria and return them in R format.
+ *
+ *  \param ctx       reapi_cli_ctx_t context object
+ *  \param criteria  Search criteria string (e.g., "sched-now=allocated",
+ *                   "status=down", etc.)
+ *  \param format    Optional output format string (e.g., "rv1_nosched", "jgf").
+ *                   If NULL, uses the context's configured match_format.
+ *  \param R         JSON string containing matching resources in R format, or
+ *                   NULL if nothing matched. Caller must free with free().
+ *  \return          0 on success; -1 on error.
+ */
+int reapi_cli_find (reapi_cli_ctx_t *ctx, const char *criteria, const char *format, char **R);
+
 /*! Get the performance information about the resource infrastructure.
  *
  *  \param ctx       reapi_cli_ctx_t context object

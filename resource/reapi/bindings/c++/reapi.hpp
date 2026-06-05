@@ -17,10 +17,12 @@ extern "C" {
 #include "config.h"
 #endif
 #include <flux/core.h>
+#include <jansson.h>
 }
 
 #include <cstdint>
 #include <string>
+#include <optional>
 
 namespace Flux {
 namespace resource_model {
@@ -222,6 +224,27 @@ class reapi_t {
     {
         return -1;
     }
+
+    /*! Find resources matching the criteria and return them in R format.
+     *
+     *  \param h         Opaque handle. How it is used is an implementation
+     *                   detail. However, when it is used within a Flux's
+     *                   service module, it is expected to be a pointer
+     *                   to a flux_t object.
+     *  \param criteria  Search criteria string (e.g., "sched-now=allocated",
+     *                   "status=down", etc.)
+     *  \param o         JSON object to receive the matching resources in R format
+     *                   or nullptr if nothing was matched
+     *  \param format    Optional output format string (e.g., "rv1_nosched", "jgf").
+     *                   If std::nullopt (default), uses the context's configured
+     *                   match_format. If specified, creates a temporary writer
+     *                   for that format.
+     *  \return          0 on success; -1 on error.
+     */
+    static int find (void *h,
+                     std::string criteria,
+                     json_t *&o,
+                     std::optional<std::string> format = std::nullopt);
 
     /*! Get the information on the allocation or reservation corresponding
      *  to jobid.

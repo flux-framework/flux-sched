@@ -146,12 +146,79 @@ static int test_match_with_jobid ()
     return 0;
 }
 
+static int test_find ()
+{
+    reapi_cli_ctx_t *ctx = reapi_cli_new ();
+    if (!ctx)
+        BAIL_OUT ("reapi_cli_new failed");
+
+    int rc = reapi_cli_initialize (ctx, tiny_jgf, tiny_params);
+    if (rc < 0)
+        BAIL_OUT ("reapi_cli_initialize failed: %s", reapi_cli_get_err_msg (ctx));
+
+    // Allocate a job first
+    uint64_t jobid = 1;
+    bool reserved = false;
+    char *R = NULL;
+    int64_t at = 0;
+    double ov = 0.0;
+
+    rc = reapi_cli_match_with_jobid (ctx,
+                                     MATCH_ALLOCATE,
+                                     simple_jobspec,
+                                     jobid,
+                                     &reserved,
+                                     &R,
+                                     &at,
+                                     &ov);
+    if (rc < 0)
+        BAIL_OUT ("reapi_cli_match_with_jobid failed");
+    ok (rc == 0, "allocated job for find test");
+    free (R);
+    R = NULL;
+
+    // Test find with allocated resources (using default format)
+    char *R_found = NULL;
+    rc = reapi_cli_find (ctx, "sched-now=allocated", NULL, &R_found);
+    ok (rc == 0, "reapi_cli_find with allocated resources succeeded");
+    ok (R_found != NULL, "reapi_cli_find returned non-NULL R string");
+    if (R_found)
+        free (R_found);
+
+    // Test find with explicit format
+    R_found = NULL;
+    rc = reapi_cli_find (ctx, "sched-now=allocated", "rv1_nosched", &R_found);
+    ok (rc == 0, "reapi_cli_find with explicit format succeeded");
+    ok (R_found != NULL, "reapi_cli_find with format returned non-NULL R string");
+    if (R_found)
+        free (R_found);
+
+    // Cancel and test find with no allocated resources
+    rc = reapi_cli_cancel (ctx, jobid, false);
+    ok (rc == 0, "reapi_cli_cancel succeeded");
+
+    R_found = NULL;
+    rc = reapi_cli_find (ctx, "sched-now=allocated", NULL, &R_found);
+    ok (rc == 0, "reapi_cli_find with no allocations succeeded");
+    ok (R_found == NULL, "reapi_cli_find returned NULL for empty result");
+
+    // Test with NULL context
+    errno = 0;
+    rc = reapi_cli_find (NULL, "sched-now=allocated", NULL, &R_found);
+    ok (rc == -1 && errno == EINVAL,
+        "reapi_cli_find returns -1 with errno=EINVAL for NULL context");
+
+    reapi_cli_destroy (ctx);
+    return 0;
+}
+
 int main (int argc, char *argv[])
 {
     plan (NO_PLAN);
 
     test_clone ();
     test_match_with_jobid ();
+    test_find ();
 
     done_testing ();
     return EXIT_SUCCESS;
