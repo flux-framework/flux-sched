@@ -167,6 +167,15 @@ extern "C" int reapi_module_info (reapi_module_ctx_t *ctx,
     return reapi_module_t::info (ctx->h, jobid, *reserved, *at, *ov);
 }
 
+extern "C" int reapi_module_find (reapi_module_ctx_t *ctx,
+                                  const char *criteria,
+                                  const char *format,
+                                  char **R)
+{
+    errno = ENOSYS;
+    return -1;
+}
+
 extern "C" int reapi_module_stat (reapi_module_ctx_t *ctx,
                                   int64_t *V,
                                   int64_t *E,
