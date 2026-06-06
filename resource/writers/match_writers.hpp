@@ -32,8 +32,11 @@ enum class match_format_t {
     JGF_SHORTHAND,
     RLITE,
     RV1,
+    RV1_NSLOTS,
     RV1_NOSCHED,
+    RV1_NOSCHED_NSLOTS,
     RV1_SHORTHAND,
+    RV1_SHORTHAND_NSLOTS,
     PRETTY_SIMPLE
 };
 
@@ -62,6 +65,10 @@ class match_writers_t {
         return 0;
     }
     virtual int emit_tm (int64_t starttime, int64_t expiration)
+    {
+        return 0;
+    }
+    virtual int emit_nslots (int64_t nslots)
     {
         return 0;
     }
@@ -279,6 +286,7 @@ class rv1_match_writers_t : public match_writers_t {
 
    protected:
     virtual jgf_match_writers_t &get_jgf ();
+    int64_t m_nslots = 0;
 
    private:
     int attrs_json (json_t **o);
@@ -288,6 +296,13 @@ class rv1_match_writers_t : public match_writers_t {
     int64_t m_expiration = 0;
     std::map<std::string, std::string> m_attrs;
     jgf_match_writers_t jgf_writer;
+};
+
+/*! R Version 1 with "nslots" key match writers class
+ */
+class rv1_nslots_match_writers_t : public rv1_match_writers_t {
+   public:
+    virtual int emit_nslots (int64_t nslots) override;
 };
 
 /*! R Version 1 with no "scheduling" key match writers class
@@ -306,10 +321,20 @@ class rv1_nosched_match_writers_t : public match_writers_t {
                   bool excl_parent) override;
     virtual int emit_tm (int64_t start_tm, int64_t end_tm);
 
+   protected:
+    int64_t m_nslots = 0;
+
    private:
     rlite_match_writers_t rlite;
     int64_t m_starttime = 0;
     int64_t m_expiration = 0;
+};
+
+/*! R Version 1 with "nslots" key but no "scheduling" key match writers class
+ */
+class rv1_nosched_nslots_match_writers_t : public rv1_nosched_match_writers_t {
+   public:
+    virtual int emit_nslots (int64_t nslots) override;
 };
 
 /*! R Version 1 with JGF shorthand writer
@@ -320,6 +345,13 @@ class rv1_shorthand_match_writers_t : public rv1_match_writers_t {
 
    private:
     jgf_shorthand_match_writers_t jgf_writer;
+};
+
+/*! R Version 1 with JGF shorthand writer and "nslots" key
+ */
+class rv1_shorthand_nslots_match_writers_t : public rv1_shorthand_match_writers_t {
+   public:
+    virtual int emit_nslots (int64_t nslots) override;
 };
 
 /*! Human-friendly simple match writers class for a matched resource set

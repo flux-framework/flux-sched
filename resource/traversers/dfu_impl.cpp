@@ -1062,10 +1062,18 @@ int dfu_impl_t::enforce (subsystem_t subsystem, scoring_api_t &dfu, bool enforce
                 if (dfu.at (subsystem, t, i).root)
                     continue;
                 const eval_egroup_t &egroup = dfu.at (subsystem, t, i);
+                bool eg_leader = true;
                 for (auto &e : egroup.edges) {
                     (*m_graph)[e.edge].idata.set_for_trav_update (e.needs,
                                                                   e.exclusive,
                                                                   m_sequence_number);
+                    // if the egroup refers to a slot, set the edge group leader and members
+                    if (t == slot_rt && subsystem == dom) {
+                        (*m_graph)[e.edge].idata.set_slot_role (
+                            eg_leader ? relation_infra_t::slot_role_t::LEADER
+                                      : relation_infra_t::slot_role_t::MEMBER);
+                        eg_leader = false;
+                    }
                     // we need to resolve unconstrained resources up to the root in the dominant
                     // subsystem
                     if (enforce_unconstrained && subsystem == dom) {
