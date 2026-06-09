@@ -1,0 +1,89 @@
+# Doxyfile configuration for flux-sched
+# This file is processed by CMake to substitute variables
+
+PROJECT_NAME           = "flux-sched"
+PROJECT_NUMBER         = @PROJECT_VERSION@
+PROJECT_BRIEF          = "Fluxion: Advanced graph-based scheduler for HPC"
+OUTPUT_DIRECTORY       = @DOXYGEN_OUTPUT_DIR@
+INPUT                  = @CMAKE_SOURCE_DIR@/resource \
+                         @CMAKE_SOURCE_DIR@/qmanager
+FILE_PATTERNS          = *.cpp *.hpp *.h *.c
+RECURSIVE              = YES
+EXCLUDE_PATTERNS       = */test/* \
+                         */external/* \
+                         */build/* \
+                         */.git/* \
+                         */deprecated/* \
+                         */src/common/* \
+                         */utilities/command.cpp \
+                         */utilities/command.hpp \
+                         */resource_spec_grug.hpp \
+                         */resource_spec_grug.cpp \
+                         */schema/* \
+                         */store/* \
+                         */jobinfo/*
+EXCLUDE_SYMBOLS        = *_test* \
+                         TEST_*
+
+# Only extract documented entities
+EXTRACT_ALL            = NO
+EXTRACT_PRIVATE        = NO
+EXTRACT_PACKAGE        = NO
+EXTRACT_STATIC         = NO
+EXTRACT_LOCAL_CLASSES  = NO
+EXTRACT_LOCAL_METHODS  = NO
+EXTRACT_ANON_NSPACES   = NO
+
+# Enable preprocessing
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = YES
+EXPAND_ONLY_PREDEF     = NO
+SEARCH_INCLUDES        = YES
+INCLUDE_PATH           = @CMAKE_SOURCE_DIR@
+PREDEFINED             = __cplusplus
+
+# Documentation processing - hide undocumented entities
+HIDE_UNDOC_MEMBERS     = YES
+HIDE_UNDOC_CLASSES     = YES
+HIDE_FRIEND_COMPOUNDS  = YES
+HIDE_IN_BODY_DOCS      = NO
+INTERNAL_DOCS          = NO
+# Don't show enums if their values aren't documented
+SHOW_NAMESPACES        = YES
+CASE_SENSE_NAMES       = YES
+HIDE_SCOPE_NAMES       = NO
+SHOW_INCLUDE_FILES     = YES
+SHOW_GROUPED_MEMB_INC  = NO
+FORCE_LOCAL_INCLUDES   = NO
+INLINE_INFO            = YES
+SORT_MEMBER_DOCS       = YES
+SORT_BRIEF_DOCS        = NO
+SORT_MEMBERS_CTORS_1ST = NO
+SORT_GROUP_NAMES       = NO
+SORT_BY_SCOPE_NAME     = NO
+STRICT_PROTO_MATCHING  = NO
+
+# Warning and progress
+QUIET                  = YES
+WARNINGS               = NO
+WARN_IF_UNDOCUMENTED   = NO
+WARN_IF_DOC_ERROR      = NO
+WARN_NO_PARAMDOC       = NO
+WARN_AS_ERROR          = NO
+WARN_IF_INCOMPLETE_DOC = NO
+WARN_FORMAT            = "$file:$line: $text"
+WARN_LOGFILE           = @DOXYGEN_OUTPUT_DIR@/doxygen-warnings.log
+
+# Output formats
+GENERATE_HTML          = YES
+GENERATE_XML           = YES
+XML_OUTPUT             = xml
+XML_PROGRAMLISTING     = YES
+
+# Graphical representations
+HAVE_DOT               = NO
+
+# Alphabetical index
+ALPHABETICAL_INDEX     = YES
+
+SKIP_FUNCTION_MACROS   = YES

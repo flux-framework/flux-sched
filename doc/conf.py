@@ -47,6 +47,51 @@ source_suffix = ".rst"
 
 extensions = ["sphinx.ext.intersphinx", "sphinx.ext.napoleon", "domainrefs"]
 
+# Try to import breathe - if not available, skip API docs
+try:
+    import breathe
+    extensions.append("breathe")
+    BREATHE_AVAILABLE = True
+except ImportError:
+    print("WARNING: breathe not found. C++ API documentation will not be available.")
+    print("Install breathe with: pip install breathe")
+    BREATHE_AVAILABLE = False
+
+# Suppress warnings
+suppress_warnings = [
+    "ref.unknown",
+    "duplicate_declaration",
+    "app.add_role",
+    "unknown_role_name",
+    "ref.ref",
+]
+
+# -- Breathe configuration (Doxygen integration) -----------------------------
+
+if BREATHE_AVAILABLE:
+    # Determine build directory
+    build_dir = os.environ.get("SPHINX_BUILDDIR", "_build")
+    doxygen_xml_dir = os.path.join(build_dir, "doxygen/xml")
+
+    breathe_projects = {
+        "flux-sched": doxygen_xml_dir
+    }
+    breathe_default_project = "flux-sched"
+    # Only show documented members - this prevents stubs for undocumented items
+    breathe_default_members = ()
+    breathe_domain_by_extension = {
+        "hpp": "cpp",
+        "h": "cpp",
+        "cpp": "cpp",
+        "c": "c",
+    }
+    breathe_show_include = True
+    breathe_show_enumvalue_initializer = True
+    # Suppress warnings for undocumented enum values
+    breathe_show_define_initializer = False
+    # Don't show enum values without descriptions
+    breathe_separate_member_pages = False
+
 domainrefs = {
     "linux:man1": {
         "text": "%s(1)",
@@ -123,8 +168,89 @@ def man_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
     return [node], []
 
 
+def run_doxygen():
+    """Run Doxygen to generate XML for Breathe."""
+    import subprocess
+    import shutil
+
+    # Skip if breathe is not available
+    if not BREATHE_AVAILABLE:
+        print("Skipping Doxygen (breathe not available)")
+        return
+
+    # Check if we need to run doxygen (e.g., on Read the Docs)
+    read_the_docs_build = os.environ.get("READTHEDOCS", None) == "True"
+
+    # Get paths relative to this config file
+    conf_dir = os.path.dirname(os.path.abspath(__file__))
+    source_dir = os.path.dirname(conf_dir)  # Parent of doc/ directory
+    build_dir = os.environ.get("SPHINX_BUILDDIR", os.path.join(conf_dir, "_build"))
+    doxygen_output = os.path.join(build_dir, "doxygen")
+    doxygen_xml = os.path.join(doxygen_output, "xml")
+
+    # Skip if doxygen output already exists (unless on RTD)
+    if os.path.exists(os.path.join(doxygen_xml, "index.xml")) and not read_the_docs_build:
+        print(f"Doxygen XML already exists at {doxygen_xml}, skipping...")
+        return
+
+    # Check if doxygen is available
+    if shutil.which("doxygen") is None:
+        print("WARNING: doxygen not found. Skipping API documentation generation.")
+        print("Install doxygen to generate C++ API documentation.")
+        return
+
+    print(f"Running Doxygen to generate XML at {doxygen_xml}...")
+
+    # Create a temporary Doxyfile from Doxyfile.in with substitutions
+    doxyfile_in = os.path.join(conf_dir, "Doxyfile.in")
+    doxyfile_tmp = os.path.join(build_dir, "Doxyfile")
+
+    # Create build directory if it doesn't exist
+    os.makedirs(build_dir, exist_ok=True)
+
+    # Read template and substitute variables
+    with open(doxyfile_in, "r") as f:
+        content = f.read()
+
+    # Perform CMake-like substitutions
+    content = content.replace("@PROJECT_VERSION@", "latest")
+    content = content.replace("@DOXYGEN_OUTPUT_DIR@", doxygen_output)
+    content = content.replace("@CMAKE_SOURCE_DIR@", source_dir)
+
+    # Write temporary Doxyfile
+    with open(doxyfile_tmp, "w") as f:
+        f.write(content)
+
+    # Run Doxygen
+    try:
+        result = subprocess.run(
+            ["doxygen", doxyfile_tmp],
+            cwd=conf_dir,
+            check=True,
+            capture_output=True,
+            text=True
+        )
+        print("Doxygen completed successfully")
+        if result.stdout:
+            print(result.stdout)
+    except subprocess.CalledProcessError as e:
+        print(f"WARNING: Doxygen failed with return code {e.returncode}")
+        if e.stdout:
+            print(e.stdout)
+        if e.stderr:
+            print(e.stderr)
+        print("Continuing without API documentation...")
+    except Exception as e:
+        print(f"WARNING: Failed to run Doxygen: {e}")
+        print("Continuing without API documentation...")
+
+
 # launch setup
 def setup(app):
+    # Run Doxygen before building
+    run_doxygen()
+
+    # Add custom roles
     for section in [3, 5, 8]:
         app.add_role(f"man{section}", man_role)
 
