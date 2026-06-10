@@ -7,6 +7,8 @@ test_description='Test Flexible Scheduling On Medium Machine Configuration in JG
 cmd_dir="${SHARNESS_TEST_SRCDIR}/data/resource/commands/flexible"
 exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/flexible"
 jgf="${SHARNESS_TEST_SRCDIR}/data/resource/jgfs/tiny.json"
+grug_tiny="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/tiny.graphml"
+grug_small="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/small.graphml"
 query="../../resource/utilities/resource-query"
 
 cmds001="${cmd_dir}/cmds01.in"
@@ -79,6 +81,78 @@ test_expect_success "${test009_desc}" '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds009} > cmds009 &&
     ${query} -L ${jgf} -f jgf -S CA -P first -T flexible -t 009.R.out < cmds009 &&
     test_cmp 009.R.out ${exp_dir}/009.R.out
+'
+
+cmds010="${cmd_dir}/cmds10.in"
+test010_desc="JGF: allocate pristine jobspec with xor slots"
+test_expect_success "${test010_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds010} > cmds010 &&
+    ${query} -L ${jgf} -f jgf -S CA -P first -T flexible -t 010.R.out < cmds010 &&
+    test_cmp 010.R.out ${exp_dir}/010.R.out
+'
+
+cmds011="${cmd_dir}/cmds11.in"
+test011_desc="JGF: allocate_orelse_reserve pristine jobspec with xor slots"
+test_expect_success "${test011_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds011} > cmds011 &&
+    ${query} -L ${jgf} -f jgf -S CA -P first -T flexible -t 011.R.out < cmds011 &&
+    test_cmp 011.R.out ${exp_dir}/011.R.out
+'
+
+cmds012="${cmd_dir}/cmds12.in"
+test012_desc="JGF: allocate jobspecs with xor slots"
+test_expect_success "${test012_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds012} > cmds012 &&
+    ${query} -L ${jgf} -f jgf -S CA -P first -T flexible -t 012.R.out < cmds012 &&
+    test_cmp 012.R.out ${exp_dir}/012.R.out
+'
+
+cmds013="${cmd_dir}/cmds13.in"
+test013_desc="JGF: allocate pristine jobspecs with a single nested xor slot using high policy"
+test_expect_success "${test013_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds013} > cmds013 &&
+    ${query} -L ${jgf} -f jgf -S CA -P high -T flexible -t 013.R.out < cmds013 &&
+    test_cmp 013.R.out ${exp_dir}/013.R.out
+'
+
+cmds014="${cmd_dir}/cmds14.in"
+test014_desc="JGF: allocate pristine jobspecs with a single nested xor slot using first policy"
+test_expect_success "${test014_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds014} > cmds014 &&
+    ${query} -L ${jgf} -f jgf -S CA -P first -T flexible -t 014.R.out < cmds014 &&
+    test_cmp 014.R.out ${exp_dir}/014.R.out
+'
+
+cmds015="${cmd_dir}/cmds15.in"
+test015_desc="JGF: allocate xor-slot branches with different subtree prefixes using first policy"
+test_expect_success "${test015_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds015} > cmds015 &&
+    ${query} -L ${jgf} -f jgf -S CA -P first -T flexible -t 015.R.out < cmds015 &&
+    test_cmp 015.R.out ${exp_dir}/015.R.out
+'
+
+cmds016="${cmd_dir}/cmds16.in"
+test016_desc="JGF: allocate xor-slot branches with different subtree prefixes using high policy"
+test_expect_success "${test016_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds016} > cmds016 &&
+    ${query} -L ${jgf} -f jgf -S CA -P high -T flexible -t 016.R.out < cmds016 &&
+    test_cmp 016.R.out ${exp_dir}/016.R.out
+'
+
+cmds017="${cmd_dir}/cmds17.in"
+test017_desc="GRUG: skip unsatisfiable gpu xor branches on a gpu-free graph using low policy"
+test_expect_success "${test017_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds017} > cmds017 &&
+    ${query} -L ${grug_small} -f grug -S CA -P low -T flexible -t 017.R.out < cmds017 &&
+    test_cmp 017.R.out ${exp_dir}/017.R.out
+'
+
+cmds018="${cmd_dir}/cmds18.in"
+test018_desc="GRUG: skip unsatisfiable gpu xor branches on a gpu-free graph using first policy"
+test_expect_success "${test018_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds018} > cmds018 &&
+    ${query} -L ${grug_small} -f grug -S CA -P first -T flexible -t 018.R.out < cmds018 &&
+    test_cmp 018.R.out ${exp_dir}/018.R.out
 '
 
 test_done
