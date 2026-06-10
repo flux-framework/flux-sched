@@ -52,22 +52,20 @@ int queue_policy_bf_base_t<reapi_type>::next_match_iter ()
 
     auto &job = m_jobs[m_in_progress_iter->second];
     m_try_reserve = m_reservation_cnt < m_reservation_depth;
-    json_t *jobarray_ptr =
-        json_pack ("[{s:I s:s}]", "jobid", job->id, "jobspec", job->jobspec.c_str ());
+    json_t *jobspec_obj;
+    json_error_t err;
+    if (!(jobspec_obj = json_loads (job->jobspec.c_str (), 0, &err))) {
+        errno = ENOMEM;
+        return -1;
+    }
+    json_t *jobarray_ptr = json_pack ("[{s:I s:o}]", "jobid", job->id, "jobspec", jobspec_obj);
     if (!jobarray_ptr) {
         errno = ENOMEM;
         return -1;
     }
     auto _jdecref = [] (json_t *p) { json_decref (p); };
     std::unique_ptr<json_t, decltype (_jdecref)> jobarray (jobarray_ptr, _jdecref);
-    char *jobs_ptr = json_dumps (jobarray.get (), JSON_INDENT (0));
-    if (!jobs_ptr) {
-        errno = ENOMEM;
-        return -1;
-    }
-    auto _free = [] (char *p) { free (p); };
-    std::unique_ptr<char, decltype (_free)> jobs_str (jobs_ptr, _free);
-    return reapi_type::match_allocate_multi (m_handle, m_try_reserve, jobs_str.get (), this);
+    return reapi_type::match_allocate_multi (m_handle, m_try_reserve, jobarray.get (), this);
 }
 
 template<class reapi_type>

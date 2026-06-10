@@ -142,7 +142,7 @@ void match_allocate_multi_cont (flux_future_t *f, void *arg)
 
 int reapi_module_t::match_allocate_multi (void *h,
                                           match_op_t match_op,
-                                          const char *jobs,
+                                          json_t *jobs,
                                           queue_adapter_base_t *adapter)
 {
     int rc = -1;
@@ -150,7 +150,7 @@ int reapi_module_t::match_allocate_multi (void *h,
     flux_future_t *f = nullptr;
     const char *cmd = match_op_to_string (match_op);
 
-    if (!fh) {
+    if (!fh || !jobs) {
         errno = EINVAL;
         goto error;
     }
@@ -158,7 +158,7 @@ int reapi_module_t::match_allocate_multi (void *h,
                              "sched-fluxion-resource.match_multi",
                              FLUX_NODEID_ANY,
                              FLUX_RPC_STREAMING,
-                             "{s:s s:s}",
+                             "{s:s s:O}",
                              "cmd",
                              cmd,
                              "jobs",
@@ -175,7 +175,7 @@ error:
 
 int reapi_module_t::match_allocate_multi (void *h,
                                           bool orelse_reserve,
-                                          const char *jobs,
+                                          json_t *jobs,
                                           queue_adapter_base_t *adapter)
 {
     match_op_t match_op = (orelse_reserve) ? match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE
