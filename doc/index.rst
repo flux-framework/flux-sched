@@ -1,17 +1,16 @@
 Documentation for flux-sched
 ============================
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-
-
 .. _man-pages:
 
-flux-sched Manual Pages
-=======================
+.. toctree::
+   :maxdepth: 2
+   :caption: Manual Pages
+
+   man5/index
 
 .. toctree::
    :maxdepth: 2
+   :caption: Internal API Reference
 
-   man5/index
+   api/planner
