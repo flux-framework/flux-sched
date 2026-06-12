@@ -492,16 +492,9 @@ void dfu_impl_t::tally_shares (subsystem_t subsystem,
         // Treat everything discovered by this child match -- the locally
         // added egroup and/or egroups merged up by resolve () -- as one
         // indivisible bundle toward the next share.
-        tally.accum += total - tally.prev_total;
+        unsigned int delta = total - tally.prev_total;
         tally.prev_total = total;
-        if (tally.per_share > 0 && tally.accum >= tally.per_share) {
-            // One share is complete. dom_slot () consumes whole egroups
-            // per slot, so this bundle -- including any excess in its last
-            // egroup -- backs a single slot. Start the next share from
-            // zero rather than carrying the remainder.
-            tally.shares++;
-            tally.accum = 0;
-        }
+        tally.add (delta);
     }
 }
 
@@ -678,29 +671,37 @@ int dfu_impl_t::dom_exp (const jobmeta_t &meta,
 int dfu_impl_t::cnt_slot (const std::vector<Resource> &slot_shape, scoring_api_t &dfu_slot)
 {
     unsigned int qc = 0;
-    unsigned int qg = 0;
     unsigned int fit = 0;
     unsigned int count = 0;
     unsigned int qual_num_slots = UINT_MAX;
     subsystem_t dom = m_match->dom_subsystem ();
 
-    // qualified slot count is determined by the most constrained resource type
-    // both in terms of the amounts available as well as the number of edges into
-    // that resource because that represent the match granularity.
+    // The qualified slot count for a type is the number of disjoint bundles
+    // of whole edge groups each totaling at least the per-slot count -- the
+    // same greedy whole-egroup packing the loop in dom_slot () performs.
     // Say you have 128 units of memory available across two memory resource
     // vertices each with 64 units of memory and you request 1 unit of memory.
     // In this case, you don't have 128 slots available because the match
     // granularity is 64 units. Instead, you have only 2 slots available each
     // with 64 units, and your request will get 1 whole resource vertex.
+    // Capacity (qc / count) and granule counts alone over-estimate when one
+    // slot's share spans multiple granules: with a per-slot count of 700
+    // over four 616-unit vertices, qc / count = 3 and qg = 4, but only 2
+    // slots can be packed from whole vertices, and an over-estimate makes
+    // the packing loop fail a satisfiable request upon egroup exhaustion.
     qual_num_slots = UINT_MAX;
     for (auto &slot_elem : slot_shape) {
         qc = dfu_slot.qualified_count (dom, slot_elem.type);
-        qg = dfu_slot.qualified_granules (dom, slot_elem.type);
         count = m_match->calc_count (slot_elem, qc);
-        // constraint check against qualified amounts
-        fit = (count == 0) ? count : (qc / count);
-        // constraint check against qualified granules
-        fit = (fit > qg) ? qg : fit;
+        share_tally_t tally;
+        tally.per_share = count;
+        if (count != 0) {
+            std::vector<eval_egroup_t>::iterator iter;
+            while ((iter = dfu_slot.eval_egroups_iter_next (dom, slot_elem.type))
+                   != dfu_slot.eval_egroups_end (dom, slot_elem.type))
+                tally.add ((*iter).edges[0].count);
+        }
+        fit = (count == 0) ? 0 : tally.shares;
         qual_num_slots = (qual_num_slots > fit) ? fit : qual_num_slots;
         dfu_slot.eval_egroups_iter_reset (dom, slot_elem.type);
     }

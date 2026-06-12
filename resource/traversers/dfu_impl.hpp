@@ -472,13 +472,26 @@ class dfu_impl_t {
      *  with multiplier == 1 the tally is exactly equivalent to it.
      */
     struct share_tally_t {
-        unsigned int per_share = 0;   //!< calc_effective_max () of the type
+        unsigned int per_share = 0;   //!< per-share count for the type
         unsigned int prev_total = 0;  //!< total_count () seen so far
         unsigned int accum = 0;       //!< count toward the next share
         unsigned int shares = 0;      //!< completed whole-bundle shares
         bool satisfies (unsigned int multiplier) const
         {
             return per_share == 0 || shares >= multiplier;
+        }
+        void add (unsigned int count)
+        {
+            accum += count;
+            if (per_share > 0 && accum >= per_share) {
+                // One share is complete. dom_slot () consumes whole
+                // egroups per slot, so this bundle -- including any
+                // excess in its last egroup -- backs a single slot.
+                // Start the next share from zero rather than carrying
+                // the remainder.
+                shares++;
+                accum = 0;
+            }
         }
     };
     using share_tally_map_t = std::map<resource_type_t, share_tally_t>;

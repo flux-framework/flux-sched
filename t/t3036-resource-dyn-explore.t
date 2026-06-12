@@ -83,18 +83,17 @@ test_expect_success "${test005_desc}" '
     test_cmp 005.R.out ${exp_dir}/005.R.out
 '
 
-# Known breakage: under static exploration the same satisfiable request
-# fails because cnt_slot () estimates fit = min (qc/count, qg), which
-# over-counts when shares span granules (fit = 2464/700 = 3 vs 2 truly
-# packable), and dom_slot ()'s exhaustion path discards already-built
-# slots. This test starts passing when cnt_slot () counts greedy
-# whole-granule shares or dom_slot () keeps completed slots.
+# Under static exploration cnt_slot () must count greedy whole-granule
+# shares: capacity and granule bounds alone (fit = min (qc/count, qg))
+# over-estimate when shares span granules (fit = 2464/700 = 3 vs 2 truly
+# packable), making dom_slot ()'s packing loop fail this satisfiable
+# request upon egroup exhaustion.
 cmds006="${cmd_dir}/cmds03.in"
 test006_desc="slot share spanning multiple vertices matches (pol=high)"
-test_expect_failure "${test006_desc}" '
+test_expect_success "${test006_desc}" '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds006} > cmds006 &&
-    ${query} -L ${jgf} -f jgf -S CA -P high -t 006.high.R.out < cmds006 &&
-    grep -q "RESOURCES=ALLOCATED" 006.high.R.out
+    ${query} -L ${jgf} -f jgf -S CA -P high -t 009.R.out < cmds006 &&
+    test_cmp 009.R.out ${exp_dir}/009.R.out
 '
 
 #
