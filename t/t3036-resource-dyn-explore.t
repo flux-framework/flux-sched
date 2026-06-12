@@ -68,4 +68,70 @@ test_expect_success "${test004_desc}" '
     test_cmp 004.R.out ${exp_dir}/004.R.out
 '
 
+#
+# Per-slot requests exceeding any single vertex's capacity: each 700-unit
+# ssd share must be packed from two whole 616-unit vertices. The share
+# tally mirrors dom_slot ()'s greedy whole-egroup packing, so dynamic
+# exploration stops on an exactly packable egroup set.
+#
+
+cmds005="${cmd_dir}/cmds03.in"
+test005_desc="slot share spanning multiple vertices matches (pol=first)"
+test_expect_success "${test005_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds005} > cmds005 &&
+    ${query} -L ${jgf} -f jgf -S CA -P first -t 005.R.out < cmds005 &&
+    test_cmp 005.R.out ${exp_dir}/005.R.out
+'
+
+# Known breakage: under static exploration the same satisfiable request
+# fails because cnt_slot () estimates fit = min (qc/count, qg), which
+# over-counts when shares span granules (fit = 2464/700 = 3 vs 2 truly
+# packable), and dom_slot ()'s exhaustion path discards already-built
+# slots. This test starts passing when cnt_slot () counts greedy
+# whole-granule shares or dom_slot () keeps completed slots.
+cmds006="${cmd_dir}/cmds03.in"
+test006_desc="slot share spanning multiple vertices matches (pol=high)"
+test_expect_failure "${test006_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds006} > cmds006 &&
+    ${query} -L ${jgf} -f jgf -S CA -P high -t 006.high.R.out < cmds006 &&
+    grep -q "RESOURCES=ALLOCATED" 006.high.R.out
+'
+
+#
+# Per-slot requests exceeding the total ssd capacity must fail cleanly,
+# and a failed exhaustive dynamic exploration must not corrupt traversal
+# state: the satisfiable follow-up request in the same session allocates.
+#
+
+cmds007="${cmd_dir}/cmds04.in"
+test007_desc="oversized request fails cleanly and next request matches (pol=first)"
+test_expect_success "${test007_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds007} > cmds007 &&
+    ${query} -L ${jgf} -f jgf -S CA -P first -t 006.R.out < cmds007 &&
+    test_cmp 006.R.out ${exp_dir}/006.R.out
+'
+
+#
+# firstnodex routes through the same dynamic exploration as first and
+# exhibited the same granule bug; pin it with its static differential
+# partner hinodex on a jobspec with no explicit exclusivity, where the
+# nodex policies impose node exclusivity themselves.
+#
+
+cmds008="${cmd_dir}/cmds05.in"
+test008_desc="multi-slot match with high-capacity granules works (pol=firstnodex)"
+test_expect_success "${test008_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds008} > cmds008 &&
+    ${query} -L ${jgf} -f jgf -S CA -P firstnodex -t 007.R.out < cmds008 &&
+    test_cmp 007.R.out ${exp_dir}/007.R.out
+'
+
+cmds009="${cmd_dir}/cmds05.in"
+test009_desc="multi-slot match with high-capacity granules works (pol=hinodex)"
+test_expect_success "${test009_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds009} > cmds009 &&
+    ${query} -L ${jgf} -f jgf -S CA -P hinodex -t 008.R.out < cmds009 &&
+    test_cmp 008.R.out ${exp_dir}/008.R.out
+'
+
 test_done
