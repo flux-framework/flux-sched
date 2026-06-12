@@ -1,0 +1,19 @@
+INFO: =============================
+INFO: No matching resources found
+INFO: JOBID=1
+INFO: =============================
+      ------------core0[1:x]
+      ------------core1[1:x]
+      ---------mini2[1:x]
+      ------------core0[1:x]
+      ------------core1[1:x]
+      ---------mini3[1:x]
+      ---------ssd21[616:x]
+      ---------ssd22[616:x]
+      ------chassis1[1:s]
+      ---mini[1:s]
+INFO: =============================
+INFO: JOBID=2
+INFO: RESOURCES=ALLOCATED
+INFO: SCHEDULED AT=Now
+INFO: =============================

@@ -1,0 +1,26 @@
+version: 9999
+resources:
+  - type: slot
+    count: 2
+    label: default
+    with:
+      - type: node
+        count: 1
+        exclusive: true
+        with:
+          - type: core
+            count: 1
+      - type: ssd
+        count: 3000
+        exclusive: true
+
+# Rabbit-style multi-slot shape: a single ssd vertex (size 616) covers more
+# than one slot's ssd share (101), so granule-aware exploration is required.
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: default
+    count:
+      per_slot: 1
