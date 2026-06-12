@@ -460,13 +460,38 @@ class dfu_impl_t {
                              scoring_api_t &dfu,
                              unsigned int multiplier = 1);
 
-    bool is_enough (subsystem_t subsystem,
-                    const std::vector<Jobspec::Resource> &resources,
-                    scoring_api_t &dfu,
-                    unsigned int multiplier);
-    int new_sat_types (subsystem_t subsystem,
+    /*! Granule-aware satisfaction tracker for explore_dynamically ().
+     *  dom_slot () packs each slot from *whole* edge groups, so a request
+     *  for `multiplier` slots needs `multiplier` disjoint bundles per type,
+     *  each totaling >= calc_effective_max (). Aggregate counts alone are
+     *  insufficient: one high-capacity vertex (e.g., an ssd whose size
+     *  covers several slots' shares) satisfies the aggregate test while
+     *  only ever backing a single slot. Progress is fed from deltas of
+     *  dfu.total_count () so counts merged up from pass-through children
+     *  (see resolve ()) are observed identically to the legacy predicate;
+     *  with multiplier == 1 the tally is exactly equivalent to it.
+     */
+    struct share_tally_t {
+        unsigned int per_share = 0;   //!< calc_effective_max () of the type
+        unsigned int prev_total = 0;  //!< total_count () seen so far
+        unsigned int accum = 0;       //!< count toward the next share
+        unsigned int shares = 0;      //!< completed whole-bundle shares
+        bool satisfies (unsigned int multiplier) const
+        {
+            return per_share == 0 || shares >= multiplier;
+        }
+    };
+    using share_tally_map_t = std::map<resource_type_t, share_tally_t>;
+
+    void tally_shares (subsystem_t subsystem,
                        const std::vector<Jobspec::Resource> &resources,
                        scoring_api_t &dfu,
+                       share_tally_map_t &tallies);
+    bool is_enough (const std::vector<Jobspec::Resource> &resources,
+                    const share_tally_map_t &tallies,
+                    unsigned int multiplier);
+    int new_sat_types (const std::vector<Jobspec::Resource> &resources,
+                       const share_tally_map_t &tallies,
                        unsigned int multiplier,
                        std::set<resource_type_t> &sat_types);
     int aux_upv (const jobmeta_t &meta,

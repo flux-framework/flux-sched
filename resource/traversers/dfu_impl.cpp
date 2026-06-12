@@ -479,28 +479,48 @@ int dfu_impl_t::explore_statically (const jobmeta_t &meta,
     return rc2;
 }
 
-bool dfu_impl_t::is_enough (subsystem_t subsystem,
-                            const std::vector<Resource> &resources,
-                            scoring_api_t &dfu,
+void dfu_impl_t::tally_shares (subsystem_t subsystem,
+                               const std::vector<Resource> &resources,
+                               scoring_api_t &dfu,
+                               share_tally_map_t &tallies)
+{
+    for (auto &resource : resources) {
+        share_tally_t &tally = tallies[resource.type];
+        unsigned int total = dfu.total_count (subsystem, resource.type);
+        if (total <= tally.prev_total)
+            continue;
+        // Treat everything discovered by this child match -- the locally
+        // added egroup and/or egroups merged up by resolve () -- as one
+        // indivisible bundle toward the next share.
+        tally.accum += total - tally.prev_total;
+        tally.prev_total = total;
+        if (tally.per_share > 0 && tally.accum >= tally.per_share) {
+            // One share is complete. dom_slot () consumes whole egroups
+            // per slot, so this bundle -- including any excess in its last
+            // egroup -- backs a single slot. Start the next share from
+            // zero rather than carrying the remainder.
+            tally.shares++;
+            tally.accum = 0;
+        }
+    }
+}
+
+bool dfu_impl_t::is_enough (const std::vector<Resource> &resources,
+                            const share_tally_map_t &tallies,
                             unsigned int multiplier)
 {
     return std::all_of (resources.begin (), resources.end (), [&] (const Resource &resource) {
-        unsigned int total = dfu.total_count (subsystem, resource.type);
-        unsigned int required = multiplier * m_match->calc_effective_max (resource);
-        return total >= required;
+        return tallies.at (resource.type).satisfies (multiplier);
     });
 }
 
-int dfu_impl_t::new_sat_types (subsystem_t subsystem,
-                               const std::vector<Resource> &resources,
-                               scoring_api_t &dfu,
+int dfu_impl_t::new_sat_types (const std::vector<Resource> &resources,
+                               const share_tally_map_t &tallies,
                                unsigned int multiplier,
                                std::set<resource_type_t> &sat_types)
 {
     for (auto &resource : resources) {
-        unsigned int total = dfu.total_count (subsystem, resource.type);
-        unsigned int required = multiplier * m_match->calc_effective_max (resource);
-        bool sat = total >= required;
+        bool sat = tallies.at (resource.type).satisfies (multiplier);
         if (sat && sat_types.find (resource.type) == sat_types.end ()) {
             auto ret = sat_types.insert (resource.type);
             if (!ret.second) {
@@ -530,6 +550,10 @@ int dfu_impl_t::explore_dynamically (const jobmeta_t &meta,
 
     // Once a resource type is sufficiently discovered, not need find more
     std::set<resource_type_t> sat_types;
+    // Granule-aware progress toward `multiplier` shares per requested type
+    share_tally_map_t tallies;
+    for (auto &resource : resources)
+        tallies[resource.type].per_share = m_match->calc_effective_max (resource);
     // outedges contains outedge map for vertex u, sorted in available resources
     auto &outedges = iter->second;
     for (auto &kv : outedges) {
@@ -556,10 +580,11 @@ int dfu_impl_t::explore_dynamically (const jobmeta_t &meta,
             eval_egroup_t egrp (dfu.overall_score (), dfu.avail (), 0, x_inout, false);
             egrp.edges.push_back (ev_edg);
             dfu.add (subsystem, (*m_graph)[tgt].type, egrp);
-            if ((rc2 = new_sat_types (subsystem, resources, dfu, multiplier, sat_types)) < 0)
+            tally_shares (subsystem, resources, dfu, tallies);
+            if ((rc2 = new_sat_types (resources, tallies, multiplier, sat_types)) < 0)
                 break;
             rc2 = 0;
-            if (is_enough (subsystem, resources, dfu, multiplier))
+            if (is_enough (resources, tallies, multiplier))
                 break;
         }
     }
