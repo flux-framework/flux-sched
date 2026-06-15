@@ -41,7 +41,7 @@ Fluxion installs two modules that are loaded by the Flux broker:
 
 #### Building Fluxion
 
-Fluxion requires an installed flux-core package.  Instructions
+Fluxion requires an installed flux-core package ≥ v0.78.0. Instructions
 for installing flux-core can be found in [the flux-core
 README](https://github.com/flux-framework/flux-core/blob/master/README.md).
 
