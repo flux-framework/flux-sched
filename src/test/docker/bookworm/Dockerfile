@@ -9,6 +9,7 @@ COPY scripts/ /scripts
 # Install extra buildrequires for flux-sched:
 RUN sudo apt update \
  && sudo /scripts/install-deps.sh -y \
+ && sudo apt install -y doxygen python3-venv python3-pip \
  && sudo rm -rf /var/lib/apt/lists/*
 
 # Add configured user to image with sudo access:
