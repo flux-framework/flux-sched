@@ -133,7 +133,15 @@ int dfu_impl_t::by_excl (const jobmeta_t &meta,
         // available. Note: if Fluxion needs to support shared
         // resources at the leaf level this check will not catch
         // multiple booking.
-        if (meta.alloc_type == jobmeta_t::alloc_type_t::AT_ALLOC
+        // Note: future matches are inherently optimistic with respect to
+        // overrunning jobs. i.e. allocate_orelse_reserve and
+        // without_allocating_future assume that active and planned jobs will
+        // not overrun. Therefore, they will match resources immediately
+        // following an active or planned job's span. However, they will
+        // correctly fail to match `now` resources with an overrunning job.
+        if (at == meta.now
+            && (meta.alloc_type == jobmeta_t::alloc_type_t::AT_ALLOC
+                || meta.alloc_type == jobmeta_t::alloc_type_t::AT_NO_ALLOC)
             && !(*m_graph)[u].schedule.allocations.empty ()) {
             errno = EBUSY;
             return -1;
