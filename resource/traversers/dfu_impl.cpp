@@ -135,7 +135,9 @@ int dfu_impl_t::by_excl (const jobmeta_t &meta,
         // available. Note: if Fluxion needs to support shared
         // resources at the leaf level this check will not catch
         // multiple booking.
-        if (meta.alloc_type == jobmeta_t::alloc_type_t::AT_ALLOC
+        if (at == meta.now
+            && (meta.alloc_type == jobmeta_t::alloc_type_t::AT_ALLOC
+                || meta.alloc_type == jobmeta_t::alloc_type_t::AT_NO_ALLOC)
             && !(*m_graph)[u].schedule.allocations.empty ()) {
             errno = EBUSY;
             return -1;
