@@ -29,8 +29,9 @@ test_expect_success 'load fluxion modules' '
 #
 test_expect_success 'configure epilog with delay' '
 	flux config load <<-EOT &&
-	[job-manager]
-	epilog.command = [ "flux", "perilog-run", "epilog", "-e", "sleep,2" ]
+	[job-manager.epilog]
+	per-rank = true
+	command = [ "sleep", "2" ]
 	EOT
 	flux jobtap load perilog.so
 '
