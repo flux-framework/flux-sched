@@ -315,6 +315,15 @@ out:
     return rc;
 }
 
+int reapi_module_t::find (void *h,
+                          std::string criteria,
+                          json_t *&o,
+                          std::optional<std::string> format)
+{
+    errno = ENOSYS;
+    return -1;
+}
+
 int reapi_module_t::info (void *h, const uint64_t jobid, bool &reserved, int64_t &at, double &ov)
 {
     int rc = -1;
