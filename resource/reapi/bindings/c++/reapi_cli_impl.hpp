@@ -171,7 +171,123 @@ int reapi_cli_t::update_allocate (void *h,
                                   double &ov,
                                   std::string &R_out)
 {
-    return NOT_YET_IMPLEMENTED;
+    resource_query_t *rq = static_cast<resource_query_t *> (h);
+    int rc = -1;
+    at = 0;
+    ov = 0.0f;
+    job_lifecycle_t st;
+    std::shared_ptr<job_info_t> job_info = nullptr;
+    std::shared_ptr<resource_reader_base_t> reader;
+    struct timeval start_time, end_time;
+    std::stringstream o;
+    std::string graph_R = R;
+    uint64_t duration = 0;
+
+    if (!rq || R == "" || jobid > (uint64_t)INT64_MAX) {
+        errno = EINVAL;
+        return -1;
+    }
+    // Do not clobber a jobid the graph already tracks (mirrors cancel()).
+    if (rq->allocation_exists (jobid) || rq->reservation_exists (jobid)) {
+        errno = EEXIST;
+        return -1;
+    }
+
+    /* The allocation R from match_allocate is rv1: the JGF subgraph the jgf
+     * reader consumes lives under the "scheduling" key, and the planner span is
+     * in "execution" (expiration - starttime). Pull both out; if R is already a
+     * bare JGF graph, use it as-is with a long fallback duration.
+     */
+    {
+        json_error_t jerr;
+        json_t *root = json_loads (R.c_str (), 0, &jerr);
+        if (root) {
+            json_t *sched = json_object_get (root, "scheduling");
+            if (sched) {
+                char *s = json_dumps (sched, JSON_COMPACT);
+                if (s) {
+                    graph_R = s;
+                    free (s);
+                }
+            }
+            json_t *exec = json_object_get (root, "execution");
+            if (exec) {
+                json_t *jst = json_object_get (exec, "starttime");
+                json_t *jex = json_object_get (exec, "expiration");
+                if (json_is_integer (jst) && json_is_integer (jex)) {
+                    int64_t s0 = json_integer_value (jst);
+                    int64_t e0 = json_integer_value (jex);
+                    if (s0 >= 0)
+                        at = s0;
+                    if (e0 > s0)
+                        duration = (uint64_t)(e0 - s0);
+                }
+            }
+            json_decref (root);
+        }
+    }
+    if (duration == 0)        // bare JGF, or R without an execution window
+        duration = 31536000;  // ~1y: hold until we explicitly cancel
+
+    if (gettimeofday (&start_time, NULL) < 0) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": ERROR: gettimeofday: " + std::string (strerror (errno)) + "\n";
+        return -1;
+    }
+
+    /* Replay, not match: read the allocation graph with a JGF reader and mark
+     * exactly those vertices allocated under jobid. The traverser sets errno and
+     * an error message on failure rather than throwing.
+     */
+    if (!(reader = create_resource_reader ("jgf"))) {
+        errno = ENOMEM;
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": ERROR: could not create jgf resource reader\n";
+        return -1;
+    }
+    if ((rc = rq->traverser->run (graph_R, rq->writers, reader, (int64_t)jobid, at, duration))
+        < 0) {
+        if (rq->get_traverser_err_msg () != "") {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": ERROR: " + rq->get_traverser_err_msg () + "\n";
+            rq->clear_traverser_err_msg ();
+        } else {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": ERROR: update replay: " + std::string (strerror (errno)) + "\n";
+        }
+        return -1;
+    }
+
+    if (rq->writers->emit (o) < 0) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": ERROR: update writer emit: " + std::string (strerror (errno)) + "\n";
+        return -1;
+    }
+    R_out = o.str ();
+
+    if (gettimeofday (&end_time, NULL) < 0) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": ERROR: gettimeofday: " + std::string (strerror (errno)) + "\n";
+        return -1;
+    }
+    ov = get_elapsed_time (start_time, end_time);
+
+    /* Record the allocation so cancel()/info() recognize this jobid, exactly as
+     * match_allocate does for an allocated (non-reserved) job.
+     */
+    st = job_lifecycle_t::ALLOCATED;
+    rq->set_allocation (jobid);
+    job_info = std::make_shared<job_info_t> (jobid, st, at, "", "", ov);
+    if (job_info == nullptr) {
+        errno = ENOMEM;
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": ERROR: can't allocate memory: " + std::string (strerror (errno)) + "\n";
+        return -1;
+    }
+    rq->set_job (jobid, job_info);
+    rq->incr_job_counter ();
+
+    return 0;
 }
 
 int reapi_cli_t::match_allocate_multi (void *h,
