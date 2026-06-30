@@ -1,0 +1,9 @@
+add_executable(reapi_cli_cxx_test reapi_cli_test_cxx.cpp)
+add_sanitizers(reapi_cli_cxx_test)
+target_link_libraries(reapi_cli_cxx_test PRIVATE reapi_cli intern Catch2::Catch2WithMain)
+flux_add_test(NAME reapi_cli_cxx_test COMMAND reapi_cli_cxx_test)
+
+add_executable(reapi_cli_c_test reapi_cli_test_c.cpp)
+add_sanitizers(reapi_cli_c_test)
+target_link_libraries(reapi_cli_c_test PRIVATE reapi_cli intern Catch2::Catch2WithMain)
+flux_add_test(NAME reapi_cli_c_test COMMAND reapi_cli_c_test)
