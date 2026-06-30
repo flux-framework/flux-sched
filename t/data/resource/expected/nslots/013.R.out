@@ -1,0 +1,24 @@
+{"version": 1, "execution": {"R_lite": [{"rank": "0-1", "children": {"core": "28-35"}}], "nodelist": ["node[0-1]"], "starttime": 0, "expiration": 3600, "nslots": 16}}
+INFO: =============================
+INFO: JOBID=1
+INFO: RESOURCES=ALLOCATED
+INFO: SCHEDULED AT=Now
+INFO: =============================
+{"version": 1, "execution": {"R_lite": [{"rank": "0-1", "children": {"core": "7-27"}}], "nodelist": ["node[0-1]"], "starttime": 0, "expiration": 3600, "nslots": 42}}
+INFO: =============================
+INFO: JOBID=2
+INFO: RESOURCES=ALLOCATED
+INFO: SCHEDULED AT=Now
+INFO: =============================
+{"version": 1, "execution": {"R_lite": [{"rank": "1", "children": {"core": "4-6"}}], "nodelist": ["node1"], "starttime": 0, "expiration": 3600, "nslots": 3}}
+INFO: =============================
+INFO: JOBID=3
+INFO: RESOURCES=ALLOCATED
+INFO: SCHEDULED AT=Now
+INFO: =============================
+{"version": 1, "execution": {"R_lite": [{"rank": "1", "children": {"core": "0-3"}}, {"rank": "0", "children": {"core": "0-6"}}], "nodelist": ["node[0-1]"], "starttime": 0, "expiration": 3600, "nslots": 11}}
+INFO: =============================
+INFO: JOBID=4
+INFO: RESOURCES=ALLOCATED
+INFO: SCHEDULED AT=Now
+INFO: =============================
