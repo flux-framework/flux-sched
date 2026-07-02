@@ -114,10 +114,10 @@ void fetch_helper_t::scrub ()
 
 bool operator== (const resource_pool_t &r, const fetch_helper_t &f)
 {
+    // we explicitly exclude properties because they may be dynamic
     return (r.type.get () == f.type && r.basename == f.basename
             && r.size == static_cast<unsigned int> (f.size) && r.rank == static_cast<int> (f.rank)
-            && r.id == f.id && r.name == f.name && r.properties == f.properties
-            && r.paths == f.paths);
+            && r.id == f.id && r.name == f.name && r.paths == f.paths);
 }
 
 bool operator!= (const resource_pool_t &r, const fetch_helper_t &f)
