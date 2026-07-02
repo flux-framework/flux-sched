@@ -38,7 +38,8 @@ struct jobmeta_t {
     enum class alloc_type_t : int {
         AT_ALLOC = 0,
         AT_ALLOC_ORELSE_RESERVE = 1,
-        AT_SATISFIABILITY = 2
+        AT_SATISFIABILITY = 2,
+        AT_NO_ALLOC = 3
     };
 
     alloc_type_t alloc_type = alloc_type_t::AT_ALLOC;
@@ -81,6 +82,10 @@ struct jobmeta_t {
         if ((jobspec.attributes.system.duration > static_cast<double> (g_duration))
             || (jobspec.attributes.system.duration
                 > static_cast<double> (std::numeric_limits<int64_t>::max ()))) {
+            errno = EINVAL;
+            return -1;
+        }
+        if (jobspec.attributes.system.duration < 0.0f) {
             errno = EINVAL;
             return -1;
         }

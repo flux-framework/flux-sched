@@ -99,6 +99,7 @@ target_link_libraries(resource PUBLIC
     PkgConfig::UUID
     Boost::graph
     jobspec_conv
+    match_option
     )
 add_sanitizers(resource)
 
