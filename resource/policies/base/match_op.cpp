@@ -10,13 +10,11 @@
 
 #include <cstring>
 #include <array>
-#include <algorithm>
 
 #include "match_op.h"
 
 constexpr auto opt_map = std::to_array<std::pair<match_op_t, const char *>> (
-    {{MATCH_UNKNOWN, "error"},
-     {MATCH_ALLOCATE, "allocate"},
+    {{MATCH_ALLOCATE, "allocate"},
      {MATCH_ALLOCATE_ORELSE_RESERVE, "allocate_orelse_reserve"},
      {MATCH_ALLOCATE_W_SATISFIABILITY, "allocate_with_satisfiability"},
      {MATCH_SATISFIABILITY, "satisfiability"}});
@@ -30,7 +28,7 @@ const char *match_op_to_string (match_op_t match_op)
         if (p.first == match_op)
             return p.second;
 
-    return "error";
+    return nullptr;
 }
 
 match_op_t match_op_from_string (const char *str)
@@ -47,8 +45,5 @@ match_op_t match_op_from_string (const char *str)
 
 bool match_op_valid (match_op_t match_op)
 {
-    return match_op != MATCH_UNKNOWN
-           && count_if (opt_map.begin (), opt_map.end (), [match_op] (auto p) {
-                  return p.first == match_op;
-              }) == 1;
+    return (match_op_to_string (match_op) != nullptr);
 }
