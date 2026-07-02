@@ -1,0 +1,4 @@
+# Test cores under slot (implicit exclusive)
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/cores-default.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/cores-default.yaml
+quit

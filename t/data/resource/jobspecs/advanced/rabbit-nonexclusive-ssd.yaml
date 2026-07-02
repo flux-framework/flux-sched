@@ -1,0 +1,33 @@
+version: 1
+resources:
+  - type: chassis
+    count: 1
+    label: default
+    with:
+    - type: node
+      count: 1
+      exclusive: false
+      with:
+      - type: slot
+        label: task
+        count: 1
+        with:
+        - type: core
+          count: 1
+    - type: ssd
+      count: 1
+      exclusive: false
+    - type: storage_node
+      count: 1
+      with:
+      - type: core
+        count: 1
+        exclusive: true
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "true" ]
+    slot: task
+    count:
+      per_slot: 1

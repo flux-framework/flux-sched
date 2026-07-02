@@ -1,0 +1,28 @@
+version: 9999
+# Single slot whose only element is a node (no pooled/chassis-level resource).
+# Matches: allocates the one cluster-direct node on rabbit (hetchy1).
+resources:
+  - type: slot
+    count: 1
+    label: default
+    exclusive: false
+    with:
+      - type: node
+        count: 1
+        exclusive: false
+        with:
+          - type: slot
+            label: task
+            count: 1
+            exclusive: false
+            with:
+              - type: core
+                count: 1
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: task
+    count:
+      per_slot: 1

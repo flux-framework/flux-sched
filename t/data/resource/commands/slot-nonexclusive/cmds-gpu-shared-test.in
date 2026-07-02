@@ -1,0 +1,10 @@
+# Test that GPUs (non-pooled) with explicit exclusive:false can be shared
+# Each socket has 1 GPU and 18 cores
+# Request GPU (shared) + 1 core (exclusive) per job
+# Multiple jobs should be able to share the same GPU but use different cores
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/gpu-core-shared.yaml
+# Should succeed - same socket, same GPU (shared), different core
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/gpu-core-shared.yaml
+# Should succeed - same socket, same GPU (shared), different core
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/gpu-core-shared.yaml
+quit

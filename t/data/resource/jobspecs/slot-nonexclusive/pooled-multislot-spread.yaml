@@ -1,0 +1,32 @@
+version: 9999
+# 2 slots, each pooled 10 GB SSD + 1 node. Expect 2 distinct SSDs at 10 GB
+# (spread, one per node), 20 GB total.
+resources:
+  - type: slot
+    count: 2
+    label: default
+    exclusive: false
+    with:
+      - type: ssd
+        count: 10
+        unit: GB
+        exclusive: false
+      - type: node
+        count: 1
+        exclusive: false
+        with:
+          - type: slot
+            label: task
+            count: 1
+            exclusive: false
+            with:
+              - type: core
+                count: 1
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: task
+    count:
+      per_slot: 1
