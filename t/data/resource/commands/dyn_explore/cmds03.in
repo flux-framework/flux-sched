@@ -1,0 +1,2 @@
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/dyn_explore/test003.yaml
+quit
