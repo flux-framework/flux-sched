@@ -14,6 +14,7 @@ extern "C" {
 #endif
 }
 
+#include <cstdio>
 #include "resource/readers/resource_reader_factory.hpp"
 #include "resource/readers/resource_reader_grug.hpp"
 #include "resource/readers/resource_reader_hwloc.hpp"
@@ -23,6 +24,14 @@ extern "C" {
 
 namespace Flux {
 namespace resource_model {
+
+namespace {
+void set_error (flux_error_t *errp, const char *msg)
+{
+    if (errp)
+        snprintf (errp->text, sizeof (errp->text), "%s", msg);
+}
+}  // namespace
 
 bool known_resource_reader (const std::string &name)
 {
@@ -56,6 +65,40 @@ std::shared_ptr<resource_reader_base_t> create_resource_reader (const std::strin
         reader = nullptr;
     }
     return reader;
+}
+
+std::string reader_name_from_writer (const char *writer_uri, flux_error_t *errp)
+{
+    // RFC 40: writer absent, or "fluxion" with no path, defaults to "jgf".
+    if (writer_uri == nullptr)
+        return "jgf";
+
+    std::string uri (writer_uri);
+    // A writer URI's scheme names the producing scheduler (RFC 20).  We can
+    // only interpret data written by fluxion.
+    std::string scheme, path;
+    auto colon = uri.find (':');
+    if (colon == std::string::npos) {
+        scheme = uri;
+    } else {
+        scheme = uri.substr (0, colon);
+        path = uri.substr (colon + 1);
+    }
+    if (scheme != "fluxion") {
+        set_error (errp, "unsupported scheduling.writer scheme (not fluxion)");
+        errno = EINVAL;
+        return "";
+    }
+    // Map the fluxion-defined path to the reader that parses it.  An empty path
+    // ("fluxion" or "fluxion:") defaults to jgf per RFC 40.
+    if (path.empty () || path == "jgf")
+        return "jgf";
+    if (path == "jgf_shorthand")
+        return "jgf_shorthand";
+
+    set_error (errp, "unsupported fluxion scheduling.writer format");
+    errno = EINVAL;
+    return "";
 }
 
 }  // namespace resource_model
