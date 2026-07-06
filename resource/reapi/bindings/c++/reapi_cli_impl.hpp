@@ -985,23 +985,83 @@ int resource_query_t::remove_job (const uint64_t jobid)
 int resource_query_t::remove_job (const uint64_t jobid, const std::string &R, bool &full_removal)
 {
     int rc = -1;
+    json_error_t error;
+    json_t *r_obj = nullptr;
+    json_t *scheduling = nullptr;
+    json_t *writer = nullptr;
+    std::string format;
+    std::string reader_input;
     std::shared_ptr<resource_reader_base_t> reader;
 
     if (jobid > (uint64_t)std::numeric_limits<int64_t>::max ()) {
         errno = EOVERFLOW;
         return rc;
     }
-    if (R == "") {
+
+    // Parse R to determine format and extract appropriate input for reader
+    r_obj = json_loads (R.c_str (), 0, &error);
+    if (!r_obj) {
+        m_err_msg = __FUNCTION__;
+        m_err_msg += ": ERROR: failed to parse R as JSON: ";
+        m_err_msg += error.text;
+        m_err_msg += "\n";
         errno = EINVAL;
         return rc;
     }
-    if ((reader = create_resource_reader (params.load_format)) == nullptr) {
+
+    // Check for scheduling key - if absent, use rv1exec for execution.R_lite
+    scheduling = json_object_get (r_obj, "scheduling");
+    if (!scheduling) {
+        format = "rv1exec";
+        reader_input = R;
+    } else {
+        // Detect the reader format from scheduling.writer per RFC 20/40.
+        writer = json_object_get (scheduling, "writer");
+        const char *writer_str = nullptr;
+        if (writer) {
+            writer_str = json_string_value (writer);
+            if (!writer_str) {
+                m_err_msg = __FUNCTION__;
+                m_err_msg += ": ERROR: scheduling.writer is not a string\n";
+                json_decref (r_obj);
+                errno = EINVAL;
+                return rc;
+            }
+        }
+        flux_error_t error2;
+        format = reader_name_from_writer (writer_str, &error2);
+        if (format.empty ()) {
+            m_err_msg = __FUNCTION__;
+            m_err_msg += ": ERROR: ";
+            m_err_msg += error2.text;
+            m_err_msg += "\n";
+            json_decref (r_obj);
+            return rc;
+        }
+
+        // Extract scheduling section for scheduler-specific formats
+        char *scheduling_str = json_dumps (scheduling, JSON_COMPACT);
+        if (!scheduling_str) {
+            m_err_msg = __FUNCTION__;
+            m_err_msg += ": ERROR: failed to serialize scheduling section\n";
+            json_decref (r_obj);
+            errno = ENOMEM;
+            return rc;
+        }
+        reader_input = scheduling_str;
+        free (scheduling_str);
+    }
+
+    json_decref (r_obj);
+
+    if ((reader = create_resource_reader (format)) == nullptr) {
         m_err_msg = __FUNCTION__;
-        m_err_msg += ": ERROR: can't create reader\n";
+        m_err_msg += ": ERROR: can't create reader for format ";
+        m_err_msg += format + "\n";
         return rc;
     }
 
-    rc = traverser->remove (R, reader, static_cast<int64_t> (jobid), full_removal);
+    rc = traverser->remove (reader_input, reader, static_cast<int64_t> (jobid), full_removal);
     if (rc == 0) {
         if (full_removal) {
             auto job_info_it = jobs.find (jobid);

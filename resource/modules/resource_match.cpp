@@ -1395,20 +1395,12 @@ static int parse_R (std::shared_ptr<resource_ctx_t> &ctx,
             rc = -1;
             goto freemem_out;
         }
-        if (writer_uri) {
-            if (std::string (writer_uri) == "fluxion:jgf_shorthand")
-                format = "jgf_shorthand";
-            else {
-                flux_log (ctx->h,
-                          LOG_ERR,
-                          "%s: unrecognized reader URI '%s'",
-                          __FUNCTION__,
-                          writer_uri);
-                rc = -1;
-                goto freemem_out;
-            }
-        } else {  // if URI not present, assume JGF
-            format = "jgf";
+        flux_error_t error2;
+        format = reader_name_from_writer (writer_uri, &error2);
+        if (format.empty ()) {
+            flux_log (ctx->h, LOG_ERR, "%s: %s", __FUNCTION__, error2.text);
+            rc = -1;
+            goto freemem_out;
         }
     } else {
         // Use the rv1exec reader
@@ -1674,7 +1666,10 @@ int run_remove (std::shared_ptr<resource_ctx_t> &ctx,
     dfu_traverser_t &tr = *(ctx->traverser);
 
     if (part_cancel) {
-        // RV1exec only reader supported in production currently
+        // RV1exec only reader supported in production currently.
+        // When writer-based reader selection is extended to partial cancel,
+        // this should detect the format from R via reader_name_from_writer()
+        // as parse_R() and the reapi remove_job() bindings do.
         std::shared_ptr<resource_reader_base_t> reader;
         if ((reader = create_resource_reader ("rv1exec")) == nullptr) {
             rc = -1;
