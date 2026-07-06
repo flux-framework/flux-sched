@@ -24,6 +24,7 @@ extern "C" {
 #include <string>
 #include "resource/reapi/bindings/c++/reapi.hpp"
 #include "resource/policies/base/match_op.h"
+#include "resource/writers/match_writers.hpp"
 
 namespace Flux {
 namespace resource_model {
@@ -67,6 +68,10 @@ class reapi_module_t : public reapi_t {
                        const std::string &R,
                        bool noent_ok,
                        bool &full_removal);
+    static int find (void *h,
+                     std::string criteria,
+                     json_t *&o,
+                     std::optional<std::string> format = std::nullopt);
     static int info (void *h, const uint64_t jobid, bool &reserved, int64_t &at, double &ov);
     static int stat (void *h,
                      int64_t &V,

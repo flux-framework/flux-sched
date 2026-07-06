@@ -22,3 +22,8 @@ add_executable(reapi_cli_update_allocate_test reapi_cli_update_allocate_test.cpp
 add_sanitizers(reapi_cli_update_allocate_test)
 target_link_libraries(reapi_cli_update_allocate_test PRIVATE reapi_cli libtap PkgConfig::JANSSON)
 flux_add_test(NAME reapi_cli_update_allocate_test COMMAND reapi_cli_update_allocate_test)
+
+add_executable(reapi_cli_find_test reapi_cli_find_test.cpp)
+add_sanitizers(reapi_cli_find_test)
+target_link_libraries(reapi_cli_find_test PRIVATE reapi_cli libtap PkgConfig::JANSSON)
+flux_add_test(NAME reapi_cli_find_test COMMAND reapi_cli_find_test)
