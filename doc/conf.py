@@ -50,15 +50,30 @@ source_suffix = ".rst"
 
 extensions = ["sphinx.ext.intersphinx", "sphinx.ext.napoleon", "domainrefs"]
 
-# Try to import breathe - if not available, skip API docs
+import shutil
+
 try:
-    import breathe
-    extensions.append("breathe")
-    BREATHE_AVAILABLE = True
+    import breathe  # noqa: F401
+
+    have_breathe = True
 except ImportError:
-    logger.warning("breathe not found. C++ API documentation will not be available.")
+    have_breathe = False
+    logger.warning("breathe not found. C/C++ API documentation will not be available.")
     logger.warning("Install breathe with: pip install breathe")
-    BREATHE_AVAILABLE = False
+
+have_doxygen = shutil.which("doxygen") is not None
+if not have_doxygen:
+    logger.warning("doxygen not found. C/C++ API documentation will not be available.")
+
+# The C/C++ API pages need both the breathe extension and the doxygen binary
+# (breathe reads the XML that doxygen generates).  Only register breathe when
+# both are present: registering it without doxygen leaves the
+# `.. doxygenfile::` directives live but with no XML to read, which can fail
+# the build.  When either is missing, leave breathe unregistered so those
+# directives degrade to harmless "unknown directive" warnings instead.
+BREATHE_AVAILABLE = have_breathe and have_doxygen
+if BREATHE_AVAILABLE:
+    extensions.append("breathe")
 
 # Suppress warnings
 suppress_warnings = [
