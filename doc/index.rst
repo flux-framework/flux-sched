@@ -14,3 +14,10 @@ Documentation for flux-sched
    :maxdepth: 2
 
    api/index
+
+.. _python_api_reference:
+
+.. toctree::
+   :maxdepth: 2
+
+   python/index

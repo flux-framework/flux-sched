@@ -59,7 +59,11 @@ if(SPHINX AND ENABLE_DOCS)
     endforeach()
 
     set(sphinx_deps man5/index.rst ${man5_inputs})
-    if(DOXYGEN_FOUND)
+    # Only depend on the doxygen XML when the doxygen target actually exists,
+    # which requires BREATHE_FOUND too (DOXYGEN_OUTPUT_DIR is only set in that
+    # case).  Guarding on DOXYGEN_FOUND alone yields a bogus "/xml/index.xml"
+    # dependency with no build rule when breathe is absent.
+    if(DOXYGEN_FOUND AND BREATHE_FOUND)
         list(APPEND sphinx_deps ${DOXYGEN_OUTPUT_DIR}/xml/index.xml)
     endif()
 
