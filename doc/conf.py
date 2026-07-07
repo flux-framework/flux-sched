@@ -24,6 +24,9 @@ import os
 import sys
 from manpages import man_pages
 import docutils.nodes
+from sphinx.util import logging
+
+logger = logging.getLogger(__name__)
 
 # -- Project information -----------------------------------------------------
 
@@ -53,8 +56,8 @@ try:
     extensions.append("breathe")
     BREATHE_AVAILABLE = True
 except ImportError:
-    print("WARNING: breathe not found. C++ API documentation will not be available.")
-    print("Install breathe with: pip install breathe")
+    logger.warning("breathe not found. C++ API documentation will not be available.")
+    logger.warning("Install breathe with: pip install breathe")
     BREATHE_AVAILABLE = False
 
 # Suppress warnings
@@ -175,7 +178,7 @@ def run_doxygen():
 
     # Skip if breathe is not available
     if not BREATHE_AVAILABLE:
-        print("Skipping Doxygen (breathe not available)")
+        logger.info("Skipping Doxygen (breathe not available)")
         return
 
     # Check if we need to run doxygen (e.g., on Read the Docs)
@@ -190,16 +193,16 @@ def run_doxygen():
 
     # Skip if doxygen output already exists (unless on RTD)
     if os.path.exists(os.path.join(doxygen_xml, "index.xml")) and not read_the_docs_build:
-        print(f"Doxygen XML already exists at {doxygen_xml}, skipping...")
+        logger.info(f"Doxygen XML already exists at {doxygen_xml}, skipping...")
         return
 
     # Check if doxygen is available
     if shutil.which("doxygen") is None:
-        print("WARNING: doxygen not found. Skipping API documentation generation.")
-        print("Install doxygen to generate C++ API documentation.")
+        logger.warning("doxygen not found. Skipping API documentation generation.")
+        logger.warning("Install doxygen to generate C++ API documentation.")
         return
 
-    print(f"Running Doxygen to generate XML at {doxygen_xml}...")
+    logger.info(f"Running Doxygen to generate XML at {doxygen_xml}...")
 
     # Create a temporary Doxyfile from Doxyfile.in with substitutions
     doxyfile_in = os.path.join(conf_dir, "Doxyfile.in")
@@ -230,19 +233,19 @@ def run_doxygen():
             capture_output=True,
             text=True
         )
-        print("Doxygen completed successfully")
+        logger.info("Doxygen completed successfully")
         if result.stdout:
-            print(result.stdout)
+            logger.info(result.stdout)
     except subprocess.CalledProcessError as e:
-        print(f"WARNING: Doxygen failed with return code {e.returncode}")
+        logger.warning(f"Doxygen failed with return code {e.returncode}")
         if e.stdout:
-            print(e.stdout)
+            logger.warning(e.stdout)
         if e.stderr:
-            print(e.stderr)
-        print("Continuing without API documentation...")
+            logger.warning(e.stderr)
+        logger.warning("Continuing without API documentation...")
     except Exception as e:
-        print(f"WARNING: Failed to run Doxygen: {e}")
-        print("Continuing without API documentation...")
+        logger.warning(f"Failed to run Doxygen: {e}")
+        logger.warning("Continuing without API documentation...")
 
 
 # launch setup
