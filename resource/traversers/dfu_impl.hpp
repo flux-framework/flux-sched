@@ -463,13 +463,48 @@ class dfu_impl_t {
                              scoring_api_t &dfu,
                              unsigned int multiplier = 1);
 
-    bool is_enough (subsystem_t subsystem,
-                    const std::vector<Jobspec::Resource> &resources,
-                    scoring_api_t &dfu,
+    /*! Granule-aware satisfaction tracker for explore_dynamically ().
+     *  dom_slot () packs each slot from *whole* edge groups, so a request
+     *  for `multiplier` slots needs `multiplier` disjoint bundles per type,
+     *  each totaling >= calc_effective_max (). Aggregate counts alone are
+     *  insufficient: one high-capacity vertex (e.g., an ssd whose size
+     *  covers several slots' shares) satisfies the aggregate test while
+     *  only ever backing a single slot. Progress is fed from deltas of
+     *  dfu.total_count () so counts merged up from pass-through children
+     *  (see resolve ()) are observed identically to the legacy predicate;
+     *  with multiplier == 1 the tally is exactly equivalent to it.
+     */
+    struct share_tally_t {
+        unsigned int per_share = 0;   //!< per-share count for the type
+        unsigned int prev_total = 0;  //!< total_count () seen so far
+        unsigned int accum = 0;       //!< count toward the next share
+        unsigned int shares = 0;      //!< completed whole-bundle shares
+        bool satisfies (unsigned int multiplier) const
+        {
+            return per_share == 0 || shares >= multiplier;
+        }
+        void add (unsigned int count)
+        {
+            accum += count;
+            if (per_share > 0 && accum >= per_share) {
+                // One share is complete. dom_slot () consumes whole
+                // egroups per slot, so this bundle -- including any
+                // excess in its last egroup -- backs a single slot.
+                // Start the next share from zero rather than carrying
+                // the remainder.
+                shares++;
+                accum = 0;
+            }
+        }
+    };
+    using share_tally_map_t = std::map<resource_type_t, share_tally_t>;
+
+    void tally_shares (subsystem_t subsystem, scoring_api_t &dfu, share_tally_map_t &tallies);
+    bool is_enough (const std::vector<Jobspec::Resource> &resources,
+                    const share_tally_map_t &tallies,
                     unsigned int multiplier);
-    int new_sat_types (subsystem_t subsystem,
-                       const std::vector<Jobspec::Resource> &resources,
-                       scoring_api_t &dfu,
+    int new_sat_types (const std::vector<Jobspec::Resource> &resources,
+                       const share_tally_map_t &tallies,
                        unsigned int multiplier,
                        std::set<resource_type_t> &sat_types);
     int aux_upv (const jobmeta_t &meta,
