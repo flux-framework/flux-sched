@@ -1,3 +1,36 @@
+flux-sched version 0.53.0 - 2026-07-13
+--------------------------------------
+
+### New Features
+ * reapi: add add_subgraph and remove_subgraph functionality (#1316)
+ * reapi: add optional match format parameter to cli find() and add C
+   bindings (#1500)
+ * reapi: implement update_allocate() (#1499)
+ * reapi: add support for partial cancel with rv1exec match format
+   (#1497)
+ * reapi: add resource status get/set API (#1489)
+ * flexible traverser: add support for xor slots #1431
+
+### Fixes
+ * dfu: prevent prune errno from overtaking traversal (#1524)
+ * reader/jgf: vertex equality should ignore properties (#1516)
+ * pass `json_t` objects instead of json strings for
+   `allocate_with_satisfiability` (#1493)
+ * reapi: fix match_satisfy reporting satisfiable on error (#1522)
+ * Fix match policy-dependent match behavior for granulated resources (#1505)
+
+### Cleanup
+ * match_op: Expose utils to convert between match_op_t and strings (#1515)
+
+### Build/Testsuite/Documentation
+ * docs: add python autodoc (#1519)
+ * testsuite: add Catch2-based REAPI CLI tests (#1514)
+ * t: remove reference to flux perilog-run in alloc-check (#1512)
+ * doc: add Internal API Reference via doxygen/breathe (#1502)
+ * cmake: also set normal CMAKE_INSTALL_LIBDIR variable (#1507)
+ * cmake: bump required flux-core version to 0.78 (#1504)
+
+
 flux-sched version 0.52.0 - 2026-06-05
 --------------------------------------
 
