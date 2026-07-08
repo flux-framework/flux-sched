@@ -1,0 +1,32 @@
+version: 9999
+resources:
+- type: socket
+  count: 1
+  with:
+    - type: xor_slot
+      count: 2
+      label: default
+      with:
+        - type: core
+          count: 1
+    - type: xor_slot
+      count: 3
+      label: default
+      with:
+        - type: core
+          count: 1
+    - type: xor_slot
+      count: 4
+      label: default
+      with:
+        - type: core
+          count: 1
+
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: default
+    count:
+      per_slot: 1

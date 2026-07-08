@@ -155,4 +155,12 @@ test_expect_success "${test018_desc}" '
     test_cmp 018.R.out ${exp_dir}/018.R.out
 '
 
+cmds019="${cmd_dir}/cmds19.in"
+test019_desc="GRUG: allocate xor-slot jobspecs with count > 1 using high policy"
+test_expect_success "${test019_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds019} > cmds019 &&
+    ${query} -L ${grug_small} -f grug -S CA -P high -T flexible -t 019.R.out < cmds019 &&
+    test_cmp 019.R.out ${exp_dir}/019.R.out
+'
+
 test_done
