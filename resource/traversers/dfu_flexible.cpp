@@ -337,7 +337,7 @@ std::tuple<dfu_flexible_t::Key, int, int> dfu_flexible_t::select_or_config (
                 max_matches = 0;
                 break;
             }
-            int possible = m_match->calc_count (slot_elem, it->second) / count;
+            int possible = it->second / count;
             max_matches = std::min (max_matches, possible);
         }
 
