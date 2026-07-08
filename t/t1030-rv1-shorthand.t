@@ -208,6 +208,37 @@ test_expect_success 'sched-now=allocated is null' '
     flux ion-resource find -q --format=jgf sched-now=allocated | jq -e ". == null"
 '
 
+# test reloading with a job that has one of its nodes' properties updated
+# (see https://github.com/flux-framework/flux-sched/issues/1513)
+test_expect_success 'set a dynamic property on hetchy1002' '
+    NODE_PATH="/hetchy/chassis0/hetchy1002" &&
+    flux ion-resource set-property ${NODE_PATH} maintenance=1 &&
+    flux ion-resource get-property ${NODE_PATH} maintenance \
+        | grep "maintenance = \[.1.\]"
+'
+
+test_expect_success 'submit a sleep inf job to hetchy1002 and wait for alloc' '
+    flux module list && flux resource list &&
+    # hetchy1002 is the only node in the graph with the bardpeak property
+    JOBID=$(flux submit -n1 --wait-event=alloc --requires=bardpeak sleep inf)
+'
+
+test_expect_success 'reload fluxion modules to remove the property' '
+    remove_qmanager &&
+    reload_resource &&
+    load_qmanager
+'
+# This is the regression assertion: before the fix, the running job would be
+# killed on reload because the JGF vertex-equality check saw the dynamic
+# property in the job R but not in the freshly-loaded base graph.
+test_expect_success 'the job is still running after reload' '
+    state=$(flux jobs -n -o {state} ${JOBID}) &&
+    test $state = RUN
+'
+test_expect_success 'the job did not receive an exception' '
+    test_must_fail flux job wait-event -t 1s ${JOBID} exception
+'
+
 test_expect_success 'remove manually loaded modules' '
     remove_qmanager && remove_resource
 '
