@@ -70,6 +70,7 @@ set(ALL_TESTS
   t3033-resource-nodex.t
   t3034-resource-pconstraints.t
   t3035-resource-remove.t
+  t3036-resource-dyn-explore.t
   t3037-resource-custom-policy.t
   t3038-resource-flexible.t
   t3039-resource-force-load-format.t

@@ -1,0 +1,339 @@
+{
+ "graph": {
+  "directed": false,
+  "nodes": [
+   {
+    "id": "0",
+    "metadata": {
+     "type": "cluster",
+     "name": "mini",
+     "paths": {
+      "containment": "/mini"
+     }
+    }
+   },
+   {
+    "id": "1",
+    "metadata": {
+     "type": "chassis",
+     "id": 0,
+     "paths": {
+      "containment": "/mini/chassis0"
+     }
+    }
+   },
+   {
+    "id": "2",
+    "metadata": {
+     "type": "ssd",
+     "unit": "GiB",
+     "size": 525,
+     "paths": {
+      "containment": "/mini/chassis0/ssd0"
+     }
+    }
+   },
+   {
+    "id": "3",
+    "metadata": {
+     "type": "ssd",
+     "unit": "GiB",
+     "size": 525,
+     "paths": {
+      "containment": "/mini/chassis0/ssd1"
+     }
+    }
+   },
+   {
+    "id": "4",
+    "metadata": {
+     "type": "ssd",
+     "unit": "GiB",
+     "size": 525,
+     "paths": {
+      "containment": "/mini/chassis0/ssd2"
+     }
+    }
+   },
+   {
+    "id": "5",
+    "metadata": {
+     "type": "ssd",
+     "unit": "GiB",
+     "size": 525,
+     "paths": {
+      "containment": "/mini/chassis0/ssd3"
+     }
+    }
+   },
+   {
+    "id": "6",
+    "metadata": {
+     "type": "chassis",
+     "id": 1,
+     "paths": {
+      "containment": "/mini/chassis1"
+     }
+    }
+   },
+   {
+    "id": "7",
+    "metadata": {
+     "type": "node",
+     "name": "node0",
+     "id": 0,
+     "paths": {
+      "containment": "/mini/chassis1/node0"
+     }
+    }
+   },
+   {
+    "id": "8",
+    "metadata": {
+     "type": "core",
+     "id": 0,
+     "paths": {
+      "containment": "/mini/chassis1/node0/core0"
+     }
+    }
+   },
+   {
+    "id": "9",
+    "metadata": {
+     "type": "core",
+     "id": 1,
+     "paths": {
+      "containment": "/mini/chassis1/node0/core1"
+     }
+    }
+   },
+   {
+    "id": "10",
+    "metadata": {
+     "type": "node",
+     "name": "node1",
+     "id": 1,
+     "paths": {
+      "containment": "/mini/chassis1/node1"
+     }
+    }
+   },
+   {
+    "id": "11",
+    "metadata": {
+     "type": "core",
+     "id": 0,
+     "paths": {
+      "containment": "/mini/chassis1/node1/core0"
+     }
+    }
+   },
+   {
+    "id": "12",
+    "metadata": {
+     "type": "core",
+     "id": 1,
+     "paths": {
+      "containment": "/mini/chassis1/node1/core1"
+     }
+    }
+   },
+   {
+    "id": "13",
+    "metadata": {
+     "type": "node",
+     "name": "node2",
+     "id": 2,
+     "paths": {
+      "containment": "/mini/chassis1/node2"
+     }
+    }
+   },
+   {
+    "id": "14",
+    "metadata": {
+     "type": "core",
+     "id": 0,
+     "paths": {
+      "containment": "/mini/chassis1/node2/core0"
+     }
+    }
+   },
+   {
+    "id": "15",
+    "metadata": {
+     "type": "core",
+     "id": 1,
+     "paths": {
+      "containment": "/mini/chassis1/node2/core1"
+     }
+    }
+   },
+   {
+    "id": "16",
+    "metadata": {
+     "type": "node",
+     "name": "node3",
+     "id": 3,
+     "paths": {
+      "containment": "/mini/chassis1/node3"
+     }
+    }
+   },
+   {
+    "id": "17",
+    "metadata": {
+     "type": "core",
+     "id": 0,
+     "paths": {
+      "containment": "/mini/chassis1/node3/core0"
+     }
+    }
+   },
+   {
+    "id": "18",
+    "metadata": {
+     "type": "core",
+     "id": 1,
+     "paths": {
+      "containment": "/mini/chassis1/node3/core1"
+     }
+    }
+   },
+   {
+    "id": "19",
+    "metadata": {
+     "type": "ssd",
+     "unit": "GiB",
+     "size": 616,
+     "paths": {
+      "containment": "/mini/chassis1/ssd0"
+     }
+    }
+   },
+   {
+    "id": "20",
+    "metadata": {
+     "type": "ssd",
+     "unit": "GiB",
+     "size": 616,
+     "paths": {
+      "containment": "/mini/chassis1/ssd1"
+     }
+    }
+   },
+   {
+    "id": "21",
+    "metadata": {
+     "type": "ssd",
+     "unit": "GiB",
+     "size": 616,
+     "paths": {
+      "containment": "/mini/chassis1/ssd2"
+     }
+    }
+   },
+   {
+    "id": "22",
+    "metadata": {
+     "type": "ssd",
+     "unit": "GiB",
+     "size": 616,
+     "paths": {
+      "containment": "/mini/chassis1/ssd3"
+     }
+    }
+   }
+  ],
+  "edges": [
+   {
+    "source": "0",
+    "target": "1"
+   },
+   {
+    "source": "1",
+    "target": "2"
+   },
+   {
+    "source": "1",
+    "target": "3"
+   },
+   {
+    "source": "1",
+    "target": "4"
+   },
+   {
+    "source": "1",
+    "target": "5"
+   },
+   {
+    "source": "0",
+    "target": "6"
+   },
+   {
+    "source": "6",
+    "target": "7"
+   },
+   {
+    "source": "7",
+    "target": "8"
+   },
+   {
+    "source": "7",
+    "target": "9"
+   },
+   {
+    "source": "6",
+    "target": "10"
+   },
+   {
+    "source": "10",
+    "target": "11"
+   },
+   {
+    "source": "10",
+    "target": "12"
+   },
+   {
+    "source": "6",
+    "target": "13"
+   },
+   {
+    "source": "13",
+    "target": "14"
+   },
+   {
+    "source": "13",
+    "target": "15"
+   },
+   {
+    "source": "6",
+    "target": "16"
+   },
+   {
+    "source": "16",
+    "target": "17"
+   },
+   {
+    "source": "16",
+    "target": "18"
+   },
+   {
+    "source": "6",
+    "target": "19"
+   },
+   {
+    "source": "6",
+    "target": "20"
+   },
+   {
+    "source": "6",
+    "target": "21"
+   },
+   {
+    "source": "6",
+    "target": "22"
+   }
+  ]
+ }
+}
