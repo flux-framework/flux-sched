@@ -161,6 +161,9 @@ int reapi_cli_match_allocate (reapi_cli_ctx_t *ctx,
                               double *ov);
 
 /*! Run Satisfiability check for jobspec.
+ *  When sat is true, there is no error and the job is satisfiable.
+ *  When sat is false and there is no error, the job is not satisfiable.
+ *  When sat is false and there is an error, satisfiability is unknown.
  *
  *  \param ctx       reapi_cli_ctx_t context object
  *  \param jobspec   jobspec string.

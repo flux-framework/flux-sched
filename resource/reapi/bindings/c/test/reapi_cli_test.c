@@ -63,6 +63,14 @@ static const char *simple_jobspec =
     "\"attributes\": {\"system\": {\"duration\": 60.0}}"
     "}";
 
+static const char *jobspec_absent_type =
+    "{\"version\": 1,"
+    "\"resources\": [{\"type\": \"node\", \"count\": 1, \"with\": [{"
+    "\"type\": \"slot\", \"count\": 1, \"label\": \"task\","
+    "\"with\": [{\"type\": \"core\", \"count\": 1}, {\"type\": \"mpi\", \"count\": 1}]}]}],"
+    "\"tasks\": [{\"command\": [\"app\"], \"slot\": \"task\", \"count\": {\"per_slot\": 1}}],"
+    "\"attributes\": {\"system\": {\"duration\": 60.0}}}";
+
 static int test_clone ()
 {
     reapi_cli_ctx_t *ctx = reapi_cli_new ();
@@ -483,6 +491,37 @@ static int test_find ()
     return 0;
 }
 
+static int test_match_satisfy_absent_type ()
+{
+    reapi_cli_ctx_t *ctx = reapi_cli_new ();
+    if (!ctx)
+        BAIL_OUT ("reapi_cli_new failed");
+
+    int rc = reapi_cli_initialize (ctx, tiny_jgf, tiny_params);
+    if (rc < 0)
+        BAIL_OUT ("reapi_cli_initialize failed: %s", reapi_cli_get_err_msg (ctx));
+
+    bool sat = false;
+    double ov = 0.0;
+
+    // Sanity: a satisfiable request is reported satisfiable.
+    sat = false;
+    rc = reapi_cli_match_satisfy (ctx, simple_jobspec, &sat, &ov);
+    ok (rc == 0 && sat, "reapi_cli_match_satisfy: satisfiable request -> satisfiable");
+
+    // A request for a resource type absent from the graph must NOT be reported
+    // satisfiable.  reapi_cli_match_satisfy used to default *sat=true and clear
+    // it only for ENODEV, so a jobspec referencing an unknown type (which fails
+    // with errno != ENODEV) was wrongly reported satisfiable.
+    sat = true;
+    errno = 0;
+    rc = reapi_cli_match_satisfy (ctx, jobspec_absent_type, &sat, &ov);
+    ok (rc != 0 && !sat, "reapi_cli_match_satisfy: absent resource type -> unsatisfiable");
+
+    reapi_cli_destroy (ctx);
+    return 0;
+}
+
 int main (int argc, char *argv[])
 {
     plan (NO_PLAN);
@@ -494,6 +533,7 @@ int main (int argc, char *argv[])
     test_null_parameters ();
     test_cancel_ex ();
     test_find ();
+    test_match_satisfy_absent_type ();
 
     done_testing ();
     return EXIT_SUCCESS;
