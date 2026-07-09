@@ -246,30 +246,35 @@ int dfu_impl_t::prune (const jobmeta_t &meta,
                        vtx_t u,
                        const std::vector<Jobspec::Resource> &resources)
 {
-    int rc = 0;
-
-    if ((rc = by_status (meta, u)) == -1) {
+    if (by_status (meta, u) == -1) {
         errno = EBUSY;
-        return rc;
+        return -1;
     }
 
-    if ((rc = by_constraint (meta, u)) == -1) {
+    if (by_constraint (meta, u) == -1) {
         // Constraint mismatch on this vertex - set EBUSY not ENODEV
         // because it doesn't mean the job is globally unsatisfiable,
         // just that this particular vertex doesn't match
         errno = EBUSY;
-        return rc;
+        return -1;
     }
 
     // if rack has been allocated exclusively, no reason to descend further.
-    if ((rc = by_avail (meta, s, u, resources)) == -1) {
+    if (by_avail (meta, s, u, resources) == -1) {
         // errno already set by by_avail
-        return rc;
+        // Resource availability insufficient under this vertex, set EBUSY
+        // rather than ERANGE because prune should never decide unsatisfiability
+        if (errno == ERANGE)
+            errno = EBUSY;
+        return -1;
     }
 
-    if ((rc = prune_resources (meta, exclusive, s, u, resources)) == -1) {
+    if (prune_resources (meta, exclusive, s, u, resources) == -1) {
         // errno already set by prune_resources
-        return rc;
+        // Prevent Unsatisfiable from escaping from planner again
+        if (errno == ERANGE)
+            errno = EBUSY;
+        return -1;
     }
 
     return 0;
