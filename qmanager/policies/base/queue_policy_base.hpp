@@ -38,6 +38,17 @@ namespace queue_manager {
 
 enum class job_state_kind_t { INIT, PENDING, REJECTED, RUNNING, ALLOC_RUNNING, CANCELED, COMPLETE };
 
+/*! How a job was ultimately started by the scheduler.
+ *  UNKNOWN:   not yet allocated (or fcfs before allocation).
+ *  IMMEDIATE: allocated on the first scheduling attempt with no prior
+ *             reservations in the current backfill loop.
+ *  BACKFILL:  allocated after one or more other jobs had been reserved
+ *             ahead of it in the current backfill loop.
+ *  RESERVED:  allocated after this job itself had previously been reserved
+ *             for a future time.
+ */
+enum class job_selection_type_t { UNKNOWN, IMMEDIATE, BACKFILL, RESERVED };
+
 /*! Type to store schedule information such as the
  *  allocated or reserved (for backfill) resource set (R).
  */
@@ -52,10 +63,29 @@ struct schedule_t {
     schedule_t &operator= (const schedule_t &s) = default;
     std::string R = "";
     bool reserved = false;
+    bool was_reserved = false;
+    job_selection_type_t selection_type = job_selection_type_t::UNKNOWN;
     int64_t at = 0;
     int64_t old_at = 0;
     double ov = 0.0f;
 };
+
+/*! Map a job_selection_type_t to the string reported in the RFC 27
+ *  sched.selection_type annotation on the alloc SUCCESS response.
+ */
+inline const char *job_selection_type_str (job_selection_type_t mode)
+{
+    switch (mode) {
+        case job_selection_type_t::IMMEDIATE:
+            return "immediate";
+        case job_selection_type_t::BACKFILL:
+            return "backfill";
+        case job_selection_type_t::RESERVED:
+            return "reserved";
+        default:
+            return "unknown";
+    }
+}
 
 /*! Type to store various time stamps for queuing
  */
