@@ -160,32 +160,23 @@ func (cli *ReapiClient) MatchAllocate(
 	return cli.Match(match_op, jobspec)
 }
 
-// MatchSatisfy runs satisfiability check on jobspec.
-//
-//	\param jobspec   jobspec string.
-//	\param jobid     jobid of the uint64_t type.
-//	\param reserved  Boolean into which to return true if this job has been
-//	                 reserved instead of allocated.
-//	\param R         String into which to return the resource set either
-//	                 allocated or reserved.
-//	\param at        If allocated, 0 is returned; if reserved, actual time
-//	                 at which the job is reserved.
-//	\param ov        Double into which to return performance overhead
-//	                 in terms of elapse time needed to complete
-//	                 the match operation.
-//	\return          0 on success; -1 on error.
+// MatchSatisfy runs a satisfiability check on jobspec.
+// Returns 0 if satisfiable, 1 if not satisfiable, -1 on error (err is set).
 func (cli *ReapiClient) MatchSatisfy(
 	jobspec string,
-) (sat bool, overhead float64, err error) {
+) (int, float64, error) {
+	var overhead float64
 	spec := C.CString(jobspec)
+	defer C.free(unsafe.Pointer(spec))
 
-	fluxerr := (int)(C.reapi_cli_match_satisfy((*C.struct_reapi_cli_ctx)(cli.ctx),
+	rc := (int)(C.reapi_cli_match_satisfy((*C.struct_reapi_cli_ctx)(cli.ctx),
 		spec,
-		(*C.bool)(&sat),
 		(*C.double)(&overhead)))
 
-	err = retvalToError(fluxerr, "issue resource api client matching satisfy")
-	return sat, overhead, err
+	if rc < 0 {
+		return rc, overhead, retvalToError(rc, "issue resource api client matching satisfy")
+	}
+	return rc, overhead, nil
 }
 
 // UpdateAllocate updates the resource state with R.

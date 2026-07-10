@@ -160,21 +160,13 @@ int reapi_cli_match_allocate (reapi_cli_ctx_t *ctx,
                               int64_t *at,
                               double *ov);
 
-/*! Run Satisfiability check for jobspec.
- *  When sat is true, there is no error and the job is satisfiable.
- *  When sat is false and there is no error, the job is not satisfiable.
- *  When sat is false and there is an error, satisfiability is unknown.
- *
+/*! Run a satisfiability check for jobspec.
  *  \param ctx       reapi_cli_ctx_t context object
  *  \param jobspec   jobspec string.
- *  \param sat       bool sat into which to return if jobspec is
- *                   satisfiable.
- *  \param ov        Double into which to return performance overhead
- *                   in terms of elapse time needed to complete
- *                   the match operation.
- *  \return          0 on success; -1 on error.
+ *  \param ov        Double into which to return the match overhead.
+ *  \return          0 if satisfiable; 1 if not satisfiable; -1 on error.
  */
-int reapi_cli_match_satisfy (reapi_cli_ctx_t *ctx, const char *jobspec, bool *sat, double *ov);
+int reapi_cli_match_satisfy (reapi_cli_ctx_t *ctx, const char *jobspec, double *ov);
 
 /*! Update the resource state with R.
  *
