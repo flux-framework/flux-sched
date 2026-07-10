@@ -50,6 +50,8 @@ class fluxion_resource_interface_t {
 struct qmanager_ctx_t : public qmanager_cb_ctx_t, public fluxion_resource_interface_t {
     flux_msg_handler_t **hndlr{nullptr};
     flux_msg_handler_t **stats_hndlr{nullptr};
+    std::vector<flux_msg_t *> pending_quiescent_requests;
+    flux_watcher_t *quiescent_prep{nullptr};
 };
 
 fluxion_resource_interface_t::~fluxion_resource_interface_t ()
@@ -356,6 +358,89 @@ error:
         flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
 }
 
+static bool queues_are_quiescent (const qmanager_ctx_t *ctx)
+{
+    for (const auto &kv : ctx->queues) {
+        const auto &queue = kv.second;
+
+        if (queue->is_sched_loop_active () || queue->is_schedulable () || queue->is_scheduled ())
+            return false;
+    }
+    return true;
+}
+
+static uint64_t compute_alloc_current (const qmanager_ctx_t *ctx)
+{
+    uint64_t total = 0;
+
+    for (const auto &kv : ctx->queues)
+        total += kv.second->get_running_current ();
+    return total;
+}
+
+static int respond_to_quiescent (flux_t *h, const flux_msg_t *msg, const qmanager_ctx_t *ctx)
+{
+    return flux_respond_pack (h,
+                              msg,
+                              "{s:i s:I}",
+                              "status",
+                              0,
+                              "alloc_current",
+                              static_cast<json_int_t> (compute_alloc_current (ctx)));
+}
+
+static void process_pending_quiescent_requests (qmanager_ctx_t *ctx)
+{
+    if (!queues_are_quiescent (ctx) || ctx->pending_quiescent_requests.empty ())
+        return;
+
+    for (auto *msg : ctx->pending_quiescent_requests) {
+        if (respond_to_quiescent (ctx->h, msg, ctx) < 0)
+            flux_log_error (ctx->h, "%s: flux_respond_pack", __FUNCTION__);
+        flux_msg_decref (msg);
+    }
+    ctx->pending_quiescent_requests.clear ();
+}
+
+static void quiescent_request_cb (flux_t *h,
+                                  flux_msg_handler_t *w,
+                                  const flux_msg_t *msg,
+                                  void *arg)
+{
+    void *aux = flux_aux_get (h, "sched-fluxion-qmanager");
+    std::shared_ptr<qmanager_ctx_t> ctx;
+
+    if (!aux) {
+        errno = ENOENT;
+        if (flux_respond_error (h, msg, errno, nullptr) < 0)
+            flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
+        return;
+    }
+    ctx = *(static_cast<std::shared_ptr<qmanager_ctx_t> *> (aux));
+
+    if (queues_are_quiescent (ctx.get ())) {
+        if (respond_to_quiescent (h, msg, ctx.get ()) < 0)
+            flux_log_error (h, "%s: flux_respond_pack", __FUNCTION__);
+        return;
+    }
+
+    flux_msg_t *copy = flux_msg_copy (msg, true);
+    if (!copy) {
+        flux_log_error (h, "%s: flux_msg_copy", __FUNCTION__);
+        if (flux_respond_error (h, msg, errno, nullptr) < 0)
+            flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
+        return;
+    }
+    ctx->pending_quiescent_requests.push_back (copy);
+}
+
+static void quiescent_prep_cb (flux_reactor_t *r, flux_watcher_t *w, int revents, void *arg)
+{
+    qmanager_ctx_t *ctx = static_cast<qmanager_ctx_t *> (arg);
+
+    process_pending_quiescent_requests (ctx);
+}
+
 static int enforce_queue_policy (std::shared_ptr<qmanager_ctx_t> &ctx,
                                  const std::string &queue_name,
                                  const queue_prop_t &p)
@@ -539,6 +624,13 @@ static std::shared_ptr<qmanager_ctx_t> qmanager_new (flux_t *h)
             ctx = nullptr;
             goto done;
         }
+        if (!(ctx->quiescent_prep =
+                  flux_prepare_watcher_create (reactor, quiescent_prep_cb, ctx.get ()))) {
+            flux_log_error (h, "%s: flux_prepare_watcher_create", __FUNCTION__);
+            ctx = nullptr;
+            goto done;
+        }
+        flux_watcher_start (ctx->quiescent_prep);
         int schedutil_flags = 0;
 #ifdef SCHEDUTIL_HELLO_PARTIAL_OK
         // flag was added in flux-core 0.70.0
@@ -577,6 +669,13 @@ static void qmanager_destroy (std::shared_ptr<qmanager_ctx_t> &ctx)
         flux_watcher_destroy (ctx->prep);
         flux_watcher_destroy (ctx->check);
         flux_watcher_destroy (ctx->idle);
+        flux_watcher_destroy (ctx->quiescent_prep);
+        for (auto *msg : ctx->pending_quiescent_requests) {
+            if (flux_respond_error (ctx->h, msg, ENOSYS, "unloading") < 0)
+                flux_log_error (ctx->h, "%s: flux_respond_error", __FUNCTION__);
+            flux_msg_decref (msg);
+        }
+        ctx->pending_quiescent_requests.clear ();
         flux_msg_handler_delvec (ctx->hndlr);
         flux_msg_handler_delvec (ctx->stats_hndlr);
         errno = saved_errno;
@@ -586,6 +685,7 @@ static void qmanager_destroy (std::shared_ptr<qmanager_ctx_t> &ctx)
 static const struct flux_msg_handler_spec htab[] = {
     {FLUX_MSGTYPE_REQUEST, "sched.resource-status", status_request_cb, FLUX_ROLE_USER},
     {FLUX_MSGTYPE_REQUEST, "*.params", params_request_cb, FLUX_ROLE_USER},
+    {FLUX_MSGTYPE_REQUEST, "sched.quiescent", quiescent_request_cb, FLUX_ROLE_USER},
     FLUX_MSGHANDLER_TABLE_END,
 };
 static const struct flux_msg_handler_spec statstab[] = {

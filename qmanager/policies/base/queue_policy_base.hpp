@@ -163,6 +163,10 @@ class queue_policy_base_t : public resource_model::queue_adapter_base_t {
      *
      */
     virtual ~queue_policy_base_t () {};
+    size_t get_running_current () const
+    {
+        return m_running.size ();
+    }
 
     /*! The main schedule loop interface that must be implemented
      *  by derived classes: how a derived class implements this method
