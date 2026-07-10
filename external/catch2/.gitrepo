@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/catchorg/Catch2
+	branch = v3.15.2
+	commit = 191fa38c9b1596cd2576ab531d4ab4d5e8e05190
+	parent = bc57db17563265b463c7d44a22bbc1f391415d52
+	method = merge
+	cmdver = 0.4.9
