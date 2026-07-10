@@ -74,6 +74,8 @@ TEST_CASE ("Convert between strings and match_op_ts", "[match C++]")
     CHECK (match_op_from_string ("allocate_with_satisfiability")
            == MATCH_ALLOCATE_W_SATISFIABILITY);
     CHECK (match_op_from_string ("satisfiability") == MATCH_SATISFIABILITY);
+    CHECK (match_op_from_string ("without_allocating") == MATCH_WITHOUT_ALLOCATING);
+    CHECK (match_op_from_string ("without_allocating_future") == MATCH_WITHOUT_ALLOCATING_FUTURE);
     CHECK (errno == 0);
 }
 
