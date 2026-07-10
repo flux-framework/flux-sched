@@ -203,8 +203,14 @@ extern "C" int reapi_cli_match (reapi_cli_ctx_t *ctx,
                                 int64_t *at,
                                 double *ov)
 {
-    uint64_t seq = ctx->rqt->get_job_counter ();
     int rc = -1;
+
+    if (!ctx || !ctx->rqt) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    uint64_t seq = ctx->rqt->get_job_counter ();
 
     if ((rc = reapi_cli_match_with_jobid (ctx, match_op, jobspec, seq, reserved, R, at, ov)) < 0)
         goto done;
