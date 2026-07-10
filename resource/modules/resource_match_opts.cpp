@@ -214,6 +214,8 @@ bool resource_opts_t::operator() (const std::string &k1, const std::string &k2) 
     return opt_key_map.at (k1) < opt_key_map.at (k2);
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic error "-Wswitch-enum"
 int resource_opts_t::parse (const std::string &k, const std::string &v, std::string &info)
 {
     int rc = 0;
@@ -303,6 +305,7 @@ int resource_opts_t::parse (const std::string &k, const std::string &v, std::str
 
     return rc;
 }
+#pragma GCC diagnostic pop
 
 int resource_opts_t::jsonify (std::string &json_out) const
 {
