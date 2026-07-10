@@ -156,13 +156,28 @@ int queue_policy_bf_base_t<reapi_type>::handle_match_success (flux_jobid_t jobid
     sched.at = at;
     sched.ov = ov;
     if (job->schedule.reserved) {
-        // High-priority job has been reserved, continue
+        // High-priority job has been reserved, continue.  Remember that this
+        // job was reserved for a future time so that when it is ultimately
+        // allocated (possibly in a later scheduling loop) it is categorized
+        // as "reserved" rather than "backfill" or "immediate".
+        sched.was_reserved = true;
         m_reserved.insert (std::pair<uint64_t, flux_jobid_t> (m_oq_cnt++, job->id));
         m_reservation_cnt++;
         m_in_progress_iter++;
         // reply with an annotation
         m_scheduled = true;
     } else {
+        // The job is being allocated now.  Categorize how it was started:
+        //   reserved  - this job had previously been reserved for the future
+        //   backfill  - a higher-priority job was reserved ahead of it in
+        //               this loop, so it was backfilled past that reservation
+        //   immediate - allocated with no reservations standing in its way
+        if (sched.was_reserved)
+            sched.selection_type = job_selection_type_t::RESERVED;
+        else if (m_reservation_cnt > 0)
+            sched.selection_type = job_selection_type_t::BACKFILL;
+        else
+            sched.selection_type = job_selection_type_t::IMMEDIATE;
         // move the job to the running queue and make sure the
         // job is enqueued into allocated job queue as well.
         // When this is used within a module, it allows the
