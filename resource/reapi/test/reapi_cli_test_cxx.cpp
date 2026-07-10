@@ -121,4 +121,37 @@ TEST_CASE ("Match basic jobspec", "[match C++]")
     CHECK (at == 0);
 }
 
+TEST_CASE ("Initialize REAPI CLI and test add and remove", "[initialize-add-remove C++]")
+{
+    const std::string options = "{\"load_format\": \"jgf\"}";
+    std::stringstream base_buf, add_buf;
+    const char *test_srcdir = std::getenv ("SHARNESS_TEST_SRCDIR");
+    REQUIRE (test_srcdir);
+    const std::string data = std::string (test_srcdir) + "/data/resource/jgfs/elastic/";
+
+    std::ifstream base_file (data + "node-test.json");
+    REQUIRE (base_file.is_open ());
+    base_buf << base_file.rdbuf ();
+    const std::string rgraph = base_buf.str ();
+
+    std::ifstream add_file (data + "node-add-test.json");
+    REQUIRE (add_file.is_open ());
+    add_buf << add_file.rdbuf ();
+    const std::string add_sgraph = add_buf.str ();
+
+    const std::string remove_path = "/medium0/rack0/node0";
+
+    std::shared_ptr<resource_query_t> ctx = nullptr;
+    ctx = std::make_shared<resource_query_t> (rgraph, options);
+    REQUIRE (ctx);
+
+    // Empty inputs must fail.
+    REQUIRE (detail::reapi_cli_t::add_subgraph (ctx.get (), "") != 0);
+    REQUIRE (detail::reapi_cli_t::remove_subgraph (ctx.get (), "") != 0);
+
+    // Valid add then remove.
+    CHECK (detail::reapi_cli_t::add_subgraph (ctx.get (), add_sgraph) == 0);
+    CHECK (detail::reapi_cli_t::remove_subgraph (ctx.get (), remove_path) == 0);
+}
+
 }  // namespace Flux::resource_model::detail
