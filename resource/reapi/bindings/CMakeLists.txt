@@ -12,6 +12,7 @@ target_link_libraries( reapi_cli PRIVATE
 target_link_libraries( reapi_cli PUBLIC
     flux::core
     flux::idset
+    match_op
     )
 install(TARGETS reapi_cli LIBRARY DESTINATION "${FLUX_LIB_DIR}")
 
@@ -24,6 +25,9 @@ add_library (reapi_module STATIC
     )
 target_link_libraries( reapi_module PRIVATE
     flux::core
+    )
+target_link_libraries( reapi_module PUBLIC
+    match_op
     )
 
 if(BUILD_TESTING)
