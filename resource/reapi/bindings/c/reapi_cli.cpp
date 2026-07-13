@@ -203,8 +203,14 @@ extern "C" int reapi_cli_match (reapi_cli_ctx_t *ctx,
                                 int64_t *at,
                                 double *ov)
 {
-    uint64_t seq = ctx->rqt->get_job_counter ();
     int rc = -1;
+
+    if (!ctx || !ctx->rqt) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    uint64_t seq = ctx->rqt->get_job_counter ();
 
     if ((rc = reapi_cli_match_with_jobid (ctx, match_op, jobspec, seq, reserved, R, at, ov)) < 0)
         goto done;
@@ -277,6 +283,24 @@ extern "C" int reapi_cli_update_allocate (reapi_cli_ctx_t *ctx,
     *R_out = R_buf_c;
 out:
     return rc;
+}
+
+extern "C" int reapi_cli_add_subgraph (reapi_cli_ctx_t *ctx, const char *R_subgraph)
+{
+    if (!ctx || !ctx->rqt || !R_subgraph) {
+        errno = EINVAL;
+        return -1;
+    }
+    return reapi_cli_t::add_subgraph (ctx->rqt, R_subgraph);
+}
+
+extern "C" int reapi_cli_remove_subgraph (reapi_cli_ctx_t *ctx, const char *subgraph_path)
+{
+    if (!ctx || !ctx->rqt || !subgraph_path) {
+        errno = EINVAL;
+        return -1;
+    }
+    return reapi_cli_t::remove_subgraph (ctx->rqt, subgraph_path);
 }
 
 extern "C" int reapi_cli_cancel (reapi_cli_ctx_t *ctx, const uint64_t jobid, bool noent_ok)
@@ -393,13 +417,15 @@ extern "C" int reapi_cli_stat (reapi_cli_ctx_t *ctx,
 
 extern "C" const char *reapi_cli_get_err_msg (reapi_cli_ctx_t *ctx)
 {
-    std::string err_buf = "";
+    if (!ctx) {
+        errno = EINVAL;
+        return strdup ("ERROR: reapi_cli context is null\n");
+    }
 
+    std::string err_buf;
     if (ctx->rqt)
-        err_buf = ctx->rqt->get_resource_query_err_msg () + reapi_cli_t::get_err_message ()
-                  + ctx->err_msg;
-    else
-        err_buf = reapi_cli_t::get_err_message () + ctx->err_msg;
+        err_buf = ctx->rqt->get_resource_query_err_msg ();
+    err_buf += reapi_cli_t::get_err_message () + ctx->err_msg;
 
     return strdup (err_buf.c_str ());
 }

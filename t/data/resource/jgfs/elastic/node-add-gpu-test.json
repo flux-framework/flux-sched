@@ -1,0 +1,97 @@
+{
+    "graph": {
+        "nodes": [
+            {
+                "id": "0",
+                "metadata": {
+                    "type": "cluster",
+                    "basename": "medium",
+                    "name": "medium0",
+                    "id": 0,
+                    "uniq_id": 0,
+                    "rank": -1,
+                    "exclusive": false,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0"
+                    }
+                }
+            },
+            {
+                "id": "1",
+                "metadata": {
+                    "type": "rack",
+                    "basename": "rack",
+                    "name": "rack0",
+                    "id": 0,
+                    "uniq_id": 1,
+                    "rank": -1,
+                    "exclusive": false,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0"
+                    }
+                }
+            },
+            {
+                "id": "5",
+                "metadata": {
+                    "type": "node",
+                    "basename": "node",
+                    "name": "node0",
+                    "id": 0,
+                    "uniq_id": 5,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node0"
+                    }
+                }
+            },
+            {
+                "id": "900",
+                "metadata": {
+                    "type": "gpu",
+                    "basename": "gpu",
+                    "name": "gpu0",
+                    "id": 0,
+                    "uniq_id": 900,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/medium0/rack0/node0/gpu0"
+                    }
+                }
+            }
+        ],
+        "edges": [
+            {
+                "source": "0",
+                "target": "1",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "1",
+                "target": "5",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "5",
+                "target": "900",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            }
+        ]
+    }
+}

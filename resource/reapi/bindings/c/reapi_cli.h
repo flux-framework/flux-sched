@@ -195,6 +195,26 @@ int reapi_cli_update_allocate (reapi_cli_ctx_t *ctx,
                                double *ov,
                                const char **R_out);
 
+/*! Add a subgraph to the resource graph with R_subgraph.
+ *
+ *  \param ctx       reapi_cli_ctx_t context object
+ *  \param R_subgraph JGF string of subgraph to attach to existing resources.
+ *                   Supports adding a JGF subgraph including the path from the
+ *                   cluster root to the subgraph root.
+ *  \return          0 on success; -1 on error.
+ */
+int reapi_cli_add_subgraph (reapi_cli_ctx_t *ctx, const char *R_subgraph);
+
+/*! Remove a subgraph from the resource graph with subgraph_path.
+ *
+ *  \param ctx       reapi_cli_ctx_t context object
+ *  \param subgraph_path String representing the path from the cluster root
+ *                   to the root of the subgraph to be removed from
+ *                   the resource graph
+ *  \return          0 on success; -1 on error.
+ */
+int reapi_cli_remove_subgraph (reapi_cli_ctx_t *ctx, const char *subgraph_path);
+
 /*! Cancel the allocation or reservation corresponding to jobid.
  *
  *  \param ctx       reapi_cli_ctx_t context object
@@ -278,7 +298,8 @@ int reapi_cli_stat (reapi_cli_ctx_t *ctx,
 /*! Get the reapi cli error message.
  *
  *  \param ctx       reapi_cli_ctx_t context object
- *  \return          string containing the error message
+ *  \return          heap-allocated string containing the error message; the
+ *                   caller owns it and must free() it.
  */
 const char *reapi_cli_get_err_msg (reapi_cli_ctx_t *ctx);
 
