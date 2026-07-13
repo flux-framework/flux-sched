@@ -159,8 +159,11 @@ int queue_policy_bf_base_t<reapi_type>::handle_match_success (flux_jobid_t jobid
         // High-priority job has been reserved, continue.  Remember that this
         // job was reserved for a future time so that when it is ultimately
         // allocated (possibly in a later scheduling loop) it is categorized
-        // as "reserved" rather than "backfill" or "immediate".
+        // as "reserved" rather than "backfill" or "immediate".  Categorize it
+        // as "reserved" now as well so that the selection_type can be reported
+        // alongside the t_estimate annotation transmitted while the job waits.
         sched.was_reserved = true;
+        sched.selection_type = job_selection_type_t::RESERVED;
         m_reserved.insert (std::pair<uint64_t, flux_jobid_t> (m_oq_cnt++, job->id));
         m_reservation_cnt++;
         m_in_progress_iter++;

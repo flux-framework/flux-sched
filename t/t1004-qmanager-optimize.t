@@ -68,6 +68,12 @@ test_expect_success 'qmanager: selection_type is immediate and backfill' '
     test "$(selection_type ${jobid7})" = "backfill" &&
     test "$(selection_type ${jobid8})" = "backfill"
 '
+# jobid2 was reserved but has not started; its selection_type is now
+# transmitted alongside the t_estimate annotation while it waits, so it
+# reads "reserved" before it is ever allocated.
+test_expect_success 'qmanager: reserved job is annotated while pending' '
+    test "$(selection_type ${jobid2})" = "reserved"
+'
 test_expect_success 'qmanager: selection_type is reserved' '
     flux cancel ${jobid1} &&
     flux job wait-event -t 10 ${jobid2} start &&
