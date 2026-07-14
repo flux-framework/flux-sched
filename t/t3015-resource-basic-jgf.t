@@ -7,6 +7,7 @@ test_description='Test Scheduling On Tiny Machine Configuration in JGF'
 cmd_dir="${SHARNESS_TEST_SRCDIR}/data/resource/commands/basics"
 exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/basics"
 jgf="${SHARNESS_TEST_SRCDIR}/data/resource/jgfs/tiny.json"
+storage_jgf="${SHARNESS_TEST_SRCDIR}/data/resource/jgfs/tiny_storage.json"
 query="../../resource/utilities/resource-query"
 
 #
@@ -219,5 +220,66 @@ test_expect_success "${test048_desc}" '
     ${query} -L ${jgf} -f jgf -S CA -P first -t 048.R.out < cmds048 &&
     test_cmp 048.R.out ${exp_dir}/048.R.out
 '
+
+test_expect_success_hd 'ensure we do not get a traverser error on match allocate with imbalanced resources #1490' <<EOF
+    cat > jobspec.json <<END &&
+{
+  "resources": [
+    {
+      "type": "slot",
+      "count": 1,
+      "label": "rabbit",
+      "with": [
+        {
+          "type": "node",
+          "count": 1,
+          "with": [
+            {
+              "type": "slot",
+              "count": 1,
+              "with": [
+                {
+                  "type": "core",
+                  "count": 1
+                }
+              ],
+              "label": "task"
+            }
+          ]
+        },
+        {
+          "type": "ssd",
+          "count": 10245,
+          "exclusive": true
+        }
+      ]
+    }
+  ],
+  "tasks": [
+    {
+      "command": [
+        "hostname"
+      ],
+      "slot": "task",
+      "count": {
+        "per_slot": 1
+      }
+    }
+  ],
+  "attributes": {
+    "system": {
+      "duration": 0,
+      "cwd": "/home/user/",
+      "dw": "#DW jobdw capacity=10TiB type=lustre name=project2"
+    }
+  },
+  "version": 1
+}
+END
+    echo -e "m allocate_orelse_reserve jobspec.json\nquit" |
+        ${query} -L "${storage_jgf}" -f jgf -S CA -P first 2>&1 |
+        tee imbalance.out &&
+        test_must_fail grep 'ERROR: traverser:' imbalance.out
+EOF
 
 test_done

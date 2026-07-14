@@ -28,47 +28,44 @@ test_expect_success 'feasibility: --plugins=feasibility works ' '
         | jq -e ".errnum != 0"
 '
 
+run_sat_unsat() {
+    local label="$1"
+
+    test_expect_success "feasibility: unsatisfiable jobs are rejected ($label): 170 cores" '
+       test_must_fail flux submit -n 170 hostname 2>"err_${label}_cores" &&
+       grep "Unsatisfiable request" err_${label}_cores
+    '
+
+    test_expect_success "feasibility: unsatisfiable jobs are rejected ($label): 2 nodes" '
+       test_must_fail flux submit -N 2 -n2 hostname 2>"err_${label}_nodes" &&
+       grep "Unsatisfiable request" err_${label}_nodes
+    '
+
+    test_expect_success "feasibility: unsatisfiable jobs are rejected ($label): 1 gpu" '
+       test_must_fail flux submit -g 1 hostname 2>"err_${label}_gpu" &&
+       grep "Unsatisfiable request" err_${label}_gpu
+    '
+
+    test_expect_success "feasibility: satisfiable jobs are accepted ($label)" '
+        jobid=$(flux submit -n 8 hostname) &&
+        flux job wait-event -t 10 ${jobid} start &&
+        flux job wait-event -t 10 ${jobid} finish &&
+        flux job wait-event -t 10 ${jobid} release &&
+        flux job wait-event -t 10 ${jobid} clean
+    '
+}
+
 test_expect_success 'feasibility: loading job-ingest with feasibilty works' '
     flux module reload job-ingest validator-plugins=feasibility
  '
 
- test_expect_success 'feasibility: unsatisfiable jobs are rejected' '
-    test_must_fail flux submit -n 170 hostname 2>err1 &&
-    grep "Unsatisfiable request" err1 &&
-    test_must_fail flux submit -N 2 -n2 hostname 2>err2 &&
-    grep "Unsatisfiable request" err2 &&
-    test_must_fail flux submit -g 1 hostname 2>err3 &&
-    grep -i "Unsatisfiable request" err3
- '
-
-test_expect_success 'feasibility: satisfiable jobs are accepted' '
-    jobid=$(flux submit -n 8 hostname) &&
-    flux job wait-event -t 10 ${jobid} start &&
-    flux job wait-event -t 10 ${jobid} finish &&
-    flux job wait-event -t 10 ${jobid} release &&
-    flux job wait-event -t 10 ${jobid} clean
-'
+run_sat_unsat feasibility
 
 test_expect_success 'feasibility: load job-ingest with two validators' '
     flux module reload job-ingest validator-plugins=feasibility,jobspec
  '
 
- test_expect_success 'feasibility: unsatisfiable jobs are rejected' '
-    test_must_fail flux submit -n 170 hostname 2>err4 &&
-    grep "Unsatisfiable request" err4 &&
-    test_must_fail flux submit -N 2 -n2 hostname 2>err5 &&
-    grep "Unsatisfiable request" err5 &&
-    test_must_fail flux submit -g 1 hostname 2>err6 &&
-    grep -i "Unsatisfiable request" err6
- '
-
-test_expect_success 'feasibility: satisfiable jobs are accepted' '
-    jobid=$(flux submit -n 8 hostname) &&
-    flux job wait-event -t 10 ${jobid} start &&
-    flux job wait-event -t 10 ${jobid} finish &&
-    flux job wait-event -t 10 ${jobid} release &&
-    flux job wait-event -t 10 ${jobid} clean
-'
+run_sat_unsat feasibility_jobspec
 
 test_expect_success 'feasibility: cleanup active jobs' '
     cleanup_active_jobs
