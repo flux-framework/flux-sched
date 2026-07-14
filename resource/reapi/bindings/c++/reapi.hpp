@@ -24,6 +24,7 @@ extern "C" {
 #include <cstdint>
 #include <string>
 #include <optional>
+#include <boost/optional.hpp>
 #include "resource/schema/resource_data.hpp"
 
 namespace Flux {
@@ -131,6 +132,11 @@ class reapi_t {
      *  \param ov        Double into which to return performance overhead
      *                   in terms of elapse time needed to complete
      *                   the match operation.
+     *  \param within    Only return matches that start between now and now+within.
+     *                   If within < 0, don't apply this filter.  However, if
+     *                   within == boost::none, also search for a 'within'
+     *                   value in the jobspec's user attributes dictionary.
+     *
      *  \return          0 on success; -1 on error.
      */
     static int match_allocate (void *h,
@@ -140,7 +146,8 @@ class reapi_t {
                                bool &reserved,
                                std::string &R,
                                int64_t &at,
-                               double &ov)
+                               double &ov,
+                               boost::optional<int64_t> within = boost::none)
     {
         return -1;
     }
