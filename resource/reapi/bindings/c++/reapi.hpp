@@ -131,6 +131,7 @@ class reapi_t {
      *                   at which the job is reserved.
      *  \param attrs     Optional traversal attributes:
      *    match_overhead    Double into which to return performance overhead.
+     *    match_within      Don't return matches starting after this duration.
      *  \return          0 on success; -1 on error.
      */
     static int match_allocate (void *h,

@@ -19,6 +19,7 @@ extern "C" {
 }
 
 #include <cerrno>
+#include <cstdint>
 #include "resource/reapi/bindings/c++/reapi_module.hpp"
 
 namespace Flux {
@@ -52,13 +53,15 @@ int reapi_module_t::match_allocate (void *h,
                              "sched-fluxion-resource.match",
                              FLUX_NODEID_ANY,
                              0,
-                             "{s:s s:I s:s}",
+                             "{s:s s:I s:s s:I}",
                              "cmd",
                              cmd,
                              "jobid",
                              (const int64_t)jobid,
                              "jobspec",
-                             jobspec.c_str ()))) {
+                             jobspec.c_str (),
+                             "within",
+                             attrs ? attrs->match_within : INT64_MIN))) {
         goto out;
     }
 
