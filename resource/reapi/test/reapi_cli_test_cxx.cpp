@@ -4,6 +4,7 @@
 #include <catch2/generators/catch_generators.hpp>
 #include <resource/reapi/bindings/c++/reapi_cli.hpp>
 #include <resource/policies/base/match_op.h>
+#include <resource/traversers/dfu_match_attributes.h>
 #include <resource/schema/resource_graph.hpp>
 #include <fstream>
 #include <cstdlib>
@@ -208,6 +209,103 @@ TEST_CASE ("Match basic jobspec", "[match C++]")
         CHECK (reserved == false);
         CHECK (at == 0);
         CHECK (rc == -1);
+    }
+
+    SECTION ("Match only within some duration")
+    {
+        bool reserved = false;
+        std::string R = "";
+        uint64_t jobid = 1;
+        int64_t at = 0;
+        traverser_match_attrs attrs = default_match_attrs;
+
+        match_op_t match_op = match_op_t::MATCH_ALLOCATE;
+
+        for (int i = 0; i < 4; i++) {
+            rc =
+                reapi_cli_t::match_allocate (ctx.get (), match_op, jobspec, jobid, reserved, R, at);
+            CHECK (reserved == false);
+            CHECK (at == 0);
+            REQUIRE (rc == 0);
+            jobid++;
+        }
+
+        // Fail to match within 3599 units (first avail at 3600)
+        attrs.match_within = 3599;
+        match_op = match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE;
+        rc = reapi_cli_t::match_allocate (ctx.get (),
+                                          match_op,
+                                          jobspec,
+                                          jobid,
+                                          reserved,
+                                          R,
+                                          at,
+                                          &attrs);
+        REQUIRE (rc != 0);
+        match_op = match_op_t::MATCH_WITHOUT_ALLOCATING_FUTURE;
+        rc = reapi_cli_t::match_allocate (ctx.get (),
+                                          match_op,
+                                          jobspec,
+                                          jobid,
+                                          reserved,
+                                          R,
+                                          at,
+                                          &attrs);
+        REQUIRE (rc != 0);
+
+        // Successfully match within 3600 units (first avail at 3600)
+        attrs.match_within = 3600;
+        match_op = match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE;
+        rc = reapi_cli_t::match_allocate (ctx.get (),
+                                          match_op,
+                                          jobspec,
+                                          jobid,
+                                          reserved,
+                                          R,
+                                          at,
+                                          &attrs);
+        CHECK (reserved == true);
+        CHECK (at == 3600);
+        REQUIRE (rc == 0);
+        match_op = match_op_t::MATCH_WITHOUT_ALLOCATING_FUTURE;
+        rc = reapi_cli_t::match_allocate (ctx.get (),
+                                          match_op,
+                                          jobspec,
+                                          jobid,
+                                          reserved,
+                                          R,
+                                          at,
+                                          &attrs);
+        CHECK (reserved == false);
+        CHECK (at == 3600);
+        REQUIRE (rc == 0);
+
+        // Successfully match within negative (infinite) units
+        attrs.match_within = -1;
+        match_op = match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE;
+        rc = reapi_cli_t::match_allocate (ctx.get (),
+                                          match_op,
+                                          jobspec,
+                                          jobid,
+                                          reserved,
+                                          R,
+                                          at,
+                                          &attrs);
+        CHECK (reserved == true);
+        CHECK (at == 3600);
+        REQUIRE (rc == 0);
+        match_op = match_op_t::MATCH_WITHOUT_ALLOCATING_FUTURE;
+        rc = reapi_cli_t::match_allocate (ctx.get (),
+                                          match_op,
+                                          jobspec,
+                                          jobid,
+                                          reserved,
+                                          R,
+                                          at,
+                                          &attrs);
+        CHECK (reserved == false);
+        CHECK (at == 3600);
+        REQUIRE (rc == 0);
     }
 }
 
