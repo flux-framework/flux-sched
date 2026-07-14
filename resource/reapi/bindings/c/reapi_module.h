@@ -64,6 +64,7 @@ void reapi_module_destroy (reapi_module_ctx_t *ctx);
  *                   at which the job is reserved.
  *  \param attrs     Optional traversal attributes:
  *    match_overhead    Double into which to return performance overhead.
+ *    match_within      Don't return matches starting after this duration.
  *  \return          0 on success; -1 on error.
  */
 int reapi_module_match (reapi_module_ctx_t *ctx,
@@ -93,6 +94,7 @@ int reapi_module_match (reapi_module_ctx_t *ctx,
  *                   at which the job is reserved.
  *  \param attrs     Optional traversal attributes:
  *    match_overhead    Double into which to return performance overhead.
+ *    match_within      Don't return matches starting after this duration.
  *  \return          0 on success; -1 on error.
  */
 int reapi_module_match_allocate (reapi_module_ctx_t *ctx,
@@ -110,6 +112,7 @@ int reapi_module_match_allocate (reapi_module_ctx_t *ctx,
  *  \param jobspec   jobspec string.
  *  \param attrs     Optional traversal attributes:
  *    match_overhead    Double into which to return performance overhead.
+ *    match_within      Don't return matches starting after this duration.
  *  \return          0 on success; -1 on error.
  */
 int reapi_module_match_satisfy (reapi_module_ctx_t *ctx,

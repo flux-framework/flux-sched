@@ -83,6 +83,7 @@ int reapi_cli_initialize (reapi_cli_ctx_t *ctx, const char *rgraph, const char *
  *                   at which the job is reserved.
  *  \param attrs     Optional traversal attributes:
  *    match_overhead    Double into which to return performance overhead.
+ *    match_within      Don't return matches starting after this duration.
  *  \return          0 on success; -1 on error.
  */
 int reapi_cli_match (reapi_cli_ctx_t *ctx,
@@ -128,6 +129,7 @@ int reapi_cli_match (reapi_cli_ctx_t *ctx,
  *                   at which the job is reserved.
  *  \param attrs     Optional traversal attributes:
  *    match_overhead    Double into which to return performance overhead.
+ *    match_within      Don't return matches starting after this duration.
  *  \return          0 on success; -1 on error.
  */
 int reapi_cli_match_with_jobid (reapi_cli_ctx_t *ctx,
@@ -157,6 +159,7 @@ int reapi_cli_match_with_jobid (reapi_cli_ctx_t *ctx,
  *                   at which the job is reserved.
  *  \param attrs     Optional traversal attributes:
  *    match_overhead    Double into which to return performance overhead.
+ *    match_within      Don't return matches starting after this duration.
  *  \return          0 on success; -1 on error.
  */
 int reapi_cli_match_allocate (reapi_cli_ctx_t *ctx,
@@ -179,6 +182,7 @@ int reapi_cli_match_allocate (reapi_cli_ctx_t *ctx,
  *                   satisfiable.
  *  \param attrs     Optional traversal attributes:
  *    match_overhead    Double into which to return performance overhead.
+ *    match_within      Don't return matches starting after this duration.
  *  \return          0 on success; -1 on error.
  */
 int reapi_cli_match_satisfy (reapi_cli_ctx_t *ctx,
