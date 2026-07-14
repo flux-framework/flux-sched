@@ -534,8 +534,6 @@ ret:
 int resource_opts_t::parse (const std::string &k, const std::string &v, std::string &info)
 {
     int rc = 0;
-    std::string dflt;
-    std::map<std::string, std::string> tmp_mp;
     int key = static_cast<int> (resource_opts_key_t::UNKNOWN);
 
     if (m_tab.find (k) != m_tab.end ())
