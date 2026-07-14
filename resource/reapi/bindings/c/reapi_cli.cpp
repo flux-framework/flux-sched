@@ -165,6 +165,28 @@ extern "C" int reapi_cli_match_with_jobid (reapi_cli_ctx_t *ctx,
                                            char **R,
                                            int64_t *at,
                                            double *ov)
+
+{
+    return reapi_cli_match_with_jobid_within (ctx,
+                                              match_op,
+                                              jobspec,
+                                              jobid,
+                                              reserved,
+                                              R,
+                                              at,
+                                              ov,
+                                              INT64_MIN);
+}
+
+extern "C" int reapi_cli_match_with_jobid_within (reapi_cli_ctx_t *ctx,
+                                                  match_op_t match_op,
+                                                  const char *jobspec,
+                                                  uint64_t jobid,
+                                                  bool *reserved,
+                                                  char **R,
+                                                  int64_t *at,
+                                                  double *ov,
+                                                  int64_t within)
 {
     int rc = -1;
     std::string R_buf = "";
@@ -175,8 +197,15 @@ extern "C" int reapi_cli_match_with_jobid (reapi_cli_ctx_t *ctx,
         goto out;
     }
 
-    if ((rc = reapi_cli_t::
-             match_allocate (ctx->rqt, match_op, jobspec, jobid, *reserved, R_buf, *at, *ov))
+    if ((rc = reapi_cli_t::match_allocate (ctx->rqt,
+                                           match_op,
+                                           jobspec,
+                                           jobid,
+                                           *reserved,
+                                           R_buf,
+                                           *at,
+                                           *ov,
+                                           within))
         < 0) {
         goto out;
     }
