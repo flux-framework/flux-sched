@@ -10,6 +10,8 @@
 
 #include "resource_match.hpp"
 
+using namespace Flux::resource_notify;
+
 MOD_NAME ("sched-fluxion-resource");
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1274,7 +1276,11 @@ static void notify_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
         //  init_resource_graph runs before flux_reactor_run.
         // Only send resources at first so that the
         //  module can initialize its graph.
-        if (flux_respond_pack (ctx->h, msg, "{s:O*}", "resources", ctx->m_notify_resources.get ())
+        if (flux_respond_pack (ctx->h,
+                               msg,
+                               "{s:O*}",
+                               NOTIFY_RESOURCES_KEY,
+                               ctx->m_notify_resources.get ())
             < 0) {
             flux_log_error (ctx->h, "%s: flux_respond_pack", __FUNCTION__);
             goto error;
@@ -1284,13 +1290,13 @@ static void notify_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
         if (flux_respond_pack (ctx->h,
                                msg,
                                "{s:s* s:s* s:s* s:f}",
-                               "up",
+                               NOTIFY_UP_KEY,
                                up_str,
-                               "down",
+                               NOTIFY_DOWN_KEY,
                                down_str,
-                               "shrink",
+                               NOTIFY_SHRINK_KEY,
                                lost_str,
-                               "expiration",
+                               NOTIFY_EXPIRATION_KEY,
                                ctx->m_notify_expiration)
             < 0) {
             flux_log_error (ctx->h, "%s: flux_respond_pack", __FUNCTION__);

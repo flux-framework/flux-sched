@@ -28,6 +28,7 @@ extern "C" {
 #include <chrono>
 
 #include "resource_match.hpp"
+#include "resource_notify.hpp"
 #include "resource/schema/resource_graph.hpp"
 #include "resource/readers/resource_reader_factory.hpp"
 #include "resource/traversers/dfu.hpp"

@@ -36,6 +36,7 @@ extern "C" {
 #include <jansson.hpp>
 
 using namespace Flux::resource_model;
+using namespace Flux::resource_notify;
 using namespace Flux::opts_manager;
 
 // Global perf struct from schema
@@ -249,15 +250,15 @@ static void update_resource (flux_future_t *f, void *arg)
                               &error,
                               0,
                               "{s?:o s?:s s?:s s?:s s?:F}",
-                              "resources",
+                              NOTIFY_RESOURCES_KEY,
                               &resources,
-                              "up",
+                              NOTIFY_UP_KEY,
                               &up,
-                              "down",
+                              NOTIFY_DOWN_KEY,
                               &down,
-                              "shrink",
+                              NOTIFY_SHRINK_KEY,
                               &lost,
-                              "expiration",
+                              NOTIFY_EXPIRATION_KEY,
                               &expiration))
         < 0) {
         flux_log_error (ctx->h, "%s: json_unpack_ex: %s", __FUNCTION__, error.text);
