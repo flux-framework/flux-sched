@@ -74,6 +74,16 @@ void msg_wrap_t::set_msg (const flux_msg_t *msg)
     m_msg = flux_msg_incref (msg);
 }
 
+notify_flag_t msg_wrap_t::get_notify_flags () const
+{
+    return m_flags;
+}
+
+void msg_wrap_t::set_notify_flags (notify_flag_t flags)
+{
+    m_flags = flags;
+}
+
 resource_interface_t::~resource_interface_t ()
 {
     flux_future_decref (update_f);
@@ -209,10 +219,6 @@ done:
 static void update_resource (flux_future_t *f, void *arg)
 {
     int rc = -1;
-
-    char *acquire_str = NULL;
-    size_t acquire_str_size;
-    json_t *acquire_obj;
     json_error_t error;
 
     const char *up = NULL;
@@ -223,7 +229,19 @@ static void update_resource (flux_future_t *f, void *arg)
 
     std::shared_ptr<resource_ctx_t> &ctx = *(static_cast<std::shared_ptr<resource_ctx_t> *> (arg));
 
-    if ((rc = flux_rpc_get_raw (f, (const void **)&acquire_str, &acquire_str_size)) < 0) {
+    if ((rc = flux_rpc_get_unpack (f,
+                                   "{s?:o s?:s s?:s s?:s s?:F}",
+                                   NOTIFY_RESOURCES_KEY,
+                                   &resources,
+                                   NOTIFY_UP_KEY,
+                                   &up,
+                                   NOTIFY_DOWN_KEY,
+                                   &down,
+                                   NOTIFY_SHRINK_KEY,
+                                   &lost,
+                                   NOTIFY_EXPIRATION_KEY,
+                                   &expiration))
+        < 0) {
         flux_log_error (ctx->h,
                         ctx->m_acquire_resources_from_core ? "%s: exiting due to resource.acquire "
                                                              "failure"
@@ -232,36 +250,6 @@ static void update_resource (flux_future_t *f, void *arg)
                                                              "failure",
                         __FUNCTION__);
         flux_reactor_stop (flux_get_reactor (ctx->h)); /* Cancels notify msgs */
-        goto done;
-    }
-    // Ignore empty payloads
-    if (!acquire_str) {
-        goto done;
-    }
-    if (!(acquire_obj = json_loadb ((const char *)acquire_str,
-                                    acquire_str_size,
-                                    JSON_DISABLE_EOF_CHECK,
-                                    &error))) {
-        rc = json_error_code ((const json_error_t *)&error);
-        flux_log_error (ctx->h, "%s: json_loadb: %s", __FUNCTION__, error.text);
-        goto done;
-    }
-    if ((rc = json_unpack_ex (acquire_obj,
-                              &error,
-                              0,
-                              "{s?:o s?:s s?:s s?:s s?:F}",
-                              NOTIFY_RESOURCES_KEY,
-                              &resources,
-                              NOTIFY_UP_KEY,
-                              &up,
-                              NOTIFY_DOWN_KEY,
-                              &down,
-                              NOTIFY_SHRINK_KEY,
-                              &lost,
-                              NOTIFY_EXPIRATION_KEY,
-                              &expiration))
-        < 0) {
-        flux_log_error (ctx->h, "%s: json_unpack_ex: %s", __FUNCTION__, error.text);
         goto done;
     }
     if ((rc = update_resource_db (ctx, resources, up, down, lost)) < 0) {
@@ -301,15 +289,25 @@ static void update_resource (flux_future_t *f, void *arg)
         // Broadcast UP/DOWN/SHRINK updates to subscribed fluxion modules.
         // There are no subscribers until the first notify_request_cb,
         //  which must happen after the first run of update_resource
-        for (auto &kv : ctx->notify_msgs) {
+        for (const auto &[_, m] : ctx->notify_msgs) {
             if (rc +=
-                flux_respond_raw (ctx->h, kv.second->get_msg (), acquire_str, acquire_str_size)
+                flux_respond_pack (ctx->h,
+                                   m->get_msg (),
+                                   "{s:s* s:s* s:s* s:f}",
+                                   NOTIFY_UP_KEY,
+                                   m->get_notify_flags () & NOTIFY_UP ? up : nullptr,
+                                   NOTIFY_DOWN_KEY,
+                                   m->get_notify_flags () & NOTIFY_DOWN ? down : nullptr,
+                                   NOTIFY_SHRINK_KEY,
+                                   m->get_notify_flags () & NOTIFY_SHRINK ? lost : nullptr,
+                                   NOTIFY_EXPIRATION_KEY,
+                                   m->get_notify_flags () & NOTIFY_EXPIRATION ? expiration : -1.)
                 < 0) {
-                flux_log_error (ctx->h, "%s: flux_respond_raw", __FUNCTION__);
+                flux_log_error (ctx->h, "%s: flux_respond_pack", __FUNCTION__);
+                goto done;
             }
         }
     }
-    json_decref (acquire_obj);
 done:
     flux_future_reset (f);
     ctx->set_update_rc (rc);
@@ -318,20 +316,38 @@ done:
 static int populate_resource_db_acquire (std::shared_ptr<resource_ctx_t> &ctx)
 {
     int rc = -1;
-    json_t *o = NULL;
 
-    // If this module is not getting resources from core, use
-    //  sched-fluxion-resource.notify instead of resource.acquire to avoid
-    //  using more than one resource.acquire RPC, which is not allowed
-    if (!(ctx->update_f = flux_rpc (ctx->h,
-                                    ctx->m_acquire_resources_from_core ? "resource.acquire"
-                                                                       : "sched-fluxion-resource."
-                                                                         "notify",
-                                    NULL,
-                                    FLUX_NODEID_ANY,
-                                    FLUX_RPC_STREAMING))) {
-        flux_log_error (ctx->h, "%s: flux_rpc", __FUNCTION__);
-        goto done;
+    if (ctx->m_acquire_resources_from_core) {
+        if (!(ctx->update_f = flux_rpc (ctx->h,
+                                        "resource.acquire",
+                                        NULL,
+                                        FLUX_NODEID_ANY,
+                                        FLUX_RPC_STREAMING))) {
+            flux_log_error (ctx->h, "%s: flux_rpc (acquire)", __FUNCTION__);
+            goto done;
+        }
+    } else {
+        const json_t *requested =
+            notify_flags_to_json (NOTIFY_RESOURCES | NOTIFY_SHRINK | NOTIFY_EXPIRATION);
+
+        if (!requested) {
+            flux_log_error (ctx->h, "%s: notify_flags_to_json", __FUNCTION__);
+            goto done;
+        }
+
+        // If this module is not getting resources from core, use
+        //  sched-fluxion-resource.notify instead of resource.acquire to avoid
+        //  using more than one resource.acquire RPC, which is not allowed
+        if (!(ctx->update_f = flux_rpc_pack (ctx->h,
+                                             "sched-fluxion-resource.notify",
+                                             FLUX_NODEID_ANY,
+                                             FLUX_RPC_STREAMING,
+                                             "{s:o}",
+                                             NOTIFY_REQUEST_KEY,
+                                             requested))) {
+            flux_log_error (ctx->h, "%s: flux_rpc (notify)", __FUNCTION__);
+            goto done;
+        }
     }
 
     update_resource (ctx->update_f, static_cast<void *> (&ctx));
@@ -1211,11 +1227,11 @@ int update_resource_db (std::shared_ptr<resource_ctx_t> &ctx,
 
     // Will need to get duration update and set graph metadata when
     // resource.acquire duration update is supported in the future.
-    if (resources && (rc = grow_resource_db (ctx, resources)) < 0) {
+    if (resources && ((rc = grow_resource_db (ctx, resources)) < 0)) {
         flux_log_error (ctx->h, "%s: grow_resource_db", __FUNCTION__);
         goto done;
     }
-    if (up && (rc = mark (ctx, up, resource_pool_t::status_t::UP)) < 0) {
+    if (up && ((rc = mark (ctx, up, resource_pool_t::status_t::UP)) < 0)) {
         flux_log_error (ctx->h, "%s: mark (up)", __FUNCTION__);
         goto done;
     }
@@ -1230,9 +1246,7 @@ int update_resource_db (std::shared_ptr<resource_ctx_t> &ctx,
         }
         down = down_not_lost;
     }
-    if (down
-        && (rc = mark (ctx, down_not_lost ? down_not_lost : down, resource_pool_t::status_t::DOWN))
-               < 0) {
+    if (down && ((rc = mark (ctx, down, resource_pool_t::status_t::DOWN)) < 0)) {
         flux_log_error (ctx->h, "%s: mark (down)", __FUNCTION__);
         goto done;
     }

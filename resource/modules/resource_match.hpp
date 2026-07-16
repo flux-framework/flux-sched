@@ -39,6 +39,7 @@ extern "C" {
 #include <jansson.hpp>
 
 using namespace Flux::resource_model;
+using namespace Flux::resource_notify;
 using namespace Flux::opts_manager;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -53,9 +54,12 @@ class msg_wrap_t {
     ~msg_wrap_t ();
     const flux_msg_t *get_msg () const;
     void set_msg (const flux_msg_t *msg);
+    notify_flag_t get_notify_flags () const;
+    void set_notify_flags (notify_flag_t keys);
 
    private:
     const flux_msg_t *m_msg = nullptr;
+    notify_flag_t m_flags = NOTIFY_NONE;
 };
 
 struct resobj_t {
