@@ -21,12 +21,14 @@
 #include <catch2/reporters/catch_reporter_multi.hpp>
 #include <catch2/internal/catch_reporter_registry.hpp>
 #include <catch2/interfaces/catch_interfaces_reporter_factory.hpp>
+#include <catch2/interfaces/catch_interfaces_registry_hub.hpp>
 #include <catch2/internal/catch_move_and_forward.hpp>
 #include <catch2/internal/catch_stdstreams.hpp>
 #include <catch2/internal/catch_istream.hpp>
 
-#include <algorithm>
 #include <cassert>
+#include <cstdio>
+#include <cstdlib>
 #include <exception>
 #include <iomanip>
 #include <set>
@@ -34,8 +36,6 @@
 namespace Catch {
 
     namespace {
-        const int MaxExitCode = 255;
-
         IEventListenerPtr createReporter(std::string const& reporterName, ReporterConfig&& config) {
             auto reporter = Catch::getRegistryHub().getReporterRegistry().create(reporterName, CATCH_MOVE(config));
             CATCH_ENFORCE(reporter, "No reporter registered with name: '" << reporterName << '\'');
@@ -143,6 +143,50 @@ namespace Catch {
             }
         }
 
+        // Creates empty file at path. The path must be writable, we do not
+        // try to create directories in path because that's hard in C++14.
+        void setUpGuardFile( std::string const& guardFilePath ) {
+            if ( !guardFilePath.empty() ) {
+#if defined( _MSC_VER )
+                std::FILE* file = nullptr;
+                if ( fopen_s( &file, guardFilePath.c_str(), "w" ) ) {
+                    char msgBuffer[100];
+                    const auto err = errno;
+                    std::string errMsg;
+                    if ( !strerror_s( msgBuffer, err ) ) {
+                        errMsg = msgBuffer;
+                    } else {
+                        errMsg = "Could not translate errno to a string";
+                    }
+
+#else
+                std::FILE* file = std::fopen( guardFilePath.c_str(), "w" );
+                if ( !file ) {
+                    const auto err = errno;
+                    const char* errMsg = std::strerror( err );
+#endif
+
+                    CATCH_RUNTIME_ERROR( "Could not open the exit guard file '"
+                                         << guardFilePath << "' because '"
+                                         << errMsg << "' (" << err << ')' );
+                }
+                const int ret = std::fclose( file );
+                CATCH_ENFORCE(
+                    ret == 0,
+                    "Error when closing the exit guard file: " << ret );
+            }
+        }
+
+        // Removes file at path. Assuming we created it in setUpGuardFile.
+        void tearDownGuardFile( std::string const& guardFilePath ) {
+            if ( !guardFilePath.empty() ) {
+                const int ret = std::remove( guardFilePath.c_str() );
+                CATCH_ENFORCE(
+                    ret == 0,
+                    "Error when removing the exit guard file: " << ret );
+            }
+        }
+
     } // anon namespace
 
     Session::Session() {
@@ -198,8 +242,7 @@ namespace Catch {
     }
 
     int Session::applyCommandLine( int argc, char const * const * argv ) {
-        if( m_startupExceptions )
-            return 1;
+        if ( m_startupExceptions ) { return UnspecifiedErrorExitCode; }
 
         auto result = m_cli.parse( Clara::Args( argc, argv ) );
 
@@ -215,7 +258,7 @@ namespace Catch {
                 << TextFlow::Column( result.errorMessage() ).indent( 2 )
                 << "\n\n";
             errStream->stream() << "Run with -? for usage\n\n" << std::flush;
-            return MaxExitCode;
+            return UnspecifiedErrorExitCode;
         }
 
         if( m_configData.showHelp )
@@ -262,6 +305,7 @@ namespace Catch {
             static_cast<void>(std::getchar());
         }
         int exitCode = runInternal();
+
         if( ( m_configData.waitForKeypress & WaitForKeypress::BeforeExit ) != 0 ) {
             Catch::cout() << "...waiting for enter/ return before exiting, with code: " << exitCode << '\n' << std::flush;
             static_cast<void>(std::getchar());
@@ -285,8 +329,7 @@ namespace Catch {
     }
 
     int Session::runInternal() {
-        if( m_startupExceptions )
-            return 1;
+        if ( m_startupExceptions ) { return UnspecifiedErrorExitCode; }
 
         if (m_configData.showHelp || m_configData.libIdentify) {
             return 0;
@@ -297,11 +340,15 @@ namespace Catch {
                           << ") must be greater than the shard index ("
                           << m_configData.shardIndex << ")\n"
                           << std::flush;
-            return 1;
+            return UnspecifiedErrorExitCode;
         }
 
         CATCH_TRY {
             config(); // Force config to be constructed
+
+            // We need to retrieve potential Bazel config with the full Config
+            // constructor, so we have to create the guard file after it is created.
+            setUpGuardFile( m_config->getExitGuardFilePath() );
 
             seedRng( *m_config );
 
@@ -320,7 +367,7 @@ namespace Catch {
                 for ( auto const& spec : invalidSpecs ) {
                     reporter->reportInvalidTestSpec( spec );
                 }
-                return 1;
+                return InvalidTestSpecExitCode;
             }
 
 
@@ -332,31 +379,34 @@ namespace Catch {
             TestGroup tests { CATCH_MOVE(reporter), m_config.get() };
             auto const totals = tests.execute();
 
+            // If we got here, running the tests finished normally-enough.
+            // They might've failed, but that would've been reported elsewhere.
+            tearDownGuardFile( m_config->getExitGuardFilePath() );
+
             if ( tests.hadUnmatchedTestSpecs()
                 && m_config->warnAboutUnmatchedTestSpecs() ) {
-                return 3;
+                return UnmatchedTestSpecExitCode;
             }
 
             if ( totals.testCases.total() == 0
                 && !m_config->zeroTestsCountAsSuccess() ) {
-                return 2;
+                return NoTestsRunExitCode;
             }
 
             if ( totals.testCases.total() > 0 &&
                  totals.testCases.total() == totals.testCases.skipped
                 && !m_config->zeroTestsCountAsSuccess() ) {
-                return 4;
+                return AllTestsSkippedExitCode;
             }
 
-            // Note that on unices only the lower 8 bits are usually used, clamping
-            // the return value to 255 prevents false negative when some multiple
-            // of 256 tests has failed
-            return (std::min) (MaxExitCode, static_cast<int>(totals.assertions.failed));
+            if ( totals.assertions.failed ) { return TestFailureExitCode; }
+            return 0;
+
         }
 #if !defined(CATCH_CONFIG_DISABLE_EXCEPTIONS)
         catch( std::exception& ex ) {
             Catch::cerr() << ex.what() << '\n' << std::flush;
-            return MaxExitCode;
+            return UnspecifiedErrorExitCode;
         }
 #endif
     }

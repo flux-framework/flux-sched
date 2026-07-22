@@ -36,10 +36,12 @@ Tags allow an arbitrary number of additional strings to be associated with a tes
 
 As an example - given the following test cases:
 
-    TEST_CASE( "A", "[widget]" ) { /* ... */ }
-    TEST_CASE( "B", "[widget]" ) { /* ... */ }
-    TEST_CASE( "C", "[gadget]" ) { /* ... */ }
-    TEST_CASE( "D", "[widget][gadget]" ) { /* ... */ }
+```cpp
+TEST_CASE( "A", "[widget]" ) { /* ... */ }
+TEST_CASE( "B", "[widget]" ) { /* ... */ }
+TEST_CASE( "C", "[gadget]" ) { /* ... */ }
+TEST_CASE( "D", "[widget][gadget]" ) { /* ... */ }
+```
 
 The tag expression, ```"[widget]"``` selects A, B & D. ```"[gadget]"``` selects C & D. ```"[widget][gadget]"``` selects just D and ```"[widget],[gadget]"``` selects all four test cases.
 
@@ -48,7 +50,7 @@ For more detail on command line selection see [the command line docs](command-li
 Tag names are not case sensitive and can contain any ASCII characters.
 This means that tags `[tag with spaces]` and `[I said "good day"]`
 are both allowed tags and can be filtered on. However, escapes are not
-supported however and `[\]]` is not a valid tag.
+supported and `[\]]` is not a valid tag.
 
 The same tag can be specified multiple times for a single test case,
 but only one of the instances of identical tags will be kept. Which one

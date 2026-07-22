@@ -7,6 +7,8 @@
 [Writing documentation](#writing-documentation)<br>
 [Writing code](#writing-code)<br>
 [CoC](#coc)<br>
+[Using LLMs when contributing](#using-llms-when-contributing)<br>
+
 
 So you want to contribute something to Catch2? That's great! Whether it's
 a bug fix, a new feature, support for additional compilers - or just
@@ -107,8 +109,7 @@ cmake -B debug-build -S . -DCMAKE_BUILD_TYPE=Debug --preset all-tests
 cmake --build debug-build
 
 # 4. Run the tests using CTest
-cd debug-build
-ctest -j 4 --output-on-failure -C Debug
+ctest -j 4 --output-on-failure -C Debug --test-dir debug-build
 ```
 <sup><a href='/tools/scripts/buildAndTest.sh#L6-L19' title='File snippet `catch2-build-and-test` was extracted from'>snippet source</a> | <a href='#snippet-catch2-build-and-test' title='Navigate to start of snippet `catch2-build-and-test`'>anchor</a></sup>
 <!-- endSnippet -->
@@ -332,6 +333,19 @@ When adding new `CATCH_CONFIG` option, there are multiple places to edit:
 
 This project has a [CoC](../CODE_OF_CONDUCT.md). Please adhere to it
 while contributing to Catch2.
+
+
+## Using LLMs when contributing
+
+I do not care whether you used LLM for your contribution. What I care
+about is the quality of the contribution, not whether you made it through
+prompting LLM, letting GAs run wild, dictated it into the computer, wrote
+it using your nose or used butterflies to flip the correct bits.
+
+The flipside of this is that I am also not going to iterate your LLM for
+you. If a PR looks LLM generated and does not pass the muster to be merged
+as-is, I am going to close it.
+
 
 -----------
 

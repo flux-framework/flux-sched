@@ -19,30 +19,26 @@ namespace Catch {
         IConfig const* m_config = nullptr;
         IResultCapture* m_resultCapture = nullptr;
 
-        CATCH_EXPORT static Context* currentContext;
+        CATCH_EXPORT static Context currentContext;
         friend Context& getCurrentMutableContext();
         friend Context const& getCurrentContext();
-        static void createContext();
-        friend void cleanUpContext();
 
     public:
-        IResultCapture* getResultCapture() const { return m_resultCapture; }
-        IConfig const* getConfig() const { return m_config; }
-        void setResultCapture( IResultCapture* resultCapture );
-        void setConfig( IConfig const* config );
+        constexpr IResultCapture* getResultCapture() const {
+            return m_resultCapture;
+        }
+        constexpr IConfig const* getConfig() const { return m_config; }
+        constexpr void setResultCapture( IResultCapture* resultCapture ) {
+            m_resultCapture = resultCapture;
+        }
+        constexpr void setConfig( IConfig const* config ) { m_config = config; }
     };
 
     Context& getCurrentMutableContext();
 
     inline Context const& getCurrentContext() {
-        // We duplicate the logic from `getCurrentMutableContext` here,
-        // to avoid paying the call overhead in debug mode.
-        if ( !Context::currentContext ) { Context::createContext(); }
-        // NOLINTNEXTLINE(clang-analyzer-core.uninitialized.UndefReturn)
-        return *Context::currentContext;
+        return Context::currentContext;
     }
-
-    void cleanUpContext();
 
     class SimplePcg32;
     SimplePcg32& sharedRng();

@@ -48,6 +48,8 @@ public:
         m_current += m_step;
         return (m_positive) ? (m_current < m_end) : (m_current > m_end);
     }
+
+    bool isFinite() const override { return true; }
 };
 
 template <typename T>
@@ -87,11 +89,13 @@ public:
         ++m_current;
         return m_current != m_elems.size();
     }
+
+    bool isFinite() const override { return true; }
 };
 
 template <typename InputIterator,
           typename InputSentinel,
-          typename ResultType = typename std::iterator_traits<InputIterator>::value_type>
+          typename ResultType = std::remove_const_t<typename std::iterator_traits<InputIterator>::value_type>>
 GeneratorWrapper<ResultType> from_range(InputIterator from, InputSentinel to) {
     return GeneratorWrapper<ResultType>(Catch::Detail::make_unique<IteratorGenerator<ResultType>>(from, to));
 }

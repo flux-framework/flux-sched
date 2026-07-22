@@ -22,10 +22,10 @@ namespace Catch {
 
     class ExceptionTranslatorRegistrar {
         template<typename T>
-        class ExceptionTranslator : public IExceptionTranslator {
+        class ExceptionTranslator final : public IExceptionTranslator {
         public:
 
-            ExceptionTranslator( std::string(*translateFunction)( T const& ) )
+            constexpr ExceptionTranslator( std::string(*translateFunction)( T const& ) )
             : m_translateFunction( translateFunction )
             {}
 
@@ -41,6 +41,8 @@ namespace Catch {
                     return m_translateFunction( ex );
                 }
 #else
+                (void)it;
+                (void)itEnd;
                 return "You should never get here!";
 #endif
             }
@@ -65,7 +67,7 @@ namespace Catch {
     static std::string translatorName( signature ); \
     CATCH_INTERNAL_START_WARNINGS_SUPPRESSION \
     CATCH_INTERNAL_SUPPRESS_GLOBALS_WARNINGS \
-    namespace{ Catch::ExceptionTranslatorRegistrar INTERNAL_CATCH_UNIQUE_NAME( catch_internal_ExceptionRegistrar )( &translatorName ); } \
+    namespace{ const Catch::ExceptionTranslatorRegistrar INTERNAL_CATCH_UNIQUE_NAME( catch_internal_ExceptionRegistrar )( &translatorName ); } \
     CATCH_INTERNAL_STOP_WARNINGS_SUPPRESSION \
     static std::string translatorName( signature )
 

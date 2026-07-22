@@ -38,11 +38,13 @@ same as the Catch name; see also ``TEST_PREFIX`` and ``TEST_SUFFIX``.
                          [OUTPUT_PREFIX prefix]
                          [OUTPUT_SUFFIX suffix]
                          [DISCOVERY_MODE <POST_BUILD|PRE_TEST>]
+                         [SKIP_IS_FAILURE]
+                         [ADD_TAGS_AS_LABELS]
     )
 
   ``catch_discover_tests`` sets up a post-build command on the test executable
   that generates the list of tests by parsing the output from running the test
-  with the ``--list-test-names-only`` argument.  This ensures that the full
+  with the ``--list-tests --reporter json`` argument.  This ensures that the full
   list of tests is obtained.  Since test discovery occurs at build time, it is
   not necessary to re-run CMake when the list of tests changes.
   However, it requires that :prop_tgt:`CROSSCOMPILING_EMULATOR` is properly set
@@ -65,7 +67,7 @@ same as the Catch name; see also ``TEST_PREFIX`` and ``TEST_SUFFIX``.
 
   ``TEST_SPEC arg1...``
     Specifies test cases, wildcarded test cases, tags and tag expressions to
-    pass to the Catch executable with the ``--list-test-names-only`` argument.
+    pass to the Catch executable when listing the tests.
 
   ``EXTRA_ARGS arg1...``
     Any extra arguments to pass on the command line to each test case.
@@ -124,7 +126,14 @@ same as the Catch name; see also ``TEST_PREFIX`` and ``TEST_SUFFIX``.
     test executable and when the tests are executed themselves. This requires
     cmake/ctest >= 3.22.
 
-  `DISCOVERY_MODE mode``
+  ``DL_FRAMEWORK_PATHS path...``
+    Specifies paths that need to be set for the dynamic linker to find libraries
+    packaged as frameworks on Apple platforms when running the test executable
+    (DYLD_FRAMEWORK_PATH). These paths will both be set when retrieving the list
+    of test cases from the test executable and when the tests are executed themselves.
+    This requires cmake/ctest >= 3.22.
+
+  ``DISCOVERY_MODE mode``
     Provides control over when ``catch_discover_tests`` performs test discovery.
     By default, ``POST_BUILD`` sets up a post-build command to perform test discovery
     at build time. In certain scenarios, like cross-compiling, this ``POST_BUILD``
@@ -137,6 +146,12 @@ same as the Catch name; see also ``TEST_PREFIX`` and ``TEST_SUFFIX``.
     calling ``catch_discover_tests``. This provides a mechanism for globally selecting
     a preferred test discovery behavior without having to modify each call site.
 
+  ``SKIP_IS_FAILURE``
+    Disables skipped test detection.
+
+  ``ADD_TAGS_AS_LABELS``
+    Adds all test tags as CTest labels.
+
 #]=======================================================================]
 
 #------------------------------------------------------------------------------
@@ -144,11 +159,15 @@ function(catch_discover_tests TARGET)
 
   cmake_parse_arguments(
     ""
-    ""
+    "SKIP_IS_FAILURE;ADD_TAGS_AS_LABELS"
     "TEST_PREFIX;TEST_SUFFIX;WORKING_DIRECTORY;TEST_LIST;REPORTER;OUTPUT_DIR;OUTPUT_PREFIX;OUTPUT_SUFFIX;DISCOVERY_MODE"
-    "TEST_SPEC;EXTRA_ARGS;PROPERTIES;DL_PATHS"
+    "TEST_SPEC;EXTRA_ARGS;PROPERTIES;DL_PATHS;DL_FRAMEWORK_PATHS"
     ${ARGN}
   )
+
+  if(${CMAKE_VERSION} VERSION_LESS "3.19")
+    message(FATAL_ERROR "This script requires JSON support from CMake version 3.19 or greater.")
+  endif()
 
   if(NOT _WORKING_DIRECTORY)
     set(_WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
@@ -156,10 +175,11 @@ function(catch_discover_tests TARGET)
   if(NOT _TEST_LIST)
     set(_TEST_LIST ${TARGET}_TESTS)
   endif()
-  if (_DL_PATHS)
-    if(${CMAKE_VERSION} VERSION_LESS "3.22.0")
-        message(FATAL_ERROR "The DL_PATHS option requires at least cmake 3.22")
-    endif()
+  if(_DL_PATHS AND ${CMAKE_VERSION} VERSION_LESS "3.22.0")
+    message(FATAL_ERROR "The DL_PATHS option requires at least cmake 3.22")
+  endif()
+  if(_DL_FRAMEWORK_PATHS AND ${CMAKE_VERSION} VERSION_LESS "3.22.0")
+    message(FATAL_ERROR "The DL_FRAMEWORK_PATHS option requires at least cmake 3.22")
   endif()
   if(NOT _DISCOVERY_MODE)
     if(NOT CMAKE_CATCH_DISCOVER_TESTS_DISCOVERY_MODE)
@@ -167,7 +187,7 @@ function(catch_discover_tests TARGET)
     endif()
     set(_DISCOVERY_MODE ${CMAKE_CATCH_DISCOVER_TESTS_DISCOVERY_MODE})
   endif()
-  if (NOT _DISCOVERY_MODE MATCHES "^(POST_BUILD|PRE_TEST)$")
+  if(NOT _DISCOVERY_MODE MATCHES "^(POST_BUILD|PRE_TEST)$")
     message(FATAL_ERROR "Unknown DISCOVERY_MODE: ${_DISCOVERY_MODE}")
   endif()
 
@@ -184,6 +204,9 @@ function(catch_discover_tests TARGET)
     TARGET ${TARGET}
     PROPERTY CROSSCOMPILING_EMULATOR
   )
+  if(NOT _SKIP_IS_FAILURE)
+    set(_PROPERTIES ${_PROPERTIES} SKIP_RETURN_CODE 4)
+  endif()
 
   if(_DISCOVERY_MODE STREQUAL "POST_BUILD")
     add_custom_command(
@@ -205,7 +228,9 @@ function(catch_discover_tests TARGET)
               -D "TEST_OUTPUT_PREFIX=${_OUTPUT_PREFIX}"
               -D "TEST_OUTPUT_SUFFIX=${_OUTPUT_SUFFIX}"
               -D "TEST_DL_PATHS=${_DL_PATHS}"
+              -D "TEST_DL_FRAMEWORK_PATHS=${_DL_FRAMEWORK_PATHS}"
               -D "CTEST_FILE=${ctest_tests_file}"
+              -D "ADD_TAGS_AS_LABELS=${_ADD_TAGS_AS_LABELS}"
               -P "${_CATCH_DISCOVER_TESTS_SCRIPT}"
       VERBATIM
     )
@@ -250,7 +275,8 @@ function(catch_discover_tests TARGET)
       "      TEST_OUTPUT_SUFFIX"     " [==[" "${_OUTPUT_SUFFIX}"          "]==]"   "\n"
       "      CTEST_FILE"             " [==[" "${ctest_tests_file}"        "]==]"   "\n"
       "      TEST_DL_PATHS"          " [==[" "${_DL_PATHS}"               "]==]"   "\n"
-      "      CTEST_FILE"             " [==[" "${CTEST_FILE}"              "]==]"   "\n"
+      "      TEST_DL_FRAMEWORK_PATHS" " [==[" "${_DL_FRAMEWORK_PATHS}"     "]==]"   "\n"
+      "      ADD_TAGS_AS_LABELS"     " [==[" "${_ADD_TAGS_AS_LABELS}"     "]==]"   "\n"
       "    )"                                                                      "\n"
       "  endif()"                                                                  "\n"
       "  include(\"${ctest_tests_file}\")"                                         "\n"
@@ -277,22 +303,10 @@ function(catch_discover_tests TARGET)
     endif()
   endif()
 
-  if(NOT ${CMAKE_VERSION} VERSION_LESS "3.10.0")
-    # Add discovered tests to directory TEST_INCLUDE_FILES
-    set_property(DIRECTORY
-      APPEND PROPERTY TEST_INCLUDE_FILES "${ctest_include_file}"
-    )
-  else()
-    # Add discovered tests as directory TEST_INCLUDE_FILE if possible
-    get_property(test_include_file_set DIRECTORY PROPERTY TEST_INCLUDE_FILE SET)
-    if (NOT ${test_include_file_set})
-      set_property(DIRECTORY
-        PROPERTY TEST_INCLUDE_FILE "${ctest_include_file}"
-      )
-    else()
-      message(FATAL_ERROR "Cannot set more than one TEST_INCLUDE_FILE")
-    endif()
-  endif()
+  # Add discovered tests to directory TEST_INCLUDE_FILES
+  set_property(DIRECTORY
+    APPEND PROPERTY TEST_INCLUDE_FILES "${ctest_include_file}"
+  )
 
 endfunction()
 
