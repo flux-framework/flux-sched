@@ -111,6 +111,17 @@
    ...
 }
 {
+   <sched_issue_1531>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:realloc
+   ...
+   obj:*libhwloc.so.15.*.*
+   obj:*libhwloc.so.15.*.*
+   fun:hwloc_topology_load
+   ...
+}
+{
    <core_issue_3640>
    Memcheck:Leak
    match-leak-kinds: possible
