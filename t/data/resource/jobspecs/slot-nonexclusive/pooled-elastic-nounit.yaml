@@ -1,0 +1,36 @@
+version: 9999
+# A ranged count on a shared request with the unit OMITTED: the parser cannot
+# see that this becomes a pooled draw (the graph ssd vertex carries unit GiB),
+# so the fixed-count requirement is enforced at match time and the request
+# must not match.
+resources:
+  - type: slot
+    count: 1
+    label: default
+    exclusive: false
+    with:
+      - type: ssd
+        count:
+          min: 5
+          max: 10
+          operator: '+'
+          operand: 1
+        exclusive: false
+      - type: node
+        count: 1
+        exclusive: false
+        with:
+          - type: slot
+            label: task
+            count: 1
+            with:
+              - type: core
+                count: 1
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: task
+    count:
+      per_slot: 1

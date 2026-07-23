@@ -1,0 +1,34 @@
+version: 9999
+# Exclusivity inheritance: an explicit exclusive:true below an explicit
+# exclusive:false ancestor re-establishes exclusivity for that subtree. The
+# ssd stays shared (pooled, allocated as a 10 GiB draw), but each allocation
+# must take a DIFFERENT node -- exclusively, including all its cores --
+# because the node is exclusive.
+resources:
+  - type: slot
+    count: 1
+    label: default
+    exclusive: false
+    with:
+      - type: ssd
+        count: 10
+        unit: GiB
+        exclusive: false
+      - type: node
+        count: 1
+        exclusive: true
+        with:
+          - type: slot
+            label: task
+            count: 1
+            with:
+              - type: core
+                count: 1
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: task
+    count:
+      per_slot: 1

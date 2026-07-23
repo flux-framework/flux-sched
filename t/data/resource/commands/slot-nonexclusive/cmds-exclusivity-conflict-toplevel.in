@@ -1,0 +1,2 @@
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/validation/invalid/exclusive_conflict_toplevel.yaml
+quit

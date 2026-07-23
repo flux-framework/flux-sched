@@ -1,0 +1,44 @@
+      ---------ssd15[500:s]
+      ------------core1[1:x]
+      ---------hetchy1018[1:s]
+      ------chassis1[1:s]
+      ---hetchy[1:s]
+INFO: =============================
+INFO: JOBID=1
+INFO: RESOURCES=ALLOCATED
+INFO: SCHEDULED AT=Now
+INFO: =============================
+      ---------ssd3[500:s]
+      ------------core1[1:x]
+      ---------hetchy1002[1:s]
+      ------chassis0[1:s]
+      ---hetchy[1:s]
+INFO: =============================
+INFO: JOBID=2
+INFO: RESOURCES=ALLOCATED
+INFO: SCHEDULED AT=Now
+INFO: =============================
+      ---------ssd2[500:s]
+      ------------core1[1:x]
+      ---------hetchy1001[1:s]
+      ------chassis0[1:s]
+      ---hetchy[1:s]
+INFO: =============================
+INFO: JOBID=3
+INFO: RESOURCES=ALLOCATED
+INFO: SCHEDULED AT=Now
+INFO: =============================
+      ---------ssd14[500:s]
+      ------------core1[1:x]
+      ---------hetchy1017[1:s]
+      ------chassis1[1:s]
+      ---hetchy[1:s]
+INFO: =============================
+INFO: JOBID=4
+INFO: RESOURCES=ALLOCATED
+INFO: SCHEDULED AT=Now
+INFO: =============================
+INFO: =============================
+INFO: No matching resources found
+INFO: JOBID=5
+INFO: =============================
