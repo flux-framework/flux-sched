@@ -538,12 +538,19 @@ class dfu_impl_t {
      *  dfu.total_count () so counts merged up from pass-through children
      *  (see resolve ()) are observed identically to the legacy predicate;
      *  with multiplier == 1 the tally is exactly equivalent to it.
+     *
+     *  Explicitly non-exclusive (shared) resources invert the premise: one
+     *  vertex's capacity CAN back multiple slots, so requiring a distinct
+     *  bundle per share would over-explore (and over-spread) a request that
+     *  a single vertex satisfies. `shared` selects capacity counting:
+     *  shares are the aggregate count divided by the per-share count.
      */
     struct share_tally_t {
         unsigned int per_share = 0;   //!< per-share count for the type
         unsigned int prev_total = 0;  //!< total_count () seen so far
         unsigned int accum = 0;       //!< count toward the next share
-        unsigned int shares = 0;      //!< completed whole-bundle shares
+        unsigned int shares = 0;      //!< completed shares
+        bool shared = false;          //!< non-exclusive: capacity, not bundles
         bool satisfies (unsigned int multiplier) const
         {
             return per_share == 0 || shares >= multiplier;
@@ -551,7 +558,13 @@ class dfu_impl_t {
         void add (unsigned int count)
         {
             accum += count;
-            if (per_share > 0 && accum >= per_share) {
+            if (per_share == 0)
+                return;
+            if (shared) {
+                // Non-exclusive: a vertex is shareable across slots, so
+                // capacity backs as many shares as it divides into.
+                shares = accum / per_share;
+            } else if (accum >= per_share) {
                 // One share is complete. dom_slot () consumes whole
                 // egroups per slot, so this bundle -- including any
                 // excess in its last egroup -- backs a single slot.
