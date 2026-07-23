@@ -1,0 +1,6 @@
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/pooled-inherited.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/pooled-inherited.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/pooled-inherited.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/pooled-inherited.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/pooled-inherited.yaml
+quit

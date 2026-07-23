@@ -1,0 +1,26 @@
+version: 9999
+# Companion to pooled-cap2-overrun.yaml on rabbit-cap2.json (chassis vertices
+# of size 2). 2 slots fit: one whole chassis egroup per slot, each slot's
+# 300 GiB draw pooled from one ssd under its chassis. floor(793/300)=2 draws
+# per SSD and 2 SSDs per chassis, so each chassis pool serves 4 draws = 4 of
+# these jobs; the 5th fails with every SSD at 193 GiB < 300 GiB.
+resources:
+  - type: slot
+    count: 2
+    label: default
+    with:
+      - type: chassis
+        count: 1
+        exclusive: false
+        with:
+          - type: ssd
+            count: 300
+            unit: GiB
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: default
+    count:
+      per_slot: 1

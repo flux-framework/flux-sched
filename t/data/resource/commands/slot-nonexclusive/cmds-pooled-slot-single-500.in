@@ -1,0 +1,6 @@
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/pooled-slot-single-500.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/pooled-slot-single-500.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/pooled-slot-single-500.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/pooled-slot-single-500.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/pooled-slot-single-500.yaml
+quit

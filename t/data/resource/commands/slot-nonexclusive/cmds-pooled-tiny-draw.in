@@ -1,0 +1,3 @@
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/pooled-tiny-draw.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/pooled-tiny-draw.yaml
+quit

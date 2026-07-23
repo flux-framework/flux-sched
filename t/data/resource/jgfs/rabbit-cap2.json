@@ -1,0 +1,109 @@
+{
+    "graph": {
+        "directed": false,
+        "nodes": [
+            {
+                "id": "0",
+                "metadata": {
+                    "type": "cluster",
+                    "name": "hetchy",
+                    "paths": {
+                        "containment": "/hetchy"
+                    }
+                }
+            },
+            {
+                "id": "1",
+                "metadata": {
+                    "type": "chassis",
+                    "id": 0,
+                    "size": 2,
+                    "paths": {
+                        "containment": "/hetchy/chassis0"
+                    }
+                }
+            },
+            {
+                "id": "2",
+                "metadata": {
+                    "type": "ssd",
+                    "unit": "GiB",
+                    "size": 793,
+                    "paths": {
+                        "containment": "/hetchy/chassis0/ssd0"
+                    }
+                }
+            },
+            {
+                "id": "3",
+                "metadata": {
+                    "type": "ssd",
+                    "unit": "GiB",
+                    "size": 793,
+                    "paths": {
+                        "containment": "/hetchy/chassis0/ssd1"
+                    }
+                }
+            },
+            {
+                "id": "4",
+                "metadata": {
+                    "type": "chassis",
+                    "id": 1,
+                    "size": 2,
+                    "paths": {
+                        "containment": "/hetchy/chassis1"
+                    }
+                }
+            },
+            {
+                "id": "5",
+                "metadata": {
+                    "type": "ssd",
+                    "unit": "GiB",
+                    "size": 793,
+                    "paths": {
+                        "containment": "/hetchy/chassis1/ssd0"
+                    }
+                }
+            },
+            {
+                "id": "6",
+                "metadata": {
+                    "type": "ssd",
+                    "unit": "GiB",
+                    "size": 793,
+                    "paths": {
+                        "containment": "/hetchy/chassis1/ssd1"
+                    }
+                }
+            }
+        ],
+        "edges": [
+            {
+                "source": "0",
+                "target": "1"
+            },
+            {
+                "source": "1",
+                "target": "2"
+            },
+            {
+                "source": "1",
+                "target": "3"
+            },
+            {
+                "source": "0",
+                "target": "4"
+            },
+            {
+                "source": "4",
+                "target": "5"
+            },
+            {
+                "source": "4",
+                "target": "6"
+            }
+        ]
+    }
+}

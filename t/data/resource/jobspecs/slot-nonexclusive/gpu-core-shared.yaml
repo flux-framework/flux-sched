@@ -1,0 +1,27 @@
+version: 9999
+# NEGATIVE: non-exclusivity inherited from an ancestor also rejects at a
+# non-pooled leaf. The socket is explicitly shared; gpu and core say nothing
+# about exclusivity and INHERIT exclusive:false, so both leaves are rejected
+# as non-pooled shared requests. The socket itself (a non-leaf waypoint)
+# remains a valid shared request.
+resources:
+  - type: slot
+    count: 1
+    label: task
+    with:
+      - type: socket
+        count: 1
+        exclusive: false
+        with:
+          - type: gpu
+            count: 1
+          - type: core
+            count: 1
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: task
+    count:
+      per_slot: 1

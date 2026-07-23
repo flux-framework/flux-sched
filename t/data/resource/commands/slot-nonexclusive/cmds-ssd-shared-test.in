@@ -1,0 +1,7 @@
+# Test 1: Allocate with shared SSDs, should succeed
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/ssd-shared.yaml
+# Test 2: Allocate again with shared SSDs, should succeed (SSDs are shareable)
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/ssd-shared.yaml
+# Test 3: Try a third time, should fail (only 2 chassis available)
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/ssd-shared.yaml
+quit

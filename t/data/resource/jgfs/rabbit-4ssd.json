@@ -1,0 +1,97 @@
+{
+  "graph": {
+    "directed": false,
+    "nodes": [
+      {
+        "id": "0",
+        "metadata": {
+          "type": "cluster",
+          "name": "hetchy",
+          "paths": {
+            "containment": "/hetchy"
+          }
+        }
+      },
+      {
+        "id": "1",
+        "metadata": {
+          "type": "chassis",
+          "id": 0,
+          "properties": {
+            "rabbit": "hetchy201",
+            "ssdcount": "4"
+          },
+          "paths": {
+            "containment": "/hetchy/chassis0"
+          }
+        }
+      },
+      {
+        "id": "2",
+        "metadata": {
+          "type": "ssd",
+          "unit": "GiB",
+          "size": 793,
+          "paths": {
+            "containment": "/hetchy/chassis0/ssd0"
+          }
+        }
+      },
+      {
+        "id": "3",
+        "metadata": {
+          "type": "ssd",
+          "unit": "GiB",
+          "size": 793,
+          "paths": {
+            "containment": "/hetchy/chassis0/ssd1"
+          }
+        }
+      },
+      {
+        "id": "4",
+        "metadata": {
+          "type": "ssd",
+          "unit": "GiB",
+          "size": 793,
+          "paths": {
+            "containment": "/hetchy/chassis0/ssd2"
+          }
+        }
+      },
+      {
+        "id": "5",
+        "metadata": {
+          "type": "ssd",
+          "unit": "GiB",
+          "size": 793,
+          "paths": {
+            "containment": "/hetchy/chassis0/ssd3"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "0",
+        "target": "1"
+      },
+      {
+        "source": "1",
+        "target": "2"
+      },
+      {
+        "source": "1",
+        "target": "3"
+      },
+      {
+        "source": "1",
+        "target": "4"
+      },
+      {
+        "source": "1",
+        "target": "5"
+      }
+    ]
+  }
+}

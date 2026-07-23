@@ -1,0 +1,28 @@
+version: 9999
+# Overrun regression on rabbit-cap2.json (chassis vertices of size 2): the
+# shared chassis is a unit-less waypoint, so each slot must consume a whole
+# chassis egroup; 4 slots over 2 chassis vertices must NOT match. Counting
+# the chassis pair's aggregate capacity (4) as 4 slots once fabricated the
+# extra slots by reusing chassis egroups within one job, which charged each
+# chassis's nested pooled ssd draw once per egroup instead of once per slot
+# and double-booked the pool across jobs.
+resources:
+  - type: slot
+    count: 4
+    label: default
+    with:
+      - type: chassis
+        count: 1
+        exclusive: false
+        with:
+          - type: ssd
+            count: 300
+            unit: GiB
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: default
+    count:
+      per_slot: 1

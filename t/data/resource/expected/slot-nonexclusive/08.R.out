@@ -1,0 +1,13 @@
+      ---------core0[1:x]
+      ---------core1[1:x]
+      ------hetchy1[1:x]
+      ---hetchy[1:s]
+INFO: =============================
+INFO: JOBID=1
+INFO: RESOURCES=ALLOCATED
+INFO: SCHEDULED AT=Now
+INFO: =============================
+INFO: =============================
+INFO: No matching resources found
+INFO: JOBID=2
+INFO: =============================

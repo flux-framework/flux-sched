@@ -1,0 +1,3 @@
+# Test impossible pooled request (999 GiB; no single SSD holds more than 793)
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/ssd-impossible.yaml
+quit

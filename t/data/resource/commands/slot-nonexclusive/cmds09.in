@@ -1,0 +1,5 @@
+# Test exclusive SSDs (count: 2) - should allocate only 2 due to chassis exhaustion
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/ssd-limit-test-exclusive.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/ssd-limit-test-exclusive.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/ssd-limit-test-exclusive.yaml
+quit

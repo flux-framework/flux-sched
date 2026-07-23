@@ -1,0 +1,5 @@
+# Reject inherited exclusive:false on non-pooled leaves: the socket is
+# explicitly shared and its unit-less children (gpu, core) inherit
+# exclusive:false, so both are refused with resolve_request diagnostics.
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/gpu-core-shared.yaml
+quit

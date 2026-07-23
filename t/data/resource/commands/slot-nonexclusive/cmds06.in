@@ -1,0 +1,5 @@
+# Test ssd-limit-test-shared (should allocate only 2 due to chassis limit, not SSDs)
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/ssd-limit-test-shared.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/ssd-limit-test-shared.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/ssd-limit-test-shared.yaml
+quit

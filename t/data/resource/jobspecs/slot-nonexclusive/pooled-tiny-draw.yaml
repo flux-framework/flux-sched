@@ -1,0 +1,22 @@
+version: 9999
+# Materialization regression: a count:1 slot drawing 1 GiB from a 793 GiB
+# pool. Candidate slots are capped by the requested slot count (nslots), not
+# by how many 1 GiB chunks the pool could theoretically supply (793 per
+# vertex), so this must match promptly and draw exactly 1 GiB.
+resources:
+  - type: slot
+    count: 1
+    label: default
+    with:
+      - type: ssd
+        count: 1
+        unit: GiB
+        exclusive: false
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: default
+    count:
+      per_slot: 1

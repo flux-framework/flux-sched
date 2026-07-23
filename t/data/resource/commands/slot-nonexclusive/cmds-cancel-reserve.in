@@ -1,0 +1,11 @@
+# Pooled capacity and reservations: with the SSDs exhausted an
+# allocate_orelse_reserve request is RESERVED (for when job 1's lease ends);
+# after canceling job 1 the same request allocates now.
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/pooled-slot-single-500.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/pooled-slot-single-500.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/pooled-slot-single-500.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/pooled-slot-single-500.yaml
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/pooled-slot-single-500.yaml
+cancel 1
+match allocate_orelse_reserve @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/pooled-slot-single-500.yaml
+quit

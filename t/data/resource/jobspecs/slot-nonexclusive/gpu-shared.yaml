@@ -1,0 +1,27 @@
+version: 9999
+# NEGATIVE: a non-pooled (unit-less) LEAF resource cannot be requested with
+# an explicit exclusive:false. The shape is structurally matchable on
+# tiny.json (slot anchors at rack; node -> socket -> gpu), so the failure
+# pins the resolve_request rejection, not a shape mismatch.
+resources:
+  - type: slot
+    count: 1
+    label: testslot
+    with:
+      - type: node
+        count: 1
+        with:
+          - type: socket
+            count: 1
+            with:
+              - type: gpu
+                count: 1
+                exclusive: false
+attributes:
+  system:
+    duration: 1800
+tasks:
+  - command: [ "gpu_app" ]
+    slot: testslot
+    count:
+      per_slot: 1

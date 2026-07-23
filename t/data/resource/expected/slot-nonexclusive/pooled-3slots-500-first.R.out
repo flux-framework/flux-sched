@@ -1,0 +1,14 @@
+      ---------ssd3[500:s]
+      ---------ssd4[500:s]
+      ---------ssd5[500:s]
+      ------chassis0[1:s]
+      ---hetchy[1:s]
+INFO: =============================
+INFO: JOBID=1
+INFO: RESOURCES=ALLOCATED
+INFO: SCHEDULED AT=Now
+INFO: =============================
+INFO: =============================
+INFO: No matching resources found
+INFO: JOBID=2
+INFO: =============================

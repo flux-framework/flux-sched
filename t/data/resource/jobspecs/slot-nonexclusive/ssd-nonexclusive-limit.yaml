@@ -1,0 +1,21 @@
+version: 9999
+# Request 1 GiB of pooled non-exclusive SSD capacity.
+# rabbit.json has 4 SSD vertices (2 per chassis), each with size=793 GiB.
+# With exclusive:false and a unit, count is capacity: each allocation
+# draws 1 GiB from one SSD's pool (up to 793 per vertex), not a whole vertex.
+resources:
+  - type: slot
+    count: 1
+    label: testslot
+    with:
+      - type: ssd
+        count: 1
+        exclusive: false
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: testslot
+    count:
+      per_slot: 1
