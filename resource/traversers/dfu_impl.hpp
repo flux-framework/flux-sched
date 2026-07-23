@@ -552,6 +552,13 @@ class dfu_impl_t {
         unsigned int prev_total = 0;  //!< total_count () seen so far
         unsigned int accum = 0;       //!< count toward the next share
         unsigned int shares = 0;      //!< completed whole-bundle shares
+        //! Next unscanned egroup index for pooled_shares_incr (); valid
+        //! across calls because egroups are append-only until the match
+        //! policy sorts them, which happens only after exploration.
+        unsigned int pooled_cursor = 0;
+        //! Whole-share fits accumulated from pooled egroups so far; stays
+        //! -1 until the first pooled egroup is seen (see pooled_shares ()).
+        int64_t pooled_accum = -1;
         bool satisfies (unsigned int multiplier) const
         {
             return per_share == 0 || shares >= multiplier;

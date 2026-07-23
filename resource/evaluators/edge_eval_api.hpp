@@ -51,6 +51,15 @@ struct eval_egroup_t {
 
 namespace detail {
 
+/* Per-(subsystem, type) collection of evaluated edge groups.
+ *
+ * Invariant: m_eval_egroups is the single candidate set. add () appends
+ * every egroup unconditionally -- m_qual_count/m_total_count are counters,
+ * not filters, and nothing is partitioned by cutline. Consequently every
+ * reader of the collection (pooled_shares (), the egroup iterator used for
+ * slot packing and pooled binding, choose_best_k (), transform ()) walks
+ * the same egroups: a count derived here can always be bound from here.
+ */
 class evals_t {
    public:
     evals_t ();
@@ -66,6 +75,31 @@ class evals_t {
     unsigned int qualified_count () const;
     unsigned int qualified_granules () const;
     unsigned int total_count () const;
+    /* Shares backed by POOLED egroups: the sum over egroups whose edge is
+     * pooled (see eval_edg_t::pooled) of how many whole per_share chunks
+     * that egroup's single vertex can supply.  One share must come from ONE
+     * vertex, so this is the authoritative share count for pooled resources;
+     * capacity summed across vertices (total_count () / per_share) can
+     * fabricate shares no single vertex can back.  Does not touch the
+     * egroup iterator cursor.
+     *
+     * \return -1 when no pooled egroup exists (or per_share is 0); the
+     *         per-vertex whole-share sum otherwise.
+     */
+    int64_t pooled_shares (unsigned int per_share) const;
+    /* Incremental equivalent of pooled_shares () for callers that observe
+     * the egroup vector as it grows (e.g. the exploration tally, which
+     * updates after every add ()): accumulate whole per_share fits only
+     * from egroups appended since the previous call, resuming at index
+     * cursor and advancing it.  An index stays valid across add () and
+     * merge () because both append; no reordering happens until a match
+     * policy sorts the vector, after exploration completes.  shares is
+     * left untouched (-1 by convention) until the first pooled egroup is
+     * seen, preserving pooled_shares ()'s "no pooled egroups" signal.
+     * Scanning every egroup exactly once makes the exploration-long cost
+     * linear where repeated pooled_shares () rescans would be quadratic.
+     */
+    void pooled_shares_incr (unsigned int per_share, unsigned int &cursor, int64_t &shares) const;
     int64_t cutline () const;
     int64_t set_cutline (int64_t cutline);
     unsigned int best_k () const;
