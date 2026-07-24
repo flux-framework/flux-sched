@@ -635,6 +635,7 @@ class dfu_impl_t {
                  const jobmeta_t &jobmeta,
                  bool full,
                  std::map<resource_type_t, int64_t> &to_parent,
+                 int64_t &nslots,
                  bool emit_shadow,
                  bool excl_parent);
     bool rem_tag (vtx_t u, int64_t jobid);

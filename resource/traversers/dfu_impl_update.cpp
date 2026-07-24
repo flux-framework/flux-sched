@@ -315,6 +315,7 @@ int dfu_impl_t::upd_dfv (vtx_t u,
                          const jobmeta_t &jobmeta,
                          bool full,
                          std::map<resource_type_t, int64_t> &to_parent,
+                         int64_t &nslots,
                          bool emit_shadow,
                          bool excl_parent)
 {
@@ -342,12 +343,15 @@ int dfu_impl_t::upd_dfv (vtx_t u,
 
             if (subsystem == dom) {
                 // Value of `excl_parent` for child vertex is the value of `excl` for its parent
-                n_plan_sub += upd_dfv (tgt, writers, needs, x, jobmeta, full, dfu, mod, excl);
+                n_plan_sub +=
+                    upd_dfv (tgt, writers, needs, x, jobmeta, full, dfu, nslots, mod, excl);
             } else {
                 n_plan_sub += upd_upv (tgt, writers, subsystem, needs, x, jobmeta, full, dfu);
             }
 
             if (n_plan_sub > 0) {
+                if (subsystem == dom && (*m_graph)[*ei].idata.is_slot_leader ())
+                    nslots++;
                 if (m_match->get_stop_on_k_matches () > 0
                     && upd_by_outedges (subsystem, jobmeta, u, *ei) < 0) {
                     m_err_msg += __FUNCTION__;
@@ -609,6 +613,8 @@ int dfu_impl_t::mod_dfv (vtx_t u, int64_t jobid, modify_data_t &mod_data)
             if (!in_subsystem (*ei, subsystem) || stop_explore (*ei, subsystem))
                 continue;
             vtx_t tgt = target (*ei, *m_graph);
+            if ((*m_graph)[*ei].idata.get_slot_role () != relation_infra_t::slot_role_t::NONE)
+                (*m_graph)[*ei].idata.set_slot_role (relation_infra_t::slot_role_t::NONE);
             if (subsystem == dom)
                 rc += mod_dfv (tgt, jobid, mod_data);
             else
@@ -860,11 +866,17 @@ int dfu_impl_t::update (vtx_t root, std::shared_ptr<match_writers_t> &writers, j
     m_color.reset ();
 
     bool emit_shadow = modify_traversal (root, false);
+    int64_t nslots = 0;
     // Regardless of value of `x`, value for `excl_parent` parameter starts as `false`
-    if ((rc = upd_dfv (root, writers, needs, x, jobmeta, true, dfu, emit_shadow, false)) > 0) {
+    if ((rc = upd_dfv (root, writers, needs, x, jobmeta, true, dfu, nslots, emit_shadow, false))
+        > 0) {
         int64_t starttime = jobmeta.at;
         int64_t endtime = jobmeta.at + jobmeta.duration;
         if (writers->emit_tm (starttime, endtime) == -1) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": emit_tm returned -1.\n";
+        }
+        if (writers->emit_nslots (nslots)) {
             m_err_msg += __FUNCTION__;
             m_err_msg += ": emit_tm returned -1.\n";
         }
@@ -926,11 +938,17 @@ int dfu_impl_t::update (vtx_t root,
     needs = static_cast<unsigned int> (m_graph_db->metadata.v_rt_edges[dom].get_needs ());
     m_color.reset ();
     bool emit_shadow = modify_traversal (root, false);
+    int64_t nslots = 0;
     // Regardless of value of `x`, value for `excl_parent` parameter starts as `false`
-    if ((rc = upd_dfv (root, writers, needs, x, jobmeta, false, dfu, emit_shadow, false)) > 0) {
+    if ((rc = upd_dfv (root, writers, needs, x, jobmeta, false, dfu, nslots, emit_shadow, false))
+        > 0) {
         int64_t starttime = jobmeta.at;
         int64_t endtime = jobmeta.at + jobmeta.duration;
         if (writers->emit_tm (starttime, endtime) == -1) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": emit_tm returned -1.\n";
+        }
+        if (writers->emit_nslots (nslots)) {
             m_err_msg += __FUNCTION__;
             m_err_msg += ": emit_tm returned -1.\n";
         }
