@@ -815,11 +815,22 @@ class queue_policy_base_t : public resource_model::queue_adapter_base_t {
         return m_scheduled;
     }
 
-    /*! Reset this queue's "scheduled" state.
+    /*! Return true if a job annotation has changed (e.g. a stale
+     *  t_estimate was cleared) and post_sched_loop must run to transmit
+     *  it, even though no job was scheduled.  Unlike is_scheduled (),
+     *  this does not cause the scheduling loop to be restarted.
+     */
+    bool is_annotation_dirty ()
+    {
+        return m_annotation_dirty;
+    }
+
+    /*! Reset this queue's "scheduled" and "annotation dirty" states.
      */
     void reset_scheduled ()
     {
         m_scheduled = false;
+        m_annotation_dirty = false;
     }
 
     /*! Implement queue_adapter_base_t's pure virtual method
@@ -1192,6 +1203,7 @@ class queue_policy_base_t : public resource_model::queue_adapter_base_t {
 
     bool m_schedulable = false;
     bool m_scheduled = false;
+    bool m_annotation_dirty = false;
     bool m_sched_loop_active = false;
     uint64_t m_pq_cnt = 0;
     uint64_t m_rq_cnt = 0;

@@ -106,25 +106,54 @@ int qmanager_cb_t::post_sched_loop (
         for (job = queue->pending_begin (), qd = 0;
              job != nullptr && qd < queue->get_queue_depth ();
              job = queue->pending_next (), qd++) {
-            // if old_at == at, then no reason to send this annotation again.
-            if (job->schedule.at == job->schedule.old_at)
-                continue;
-            job->schedule.old_at = job->schedule.at;
-            // Reserved jobs receive a t_estimate annotation while they wait
-            // for their reserved time.  Report selection_type here too so that
-            // a job that is only ever reserved (and never allocated) still has
-            // its RFC 27 sched.selection_type recorded, rather than only being
-            // reported on the eventual alloc SUCCESS response.
-            if (schedutil_alloc_respond_annotate_pack (schedutil,
-                                                       job->msg,
-                                                       "{ s:{s:f s:s} }",
-                                                       "sched",
-                                                       "t_estimate",
-                                                       static_cast<double> (job->schedule.at),
-                                                       "selection_type",
-                                                       job_selection_type_str (job->schedule.selection_type))) {
-                flux_log_error (h, "%s: schedutil_alloc_respond_annotate_pack", __FUNCTION__);
-                goto out;
+            // only send an annotation when the start-time estimate has
+            // changed since the last successfully transmitted one.
+            if (job->schedule.at != job->schedule.old_at) {
+                if (job->schedule.at > 0) {
+                    // Reserved jobs receive a t_estimate annotation while they
+                    // wait for their reserved time.  Report selection_type
+                    // here too so that a job that is only ever reserved (and
+                    // never allocated) still has its RFC 27
+                    // sched.selection_type recorded, rather than only being
+                    // reported on the eventual alloc SUCCESS response.
+                    if (schedutil_alloc_respond_annotate_pack (schedutil,
+                                                               job->msg,
+                                                               "{ s:{s:f s:s} }",
+                                                               "sched",
+                                                               "t_estimate",
+                                                               static_cast<double> (
+                                                                   job->schedule.at),
+                                                               "selection_type",
+                                                               job_selection_type_str (
+                                                                   job->schedule.selection_type))) {
+                        flux_log_error (h,
+                                        "%s: schedutil_alloc_respond_annotate_pack",
+                                        __FUNCTION__);
+                        goto out;
+                    }
+                } else {
+                    // The job lost its reservation this loop (it could be
+                    // neither allocated nor reserved), so its previously
+                    // reported start-time estimate is now stale.  A JSON null
+                    // value deletes the key in the job manager, so both
+                    // t_estimate and selection_type are cleared rather than
+                    // left displaying an incorrect eta (#1424).
+                    if (schedutil_alloc_respond_annotate_pack (schedutil,
+                                                               job->msg,
+                                                               "{ s:{s:n s:n} }",
+                                                               "sched",
+                                                               "t_estimate",
+                                                               "selection_type")) {
+                        flux_log_error (h,
+                                        "%s: schedutil_alloc_respond_annotate_pack",
+                                        __FUNCTION__);
+                        goto out;
+                    }
+                }
+                // record the transmitted value only after a successful send
+                // so that a failed annotation is retried on the next
+                // post_sched_loop rather than being silently dropped.
+                job->schedule.old_at = job->schedule.at;
             }
         }
         queue->reset_scheduled ();
@@ -515,7 +544,8 @@ void qmanager_cb_t::prep_watcher_cb (flux_reactor_t *r, flux_watcher_t *w, int r
     for (auto &kv : ctx->queues) {
         std::shared_ptr<queue_policy_base_t> &queue = kv.second;
         ctx->pls_sched_loop = ctx->pls_sched_loop || queue->is_schedulable ();
-        ctx->pls_post_loop = ctx->pls_post_loop || queue->is_scheduled ();
+        ctx->pls_post_loop =
+            ctx->pls_post_loop || queue->is_scheduled () || queue->is_annotation_dirty ();
     }
     if (ctx->pls_sched_loop || ctx->pls_post_loop)
         flux_watcher_start (ctx->idle);

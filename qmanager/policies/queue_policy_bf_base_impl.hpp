@@ -213,6 +213,35 @@ int queue_policy_bf_base_t<reapi_type>::handle_match_failure (flux_jobid_t jobid
 
         // copy iterator before we advance to avoid invalidation
         auto element_iter = m_in_progress_iter;
+        auto job_it = m_jobs.find (element_iter->second);
+        if (job_it == m_jobs.end ()) {
+            // The job is just missing, much worse
+            errno = ENOENT;
+            return -1;
+        }
+        // N.B. unlike handle_match_success, jobid cannot be validated here:
+        // the failure response does not carry a jobid (the callback receives
+        // its initialization value of -1), so only the in-progress iterator
+        // identifies the job.
+        auto &job = job_it->second;
+        // This job could be neither allocated nor reserved this loop, so it no
+        // longer has a valid start-time estimate.  Clear it so post_sched_loop
+        // detects the change and sends a null sched.t_estimate annotation,
+        // removing any stale eta that was reported while the job was previously
+        // reserved (issue #1424).  was_reserved is also cleared: the job lost
+        // its reservation, so its eventual allocation should be categorized by
+        // how it actually starts (reserved/backfill/immediate) rather than by
+        // the reservation it once held.  Flag m_annotation_dirty so the check
+        // watcher actually runs post_sched_loop after this loop ends; otherwise
+        // the clearing annotation would sit untransmitted until the next
+        // unrelated scheduling event.
+        auto &fsched = job->schedule;
+        if (fsched.at != 0) {
+            fsched.at = 0;
+            fsched.selection_type = job_selection_type_t::UNKNOWN;
+            fsched.was_reserved = false;
+            m_annotation_dirty = true;
+        }
         // if we are allocating and not trying to reserve, as in FCFS for
         // example, EBUSY means the request failed because not enough
         // resources are available right now.
