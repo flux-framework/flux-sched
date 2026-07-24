@@ -110,6 +110,9 @@ int queue_policy_fcfs_t<reapi_type>::handle_match_success (flux_jobid_t jobid,
     job->schedule.R = R;
     job->schedule.at = at;
     job->schedule.ov = ov;
+    // fcfs does not backfill or reserve, so any allocation is immediate.
+    if (!job->schedule.reserved)
+        job->schedule.selection_type = job_selection_type_t::IMMEDIATE;
     m_iter = to_running (m_iter, true);
     return 0;
 }

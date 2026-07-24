@@ -156,13 +156,31 @@ int queue_policy_bf_base_t<reapi_type>::handle_match_success (flux_jobid_t jobid
     sched.at = at;
     sched.ov = ov;
     if (job->schedule.reserved) {
-        // High-priority job has been reserved, continue
+        // High-priority job has been reserved, continue.  Remember that this
+        // job was reserved for a future time so that when it is ultimately
+        // allocated (possibly in a later scheduling loop) it is categorized
+        // as "reserved" rather than "backfill" or "immediate".  Categorize it
+        // as "reserved" now as well so that the selection_type can be reported
+        // alongside the t_estimate annotation transmitted while the job waits.
+        sched.was_reserved = true;
+        sched.selection_type = job_selection_type_t::RESERVED;
         m_reserved.insert (std::pair<uint64_t, flux_jobid_t> (m_oq_cnt++, job->id));
         m_reservation_cnt++;
         m_in_progress_iter++;
         // reply with an annotation
         m_scheduled = true;
     } else {
+        // The job is being allocated now.  Categorize how it was started:
+        //   reserved  - this job had previously been reserved for the future
+        //   backfill  - a higher-priority job was reserved ahead of it in
+        //               this loop, so it was backfilled past that reservation
+        //   immediate - allocated with no reservations standing in its way
+        if (sched.was_reserved)
+            sched.selection_type = job_selection_type_t::RESERVED;
+        else if (m_reservation_cnt > 0)
+            sched.selection_type = job_selection_type_t::BACKFILL;
+        else
+            sched.selection_type = job_selection_type_t::IMMEDIATE;
         // move the job to the running queue and make sure the
         // job is enqueued into allocated job queue as well.
         // When this is used within a module, it allows the
@@ -195,6 +213,24 @@ int queue_policy_bf_base_t<reapi_type>::handle_match_failure (flux_jobid_t jobid
 
         // copy iterator before we advance to avoid invalidation
         auto element_iter = m_in_progress_iter;
+        // This job could be neither allocated nor reserved this loop, so it no
+        // longer has a valid start-time estimate.  Clear it so post_sched_loop
+        // detects the change and sends a null sched.t_estimate annotation,
+        // removing any stale eta that was reported while the job was previously
+        // reserved (issue #1424).  was_reserved is also cleared: the job lost
+        // its reservation, so its eventual allocation should be categorized by
+        // how it actually starts (reserved/backfill/immediate) rather than by
+        // the reservation it once held.  Flag m_scheduled so the check watcher
+        // actually runs post_sched_loop after this loop ends; otherwise the
+        // clearing annotation would sit untransmitted until the next unrelated
+        // scheduling event.
+        auto &fsched = m_jobs[element_iter->second]->schedule;
+        if (fsched.at != 0) {
+            fsched.at = 0;
+            fsched.selection_type = job_selection_type_t::UNKNOWN;
+            fsched.was_reserved = false;
+            m_scheduled = true;
+        }
         // if we are allocating and not trying to reserve, as in FCFS for
         // example, EBUSY means the request failed because not enough
         // resources are available right now.
