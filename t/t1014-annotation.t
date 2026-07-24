@@ -70,6 +70,40 @@ test_expect_success 'annotation: cancel all active jobs 1' '
     for job in ${active_jobs}; do flux job wait-event -t 10 ${job} clean; done
 '
 
+# Reproduce issue #1424: a job reserved (and annotated with a t_estimate)
+# in one scheduling loop is demoted in a later loop when a higher-priority
+# job takes the single reservation slot (easy policy reservation-depth=1).
+# The demoted job must have its now-stale t_estimate annotation cleared,
+# rather than continuing to display an incorrect eta.  Poll on the
+# annotation because annotation updates are not posted to the KVS eventlog.
+test_expect_success 'annotation: stale t_estimate cleared when reservation lost (#1424)' '
+    jobidA=$(flux submit -n 16 -t 600s sleep 500) &&
+    flux job wait-event -t 10 ${jobidA} start &&
+    jobidB=$(flux submit -n 8 -t 60s sleep 50) &&
+    i=0 &&
+    while ! has_annotation ${jobidB}; do
+        i=$((i+1))
+        test ${i} -ge 50 && break
+        sleep 0.2
+    done &&
+    has_annotation ${jobidB} &&
+    jobidC=$(flux submit --urgency=31 -n 8 -t 60s sleep 50) &&
+    i=0 &&
+    while has_annotation ${jobidB}; do
+        i=$((i+1))
+        test ${i} -ge 50 && break
+        sleep 0.2
+    done &&
+    hasnt_annotation ${jobidB} &&
+    has_annotation ${jobidC}
+'
+
+test_expect_success 'annotation: cancel all active jobs 1b' '
+    active_jobs=$(flux job list --state=active | jq .id) &&
+    for job in ${active_jobs}; do flux cancel ${job}; done &&
+    for job in ${active_jobs}; do flux job wait-event -t 10 ${job} clean; done
+'
+
 test_expect_success 'annotation: loading qmanager (queue-policy=hybrid)' '
     remove_qmanager &&
     reload_resource prune-filters=ALL:core \
