@@ -59,17 +59,127 @@ bool dfu_impl_t::stop_explore (edg_t e, subsystem_t subsystem) const
             || m_color.is_black ((*m_graph)[u].idata.colors[subsystem]));
 }
 
-bool dfu_impl_t::exclusivity (const std::vector<Jobspec::Resource> &resources, vtx_t u)
+namespace {
+/* A jobspec element explicitly marked shareable (exclusive: false). */
+bool is_shared (const Flux::Jobspec::Resource &resource)
 {
-    // If one of the resources matches with the visiting vertex, u
-    // and it requested exclusive access, return true;
-    bool exclusive = false;
-    for (auto &resource : resources) {
-        if (resource_type_t{resource.type} == (*m_graph)[u].type)
-            if (resource.exclusive == Jobspec::tristate_t::TRUE)
-                exclusive = true;
+    return resource.exclusive == Flux::Jobspec::tristate_t::FALSE;
+}
+
+/* A slot element is POOLED when its qualified vertices carry capacity
+ * pools: its count is capacity drawn from one vertex's pool rather than a
+ * number of whole instances.  The classification is resolved once at
+ * edge-evaluation time (see resolve_request ()) and recorded on the
+ * evaluation edges; all qualified vertices of one type are expected to
+ * agree, so the first qualified egroup's flag decides.  Resets the egroup
+ * iterator, so do not call while another loop is advancing it.
+ */
+bool is_pooled_elem (Flux::resource_model::scoring_api_t &dfu_slot,
+                     Flux::resource_model::subsystem_t dom,
+                     const Flux::Jobspec::Resource &slot_elem)
+{
+    if (!is_shared (slot_elem))
+        return false;
+    dfu_slot.eval_egroups_iter_reset (dom, slot_elem.type);
+    auto it = dfu_slot.eval_egroups_iter_next (dom, slot_elem.type);
+    bool pooled =
+        it != dfu_slot.eval_egroups_end (dom, slot_elem.type) && (*it).edges[0].pooled;
+    dfu_slot.eval_egroups_iter_reset (dom, slot_elem.type);
+    return pooled;
+}
+
+/* One slot's binding to the pooled vertex that serves it: the edge to the
+ * vertex plus the slot's own draw (needs) on that vertex's pool.  Draws of
+ * the slots the match policy ultimately selects are summed on the edge by
+ * enforce (), so the binding stays valid for any selected subset of the
+ * candidate slots -- under both dynamic and static match policies.
+ */
+struct pooled_bind_t {
+    edg_t edge;
+    int64_t score = 0;
+    unsigned int avail = 0;
+    unsigned int needs = 0;
+};
+
+/* Bind `nbind` candidate slots of pooled element `slot_elem` to vertices,
+ * one vertex per slot (a slot's capacity chunk must not span vertices)
+ * while letting a vertex back multiple slots up to its capacity.  Vertices
+ * are filled in egroup-iterator order -- the iterator is sorted by the
+ * match policy's scores, so which vertex fills first stays a policy
+ * decision rather than a traverser-side packing heuristic -- advancing to
+ * the next vertex when the current one can no longer supply a whole
+ * per-slot chunk.
+ *
+ * \return false when nbind slots cannot be backed by the qualified
+ *         vertices' capacity.
+ */
+bool bind_pooled_slots (Flux::resource_model::scoring_api_t &dfu_slot,
+                        Flux::resource_model::subsystem_t dom,
+                        const Flux::Jobspec::Resource &slot_elem,
+                        unsigned int nbind,
+                        std::vector<pooled_bind_t> &binding)
+{
+    unsigned int per_slot = slot_elem.count.min;
+    if (per_slot == 0)
+        return false;
+    binding.reserve (nbind);
+    // Egroups whose edge is not pooled (see resolve_request ()) cannot back
+    // a capacity draw and are skipped by treating their supply as zero.
+    dfu_slot.eval_egroups_iter_reset (dom, slot_elem.type);
+    auto it = dfu_slot.eval_egroups_iter_next (dom, slot_elem.type);
+    unsigned int remaining =
+        (it != dfu_slot.eval_egroups_end (dom, slot_elem.type) && (*it).edges[0].pooled)
+            ? static_cast<unsigned int> ((*it).edges[0].count)
+            : 0;
+    for (unsigned int s = 0; s < nbind; ++s) {
+        while (it != dfu_slot.eval_egroups_end (dom, slot_elem.type) && remaining < per_slot) {
+            it = dfu_slot.eval_egroups_iter_next (dom, slot_elem.type);
+            if (it != dfu_slot.eval_egroups_end (dom, slot_elem.type))
+                remaining = (*it).edges[0].pooled
+                                ? static_cast<unsigned int> ((*it).edges[0].count)
+                                : 0;
+        }
+        if (it == dfu_slot.eval_egroups_end (dom, slot_elem.type)) {
+            binding.clear ();
+            dfu_slot.eval_egroups_iter_reset (dom, slot_elem.type);
+            return false;
+        }
+        remaining -= per_slot;
+        binding.push_back (pooled_bind_t{(*it).edges[0].edge,
+                                         (*it).score,
+                                         static_cast<unsigned int> ((*it).edges[0].count),
+                                         per_slot});
     }
-    return exclusive;
+    dfu_slot.eval_egroups_iter_reset (dom, slot_elem.type);
+    return true;
+}
+}  // namespace
+
+bool dfu_impl_t::resolve_tristate_excl (Jobspec::tristate_t tristate, bool parent_excl)
+{
+    if (tristate == Jobspec::tristate_t::TRUE)
+        return true;
+    if (tristate == Jobspec::tristate_t::FALSE)
+        return false;
+    // UNSPECIFIED: inherit from parent
+    return parent_excl;
+}
+
+bool dfu_impl_t::resolve_exclusivity (const std::vector<Jobspec::Resource> &resources,
+                                      vtx_t u,
+                                      bool parent_excl)
+{
+    // Resolve exclusivity for vertex u in a single pass:
+    // - If resource matches and has explicit TRUE -> return true
+    // - If resource matches and has explicit FALSE -> return false
+    // - If resource matches and has UNSPECIFIED -> inherit from parent
+    // - If no match found -> inherit from parent
+    for (auto &resource : resources) {
+        if (resource_type_t{resource.type} == (*m_graph)[u].type) {
+            return resolve_tristate_excl (resource.exclusive, parent_excl);
+        }
+    }
+    return parent_excl;
 }
 
 int dfu_impl_t::by_avail (const jobmeta_t &meta,
@@ -108,19 +218,11 @@ int dfu_impl_t::by_excl (const jobmeta_t &meta,
     int64_t njobs = -1;
     uint64_t duration = meta.duration;
 
-    // If a non-exclusive resource request is explicitly given on a
-    // resource that lies under slot, this spec is invalid.
-    if (exclusive_in && resource.exclusive == Jobspec::tristate_t::FALSE) {
-        errno = EINVAL;
-        m_err_msg += "by_excl: exclusivity conflicts at jobspec=";
-        m_err_msg += resource.label + " : vertex=" + (*m_graph)[u].name;
-        return -1;
-    }
-
-    // If a resource request is under slot or an explicit exclusivity is
-    // requested, we check the validity of the visiting vertex using
-    // its x_checker planner.
-    if (exclusive_in || resource.exclusive == Jobspec::tristate_t::TRUE) {
+    // Check exclusivity if:
+    // 1. Explicitly requested as TRUE, OR
+    // 2. Inherited from parent (exclusive_in) AND not explicitly set to FALSE
+    // This allows explicit FALSE to override inherited slot exclusivity.
+    if (resolve_tristate_excl (resource.exclusive, exclusive_in)) {
         // If it's exclusive, the traversal type is an allocation, and
         // there are no other allocations on the vertex, then proceed. This
         // check prevents the observed multiple booking issue, where
@@ -445,6 +547,99 @@ int dfu_impl_t::prime_exp (subsystem_t subsystem, vtx_t u, std::map<resource_typ
     return rc;
 }
 
+/*! Return (building and caching on first use) the jobspec type -> resource
+ *  request lookup for a level's resources vector. The map depends only on the
+ *  jobspec level, so it is built once per traversal and reused for every
+ *  candidate graph vertex instead of being rebuilt on each resolve_request()
+ *  call. The cache is keyed by the resources vector's address (stable for the
+ *  traversal; the vector lives in the Jobspec) and is cleared at the start of
+ *  each select(). Duplicate same-type siblings under a slot are rejected at
+ *  jobspec parse time; elsewhere the first entry wins, matching the
+ *  first-match behavior of resolve_exclusivity ().
+ *
+ *  \param resources jobspec resource vector for the current level.
+ *  \return          const ref to the cached type -> request map.
+ */
+const std::unordered_map<resource_type_t, const Resource *> &dfu_impl_t::requests_for (
+    const std::vector<Resource> &resources)
+{
+    auto [it, inserted] = m_level_requests.try_emplace (&resources);
+    if (inserted) {
+        auto &requests = it->second;
+        requests.reserve (resources.size ());
+        for (auto &resource : resources)
+            requests.emplace (resource_type_t{resource.type}, &resource);
+    }
+    return it->second;
+}
+
+/*! Resolve a jobspec resource request against a matched vertex: the needs
+ *  (how much of the vertex the match consumes) and the pooled classification
+ *  (whether the request draws from the vertex's capacity pool). This is the
+ *  one authoritative resolution of "pooled": a non-exclusive request against
+ *  a vertex that carries a unit. The result is recorded on the evaluation
+ *  edge so slot counting, binding, and enforcement all agree.
+ *
+ *  \param requests  precomputed jobspec type -> request lookup
+ *                   (see requests_for()).
+ *  \param tgt       target vertex.
+ *  \param available available capacity from planner.
+ *  \param exclusive whether the resource is being allocated exclusively.
+ *  \param resolved  resolved needs and pooled classification (out).
+ *  \return          0 on success; -1 when the vertex cannot serve the request.
+ */
+int dfu_impl_t::resolve_request (
+    const std::unordered_map<resource_type_t, const Resource *> &requests,
+    vtx_t tgt,
+    unsigned int available,
+    bool exclusive,
+    resolved_request_t &resolved)
+{
+    resolved.needs = available;
+    resolved.pooled = false;
+    // Exclusive matches consume the full available amount and the jobspec
+    // unit stays advisory -- the historical behavior.
+    if (exclusive)
+        return 0;
+    auto it = requests.find ((*m_graph)[tgt].type);
+    if (it == requests.end ())
+        return 0;
+    const Jobspec::Resource &req = *it->second;
+    const std::string &vtx_unit = (*m_graph)[tgt].unit;
+    // A shared request that specifies a unit must match the vertex's unit
+    // exactly: there is no unit conversion support, and drawing a
+    // differently-denominated amount from a pool would silently
+    // mis-account capacity.
+    if (!req.unit.empty () && req.unit != vtx_unit) {
+        errno = EINVAL;
+        return -1;
+    }
+    // A unit-less vertex has no capacity pool: the shared request is
+    // tracked by instance and consumes the full available amount.
+    if (vtx_unit.empty ())
+        return 0;
+    // POOLED: draw exactly the requested amount from the vertex's pool.
+    // The draw must be a fixed amount: parse-time validation rejects
+    // ranged counts on explicitly shared pooled requests, but the request
+    // can also become pooled here via inherited non-exclusivity or an
+    // omitted jobspec unit, which the parser cannot see.
+    if (req.count.min != req.count.max) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": pooled request for type '" + std::string{req.type.get ()}
+                     + "' requires a fixed count.\n";
+        errno = EINVAL;
+        return -1;
+    }
+    // The whole fixed draw must come from this vertex's pool.
+    if (available < req.count.min) {
+        errno = EBUSY;
+        return -1;
+    }
+    resolved.needs = req.count.min;
+    resolved.pooled = true;
+    return 0;
+}
+
 int dfu_impl_t::explore_statically (const jobmeta_t &meta,
                                     vtx_t u,
                                     subsystem_t subsystem,
@@ -457,6 +652,9 @@ int dfu_impl_t::explore_statically (const jobmeta_t &meta,
     int rc = -1;
     int rc2 = -1;
     f_out_edg_iterator_t ei, ei_end;
+    // Precompute jobspec type -> request once so resolve_request() is an
+    // O(1) lookup per out-edge rather than an O(resources) rescan.
+    const auto &requests = requests_for (resources);
     for (tie (ei, ei_end) = out_edges (u, *m_graph); ei != ei_end; ++ei) {
         if (stop_explore (*ei, subsystem) || !in_subsystem (*ei, subsystem))
             continue;
@@ -474,7 +672,11 @@ int dfu_impl_t::explore_statically (const jobmeta_t &meta,
         }
         if (rc == 0) {
             unsigned int count = dfu.avail ();
-            eval_edg_t ev_edg (count, count, x_inout, *ei);
+            resolved_request_t resolved;
+            if (resolve_request (requests, tgt, count, x_inout, resolved) < 0)
+                continue;
+            eval_edg_t ev_edg (count, resolved.needs, x_inout, *ei);
+            ev_edg.pooled = resolved.pooled;
             eval_egroup_t egrp (dfu.overall_score (), dfu.avail (), 0, x_inout, false);
             egrp.edges.push_back (ev_edg);
             dfu.add (subsystem, (*m_graph)[tgt].type, egrp);
@@ -546,10 +748,20 @@ int dfu_impl_t::explore_dynamically (const jobmeta_t &meta,
 
     // Once a resource type is sufficiently discovered, not need find more
     std::set<resource_type_t> sat_types;
-    // Granule-aware progress toward `multiplier` shares per requested type
+    // Granule-aware progress toward `multiplier` shares per requested type.
+    // Explicitly non-exclusive resources tally capacity instead of bundles:
+    // one shareable vertex may back several shares, so stopping only after
+    // `multiplier` distinct bundles would over-explore and needlessly spread
+    // an allocation a single vertex satisfies.
     share_tally_map_t tallies;
-    for (auto &resource : resources)
-        tallies[resource.type].per_share = m_match->calc_effective_max (resource);
+    for (auto &resource : resources) {
+        auto &tally = tallies[resource.type];
+        tally.per_share = m_match->calc_effective_max (resource);
+        tally.shared = is_shared (resource);
+    }
+    // Precompute jobspec type -> request once so resolve_request() is an
+    // O(1) lookup per out-edge rather than an O(resources) rescan.
+    const auto &requests = requests_for (resources);
     // outedges contains outedge map for vertex u, sorted in available resources
     auto &outedges = iter->second;
     for (auto &kv : outedges) {
@@ -572,7 +784,11 @@ int dfu_impl_t::explore_dynamically (const jobmeta_t &meta,
         }
         if (rc == 0) {
             unsigned int count = dfu.avail ();
-            eval_edg_t ev_edg (count, count, x_inout, e);
+            resolved_request_t resolved;
+            if (resolve_request (requests, tgt, count, x_inout, resolved) < 0)
+                continue;
+            eval_edg_t ev_edg (count, resolved.needs, x_inout, e);
+            ev_edg.pooled = resolved.pooled;
             eval_egroup_t egrp (dfu.overall_score (), dfu.avail (), 0, x_inout, false);
             egrp.edges.push_back (ev_edg);
             dfu.add (subsystem, (*m_graph)[tgt].type, egrp);
@@ -623,7 +839,9 @@ int dfu_impl_t::aux_upv (const jobmeta_t &meta,
     int64_t avail = 0, at = meta.at;
     uint64_t duration = meta.duration;
     planner_t *p = NULL;
-    bool x_in = *excl;
+    // Resolve exclusivity for this vertex, allowing explicit FALSE to override
+    // inherited exclusivity from parent.
+    bool x_in = resolve_exclusivity (resources, u, *excl);
 
     static const auto &root = m_graph_db->metadata.roots.find (aux);
     if (root == m_graph_db->metadata.roots.end ())
@@ -674,6 +892,7 @@ int dfu_impl_t::dom_exp (const jobmeta_t &meta,
 int dfu_impl_t::cnt_slot (const std::vector<Resource> &slot_shape, scoring_api_t &dfu_slot)
 {
     unsigned int qc = 0;
+    unsigned int qg = 0;
     unsigned int fit = 0;
     unsigned int count = 0;
     unsigned int qual_num_slots = UINT_MAX;
@@ -692,19 +911,59 @@ int dfu_impl_t::cnt_slot (const std::vector<Resource> &slot_shape, scoring_api_t
     // over four 616-unit vertices, qc / count = 3 and qg = 4, but only 2
     // slots can be packed from whole vertices, and an over-estimate makes
     // the packing loop fail a satisfiable request upon egroup exhaustion.
+    //
+    // However, for resources explicitly marked as non-exclusive (shared),
+    // the granule constraint should not apply - multiple slots can share
+    // the same pooled resource vertex.
     qual_num_slots = UINT_MAX;
     for (auto &slot_elem : slot_shape) {
+        bool shared = is_shared (slot_elem);
         qc = dfu_slot.qualified_count (dom, slot_elem.type);
-        count = m_match->calc_count (slot_elem, qc);
-        share_tally_t tally;
-        tally.per_share = count;
-        if (count != 0) {
-            std::vector<eval_egroup_t>::iterator iter;
-            while ((iter = dfu_slot.eval_egroups_iter_next (dom, slot_elem.type))
-                   != dfu_slot.eval_egroups_end (dom, slot_elem.type))
-                tally.add ((*iter).edges[0].count);
+        qg = dfu_slot.qualified_granules (dom, slot_elem.type);
+        if (is_pooled_elem (dfu_slot, dom, slot_elem)) {
+            // Non-exclusive POOLED resource (capacity with a unit, e.g. a shared
+            // SSD). A single slot's per-slot capacity must be satisfied by ONE
+            // vertex, but one vertex may serve multiple slots up to its capacity.
+            // So the slot count is the sum over vertices of how many whole
+            // per-slot chunks each can supply -- NOT qualified_count/per_slot,
+            // which sums capacity across vertices and would fabricate a slot from
+            // capacity that is actually split between different vertices (the
+            // cause of phantom matches with no usable vertex).
+            unsigned int per_slot = slot_elem.count.min;
+            fit = 0;
+            if (per_slot > 0) {
+                dfu_slot.eval_egroups_iter_reset (dom, slot_elem.type);
+                for (auto i = dfu_slot.eval_egroups_iter_next (dom, slot_elem.type);
+                     i != dfu_slot.eval_egroups_end (dom, slot_elem.type);
+                     i = dfu_slot.eval_egroups_iter_next (dom, slot_elem.type)) {
+                    if (!(*i).edges[0].pooled)
+                        continue;
+                    fit += static_cast<unsigned int> ((*i).edges[0].count) / per_slot;
+                }
+            }
+        } else {
+            // Exclusive (or unspecified) resources pack whole egroups per
+            // slot: tally disjoint bundles. Non-exclusive resources WITHOUT
+            // a unit are instance-tracked and shareable across slots: tally
+            // aggregate capacity (qc / count) instead.
+            count = m_match->calc_count (slot_elem, qc);
+            share_tally_t tally;
+            tally.per_share = count;
+            tally.shared = shared;
+            if (count != 0) {
+                std::vector<eval_egroup_t>::iterator iter;
+                while ((iter = dfu_slot.eval_egroups_iter_next (dom, slot_elem.type))
+                       != dfu_slot.eval_egroups_end (dom, slot_elem.type))
+                    tally.add ((*iter).edges[0].count);
+            }
+            fit = (count == 0) ? 0 : tally.shares;
+            // Exclusive resources are additionally bounded by the number of
+            // qualifying vertices (a slot's chunk spans whole vertices);
+            // shared resources skip the granule cap so a vertex can back
+            // multiple slots.
+            if (!shared)
+                fit = (fit > qg) ? qg : fit;
         }
-        fit = (count == 0) ? 0 : tally.shares;
         qual_num_slots = (qual_num_slots > fit) ? fit : qual_num_slots;
         dfu_slot.eval_egroups_iter_reset (dom, slot_elem.type);
     }
@@ -725,6 +984,15 @@ int dfu_impl_t::dom_slot (const jobmeta_t &meta,
     unsigned int qual_num_slots = 0;
     std::vector<eval_egroup_t> edg_group_vector;
     subsystem_t dom = m_match->dom_subsystem ();
+    // Per-slot vertex binding for non-exclusive POOLED slot elements (see
+    // bind_pooled_slots ()), computed after cnt_slot once qual_num_slots is
+    // known. Declared before the first `goto done` so the jumps do not
+    // bypass its initialization.
+    std::map<resource_type_t, std::vector<pooled_bind_t>> pooled_binding;
+    // Pooled classification per slot element (see is_pooled_elem ()),
+    // precomputed because probing it resets the egroup iterators the
+    // slot-packing loop below advances.
+    std::set<resource_type_t> pooled_types;
 
     if ((rc =
              explore (meta, u, dom, slot_shape, pristine, &x_inout, visit_t::DFV, dfu_slot, nslots))
@@ -734,25 +1002,59 @@ int dfu_impl_t::dom_slot (const jobmeta_t &meta,
         goto done;
 
     qual_num_slots = cnt_slot (slot_shape, dfu_slot);
+    for (auto &slot_elem : slot_shape) {
+        if (!is_pooled_elem (dfu_slot, dom, slot_elem))
+            continue;
+        pooled_types.insert (slot_elem.type);
+        if (!bind_pooled_slots (dfu_slot,
+                                dom,
+                                slot_elem,
+                                qual_num_slots,
+                                pooled_binding[slot_elem.type])) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": not enough slots.\n";
+            qual_num_slots = 0;
+            goto done;
+        }
+    }
     for (unsigned int i = 0; i < qual_num_slots; ++i) {
         eval_egroup_t edg_group;
         int64_t score = MATCH_MET;
         for (auto &slot_elem : slot_shape) {
+            if (pooled_types.count (slot_elem.type)) {
+                // Pooled: use the precomputed assignment for slot i. needs is
+                // this slot's own draw; enforce () sums the draws of the slots
+                // the policy selects on the (single) parent->vertex edge.
+                const pooled_bind_t &b = pooled_binding[slot_elem.type][i];
+                eval_edg_t ev_edg (b.avail, b.needs, false, b.edge);
+                ev_edg.pooled = true;
+                score += b.score;
+                edg_group.edges.push_back (ev_edg);
+                continue;
+            }
             unsigned int j = 0;
             unsigned int qc = dfu_slot.qualified_count (dom, slot_elem.type);
             unsigned int count = m_match->calc_count (slot_elem, qc);
             while (j < count) {
                 auto egroup_i = dfu_slot.eval_egroups_iter_next (dom, slot_elem.type);
                 if (egroup_i == dfu_slot.eval_egroups_end (dom, slot_elem.type)) {
-                    m_err_msg += __FUNCTION__;
-                    m_err_msg += ": not enough slots.\n";
-                    qual_num_slots = 0;
-                    goto done;
+                    // Shared resources can reuse vertices across slots; reset and retry once.
+                    if (is_shared (slot_elem)) {
+                        dfu_slot.eval_egroups_iter_reset (dom, slot_elem.type);
+                        egroup_i = dfu_slot.eval_egroups_iter_next (dom, slot_elem.type);
+                    }
+                    if (egroup_i == dfu_slot.eval_egroups_end (dom, slot_elem.type)) {
+                        m_err_msg += __FUNCTION__;
+                        m_err_msg += ": not enough slots.\n";
+                        qual_num_slots = 0;
+                        goto done;
+                    }
                 }
                 eval_edg_t ev_edg ((*egroup_i).edges[0].count,
-                                   (*egroup_i).edges[0].count,
-                                   1,
+                                   (*egroup_i).edges[0].needs,
+                                   (*egroup_i).edges[0].exclusive,
                                    (*egroup_i).edges[0].edge);
+                ev_edg.pooled = (*egroup_i).edges[0].pooled;
                 score += (*egroup_i).score;
                 edg_group.edges.push_back (ev_edg);
                 j += (*egroup_i).edges[0].count;
@@ -781,7 +1083,9 @@ int dfu_impl_t::dom_dfv (const jobmeta_t &meta,
     match_kind_t sm;
     int64_t avail = 0, at = meta.at;
     uint64_t duration = meta.duration;
-    bool x_in = *excl || exclusivity (resources, u);
+    // Resolve exclusivity for this vertex, allowing explicit FALSE to override
+    // inherited exclusivity from parent.
+    bool x_in = resolve_exclusivity (resources, u, *excl);
     bool x_inout = x_in;
     bool check_pres = pristine;
     unsigned int nslots = 0;
@@ -1092,9 +1396,17 @@ int dfu_impl_t::enforce (subsystem_t subsystem, scoring_api_t &dfu, bool enforce
                     continue;
                 const eval_egroup_t &egroup = dfu.at (subsystem, t, i);
                 for (auto &e : egroup.edges) {
-                    (*m_graph)[e.edge].idata.set_for_trav_update (e.needs,
-                                                                  e.exclusive,
-                                                                  m_sequence_number);
+                    auto &idata = (*m_graph)[e.edge].idata;
+                    uint64_t needs = e.needs;
+                    // A shared POOLED vertex (non-exclusive edge to a vertex
+                    // with a unit, e.g. ssd capacity in GiB) can back several
+                    // selected slots in one match, each carrying its own draw
+                    // on the pool. There is a single parent->vertex edge, so
+                    // SUM the draws of the slots selected in this traversal
+                    // rather than letting the last one overwrite the rest.
+                    if (e.pooled && idata.get_sequence_number () == m_sequence_number)
+                        needs += idata.get_needs ();
+                    idata.set_for_trav_update (needs, e.exclusive, m_sequence_number);
                     // we need to resolve unconstrained resources up to the root in the dominant
                     // subsystem
                     if (enforce_unconstrained && subsystem == dom) {
@@ -1312,6 +1624,9 @@ int dfu_impl_t::select (std::vector<Jobspec::Resource> &resources,
     tick ();
     m_preorder = 0;
     m_postorder = 0;
+    // Reset the per-traversal request cache; entries are keyed by the
+    // address of jobspec resources vectors, which can be reused across jobs.
+    m_level_requests.clear ();
     rc = dom_dfv (meta, root, resources, true, &x_in, dfu);
     if (rc == 0) {
         unsigned int needs = 0;

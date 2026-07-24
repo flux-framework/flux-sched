@@ -1,0 +1,6 @@
+# All three must be rejected at jobspec parse time: non-fixed counts
+# (unbounded min, min/max range, stepped range) on a shared pooled request.
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/validation/invalid/elastic_pooled_min.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/validation/invalid/elastic_pooled_range.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/validation/invalid/elastic_pooled_step.yaml
+quit

@@ -1,0 +1,5 @@
+# Ranged count with the unit omitted: the request resolves to a pooled draw
+# at match time (the graph ssd vertex has a unit) and must be rejected there,
+# since the parser cannot see the pooled classification.
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/pooled-elastic-nounit.yaml
+quit

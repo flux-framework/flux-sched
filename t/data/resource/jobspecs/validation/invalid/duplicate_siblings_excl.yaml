@@ -1,0 +1,27 @@
+version: 9999
+# Invalid: two same-type (ssd) siblings under a slot with different
+# exclusivity. Exclusivity is resolved per type (first match wins), so
+# mixed-exclusivity duplicates are ambiguous and rejected at parse time.
+resources:
+  - type: slot
+    count: 1
+    label: default
+    exclusive: false
+    with:
+      - type: ssd
+        count: 5
+        unit: GiB
+        exclusive: false
+      - type: ssd
+        count: 1
+        exclusive: true
+      - type: node
+        count: 1
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: default
+    count:
+      per_slot: 1

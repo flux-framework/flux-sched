@@ -1,0 +1,32 @@
+version: 9999
+# A shared pooled request whose unit (GB) does not match the graph vertex's
+# unit (GiB). There is no unit conversion: mismatched units would silently
+# mis-account pool capacity, so the request must not match.
+resources:
+  - type: slot
+    count: 1
+    label: default
+    exclusive: false
+    with:
+      - type: ssd
+        count: 500
+        unit: GB
+        exclusive: false
+      - type: node
+        count: 1
+        exclusive: false
+        with:
+          - type: slot
+            label: task
+            count: 1
+            with:
+              - type: core
+                count: 1
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: task
+    count:
+      per_slot: 1

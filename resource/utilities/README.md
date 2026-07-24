@@ -589,6 +589,82 @@ specification, `resource-query` will choose the highest-scored node at the
 `rack` level in the same manner as how it enforces the lower-level constraints
 (e.g., `socket`).
 
+## Jobspec Resource Validation
+
+Fluxion validates the resources section of a jobspec at parse time and
+rejects the following combinations as invalid:
+
+- `exclusive: false` on a resource beneath an ancestor that explicitly
+  sets `exclusive: true`.  The ancestor's explicit claim to the whole
+  subtree makes the child's shareability ambiguous.
+- A resource type that occurs more than once among non-slot siblings
+  within a `slot` subtree.  The match traverser resolves each level's
+  requests per resource type, so a second same-type sibling cannot be
+  represented and would be silently mis-accounted.  Sibling `slot`
+  resources are exempt: they are distinguished by their labels.  Duplicate
+  same-type siblings outside a slot subtree are not rejected for
+  historical compatibility, but they are not meaningfully supported by
+  the match traverser either.
+- A ranged or stepped `count` (`min` != `max`) on a non-exclusive
+  resource with a `unit` (pooled capacity).  A pooled count is a fixed
+  capacity draw from a single vertex's pool; elastic pooled counts are
+  not supported.
+
+Validation errors report the offending resource's path from the root of
+the resources section, e.g. `/slot[default]/ssd`.
+
+## Exclusivity of Resources Under a Slot
+
+Each resource in a jobspec carries a tristate `exclusive` field: `true`,
+`false`, or unspecified. During a traversal the effective exclusivity of a
+visiting resource vertex is resolved as follows:
+
+- `exclusive: true` — the vertex is allocated exclusively, and exclusivity
+  is inherited by its descendants.
+- `exclusive: false` — the vertex is allocated non-exclusively (shareable),
+  overriding any exclusivity inherited from an ancestor (e.g., a slot). The
+  override applies to the subtree rooted at that resource until a descendant
+  re-specifies `exclusive`, and it does not affect the resource's siblings.
+- unspecified — inherit from the parent. Resources under a `slot` inherit
+  exclusive access (the long-standing default), so an unspecified resource
+  under a slot is exclusive.
+
+Invalid exclusivity combinations are rejected at jobspec parse time; see
+[Jobspec Resource Validation](#jobspec-resource-validation).
+
+How a non-exclusive resource is accounted depends on whether it is *pooled*.
+The resource graph is authoritative: a non-exclusive request is pooled when
+the matched resource vertex carries a `unit` (e.g., an `ssd` measured in
+`GiB`).  The request may omit the `unit`; if it specifies one, it must equal
+the vertex's unit exactly (units are never converted), or the vertex cannot
+serve the request.
+
+- Non-exclusive pooled resources are tracked by capacity: `count` is the
+  amount of the pool consumed, a single slot's amount must be satisfied by
+  one vertex, and one vertex may serve multiple slots (within one job and
+  across jobs) up to its capacity.
+- Non-exclusive resources without a unit are tracked by instance: the vertex
+  can be matched by multiple slots or jobs, but each match consumes the
+  whole instance count requested.
+
+For example, in the following jobspec fragment the `chassis` under the slot
+is unspecified and therefore exclusive (inherited from the slot), while its
+`ssd` child is explicitly shareable and drawn from by capacity:
+
+```yaml
+  - type: slot
+    count: 1
+    label: default
+    with:
+      - type: chassis
+        count: 1
+        with:
+          - type: ssd
+            count: 10
+            unit: GiB
+            exclusive: false
+```
+
 ## Flexible Traverser, Or Slots, and Xor Slots
 
 The default DFU traverser assumes that each jobspec level describes one

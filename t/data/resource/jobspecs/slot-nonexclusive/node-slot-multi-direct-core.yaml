@@ -1,0 +1,25 @@
+version: 9999
+# Same mixed-depth anchoring limitation as node-slot-multi, but with core
+# directly under node (no inner slot). Confirms the nested slot is not the
+# trigger. KNOWN LIMITATION: no match on rabbit at count:7. See
+# ISSUE-slot-node-anchoring-mixed-depth.
+resources:
+  - type: slot
+    count: 7
+    label: default
+    exclusive: false
+    with:
+      - type: node
+        count: 1
+        exclusive: false
+        with:
+          - type: core
+            count: 1
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: default
+    count:
+      per_slot: 1

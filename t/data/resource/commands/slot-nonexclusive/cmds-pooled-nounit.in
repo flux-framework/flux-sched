@@ -1,0 +1,10 @@
+# The jobspec omits the unit; pooled classification comes from the graph
+# vertex. 4 x 500 GiB allocations exhaust the four 793 GiB SSDs; the 5th must
+# fail even though 4 x 293 GiB remains in total, proving fragmented capacity
+# is never combined across vertices.
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/pooled-slot-single-500-nounit.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/pooled-slot-single-500-nounit.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/pooled-slot-single-500-nounit.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/pooled-slot-single-500-nounit.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/pooled-slot-single-500-nounit.yaml
+quit

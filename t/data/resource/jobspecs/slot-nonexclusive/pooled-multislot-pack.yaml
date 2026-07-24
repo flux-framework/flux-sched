@@ -1,0 +1,33 @@
+version: 9999
+# 7 slots, each pooled 5 GiB SSD + 1 node. Even with more slots (7) than SSD
+# vertices (4), capacity sharing packs all 7 onto the first discovered SSD
+# under the default `first` policy: one SSD at 35 GiB total, 7 nodes.
+resources:
+  - type: slot
+    count: 7
+    label: default
+    exclusive: false
+    with:
+      - type: ssd
+        count: 5
+        unit: GiB
+        exclusive: false
+      - type: node
+        count: 1
+        exclusive: false
+        with:
+          - type: slot
+            label: task
+            count: 1
+            exclusive: false
+            with:
+              - type: core
+                count: 1
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: task
+    count:
+      per_slot: 1
