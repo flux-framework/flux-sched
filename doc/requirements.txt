@@ -1,5 +1,5 @@
-sphinx>=6.0.0
-sphinx-rtd-theme>=0.5.2
-docutils>=0.18
-jinja2>=3.1.0
-breathe>=4.35.0
+sphinx
+sphinx-rtd-theme
+docutils
+jinja2
+breathe>=4.32.0
