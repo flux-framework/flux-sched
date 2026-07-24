@@ -213,6 +213,24 @@ int queue_policy_bf_base_t<reapi_type>::handle_match_failure (flux_jobid_t jobid
 
         // copy iterator before we advance to avoid invalidation
         auto element_iter = m_in_progress_iter;
+        // This job could be neither allocated nor reserved this loop, so it no
+        // longer has a valid start-time estimate.  Clear it so post_sched_loop
+        // detects the change and sends a null sched.t_estimate annotation,
+        // removing any stale eta that was reported while the job was previously
+        // reserved (issue #1424).  was_reserved is also cleared: the job lost
+        // its reservation, so its eventual allocation should be categorized by
+        // how it actually starts (reserved/backfill/immediate) rather than by
+        // the reservation it once held.  Flag m_scheduled so the check watcher
+        // actually runs post_sched_loop after this loop ends; otherwise the
+        // clearing annotation would sit untransmitted until the next unrelated
+        // scheduling event.
+        auto &fsched = m_jobs[element_iter->second]->schedule;
+        if (fsched.at != 0) {
+            fsched.at = 0;
+            fsched.selection_type = job_selection_type_t::UNKNOWN;
+            fsched.was_reserved = false;
+            m_scheduled = true;
+        }
         // if we are allocating and not trying to reserve, as in FCFS for
         // example, EBUSY means the request failed because not enough
         // resources are available right now.
