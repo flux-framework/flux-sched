@@ -146,8 +146,8 @@ static int create_reader (std::shared_ptr<resource_ctx_t> &ctx, const std::strin
 {
     if ((ctx->reader = create_resource_reader (format)) == nullptr)
         return -1;
-    if (ctx->opts.get_opt ().is_load_allowlist_set ()) {
-        if (ctx->reader->set_allowlist (ctx->opts.get_opt ().get_load_allowlist ()) < 0)
+    if (auto load_allowlist = ctx->opts.get_opt ().get_load_allowlist ()) {
+        if (ctx->reader->set_allowlist (*load_allowlist) < 0)
             flux_log (ctx->h, LOG_ERR, "%s: setting allowlist", __FUNCTION__);
         if (!ctx->reader->is_allowlist_supported ())
             flux_log (ctx->h, LOG_WARNING, "%s: allowlist unsupported", __FUNCTION__);
@@ -159,19 +159,22 @@ static int populate_resource_db_file (std::shared_ptr<resource_ctx_t> &ctx)
 {
     int rc = -1;
     int saved_errno;
+    std::optional<std::string> in_file_path;
     std::ifstream in_file;
     std::stringstream buffer{};
     graph_duration_t duration;
 
-    if (ctx->reader == nullptr
-        && create_reader (ctx, ctx->opts.get_opt ().get_load_format ()) < 0) {
+    if (auto load_format = ctx->opts.get_opt ().get_load_format ();
+        load_format && ctx->reader == nullptr && create_reader (ctx, *load_format) < 0) {
         flux_log (ctx->h, LOG_ERR, "%s: can't create reader", __FUNCTION__);
         goto done;
     }
 
     saved_errno = errno;
     errno = 0;
-    in_file.open (ctx->opts.get_opt ().get_load_file ().c_str (), std::ifstream::in);
+
+    if (in_file_path = ctx->opts.get_opt ().get_load_file ())
+        in_file.open (in_file_path->c_str (), std::ifstream::in);
     if (!in_file.good ()) {
         if (errno == 0) {
             // C++ standard doesn't guarantee to set errno but
@@ -182,7 +185,7 @@ static int populate_resource_db_file (std::shared_ptr<resource_ctx_t> &ctx)
         flux_log_error (ctx->h,
                         "%s: opening %s",
                         __FUNCTION__,
-                        ctx->opts.get_opt ().get_load_file ().c_str ());
+                        in_file_path ? in_file_path->c_str () : "(unset)");
         goto done;
     }
     errno = saved_errno;
@@ -354,18 +357,18 @@ int populate_resource_db (std::shared_ptr<resource_ctx_t> &ctx)
     std::chrono::time_point<std::chrono::system_clock> start;
     std::chrono::duration<double> elapsed;
 
-    if (ctx->opts.get_opt ().is_reserve_vtx_vec_set ())
-        ctx->db->resource_graph.m_vertices.reserve (ctx->opts.get_opt ().get_reserve_vtx_vec ());
+    if (auto reserve_vtx_vec = ctx->opts.get_opt ().get_reserve_vtx_vec ())
+        ctx->db->resource_graph.m_vertices.reserve (*reserve_vtx_vec);
 
     start = std::chrono::system_clock::now ();
-    if (ctx->opts.get_opt ().is_load_file_set ()) {
+    if (auto load_file = ctx->opts.get_opt ().get_load_file ()) {
         if (populate_resource_db_file (ctx) < 0)
             goto done;
         flux_log (ctx->h,
                   LOG_INFO,
                   "%s: loaded resources from %s",
                   __FUNCTION__,
-                  ctx->opts.get_opt ().get_load_file ().c_str ());
+                  load_file->c_str ());
     } else {
         if (populate_resource_db_acquire (ctx) < 0) {
             flux_log (ctx->h, LOG_ERR, "%s: populate_resource_db_acquire", __FUNCTION__);
@@ -1243,14 +1246,14 @@ done:
     return rc;
 }
 
-int select_subsystems (std::shared_ptr<resource_ctx_t> &ctx)
+int select_subsystems (std::shared_ptr<resource_ctx_t> &ctx, const std::string &subsystems_str)
 {
     /*
      * Format of match_subsystems
      * subsystem1[:relation1[:relation2...]],subsystem2[...
      */
     int rc = 0;
-    std::stringstream ss (ctx->opts.get_opt ().get_match_subsystems ());
+    std::stringstream ss (subsystems_str);
     subsystem_t subsystem;
     std::string token;
 

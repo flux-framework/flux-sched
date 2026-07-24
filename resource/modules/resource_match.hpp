@@ -187,7 +187,7 @@ int update_resource_db (std::shared_ptr<resource_ctx_t> &ctx,
                         const char *up,
                         const char *down);
 
-int select_subsystems (std::shared_ptr<resource_ctx_t> &ctx);
+int select_subsystems (std::shared_ptr<resource_ctx_t> &ctx, const std::string &subsystems_str);
 
 #endif  // RESOURCE_MATCH_HPP
 
