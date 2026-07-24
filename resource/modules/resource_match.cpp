@@ -146,7 +146,6 @@ resource_ctx_t::~resource_ctx_t ()
             flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
         }
     }
-    idset_destroy (m_notify_lost);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -270,22 +269,6 @@ static void update_resource (flux_future_t *f, void *arg)
         flux_log (ctx->h, LOG_INFO, "resource expiration updated to 0. (unlimited)");
     }
     if (ctx->m_acquire_resources_from_core) {
-        // Store initial set of resources to broadcast to other fluxion modules
-        //  via sched-fluxion-resource.notify
-        if (resources != NULL) {
-            ctx->m_notify_resources = json::value (resources);
-        }
-        if (lost != NULL) {
-            struct idset *lost_idset = idset_decode (lost);
-            if (rc += idset_add (ctx->m_notify_lost, lost_idset)) {
-                flux_log (ctx->h, LOG_ERR, "%s: idset_add (lost)", __FUNCTION__);
-            }
-            idset_destroy (lost_idset);
-        }
-        if (expiration > 0.) {
-            ctx->m_notify_expiration = expiration;
-        }
-
         // Broadcast UP/DOWN/SHRINK updates to subscribed fluxion modules.
         // There are no subscribers until the first notify_request_cb,
         //  which must happen after the first run of update_resource

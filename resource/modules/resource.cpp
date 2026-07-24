@@ -1201,7 +1201,6 @@ static void notify_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
 {
     struct idset *up;
     struct idset *down;
-    char *lost_str;
     char *up_str;
     char *down_str;
     try {
@@ -1225,18 +1224,12 @@ static void notify_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
             flux_log_error (h, "%s: flux_msg_route_first", __FUNCTION__);
             goto error;
         }
-        if (ctx->opts.get_opt ().get_load_file ()) {
-            errno = ENODATA;
-            // Since m_acquired_resources is null,
-            flux_log_error (ctx->h, "%s: cannot notify when load-file set", __FUNCTION__);
-            goto error;
-        }
 
         // Traverse all nodes to calculate the # of UP/DOWN
         up = idset_create (0, IDSET_FLAG_AUTOGROW);
         down = idset_create (0, IDSET_FLAG_AUTOGROW);
 
-        resource_graph_t rg = ctx->db->resource_graph;
+        const resource_graph_t &rg = ctx->db->resource_graph;
 
         for (vtx_t vtx : ctx->db->metadata.by_type[node_rt]) {
             struct idset *vtx_status_idset = nullptr;
@@ -1258,7 +1251,6 @@ static void notify_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
 
         up_str = idset_encode (up, IDSET_FLAG_RANGE);
         down_str = idset_encode (down, IDSET_FLAG_RANGE);
-        lost_str = idset_encode (ctx->m_notify_lost, IDSET_FLAG_RANGE);
 
         if (strcmp (up_str, "") == 0) {
             free (up_str);
@@ -1268,41 +1260,33 @@ static void notify_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
             free (down_str);
             down_str = NULL;
         }
-        if (strcmp (lost_str, "") == 0) {
-            free (lost_str);
-            lost_str = NULL;
+
+        // Traverse all nodes to calculate the current resource set
+        json::value resource_graph_json;
+        json_t *resource_graph_json_raw = nullptr;
+        if (m->get_notify_flags () & NOTIFY_RESOURCES) {
+            if (run_find (ctx, "", "rv1", &resource_graph_json_raw) < 0) {
+                flux_log_error (h, "%s: run_find", __FUNCTION__);
+                goto error;
+            }
+            resource_graph_json = json::value::take (resource_graph_json_raw);
         }
 
-        // Respond only after sched-fluxion-resource gets
-        //  resources from its resource.acquire RPC.
-        // This is guaranteed by the order of mod_main:
-        //  init_resource_graph runs before flux_reactor_run.
-        // Only send resources at first so that the
-        //  module can initialize its graph.
-        if ((m->get_notify_flags () & NOTIFY_RESOURCES)
-            && flux_respond_pack (ctx->h,
-                                  msg,
-                                  "{s:O*}",
-                                  NOTIFY_RESOURCES_KEY,
-                                  ctx->m_notify_resources.get ())
-                   < 0) {
-            flux_log_error (ctx->h, "%s: flux_respond_pack", __FUNCTION__);
-            goto error;
-        }
-
-        // Once the module's graph is initialized, send the node statuses.
+        // Send initial set of resources to the new subscriber
         if (flux_respond_pack (ctx->h,
                                msg,
-                               "{s:s* s:s* s:s* s:f}",
+                               "{s:O* s:s* s:s* s:f}",
+                               NOTIFY_RESOURCES_KEY,
+                               resource_graph_json.get (),
                                NOTIFY_UP_KEY,
                                m->get_notify_flags () & NOTIFY_UP ? up_str : nullptr,
                                NOTIFY_DOWN_KEY,
                                m->get_notify_flags () & NOTIFY_DOWN ? down_str : nullptr,
-                               NOTIFY_SHRINK_KEY,
-                               m->get_notify_flags () & NOTIFY_SHRINK ? lost_str : nullptr,
                                NOTIFY_EXPIRATION_KEY,
-                               m->get_notify_flags () & NOTIFY_EXPIRATION ? ctx->m_notify_expiration
-                                                                          : -1.)
+                               m->get_notify_flags () & NOTIFY_EXPIRATION
+                                   ? std::chrono::system_clock::to_time_t (
+                                         ctx->db->metadata.graph_duration.graph_end)
+                                   : -1.)
             < 0) {
             flux_log_error (ctx->h, "%s: flux_respond_pack", __FUNCTION__);
             goto error;
@@ -1310,11 +1294,10 @@ static void notify_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
 
         free (up_str);
         free (down_str);
-        free (lost_str);
         idset_destroy (up);
         idset_destroy (down);
 
-        // Add msg as a subscriber to resource UP/DOWN updates
+        // Add msg as a subscriber to resource updates
         m->set_msg (msg);
         auto ret = ctx->notify_msgs.insert (
             std::pair<std::string, std::shared_ptr<msg_wrap_t>> (route, m));
@@ -1331,7 +1314,6 @@ static void notify_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
 error:
     free (up_str);
     free (down_str);
-    free (lost_str);
     idset_destroy (up);
     idset_destroy (down);
     if (flux_respond_error (h, msg, errno, NULL) < 0)

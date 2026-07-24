@@ -115,12 +115,6 @@ struct resource_ctx_t : public resource_interface_t {
 
     /* Resource acquire behavior */
     bool m_acquire_resources_from_core = false; /* s.-f.-resource only */
-
-    /* All resources from resource.acquire for .notify */
-    /* UP/DOWN nodes are calculated from graph traversal */
-    json::value m_notify_resources = nullptr;
-    struct idset *m_notify_lost = idset_create (0, IDSET_FLAG_AUTOGROW);
-    double m_notify_expiration = -1.;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
