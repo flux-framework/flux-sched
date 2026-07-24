@@ -212,6 +212,11 @@ extern "C" int reapi_cli_match (reapi_cli_ctx_t *ctx,
 
     uint64_t seq = ctx->rqt->get_job_counter ();
 
+    // Assign jobid -1 to match_without_allocating queries
+    if (match_op == match_op_t::MATCH_WITHOUT_ALLOCATING
+        || match_op == match_op_t::MATCH_WITHOUT_ALLOCATING_FUTURE)
+        seq = -1;
+
     if ((rc = reapi_cli_match_with_jobid (ctx, match_op, jobspec, seq, reserved, R, at, ov)) < 0)
         goto done;
     *jobid = seq;

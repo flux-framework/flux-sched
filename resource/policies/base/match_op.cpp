@@ -19,7 +19,9 @@ constexpr auto opt_map = std::to_array<std::pair<match_op_t, const char *>> (
     {{MATCH_ALLOCATE, "allocate"},
      {MATCH_ALLOCATE_ORELSE_RESERVE, "allocate_orelse_reserve"},
      {MATCH_ALLOCATE_W_SATISFIABILITY, "allocate_with_satisfiability"},
-     {MATCH_SATISFIABILITY, "satisfiability"}});
+     {MATCH_SATISFIABILITY, "satisfiability"},
+     {MATCH_WITHOUT_ALLOCATING, "without_allocating"},
+     {MATCH_WITHOUT_ALLOCATING_FUTURE, "without_allocating_future"}});
 
 static_assert (opt_map.size () == END_MATCH_OP_T - MATCH_UNKNOWN - 1,
                "opt_map is missing a match_op_t entry");
