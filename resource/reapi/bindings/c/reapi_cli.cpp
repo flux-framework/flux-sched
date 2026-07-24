@@ -235,28 +235,19 @@ extern "C" int reapi_cli_match_allocate (reapi_cli_ctx_t *ctx,
     return reapi_cli_match (ctx, match_op, jobspec, jobid, reserved, R, at, ov);
 }
 
-extern "C" int reapi_cli_match_satisfy (reapi_cli_ctx_t *ctx,
-                                        const char *jobspec,
-                                        bool *sat,
-                                        double *ov)
+extern "C" int reapi_cli_match_satisfy (reapi_cli_ctx_t *ctx, const char *jobspec, double *ov)
 {
     match_op_t match_op = match_op_t::MATCH_SATISFIABILITY;
     uint64_t jobid;
     bool reserved;
     char *R;
     int64_t at;
-    int ret;
-    *sat = true;
 
-    ret = reapi_cli_match (ctx, match_op, jobspec, &jobid, &reserved, &R, &at, ov);
-
-    // Not satisfiable if the match reported unsatisfiable (ENODEV) or failed
-    // for any other reason (e.g. a jobspec referencing an unknown resource
-    // type).  A nonzero return must never be reported as satisfiable.
-    if (ret != 0)
-        *sat = false;
-
-    return ret;
+    if (reapi_cli_match (ctx, match_op, jobspec, &jobid, &reserved, &R, &at, ov) == 0)
+        return 0;
+    // The traverser reports an unsatisfiable request as ENODEV; any other
+    // errno is a genuine error (errno is left set for the caller).
+    return (errno == ENODEV) ? 1 : -1;
 }
 
 extern "C" int reapi_cli_update_allocate (reapi_cli_ctx_t *ctx,
