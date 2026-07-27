@@ -38,8 +38,9 @@ test_expect_success 'configure epilog with delay' '
 # Jobs seem to need to be submitted separately to trigger the issue.
 test_expect_success 'submit node-exclusive jobs that exceed their time limit' '
 	(for i in $(seq 5); do \
-	    flux run -N1 -x -t1s sleep 30 || true; \
-	done) 2>joberr
+	    flux submit -N1 -x -t1s sleep 30 || true; \
+	done)
+	flux job eventlog $(flux job last) > joberr
 '
 test_expect_success 'some jobs received timeout exception' '
 	grep "job.exception" joberr | grep "type=timeout"
@@ -54,8 +55,9 @@ test_expect_success 'clean up' '
 '
 test_expect_success 'submit non-exclusive jobs that exceed their time limit' '
 	(for i in $(seq 10); do \
-	    flux run --ntasks=1 --cores-per-task=8 -t1s sleep 30 || true; \
-	done) 2>joberr2
+	    flux submit --ntasks=1 --cores-per-task=8 -t1s sleep 30 || true; \
+	done)
+	flux job eventlog $(flux job last) > joberr2
 '
 test_expect_success 'some jobs received timeout exception' '
 	grep "job.exception" joberr2 | grep "type=timeout"
