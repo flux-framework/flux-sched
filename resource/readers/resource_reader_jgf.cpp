@@ -20,6 +20,8 @@ extern "C" {
 #include <unistd.h>
 #include <regex>
 #include <jansson.h>
+#include <boost/optional/optional.hpp>
+
 #include "resource/readers/resource_reader_jgf.hpp"
 #include "resource/store/resource_graph_store.hpp"
 #include "resource/planner/c/planner.h"
@@ -752,7 +754,7 @@ int resource_reader_jgf_t::cancel_vtx (vtx_t vtx,
     int64_t xspan = -1;
     int64_t sched_span = -1;
     int64_t prev_occu = -1;
-    planner_multi_t *subtree_plan = NULL;
+    boost::optional<planner_multi_t *> opt_subtree_plan;
     planner_t *x_checker = NULL;
     planner_t *plans = NULL;
     auto &job2span = g[vtx].idata.job2span;
@@ -767,9 +769,10 @@ int resource_reader_jgf_t::cancel_vtx (vtx_t vtx,
     // remove from aggregate filter if present
     auto agg_span = job2span.find (update_data.jobid);
     if (agg_span != job2span.end ()) {
-        if ((subtree_plan = g[vtx].idata.subplans[containment_sub]) == NULL)
+        if (!(opt_subtree_plan = g[vtx].idata.subplans.try_at (containment_sub))
+            || *opt_subtree_plan == NULL)
             goto error;
-        if (planner_multi_rem_span (subtree_plan, agg_span->second) != 0)
+        if (planner_multi_rem_span (*opt_subtree_plan, agg_span->second) != 0)
             goto error;
         // Delete from job2span tracker
         job2span.erase (update_data.jobid);
