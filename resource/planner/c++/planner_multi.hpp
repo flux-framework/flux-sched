@@ -118,19 +118,31 @@ class planner_multi {
     multi_container m_types_totals_planners;
     struct request_multi m_iter;
     std::map<uint64_t, std::vector<int64_t>> m_span_lookup;
-    std::map<uint64_t, std::vector<int64_t>>::iterator m_span_lookup_iter;
+    std::map<uint64_t, std::vector<int64_t>>::iterator m_span_lookup_iter = m_span_lookup.end ();
     uint64_t m_span_counter = 0;
 };
 
 struct planner_multi_t {
     planner_multi_t ();
-    planner_multi_t (const planner_multi &o);
+    explicit planner_multi_t (const planner_multi &o);
     planner_multi_t (int64_t base_time,
                      uint64_t duration,
                      const uint64_t *resource_totals,
                      const char **resource_types,
                      size_t len);
+
+    // Rule of three, mirroring planner_t; see planner.hpp.
+    planner_multi_t (const planner_multi_t &o);
+    planner_multi_t &operator= (planner_multi_t o);
     ~planner_multi_t ();
+
+    // Hidden friend so the copy-and-swap body resolves through ADL.
+    friend void swap (planner_multi_t &lhs, planner_multi_t &rhs) noexcept
+    {
+        planner_multi *tmp = lhs.plan_multi;
+        lhs.plan_multi = rhs.plan_multi;
+        rhs.plan_multi = tmp;
+    }
 
     planner_multi *plan_multi = nullptr;
 };

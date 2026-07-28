@@ -107,6 +107,9 @@ planner &planner::operator= (const planner &o)
 {
     int rc = -1;
 
+    if (this == &o)
+        return *this;
+
     if ((rc = erase ()) != 0) {
         throw std::runtime_error ("ERROR erasing *this\n");
     }
@@ -186,9 +189,12 @@ int planner::erase ()
     // returns 0 or a negative number
     rc = restore_track_points ();
     m_span_lookup.clear ();
+    // clear () invalidates every iterator into the map.
+    m_span_lookup_iter = m_span_lookup.end ();
     if (m_p0 && m_p0->in_mt_resource_tree)
         rc += m_mt_resource_tree.remove (m_p0);
     m_sched_point_tree.destroy ();
+    m_p0 = nullptr;
     m_mt_resource_tree.clear ();
 
     return rc;
@@ -316,11 +322,6 @@ scheduled_point_t *planner::sp_tree_next (scheduled_point_t *point) const
 scheduled_point_t *planner::mt_tree_get_mintime (int64_t request) const
 {
     return m_mt_resource_tree.get_mintime (request);
-}
-
-void planner::clear_span_lookup ()
-{
-    m_span_lookup.clear ();
 }
 
 void planner::span_lookup_erase (std::map<int64_t, std::shared_ptr<span_t>>::iterator &it)
@@ -564,6 +565,24 @@ planner_t::planner_t (const planner &o)
         errno = ENOMEM;
         throw;
     }
+}
+
+// Deep copy; o.plan is non-null by the constructors' invariant.
+planner_t::planner_t (const planner_t &o)
+{
+    try {
+        plan = new planner (*o.plan);
+    } catch (std::bad_alloc &e) {
+        errno = ENOMEM;
+        throw;
+    }
+}
+
+// Copy-and-swap: the by-value parameter is built before *this is touched.
+planner_t &planner_t::operator= (planner_t o)
+{
+    swap (*this, o);
+    return *this;
 }
 
 planner_t::planner_t (const int64_t base_time,

@@ -74,7 +74,6 @@ class planner {
     scheduled_point_t *sp_tree_next (scheduled_point_t *point) const;
     scheduled_point_t *mt_tree_get_mintime (int64_t request) const;
     // Span lookup functions
-    void clear_span_lookup ();
     void span_lookup_erase (std::map<int64_t, std::shared_ptr<span_t>>::iterator &it);
     const std::map<int64_t, std::shared_ptr<span_t>> &get_span_lookup_const () const;
     std::map<int64_t, std::shared_ptr<span_t>> &get_span_lookup ();
@@ -105,7 +104,9 @@ class planner {
     mintime_resource_tree_t m_mt_resource_tree; /* min-time resource rb tree */
     scheduled_point_t *m_p0 = nullptr;          /* system's scheduled point at base time */
     std::map<int64_t, std::shared_ptr<span_t>> m_span_lookup; /* span lookup */
-    std::map<int64_t, std::shared_ptr<span_t>>::iterator m_span_lookup_iter;
+    /* Defaults to end (); no constructor assigns it and a singular iterator cannot be
+     * copied or compared. */
+    std::map<int64_t, std::shared_ptr<span_t>>::iterator m_span_lookup_iter = m_span_lookup.end ();
     std::map<int64_t, scheduled_point_t *> m_avail_time_iter; /* MT node track */
     int m_avail_time_iter_set = 0;                            /* iterator set flag */
     request_t m_current_request; /* the req copy for avail time iteration */
@@ -120,12 +121,25 @@ class planner {
 
 struct planner_t {
     planner_t ();
-    planner_t (const planner &o);
+    explicit planner_t (const planner &o);
     planner_t (const int64_t base_time,
                const uint64_t duration,
                const uint64_t resource_totals,
                const char *in_resource_type);
+
+    // No move operations: a moved-from planner_t would hold a null inner planner, which the C
+    // interface must never expose.
+    planner_t (const planner_t &o);
+    planner_t &operator= (planner_t o);
     ~planner_t ();
+
+    // Hidden friend so the copy-and-swap body resolves through ADL.
+    friend void swap (planner_t &lhs, planner_t &rhs) noexcept
+    {
+        planner *tmp = lhs.plan;
+        lhs.plan = rhs.plan;
+        rhs.plan = tmp;
+    }
 
     planner *plan = nullptr;
 };
