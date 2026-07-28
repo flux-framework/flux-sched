@@ -57,6 +57,10 @@ extern "C" planner_multi_t *planner_multi_new (int64_t base_time,
         goto error;
     } else {
         for (i = 0; i < len; ++i) {
+            if (!resource_types[i]) {
+                errno = EINVAL;
+                goto error;
+            }
             if (resource_totals[i] > static_cast<uint64_t> (std::numeric_limits<int64_t>::max ())) {
                 errno = ERANGE;
                 goto error;
@@ -99,6 +103,11 @@ extern "C" planner_multi_t *planner_multi_copy (planner_multi_t *mp)
 {
     planner_multi_t *ctx = nullptr;
 
+    if (!mp) {
+        errno = EINVAL;
+        return nullptr;
+    }
+
     try {
         ctx = new planner_multi_t (*(mp->plan_multi));
     } catch (std::bad_alloc &e) {
@@ -115,12 +124,17 @@ nomem_error:
 
 extern "C" void planner_multi_assign (planner_multi_t *lhs, planner_multi_t *rhs)
 {
+    if (!lhs || !rhs) {
+        errno = EINVAL;
+        return;
+    }
     (*(lhs->plan_multi) = *(rhs->plan_multi));
 }
 
 extern "C" int64_t planner_multi_base_time (planner_multi_t *ctx)
 {
-    if (!ctx) {
+    // get_planner_at (0) throws on an empty planner_multi.
+    if (!ctx || ctx->plan_multi->get_planners_size () < 1) {
         errno = EINVAL;
         return -1;
     }
@@ -129,7 +143,7 @@ extern "C" int64_t planner_multi_base_time (planner_multi_t *ctx)
 
 extern "C" int64_t planner_multi_duration (planner_multi_t *ctx)
 {
-    if (!ctx) {
+    if (!ctx || ctx->plan_multi->get_planners_size () < 1) {
         errno = EINVAL;
         return -1;
     }
@@ -147,7 +161,7 @@ extern "C" size_t planner_multi_resources_len (planner_multi_t *ctx)
 
 extern "C" const char *planner_multi_resource_type_at (planner_multi_t *ctx, unsigned int i)
 {
-    if (!ctx) {
+    if (!ctx || i >= ctx->plan_multi->get_planners_size ()) {
         errno = EINVAL;
         return nullptr;
     }
@@ -156,29 +170,23 @@ extern "C" const char *planner_multi_resource_type_at (planner_multi_t *ctx, uns
 
 extern "C" int64_t planner_multi_resource_total_at (planner_multi_t *ctx, unsigned int i)
 {
-    int64_t rc = -1;
-    if (ctx) {
-        if (i >= ctx->plan_multi->get_planners_size ()) {
-            errno = EINVAL;
-            goto done;
-        }
-        rc = ctx->plan_multi->get_resource_total_at (i);
+    if (!ctx || i >= ctx->plan_multi->get_planners_size ()) {
+        errno = EINVAL;
+        return -1;
     }
-done:
-    return rc;
+    return ctx->plan_multi->get_resource_total_at (i);
 }
 
 extern "C" int64_t planner_multi_resource_total_by_type (planner_multi_t *ctx,
                                                          const char *resource_type)
 {
-    int64_t rc = -1;
-    if (!ctx || !resource_type)
-        goto done;
-
-    rc = ctx->plan_multi->get_resource_total_at (resource_type);
+    if (!ctx || !resource_type) {
+        errno = EINVAL;
+        return -1;
+    }
+    int64_t rc = ctx->plan_multi->get_resource_total_at (resource_type);
     if (rc == -1)
         errno = EINVAL;
-done:
     return rc;
 }
 
@@ -276,7 +284,7 @@ extern "C" int64_t planner_multi_avail_time_next (planner_multi_t *ctx)
     int64_t t = -1;
     std::string type;
 
-    if (!ctx) {
+    if (!ctx || ctx->plan_multi->get_planners_size () < 1) {
         errno = EINVAL;
         goto done;
     }
@@ -387,8 +395,10 @@ extern "C" int64_t planner_multi_add_span (planner_multi_t *ctx,
     int64_t span = -1;
     int64_t mspan = -1;
 
-    if (!ctx || !resource_requests || len != ctx->plan_multi->get_planners_size ())
+    if (!ctx || !resource_requests || len != ctx->plan_multi->get_planners_size ()) {
+        errno = EINVAL;
         return -1;
+    }
 
     mspan = ctx->plan_multi->get_span_counter ();
     auto res = ctx->plan_multi->get_span_lookup ().insert (
@@ -468,10 +478,16 @@ extern "C" int planner_multi_reduce_span (planner_multi_t *ctx,
         return -1;
     }
     for (i = 0; i < len; ++i) {
+        if (!resource_types[i]) {
+            errno = EINVAL;
+            return -1;
+        }
         if (reduced_totals[i] > static_cast<uint64_t> (std::numeric_limits<int64_t>::max ())) {
             errno = ERANGE;
             return -1;
         }
+    }
+    for (i = 0; i < len; ++i) {
         // Index could be different than the span_lookup due to order of
         // iteration in the reader differing from the graph initialization
         // order.
@@ -579,21 +595,18 @@ extern "C" int64_t planner_multi_span_planned_at (planner_multi_t *ctx,
 
 extern "C" int64_t planner_multi_span_first (planner_multi_t *ctx)
 {
-    int64_t rc = -1;
-    std::map<uint64_t, std::vector<int64_t>>::iterator tmp_it =
-        ctx->plan_multi->get_span_lookup ().begin ();
     if (!ctx) {
         errno = EINVAL;
-        goto done;
+        return -1;
     }
+    std::map<uint64_t, std::vector<int64_t>>::iterator tmp_it =
+        ctx->plan_multi->get_span_lookup ().begin ();
     ctx->plan_multi->set_span_lookup_iter (tmp_it);
     if (ctx->plan_multi->get_span_lookup_iter () == ctx->plan_multi->get_span_lookup ().end ()) {
         errno = ENOENT;
-        goto done;
+        return -1;
     }
-    rc = ctx->plan_multi->get_span_lookup_iter ()->first;
-done:
-    return rc;
+    return ctx->plan_multi->get_span_lookup_iter ()->first;
 }
 
 extern "C" int64_t planner_multi_span_next (planner_multi_t *ctx)
@@ -624,6 +637,12 @@ extern "C" size_t planner_multi_span_size (planner_multi_t *ctx)
 
 extern "C" bool planner_multis_equal (planner_multi_t *lhs, planner_multi_t *rhs)
 {
+    // planner_multi members of vertex data are nullable; two NULL planners must compare equal
+    // to keep operator== reflexive.
+    if (lhs == rhs)
+        return true;
+    if (!lhs || !rhs)
+        return false;
     return (*(lhs->plan_multi) == *(rhs->plan_multi));
 }
 
@@ -640,7 +659,8 @@ extern "C" int planner_multi_update (planner_multi_t *ctx,
     int64_t base_time = 0;
     int64_t duration = 0;
 
-    if (!ctx || !resource_totals || !resource_types) {
+    // The empty check also keeps get_planner_at (0) from throwing.
+    if (!ctx || !resource_totals || !resource_types || ctx->plan_multi->get_planners_size () < 1) {
         errno = EINVAL;
         goto done;
     }
@@ -651,11 +671,19 @@ extern "C" int planner_multi_update (planner_multi_t *ctx,
         goto done;
     }
 
+    // Validate every element before mutating any planner.
     for (i = 0; i < len; ++i) {
+        if (!resource_types[i]) {
+            errno = EINVAL;
+            goto done;
+        }
         if (resource_totals[i] > static_cast<uint64_t> (std::numeric_limits<int64_t>::max ())) {
             errno = ERANGE;
             goto done;
         }
+    }
+
+    for (i = 0; i < len; ++i) {
         rtypes.insert (resource_types[i]);
         if (!ctx->plan_multi->planner_at (resource_types[i])) {
             // Assume base_time same as parent
