@@ -93,6 +93,11 @@ extern "C" planner_multi_t *planner_multi_copy (planner_multi_t *mp)
 {
     planner_multi_t *ctx = nullptr;
 
+    if (!mp) {
+        errno = EINVAL;
+        return nullptr;
+    }
+
     try {
         ctx = new planner_multi_t (*(mp->plan_multi));
     } catch (std::bad_alloc &e) {
@@ -109,12 +114,18 @@ nomem_error:
 
 extern "C" void planner_multi_assign (planner_multi_t *lhs, planner_multi_t *rhs)
 {
+    if (!lhs || !rhs) {
+        errno = EINVAL;
+        return;
+    }
     (*(lhs->plan_multi) = *(rhs->plan_multi));
 }
 
 extern "C" int64_t planner_multi_base_time (planner_multi_t *ctx)
 {
-    if (!ctx) {
+    // Guard against empty planner_multi (e.g. from planner_multi_empty ());
+    // get_planner_at (0) would otherwise throw std::out_of_range.
+    if (!ctx || ctx->plan_multi->get_planners_size () < 1) {
         errno = EINVAL;
         return -1;
     }
@@ -123,7 +134,9 @@ extern "C" int64_t planner_multi_base_time (planner_multi_t *ctx)
 
 extern "C" int64_t planner_multi_duration (planner_multi_t *ctx)
 {
-    if (!ctx) {
+    // Guard against empty planner_multi (e.g. from planner_multi_empty ());
+    // get_planner_at (0) would otherwise throw std::out_of_range.
+    if (!ctx || ctx->plan_multi->get_planners_size () < 1) {
         errno = EINVAL;
         return -1;
     }
@@ -141,7 +154,7 @@ extern "C" size_t planner_multi_resources_len (planner_multi_t *ctx)
 
 extern "C" const char *planner_multi_resource_type_at (planner_multi_t *ctx, unsigned int i)
 {
-    if (!ctx) {
+    if (!ctx || i >= ctx->plan_multi->get_planners_size ()) {
         errno = EINVAL;
         return nullptr;
     }
@@ -270,7 +283,9 @@ extern "C" int64_t planner_multi_avail_time_next (planner_multi_t *ctx)
     int64_t t = -1;
     std::string type;
 
-    if (!ctx) {
+    // Guard against empty planner_multi (e.g. from planner_multi_empty ());
+    // get_planner_at (0) would otherwise throw std::out_of_range.
+    if (!ctx || ctx->plan_multi->get_planners_size () < 1) {
         errno = EINVAL;
         goto done;
     }
@@ -381,8 +396,10 @@ extern "C" int64_t planner_multi_add_span (planner_multi_t *ctx,
     int64_t span = -1;
     int64_t mspan = -1;
 
-    if (!ctx || !resource_requests || len != ctx->plan_multi->get_planners_size ())
+    if (!ctx || !resource_requests || len != ctx->plan_multi->get_planners_size ()) {
+        errno = EINVAL;
         return -1;
+    }
 
     mspan = ctx->plan_multi->get_span_counter ();
     auto res = ctx->plan_multi->get_span_lookup ().insert (
@@ -573,21 +590,18 @@ extern "C" int64_t planner_multi_span_planned_at (planner_multi_t *ctx,
 
 extern "C" int64_t planner_multi_span_first (planner_multi_t *ctx)
 {
-    int64_t rc = -1;
-    std::map<uint64_t, std::vector<int64_t>>::iterator tmp_it =
-        ctx->plan_multi->get_span_lookup ().begin ();
     if (!ctx) {
         errno = EINVAL;
-        goto done;
+        return -1;
     }
+    std::map<uint64_t, std::vector<int64_t>>::iterator tmp_it =
+        ctx->plan_multi->get_span_lookup ().begin ();
     ctx->plan_multi->set_span_lookup_iter (tmp_it);
     if (ctx->plan_multi->get_span_lookup_iter () == ctx->plan_multi->get_span_lookup ().end ()) {
         errno = ENOENT;
-        goto done;
+        return -1;
     }
-    rc = ctx->plan_multi->get_span_lookup_iter ()->first;
-done:
-    return rc;
+    return ctx->plan_multi->get_span_lookup_iter ()->first;
 }
 
 extern "C" int64_t planner_multi_span_next (planner_multi_t *ctx)
@@ -618,6 +632,13 @@ extern "C" size_t planner_multi_span_size (planner_multi_t *ctx)
 
 extern "C" bool planner_multis_equal (planner_multi_t *lhs, planner_multi_t *rhs)
 {
+    // Covers the case where both are nullptr or the same object;
+    // planner_multi members of vertex data are legitimately nullable, and
+    // two null planners must compare equal for operator== reflexivity.
+    if (lhs == rhs)
+        return true;
+    if (!lhs || !rhs)
+        return false;
     return (*(lhs->plan_multi) == *(rhs->plan_multi));
 }
 
@@ -634,7 +655,10 @@ extern "C" int planner_multi_update (planner_multi_t *ctx,
     int64_t base_time = 0;
     int64_t duration = 0;
 
-    if (!ctx || !resource_totals || !resource_types) {
+    // The empty check also guards against an empty planner_multi (e.g. from
+    // planner_multi_empty ()); get_planner_at (0) would otherwise throw
+    // std::out_of_range.
+    if (!ctx || !resource_totals || !resource_types || ctx->plan_multi->get_planners_size () < 1) {
         errno = EINVAL;
         goto done;
     }

@@ -331,6 +331,11 @@ extern "C" planner_t *planner_copy (planner_t *p)
 {
     planner_t *ctx = nullptr;
 
+    if (!p) {
+        errno = EINVAL;
+        return nullptr;
+    }
+
     try {
         ctx = new planner_t (*(p->plan));
     } catch (std::bad_alloc &e) {
@@ -342,6 +347,10 @@ extern "C" planner_t *planner_copy (planner_t *p)
 
 extern "C" void planner_assign (planner_t *lhs, planner_t *rhs)
 {
+    if (!lhs || !rhs) {
+        errno = EINVAL;
+        return;
+    }
     (*(lhs->plan) = *(rhs->plan));
 }
 
@@ -525,6 +534,10 @@ extern "C" int64_t planner_add_span (planner_t *ctx,
     scheduled_point_t *start_point = nullptr;
     scheduled_point_t *last_point = nullptr;
 
+    if (!ctx) {
+        errno = EINVAL;
+        return -1;
+    }
     if (!avail_during (ctx, start_time, duration, (int64_t)request)) {
         errno = EINVAL;
         return -1;
@@ -756,11 +769,22 @@ extern "C" int64_t planner_span_resource_count (planner_t *ctx, int64_t span_id)
 
 extern "C" bool planners_equal (planner_t *lhs, planner_t *rhs)
 {
+    // Covers the case where both are nullptr or the same object;
+    // planner members of vertex data are legitimately nullable, and two
+    // null planners must compare equal for operator== reflexivity.
+    if (lhs == rhs)
+        return true;
+    if (!lhs || !rhs)
+        return false;
     return (*(lhs->plan) == *(rhs->plan));
 }
 
 extern "C" int planner_update_total (planner_t *ctx, uint64_t resource_total)
 {
+    if (!ctx) {
+        errno = EINVAL;
+        return -1;
+    }
     return ctx->plan->update_total (resource_total);
 }
 
