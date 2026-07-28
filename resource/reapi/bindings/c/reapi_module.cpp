@@ -60,7 +60,7 @@ extern "C" int reapi_module_match (reapi_module_ctx_t *ctx,
     std::string R_buf = "";
     char *R_buf_c = NULL;
 
-    if (!ctx || !ctx->h) {
+    if (!ctx || !ctx->h || !jobspec || !reserved || !R || !at || !ov) {
         errno = EINVAL;
         goto out;
     }
@@ -98,11 +98,19 @@ extern "C" int reapi_module_match_satisfy (reapi_module_ctx_t *ctx, const char *
 {
     match_op_t match_op = match_op_t::MATCH_SATISFIABILITY;
     const uint64_t jobid = 0;
-    bool *reserved;
-    char **R;
-    int64_t *at;
+    bool reserved = false;
+    char *R = NULL;
+    int64_t at = -1;
+    int rc;
 
-    return reapi_module_match (ctx, match_op, jobspec, jobid, reserved, R, at, ov);
+    rc = reapi_module_match (ctx, match_op, jobspec, jobid, &reserved, &R, &at, ov);
+    // Preserve errno defensively across cleanup for compatibility with older
+    // or nonconforming allocation environments (POSIX.1-2024 requires that
+    // free () not modify errno; earlier editions did not).
+    int saved_errno = errno;
+    free (R);
+    errno = saved_errno;
+    return rc;
 }
 
 extern "C" int reapi_module_update_allocate (reapi_module_ctx_t *ctx,
@@ -160,7 +168,7 @@ extern "C" int reapi_module_info (reapi_module_ctx_t *ctx,
                                   int64_t *at,
                                   double *ov)
 {
-    if (!ctx || !ctx->h) {
+    if (!ctx || !ctx->h || !reserved || !at || !ov) {
         errno = EINVAL;
         return -1;
     }
@@ -185,7 +193,7 @@ extern "C" int reapi_module_stat (reapi_module_ctx_t *ctx,
                                   double *max,
                                   double *avg)
 {
-    if (!ctx || !ctx->h) {
+    if (!ctx || !ctx->h || !V || !E || !J || !load || !min || !max || !avg) {
         errno = EINVAL;
         return -1;
     }
