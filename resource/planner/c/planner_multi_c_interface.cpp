@@ -110,7 +110,8 @@ extern "C" planner_multi_t *planner_multi_copy (planner_multi_t *mp)
 
     try {
         ctx = new planner_multi_t (*(mp->plan_multi));
-    } catch (std::bad_alloc &e) {
+    } catch (...) {
+        // Every failure here is an allocation failure; nothing may cross the C boundary.
         errno = ENOMEM;
         goto nomem_error;
     }
@@ -128,7 +129,15 @@ extern "C" void planner_multi_assign (planner_multi_t *lhs, planner_multi_t *rhs
         errno = EINVAL;
         return;
     }
-    (*(lhs->plan_multi) = *(rhs->plan_multi));
+    try {
+        (*(lhs->plan_multi) = *(rhs->plan_multi));
+    } catch (std::bad_alloc &e) {
+        errno = ENOMEM;
+    } catch (std::runtime_error &e) {
+        // See planner_multi_copy: copy failures surface as runtime_error
+        // and must not escape this extern "C" boundary.
+        errno = ENOMEM;
+    }
 }
 
 extern "C" int64_t planner_multi_base_time (planner_multi_t *ctx)
@@ -401,10 +410,24 @@ extern "C" int64_t planner_multi_add_span (planner_multi_t *ctx,
     }
 
     mspan = ctx->plan_multi->get_span_counter ();
-    auto res = ctx->plan_multi->get_span_lookup ().insert (
-        std::pair<int64_t, std::vector<int64_t>> (mspan, std::vector<int64_t> ()));
-    if (!res.second) {
-        errno = EEXIST;
+    try {
+        auto res = ctx->plan_multi->get_span_lookup ().insert (
+            std::pair<int64_t, std::vector<int64_t>> (mspan, std::vector<int64_t> ()));
+        if (!res.second) {
+            errno = EEXIST;
+            return -1;
+        }
+        // Reserve up front so the push_back below cannot throw after
+        // underlying planner spans have already been allocated.
+        res.first->second.reserve (len);
+    } catch (std::bad_alloc &e) {
+        ctx->plan_multi->get_span_lookup ().erase (mspan);
+        errno = ENOMEM;
+        return -1;
+    } catch (...) {
+        // reserve () throws length_error, not bad_alloc, when len > max_size.
+        ctx->plan_multi->get_span_lookup ().erase (mspan);
+        errno = EINVAL;
         return -1;
     }
 
@@ -683,27 +706,35 @@ extern "C" int planner_multi_update (planner_multi_t *ctx,
         }
     }
 
-    for (i = 0; i < len; ++i) {
-        rtypes.insert (resource_types[i]);
-        if (!ctx->plan_multi->planner_at (resource_types[i])) {
-            // Assume base_time same as parent
-            ctx->plan_multi->add_planner (base_time,
-                                          static_cast<uint64_t> (duration),
-                                          resource_totals[i],
-                                          resource_types[i],
-                                          i);
-        } else {
-            // Index could have changed
-            ctx->plan_multi->update_planner_index (resource_types[i], i);
-            if ((rc = ctx->plan_multi->update_planner_total (resource_totals[i], i)) != 0) {
-                errno = EINVAL;
-                goto done;
+    try {
+        for (i = 0; i < len; ++i) {
+            rtypes.insert (resource_types[i]);
+            if (!ctx->plan_multi->planner_at (resource_types[i])) {
+                // Assume base_time same as parent
+                ctx->plan_multi->add_planner (base_time,
+                                              static_cast<uint64_t> (duration),
+                                              resource_totals[i],
+                                              resource_types[i],
+                                              i);
+            } else {
+                // Index could have changed
+                ctx->plan_multi->update_planner_index (resource_types[i], i);
+                if ((rc = ctx->plan_multi->update_planner_total (resource_totals[i], i)) != 0) {
+                    errno = EINVAL;
+                    goto done;
+                }
             }
         }
+        // remove values not in new types
+        if (rtypes.size () > 0)
+            ctx->plan_multi->delete_planners (rtypes);
+    } catch (std::bad_alloc &) {
+        errno = ENOMEM;
+        goto done;
+    } catch (...) {
+        errno = EINVAL;
+        goto done;
     }
-    // remove values not in new types
-    if (rtypes.size () > 0)
-        ctx->plan_multi->delete_planners (rtypes);
 
     rc = 0;
 
