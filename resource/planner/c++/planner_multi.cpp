@@ -84,12 +84,16 @@ planner_multi::planner_multi (const planner_multi &o)
     }
     m_iter = o.m_iter;
     m_span_lookup = o.m_span_lookup;
-    m_span_lookup_iter = o.m_span_lookup_iter;
+    // o's iterator points into o's m_span_lookup; never adopt it.
+    m_span_lookup_iter = m_span_lookup.end ();
     m_span_counter = o.m_span_counter;
 }
 
 planner_multi &planner_multi::operator= (const planner_multi &o)
 {
+    if (this == &o)
+        return *this;
+
     // Erase *this so the vectors are empty
     erase ();
 
@@ -121,7 +125,8 @@ planner_multi &planner_multi::operator= (const planner_multi &o)
     }
     m_iter = o.m_iter;
     m_span_lookup = o.m_span_lookup;
-    m_span_lookup_iter = o.m_span_lookup_iter;
+    // See the copy constructor: never adopt an iterator into o's container.
+    m_span_lookup_iter = m_span_lookup.end ();
     m_span_counter = o.m_span_counter;
 
     return *this;
@@ -356,6 +361,24 @@ planner_multi_t::planner_multi_t (const planner_multi &o)
         errno = ENOMEM;
         throw;
     }
+}
+
+// Deep copy; see planner_t.
+planner_multi_t::planner_multi_t (const planner_multi_t &o)
+{
+    try {
+        plan_multi = new planner_multi (*o.plan_multi);
+    } catch (std::bad_alloc &e) {
+        errno = ENOMEM;
+        throw;
+    }
+}
+
+// Copy-and-swap; see planner_t::operator=.
+planner_multi_t &planner_multi_t::operator= (planner_multi_t o)
+{
+    swap (*this, o);
+    return *this;
 }
 
 planner_multi_t::planner_multi_t (int64_t base_time,
