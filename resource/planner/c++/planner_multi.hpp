@@ -124,13 +124,32 @@ class planner_multi {
 
 struct planner_multi_t {
     planner_multi_t ();
-    planner_multi_t (const planner_multi &o);
+    explicit planner_multi_t (const planner_multi &o);
     planner_multi_t (int64_t base_time,
                      uint64_t duration,
                      const uint64_t *resource_totals,
                      const char **resource_types,
                      size_t len);
+
+    // Rule of five, mirroring planner_t:
+    //  - copy constructor: deep.  The implicitly declared one is shallow
+    //    and double frees through ~planner_multi_t.  A user-declared
+    //    destructor or copy assignment operator deprecates it but does
+    //    not delete it, so it has to be replaced rather than relied on.
+    //  - copy assignment: copy-and-swap, strong exception guarantee.
+    //  - move operations: not declared, so a planner_multi_t can never
+    //    be observed holding a null inner planner_multi.
+    planner_multi_t (const planner_multi_t &o);
+    planner_multi_t &operator= (planner_multi_t o);
     ~planner_multi_t ();
+
+    // Hidden friend so the copy-and-swap body resolves through ADL.
+    friend void swap (planner_multi_t &lhs, planner_multi_t &rhs) noexcept
+    {
+        planner_multi *tmp = lhs.plan_multi;
+        lhs.plan_multi = rhs.plan_multi;
+        rhs.plan_multi = tmp;
+    }
 
     planner_multi *plan_multi = nullptr;
 };
