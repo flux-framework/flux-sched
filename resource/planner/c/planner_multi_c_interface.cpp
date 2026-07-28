@@ -305,10 +305,18 @@ extern "C" int64_t planner_multi_avail_time_next (planner_multi_t *ctx)
             break;
         for (i = 1; i < ctx->plan_multi->get_planners_size (); ++i) {
             type = ctx->plan_multi->get_resource_type_at (i);
+            auto count_it = ctx->plan_multi->get_iter ().counts.find (type);
+            // The composition changed since avail_time_first; error out rather than
+            // let .at () throw.
+            if (count_it == ctx->plan_multi->get_iter ().counts.end ()) {
+                errno = EINVAL;
+                t = -1;
+                goto done;
+            }
             if ((unmet = planner_avail_during (ctx->plan_multi->get_planner_at (i),
                                                t,
                                                ctx->plan_multi->get_iter ().duration,
-                                               ctx->plan_multi->get_iter ().counts.at (type)))
+                                               count_it->second))
                 == -1)
                 break;
         }
@@ -461,6 +469,12 @@ extern "C" int planner_multi_rem_span (planner_multi_t *ctx, int64_t span_id)
         errno = ENOENT;
         goto done;
     }
+    // Longer than the planner count if an update deleted planners after the span was
+    // created; get_planner_at () would throw.
+    if (it->second.size () > ctx->plan_multi->get_planners_size ()) {
+        errno = EINVAL;
+        goto done;
+    }
     for (i = 0; i < it->second.size (); ++i) {
         // If executed after partial cancel, depending on pruning filter settings
         // some spans may no longer exist. In that case the span_lookup value for
@@ -498,6 +512,11 @@ extern "C" int planner_multi_reduce_span (planner_multi_t *ctx,
     auto span_it = ctx->plan_multi->get_span_lookup ().find (span_id);
     if (span_it == ctx->plan_multi->get_span_lookup ().end ()) {
         errno = ENOENT;
+        return -1;
+    }
+    // Reject up front, not mid-loop, so a failed call leaves planner state unchanged.
+    if (span_it->second.size () < ctx->plan_multi->get_planners_size ()) {
+        errno = EINVAL;
         return -1;
     }
     for (i = 0; i < len; ++i) {
@@ -605,6 +624,10 @@ extern "C" int64_t planner_multi_span_planned_at (planner_multi_t *ctx,
         errno = ENOENT;
         return -1;
     }
+    // A type added after the span was created holds no allocation in it; report 0 rather
+    // than let .at () throw.
+    if (i >= span_it->second.size ())
+        return 0;
     int64_t p_span_id = span_it->second.at (i);
     // Span may have been removed during a partial cancel
     if (p_span_id == -1) {
