@@ -113,13 +113,19 @@ extern "C" int reapi_cli_initialize (reapi_cli_ctx_t *ctx, const char *rgraph, c
     try {
         rqt = new resource_query_t (rgraph, options);
     } catch (std::bad_alloc &e) {
-        ctx->err_msg += __FUNCTION__;
-        ctx->err_msg += ": ERROR: can't allocate memory: " + std::string (e.what ()) + "\n";
+        // Keep this handler allocation-free: appending a diagnostic to
+        // err_msg allocates, and a second bad_alloc thrown while handling
+        // the first would escape this extern "C" boundary.
         errno = ENOMEM;
         return -1;
     } catch (std::runtime_error &e) {
-        ctx->err_msg += __FUNCTION__;
-        ctx->err_msg += ": Runtime error: " + std::string (e.what ()) + "\n";
+        try {
+            // Best effort: constructing the diagnostic allocates and must
+            // not let a secondary exception escape the C boundary.
+            ctx->err_msg += __FUNCTION__;
+            ctx->err_msg += ": Runtime error: " + std::string (e.what ()) + "\n";
+        } catch (...) {
+        }
         errno = EPROTO;
         return -1;
     }
@@ -142,23 +148,37 @@ extern "C" reapi_cli_ctx_t *reapi_cli_clone (reapi_cli_ctx_t *ctx)
         clone->err_msg = "";
         return clone.release ();
     } catch (std::bad_alloc &e) {
-        ctx->err_msg = __FUNCTION__;
-        ctx->err_msg += ": ERROR: can't allocate memory: " + std::string (e.what ()) + "\n";
+        // Keep this handler allocation-free: appending a diagnostic to
+        // err_msg allocates, and a second bad_alloc thrown while handling
+        // the first would escape this extern "C" boundary.
         errno = ENOMEM;
         return nullptr;
     } catch (std::system_error &e) {
-        ctx->err_msg = __FUNCTION__;
-        ctx->err_msg += ": ERROR: System error: " + std::string (e.what ()) + "\n";
+        try {
+            // Best effort: constructing the diagnostic allocates and must
+            // not let a secondary exception escape the C boundary.
+            ctx->err_msg = __FUNCTION__;
+            ctx->err_msg += ": ERROR: System error: " + std::string (e.what ()) + "\n";
+        } catch (...) {
+        }
         errno = e.code ().value ();
         return nullptr;
     } catch (std::runtime_error &e) {
-        ctx->err_msg = __FUNCTION__;
-        ctx->err_msg += ": ERROR: Runtime error: " + std::string (e.what ()) + "\n";
+        try {
+            // Best effort; see above.
+            ctx->err_msg = __FUNCTION__;
+            ctx->err_msg += ": ERROR: Runtime error: " + std::string (e.what ()) + "\n";
+        } catch (...) {
+        }
         errno = EPROTO;
         return nullptr;
     } catch (...) {
-        ctx->err_msg = __FUNCTION__;
-        ctx->err_msg += ": ERROR: unknown exception during clone\n";
+        try {
+            // Best effort; see above.
+            ctx->err_msg = __FUNCTION__;
+            ctx->err_msg += ": ERROR: unknown exception during clone\n";
+        } catch (...) {
+        }
         errno = EINVAL;
         return nullptr;
     }
