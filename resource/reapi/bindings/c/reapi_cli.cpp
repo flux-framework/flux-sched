@@ -75,21 +75,21 @@ extern "C" reapi_cli_ctx_t *reapi_cli_new ()
     try {
         ctx = new reapi_cli_ctx_t;
     } catch (const std::bad_alloc &e) {
-        ctx->err_msg = __FUNCTION__;
-        ctx->err_msg += ": ERROR: can't allocate memory: " + std::string (e.what ()) + "\n";
+        // ctx is still nullptr; there is nowhere to store a message.
         errno = ENOMEM;
-        goto out;
+        return nullptr;
     }
 
     ctx->rqt = nullptr;
     ctx->err_msg = "";
 
-out:
     return ctx;
 }
 
 extern "C" void reapi_cli_destroy (reapi_cli_ctx_t *ctx)
 {
+    if (!ctx)
+        return;
     int saved_errno = errno;
     if (ctx->rqt)
         delete ctx->rqt;
@@ -100,6 +100,11 @@ extern "C" void reapi_cli_destroy (reapi_cli_ctx_t *ctx)
 extern "C" int reapi_cli_initialize (reapi_cli_ctx_t *ctx, const char *rgraph, const char *options)
 {
     int rc = -1;
+
+    if (!ctx || !rgraph || !options) {
+        errno = EINVAL;
+        return -1;
+    }
     ctx->rqt = nullptr;
 
     try {
@@ -170,7 +175,7 @@ extern "C" int reapi_cli_match_with_jobid (reapi_cli_ctx_t *ctx,
     std::string R_buf = "";
     char *R_buf_c = nullptr;
 
-    if (!ctx || !ctx->rqt) {
+    if (!ctx || !ctx->rqt || !jobspec || !reserved || !R || !at || !ov) {
         errno = EINVAL;
         goto out;
     }
@@ -205,7 +210,7 @@ extern "C" int reapi_cli_match (reapi_cli_ctx_t *ctx,
 {
     int rc = -1;
 
-    if (!ctx || !ctx->rqt) {
+    if (!ctx || !ctx->rqt || !jobid) {
         errno = EINVAL;
         return -1;
     }
@@ -248,6 +253,13 @@ extern "C" int reapi_cli_match_satisfy (reapi_cli_ctx_t *ctx, const char *jobspe
     char *R;
     int64_t at;
 
+    // Validate the arguments forwarded from here; the match functions
+    // validate ctx->rqt and the outputs they write.
+    if (!ctx || !jobspec || !ov) {
+        errno = EINVAL;
+        return -1;
+    }
+
     if (reapi_cli_match (ctx, match_op, jobspec, &jobid, &reserved, &R, &at, ov) == 0)
         return 0;
     // The traverser reports an unsatisfiable request as ENODEV; any other
@@ -265,7 +277,7 @@ extern "C" int reapi_cli_update_allocate (reapi_cli_ctx_t *ctx,
     int rc = -1;
     std::string R_buf = "";
     const char *R_buf_c = NULL;
-    if (!ctx || !ctx->rqt || !R) {
+    if (!ctx || !ctx->rqt || !R || !at || !ov || !R_out) {
         errno = EINVAL;
         goto out;
     }
@@ -314,7 +326,7 @@ extern "C" int reapi_cli_partial_cancel (reapi_cli_ctx_t *ctx,
                                          bool noent_ok,
                                          bool *full_removal)
 {
-    if (!ctx || !ctx->rqt || !R) {
+    if (!ctx || !ctx->rqt || !R || !full_removal) {
         errno = EINVAL;
         return -1;
     }
@@ -332,7 +344,7 @@ extern "C" int reapi_cli_info (reapi_cli_ctx_t *ctx,
     std::string mode_buf = "";
     char *mode_buf_c = nullptr;
 
-    if (!ctx || !ctx->rqt) {
+    if (!ctx || !ctx->rqt || !mode || !reserved || !at || !ov) {
         errno = EINVAL;
         return -1;
     }
@@ -404,7 +416,7 @@ extern "C" int reapi_cli_stat (reapi_cli_ctx_t *ctx,
                                double *max,
                                double *avg)
 {
-    if (!ctx || !ctx->rqt) {
+    if (!ctx || !ctx->rqt || !V || !E || !J || !load || !min || !max || !avg) {
         errno = EINVAL;
         return -1;
     }
@@ -428,6 +440,8 @@ extern "C" const char *reapi_cli_get_err_msg (reapi_cli_ctx_t *ctx)
 
 extern "C" void reapi_cli_clear_err_msg (reapi_cli_ctx_t *ctx)
 {
+    if (!ctx)
+        return;
     if (ctx->rqt)
         ctx->rqt->clear_resource_query_err_msg ();
     reapi_cli_t::clear_err_message ();
@@ -506,7 +520,7 @@ extern "C" int reapi_cli_set_rank_status (reapi_cli_ctx_t *ctx,
                                           const char *ranks,
                                           resource_status_t status)
 {
-    if (!ctx || !ctx->rqt) {
+    if (!ctx || !ctx->rqt || !ranks) {
         errno = EINVAL;
         return -1;
     }
@@ -540,7 +554,7 @@ extern "C" int reapi_cli_get_rank_status (reapi_cli_ctx_t *ctx,
                                           const char *rank,
                                           resource_status_t *status)
 {
-    if (!ctx || !ctx->rqt || !status) {
+    if (!ctx || !ctx->rqt || !rank || !status) {
         errno = EINVAL;
         return -1;
     }
