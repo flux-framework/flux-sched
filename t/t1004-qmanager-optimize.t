@@ -15,6 +15,25 @@ selection_type() {
     flux job list-ids $1 | jq -r ".annotations.sched.selection_type"
 }
 
+t_estimate() {
+    flux job list-ids $1 | jq -r ".annotations.sched.t_estimate"
+}
+
+selection_type_is() {
+    test "$(selection_type $1)" = "$2"
+}
+
+# Annotation updates are not posted to the eventlog, so poll.
+wait_for() {
+    wf_i=0
+    while ! "$@"; do
+        wf_i=$((wf_i+1))
+        test ${wf_i} -ge 50 && return 1
+        sleep 0.2
+    done
+    return 0
+}
+
 exec_test()     { ${jq} '.attributes.system.exec.test = {}'; }
 
 test_expect_success 'qmanager: generate jobspecs of varying requirements' '
@@ -80,6 +99,56 @@ test_expect_success 'qmanager: selection_type is reserved' '
     test "$(selection_type ${jobid2})" = "reserved"
 '
 test_expect_success 'qmanager: cleanup all active jobs' '
+    cleanup_active_jobs
+'
+# A reserved job advertises sched.selection_type=reserved and a
+# sched.t_estimate.  When a higher-urgency job takes the single easy
+# reservation slot, both annotations must be cleared (issue #1424), and
+# the displaced job is later categorized by how it actually starts.
+# Here both C08 jobs fit once the squatter is gone, so the displaced job
+# allocates with no reservations ahead of it: immediate.
+test_expect_success 'qmanager: displaced reservation ends up immediate' '
+    flux queue start --all &&
+    squat=$(flux job submit C10.T3600.json) &&
+    flux job wait-event -t 10 ${squat} start &&
+    resv=$(flux job submit C08.T3600.json) &&
+    wait_for selection_type_is ${resv} reserved &&
+    test "$(t_estimate ${resv})" != "null" &&
+    hi=$(flux job submit --urgency=20 C08.T3600.json) &&
+    wait_for selection_type_is ${hi} reserved &&
+    wait_for selection_type_is ${resv} null &&
+    test "$(t_estimate ${resv})" = "null" &&
+    flux cancel ${squat} &&
+    flux job wait-event -t 10 ${resv} start &&
+    test "$(selection_type ${resv})" = "immediate" &&
+    test "$(selection_type ${hi})" = "reserved"
+'
+test_expect_success 'qmanager: cleanup displaced-immediate jobs' '
+    cleanup_active_jobs
+'
+# Same displacement, but this time the higher-urgency job (C14) still
+# cannot run after the small squatter is cancelled, so it re-reserves at
+# squatA completion time.  The displaced job is short enough (T1800) to
+# finish before that reservation, so it is backfilled past it: backfill.
+test_expect_success 'qmanager: displaced reservation ends up backfill' '
+    flux queue start --all &&
+    flux run --job-name=12 --dry-run -n8 -t 30m hostname | exec_test > C08.T1800.json &&
+    squatA=$(flux job submit C08.T3600.json) &&
+    squatB=$(flux job submit C02.T3600.json) &&
+    flux job wait-event -t 10 ${squatB} start &&
+    resv=$(flux job submit C08.T1800.json) &&
+    wait_for selection_type_is ${resv} reserved &&
+    test "$(t_estimate ${resv})" != "null" &&
+    hi=$(flux job submit --urgency=20 C14.T3600.json) &&
+    wait_for selection_type_is ${hi} reserved &&
+    wait_for selection_type_is ${resv} null &&
+    test "$(t_estimate ${resv})" = "null" &&
+    flux cancel ${squatB} &&
+    flux job wait-event -t 10 ${resv} start &&
+    test "$(selection_type ${resv})" = "backfill" &&
+    test "$(selection_type ${hi})" = "reserved"
+'
+test_expect_success 'qmanager: cleanup displaced-backfill jobs' '
     cleanup_active_jobs
 '
 test_expect_success 'qmanager: loading with hybrid+queue-depth=5' '
