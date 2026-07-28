@@ -261,6 +261,7 @@ int planner_multi_avail_resources_array_during (planner_multi_t *ctx,
  *  \return             span id on success; -1 on error with errno set
  *                      as follows:
  *                          EINVAL: invalid argument.
+ *                          ENOMEM: memory error.
  *                          EKEYREJECTED: can't update planner's internal data.
  *                          ERANGE: a resource state became out of a valid
  *                                  range, e.g., reserving more than available.
@@ -356,6 +357,7 @@ bool planner_multis_equal (planner_multi_t *lhs, planner_multi_t *rhs);
  *  \param len          length of resource_counts and resource_types arrays.
  *  \return             0 on success; -1 on an error with errno set as follows:
  *                          EINVAL: invalid argument.
+ *                          ENOMEM: memory error.
  */
 int planner_multi_update (planner_multi_t *ctx,
                           const uint64_t *resource_totals,

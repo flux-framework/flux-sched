@@ -340,7 +340,8 @@ extern "C" planner_t *planner_copy (planner_t *p)
 
     try {
         ctx = new planner_t (*(p->plan));
-    } catch (std::bad_alloc &e) {
+    } catch (...) {
+        // Every failure here is an allocation failure; nothing may cross the C boundary.
         errno = ENOMEM;
     }
 
@@ -353,7 +354,15 @@ extern "C" void planner_assign (planner_t *lhs, planner_t *rhs)
         errno = EINVAL;
         return;
     }
-    (*(lhs->plan) = *(rhs->plan));
+    try {
+        (*(lhs->plan) = *(rhs->plan));
+    } catch (std::bad_alloc &e) {
+        errno = ENOMEM;
+    } catch (std::runtime_error &e) {
+        // See planner_copy: copy failures surface as runtime_error and
+        // must not escape this extern "C" boundary.
+        errno = ENOMEM;
+    }
 }
 
 extern "C" planner_t *planner_new_empty ()
