@@ -13,6 +13,7 @@
 
 #include <cstdlib>
 #include <cstdint>
+#include <cmath>
 #include <memory>
 #include "resource/libjobspec/jobspec.hpp"
 #include "resource/config/system_defaults.hpp"
@@ -72,7 +73,8 @@ struct jobmeta_t {
                                  graph_duration.graph_end - graph_duration.graph_start)
                                  .count ();
 
-        if (g_duration <= 0) {
+        // check for valid durations, use ! >= to catch NaN
+        if (g_duration <= 0 || !(jobspec.attributes.system.duration >= 0)) {
             errno = EINVAL;
             return -1;
         }
@@ -80,14 +82,17 @@ struct jobmeta_t {
         // int64_t max () for comparison with at in dfu_traverser_t::run
         if ((jobspec.attributes.system.duration > static_cast<double> (g_duration))
             || (jobspec.attributes.system.duration
-                > static_cast<double> (std::numeric_limits<int64_t>::max ()))) {
+                > static_cast<double> (std::numeric_limits<int64_t>::max () - 1))) {
             errno = EINVAL;
             return -1;
         }
         if (jobspec.attributes.system.duration == 0.0f) {
             duration = g_duration;
         } else {
-            duration = (int64_t)jobspec.attributes.system.duration;
+            // Round up to the nearest second: better to pad out the duration a tiny bit, and
+            // a fractional duration in (0, 1) must not truncate to 0 (which the planner rejects
+            // with EINVAL)
+            duration = static_cast<int64_t> (std::ceil (jobspec.attributes.system.duration));
         }
         if (jobspec.attributes.system.queue != "") {
             m_queue = jobspec.attributes.system.queue;
