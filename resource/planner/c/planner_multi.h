@@ -65,6 +65,7 @@ planner_multi_t *planner_multi_empty ();
  *
  *  \return             a new planner_multi context copied from mp; NULL on error
  *                      with errno set as follows:
+ *                          EINVAL: invalid argument.
  *                          ENOMEM: memory error.
  */
 planner_multi_t *planner_multi_copy (planner_multi_t *mp);

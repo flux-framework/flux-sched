@@ -58,8 +58,8 @@ planner_t *planner_new_empty ();
  *                      a new planner context.
  *  \return             new planner context; NULL on an error with errno set
  *                      as follows:
- *                      pointer to a planner_t object on success; -1 on
- *                      an error with errno set.
+ *                          EINVAL: invalid argument.
+ *                          ENOMEM: memory error.
  */
 planner_t *planner_copy (planner_t *p);
 
