@@ -100,32 +100,33 @@ extern "C" void reapi_cli_destroy (reapi_cli_ctx_t *ctx)
 
 extern "C" int reapi_cli_initialize (reapi_cli_ctx_t *ctx, const char *rgraph, const char *options)
 {
-    int rc = -1;
+    resource_query_t *rqt = nullptr;
 
     if (!ctx || !rgraph || !options) {
         errno = EINVAL;
         return -1;
     }
-    ctx->rqt = nullptr;
 
+    // Construct into a local first so that a failed (re)initialization
+    // neither leaks a previously installed resource_query_t nor leaves
+    // the context pointing at destroyed state.
     try {
-        ctx->rqt = new resource_query_t (rgraph, options);
+        rqt = new resource_query_t (rgraph, options);
     } catch (std::bad_alloc &e) {
         ctx->err_msg += __FUNCTION__;
         ctx->err_msg += ": ERROR: can't allocate memory: " + std::string (e.what ()) + "\n";
         errno = ENOMEM;
-        goto out;
+        return -1;
     } catch (std::runtime_error &e) {
         ctx->err_msg += __FUNCTION__;
         ctx->err_msg += ": Runtime error: " + std::string (e.what ()) + "\n";
         errno = EPROTO;
-        goto out;
+        return -1;
     }
 
-    rc = 0;
-
-out:
-    return rc;
+    delete ctx->rqt;
+    ctx->rqt = rqt;
+    return 0;
 }
 
 extern "C" reapi_cli_ctx_t *reapi_cli_clone (reapi_cli_ctx_t *ctx)
@@ -248,10 +249,12 @@ extern "C" int reapi_cli_match_allocate (reapi_cli_ctx_t *ctx,
 
 extern "C" int reapi_cli_match_satisfy (reapi_cli_ctx_t *ctx, const char *jobspec, double *ov)
 {
+    int rc = -1;
+    int saved_errno = 0;
     match_op_t match_op = match_op_t::MATCH_SATISFIABILITY;
     uint64_t jobid;
-    bool reserved;
-    char *R;
+    bool reserved = false;
+    char *R = nullptr;
     int64_t at;
 
     // Validate the arguments forwarded from here; reapi_cli_match
@@ -261,11 +264,22 @@ extern "C" int reapi_cli_match_satisfy (reapi_cli_ctx_t *ctx, const char *jobspe
         return -1;
     }
 
-    if (reapi_cli_match (ctx, match_op, jobspec, &jobid, &reserved, &R, &at, ov) == 0)
-        return 0;
+    rc = reapi_cli_match (ctx, match_op, jobspec, &jobid, &reserved, &R, &at, ov);
+    // R is not part of a satisfiability response; free the strdup'd buffer.
+    // Preserve errno defensively across cleanup for compatibility with older
+    // or nonconforming allocation environments (POSIX.1-2024 requires that
+    // free () not modify errno; earlier editions did not).
+    saved_errno = errno;
+    free (R);
+    errno = saved_errno;
+
     // The traverser reports an unsatisfiable request as ENODEV; any other
     // errno is a genuine error (errno is left set for the caller).
-    return (errno == ENODEV) ? 1 : -1;
+    if (rc == 0)
+        return 0;
+    if (errno == ENODEV)
+        return 1;
+    return -1;
 }
 
 extern "C" int reapi_cli_update_allocate (reapi_cli_ctx_t *ctx,
