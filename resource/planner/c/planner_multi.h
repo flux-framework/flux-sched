@@ -165,9 +165,19 @@ int64_t planner_multi_avail_time_first (planner_multi_t *ctx,
  *  \return             the next earliest time at which the resource request
  *                      can be satisfied;
  *                      -1 on error with errno set as follows:
- *                          EINVAL: invalid argument.
+ *                          EINVAL: invalid argument, or the iterator request
+ *                                  no longer covers every resource type
+ *                                  because planner_multi_update changed the
+ *                                  planner composition since the call to
+ *                                  planner_multi_avail_time_first.
  *                          ERANGE: request out of range
  *                          ENOENT: no scheduleable point
+ *
+ *  \note               ENOENT means the iteration is exhausted.  EINVAL means
+ *                      the iterator is stale and the caller must restart with
+ *                      planner_multi_avail_time_first.  Both return -1, so a
+ *                      caller that stops at -1 without reading errno cannot
+ *                      tell the two apart.
  */
 int64_t planner_multi_avail_time_next (planner_multi_t *ctx);
 
