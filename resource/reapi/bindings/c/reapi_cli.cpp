@@ -75,21 +75,22 @@ extern "C" reapi_cli_ctx_t *reapi_cli_new ()
     try {
         ctx = new reapi_cli_ctx_t;
     } catch (const std::bad_alloc &e) {
-        ctx->err_msg = __FUNCTION__;
-        ctx->err_msg += ": ERROR: can't allocate memory: " + std::string (e.what ()) + "\n";
+        // ctx is still nullptr here; an error message can't be stored in an
+        // object that failed to allocate.
         errno = ENOMEM;
-        goto out;
+        return nullptr;
     }
 
     ctx->rqt = nullptr;
     ctx->err_msg = "";
 
-out:
     return ctx;
 }
 
 extern "C" void reapi_cli_destroy (reapi_cli_ctx_t *ctx)
 {
+    if (!ctx)
+        return;
     int saved_errno = errno;
     if (ctx->rqt)
         delete ctx->rqt;
@@ -100,6 +101,11 @@ extern "C" void reapi_cli_destroy (reapi_cli_ctx_t *ctx)
 extern "C" int reapi_cli_initialize (reapi_cli_ctx_t *ctx, const char *rgraph, const char *options)
 {
     int rc = -1;
+
+    if (!ctx || !rgraph || !options) {
+        errno = EINVAL;
+        return -1;
+    }
     ctx->rqt = nullptr;
 
     try {
@@ -170,7 +176,7 @@ extern "C" int reapi_cli_match_with_jobid (reapi_cli_ctx_t *ctx,
     std::string R_buf = "";
     char *R_buf_c = nullptr;
 
-    if (!ctx || !ctx->rqt) {
+    if (!ctx || !ctx->rqt || !jobspec || !reserved || !R || !at || !ov) {
         errno = EINVAL;
         goto out;
     }
@@ -205,7 +211,7 @@ extern "C" int reapi_cli_match (reapi_cli_ctx_t *ctx,
 {
     int rc = -1;
 
-    if (!ctx || !ctx->rqt) {
+    if (!ctx || !ctx->rqt || !jobid) {
         errno = EINVAL;
         return -1;
     }
@@ -246,6 +252,13 @@ extern "C" int reapi_cli_match_satisfy (reapi_cli_ctx_t *ctx,
     char *R;
     int64_t at;
     int ret;
+
+    // Validate every pointer argument before the *sat write below;
+    // reapi_cli_match checks the rest (ctx->rqt, jobspec, ov).
+    if (!ctx || !jobspec || !sat || !ov) {
+        errno = EINVAL;
+        return -1;
+    }
     *sat = true;
 
     ret = reapi_cli_match (ctx, match_op, jobspec, &jobid, &reserved, &R, &at, ov);
@@ -408,7 +421,7 @@ extern "C" int reapi_cli_stat (reapi_cli_ctx_t *ctx,
                                double *max,
                                double *avg)
 {
-    if (!ctx || !ctx->rqt) {
+    if (!ctx || !ctx->rqt || !V || !E || !J || !load || !min || !max || !avg) {
         errno = EINVAL;
         return -1;
     }
@@ -432,6 +445,8 @@ extern "C" const char *reapi_cli_get_err_msg (reapi_cli_ctx_t *ctx)
 
 extern "C" void reapi_cli_clear_err_msg (reapi_cli_ctx_t *ctx)
 {
+    if (!ctx)
+        return;
     if (ctx->rqt)
         ctx->rqt->clear_resource_query_err_msg ();
     reapi_cli_t::clear_err_message ();
