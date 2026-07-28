@@ -165,9 +165,14 @@ int64_t planner_multi_avail_time_first (planner_multi_t *ctx,
  *  \return             the next earliest time at which the resource request
  *                      can be satisfied;
  *                      -1 on error with errno set as follows:
- *                          EINVAL: invalid argument.
+ *                          EINVAL: invalid argument, or the iterator is stale
+ *                                  because planner_multi_update changed the
+ *                                  planner composition.
  *                          ERANGE: request out of range
  *                          ENOENT: no scheduleable point
+ *
+ *  \note               Both conditions return -1; read errno. On EINVAL,
+ *                      restart with planner_multi_avail_time_first.
  */
 int64_t planner_multi_avail_time_next (planner_multi_t *ctx);
 
@@ -325,6 +330,11 @@ int planner_multi_reduce_span (planner_multi_t *ctx,
  *                      from planner_multi_new.
  *  \param span_id      span_id returned from planner_add_span.
  *  \param i            index of the resource type to queried
+ *  \return             number of planned resources; 0 if the resource type was
+ *                      added after the span was created; -1 on error with errno
+ *                      set as follows:
+ *                          EINVAL: invalid argument.
+ *                          ENOENT: no span matching span_id.
  */
 int64_t planner_multi_span_planned_at (planner_multi_t *ctx, int64_t span_id, unsigned int i);
 
