@@ -125,6 +125,7 @@ struct planner_multi_t {
                      const uint64_t *resource_totals,
                      const char **resource_types,
                      size_t len);
+    planner_multi_t &operator= (const planner_multi_t &o);
     ~planner_multi_t ();
 
     planner_multi *plan_multi = nullptr;

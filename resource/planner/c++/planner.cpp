@@ -104,6 +104,9 @@ planner &planner::operator= (const planner &o)
 {
     int rc = -1;
 
+    if (this == &o)
+        return *this;
+
     if ((rc = erase ()) != 0) {
         throw std::runtime_error ("ERROR erasing *this\n");
     }
@@ -564,6 +567,25 @@ planner_t::planner_t (const planner &o)
         errno = ENOMEM;
         throw;
     }
+}
+
+planner_t &planner_t::operator= (const planner_t &o)
+{
+    if (this != &o) {
+        // Copy-and-swap for the strong exception guarantee: build the
+        // replacement first so *this is untouched if the copy throws
+        // (bad_alloc, or runtime_error from planner's tree/map copies).
+        planner *tmp = nullptr;
+        try {
+            tmp = new planner (*o.plan);
+        } catch (std::bad_alloc &e) {
+            errno = ENOMEM;
+            throw;
+        }
+        delete plan;
+        plan = tmp;
+    }
+    return *this;
 }
 
 planner_t::planner_t (const int64_t base_time,

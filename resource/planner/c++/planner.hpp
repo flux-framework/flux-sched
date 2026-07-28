@@ -122,6 +122,7 @@ struct planner_t {
                const uint64_t duration,
                const uint64_t resource_totals,
                const char *in_resource_type);
+    planner_t &operator= (const planner_t &o);
     ~planner_t ();
 
     planner *plan = nullptr;
