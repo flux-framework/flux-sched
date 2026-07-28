@@ -15,6 +15,7 @@
 #include <vector>
 #include <map>
 #include <numeric>
+#include <stdexcept>
 
 #include "planner_multi.h"
 #include "resource/planner/c++/planner_multi.hpp"
@@ -103,6 +104,12 @@ extern "C" planner_multi_t *planner_multi_copy (planner_multi_t *mp)
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;
         goto nomem_error;
+    } catch (std::runtime_error &e) {
+        // planner_multi's copy machinery reports inner planner copy
+        // failures as runtime_error; it must not escape this extern "C"
+        // boundary.
+        errno = ENOMEM;
+        goto nomem_error;
     }
     return ctx;
 
@@ -118,7 +125,15 @@ extern "C" void planner_multi_assign (planner_multi_t *lhs, planner_multi_t *rhs
         errno = EINVAL;
         return;
     }
-    (*(lhs->plan_multi) = *(rhs->plan_multi));
+    try {
+        (*(lhs->plan_multi) = *(rhs->plan_multi));
+    } catch (std::bad_alloc &e) {
+        errno = ENOMEM;
+    } catch (std::runtime_error &e) {
+        // See planner_multi_copy: copy failures surface as runtime_error
+        // and must not escape this extern "C" boundary.
+        errno = ENOMEM;
+    }
 }
 
 extern "C" int64_t planner_multi_base_time (planner_multi_t *ctx)
@@ -402,10 +417,19 @@ extern "C" int64_t planner_multi_add_span (planner_multi_t *ctx,
     }
 
     mspan = ctx->plan_multi->get_span_counter ();
-    auto res = ctx->plan_multi->get_span_lookup ().insert (
-        std::pair<int64_t, std::vector<int64_t>> (mspan, std::vector<int64_t> ()));
-    if (!res.second) {
-        errno = EEXIST;
+    try {
+        auto res = ctx->plan_multi->get_span_lookup ().insert (
+            std::pair<int64_t, std::vector<int64_t>> (mspan, std::vector<int64_t> ()));
+        if (!res.second) {
+            errno = EEXIST;
+            return -1;
+        }
+        // Reserve up front so the push_back below cannot throw after
+        // underlying planner spans have already been allocated.
+        res.first->second.reserve (len);
+    } catch (std::bad_alloc &e) {
+        ctx->plan_multi->get_span_lookup ().erase (mspan);
+        errno = ENOMEM;
         return -1;
     }
 
@@ -676,12 +700,19 @@ extern "C" int planner_multi_update (planner_multi_t *ctx,
         }
         rtypes.insert (resource_types[i]);
         if (!ctx->plan_multi->planner_at (resource_types[i])) {
-            // Assume base_time same as parent
-            ctx->plan_multi->add_planner (base_time,
-                                          static_cast<uint64_t> (duration),
-                                          resource_totals[i],
-                                          resource_types[i],
-                                          i);
+            try {
+                // Assume base_time same as parent
+                ctx->plan_multi->add_planner (base_time,
+                                              static_cast<uint64_t> (duration),
+                                              resource_totals[i],
+                                              resource_types[i],
+                                              i);
+            } catch (std::bad_alloc &e) {
+                // add_planner rethrows bad_alloc; it must not escape this
+                // extern "C" boundary.
+                errno = ENOMEM;
+                goto done;
+            }
         } else {
             // Index could have changed
             ctx->plan_multi->update_planner_index (resource_types[i], i);

@@ -12,6 +12,7 @@
 #include <map>
 #include <list>
 #include <string>
+#include <stdexcept>
 
 #include "resource/planner/c++/planner.hpp"
 
@@ -340,6 +341,11 @@ extern "C" planner_t *planner_copy (planner_t *p)
         ctx = new planner_t (*(p->plan));
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;
+    } catch (std::runtime_error &e) {
+        // planner's copy machinery reports allocation failures in its
+        // tree and map copies as runtime_error; it must not escape this
+        // extern "C" boundary.
+        errno = ENOMEM;
     }
 
     return ctx;
@@ -351,7 +357,15 @@ extern "C" void planner_assign (planner_t *lhs, planner_t *rhs)
         errno = EINVAL;
         return;
     }
-    (*(lhs->plan) = *(rhs->plan));
+    try {
+        (*(lhs->plan) = *(rhs->plan));
+    } catch (std::bad_alloc &e) {
+        errno = ENOMEM;
+    } catch (std::runtime_error &e) {
+        // See planner_copy: copy failures surface as runtime_error and
+        // must not escape this extern "C" boundary.
+        errno = ENOMEM;
+    }
 }
 
 extern "C" planner_t *planner_new_empty ()
