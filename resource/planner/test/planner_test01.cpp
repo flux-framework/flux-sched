@@ -731,6 +731,23 @@ static int test_constructors_and_overload ()
     return 0;
 }
 
+static int test_planner_self_assign ()
+{
+    planner_t *ctx = planner_new (0, 100, 10, "core");
+    ok (ctx != nullptr, "self-assign: planner_new");
+
+    int64_t span_id = planner_add_span (ctx, 10, 10, 8);
+    ok (span_id >= 0, "self-assign: planner_add_span");
+
+    // Self-assignment must be a no-op.
+    planner_assign (ctx, ctx);
+    ok (planner_avail_resources_at (ctx, 15) == 2, "self-assign preserves span allocations");
+    ok (planner_span_resource_count (ctx, span_id) == 8, "self-assign preserves the span");
+
+    planner_destroy (&ctx);
+    return 0;
+}
+
 static int test_update ()
 {
     int rc;
@@ -840,7 +857,7 @@ static int test_partial_cancel ()
 
 int main (int argc, char *argv[])
 {
-    plan (71);
+    plan (75);
 
     test_planner_getters ();
 
@@ -863,6 +880,7 @@ int main (int argc, char *argv[])
     test_more_add_remove ();
 
     test_constructors_and_overload ();
+    test_planner_self_assign ();
 
     test_update ();
 
