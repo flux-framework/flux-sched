@@ -541,12 +541,18 @@ bool planner::trees_equal (const planner &o) const
 // Public Planner_t methods
 ////////////////////////////////////////////////////////////////////////////////
 
+// The wrapper constructors rethrow so that a planner_t can never be
+// observed with a null inner planner; `new planner_t (...)` either
+// succeeds completely or throws (operator new releases the wrapper
+// allocation automatically when the constructor throws).
+
 planner_t::planner_t ()
 {
     try {
         plan = new planner ();
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;
+        throw;
     }
 }
 
@@ -556,6 +562,7 @@ planner_t::planner_t (const planner &o)
         plan = new planner (o);
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;
+        throw;
     }
 }
 
@@ -568,6 +575,7 @@ planner_t::planner_t (const int64_t base_time,
         plan = new planner (base_time, duration, resource_totals, in_resource_type);
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;
+        throw;
     }
 }
 
