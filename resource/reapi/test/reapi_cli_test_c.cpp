@@ -2,10 +2,24 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include <resource/reapi/bindings/c/reapi_cli.h>
+#include <cerrno>
+#include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <string>
 
 namespace Flux::resource_model::detail {
+
+// reapi_cli_get_err_msg () returns a strdup'd buffer on every path; take
+// ownership into a std::string and free the buffer so streaming the message
+// into INFO does not leak the allocation.
+static std::string take_err_msg (reapi_cli_ctx_t *ctx)
+{
+    char *msg = const_cast<char *> (reapi_cli_get_err_msg (ctx));
+    std::string res = msg ? msg : "";
+    free (msg);
+    return res;
+}
 
 TEST_CASE ("Initialize REAPI CLI", "[initialize C]")
 {
@@ -100,29 +114,33 @@ TEST_CASE ("Initialize REAPI CLI and test match, satisfy, and cancel",
     const std::string jobspec2 = buffer3.str ();
 
     reapi_cli_ctx_t *ctx = reapi_cli_new ();
+    int rc = -1;
 
-    // Test initialize with invalid params
-    REQUIRE (reapi_cli_initialize (ctx, "", "") != 0);
-    INFO (reapi_cli_get_err_msg (ctx));
+    // Test initialize with invalid params.  Install the diagnostic before
+    // the assertion so a failure is annotated with the error message.
+    rc = reapi_cli_initialize (ctx, "", "");
+    INFO (take_err_msg (ctx));
+    REQUIRE (rc != 0);
 
     // Test match with empty resource graph
     REQUIRE (reapi_cli_match (ctx, match_op, jobspec.c_str (), &jobid, &reserved, &R, &at, &ov)
              != 0);
 
     // Test initialization with valid params
-    REQUIRE (reapi_cli_initialize (ctx, rgraph.c_str (), options.c_str ()) == 0);
-    INFO (reapi_cli_get_err_msg (ctx));
+    rc = reapi_cli_initialize (ctx, rgraph.c_str (), options.c_str ());
+    INFO (take_err_msg (ctx));
+    REQUIRE (rc == 0);
 
     // Test match with populated resource graph
-    CHECK (reapi_cli_match (ctx, match_op, jobspec.c_str (), &jobid2, &reserved, &R, &at, &ov)
-           == 0);
+    rc = reapi_cli_match (ctx, match_op, jobspec.c_str (), &jobid2, &reserved, &R, &at, &ov);
+    INFO (take_err_msg (ctx));
+    CHECK (rc == 0);
     CHECK (reserved == false);
-    INFO (reapi_cli_get_err_msg (ctx));
 
     // Test match_allocate with orelse_reserve = true
-    CHECK (reapi_cli_match_allocate (ctx, true, jobspec.c_str (), &jobid3, &reserved, &R, &at, &ov)
-           == 0);
-    INFO (reapi_cli_get_err_msg (ctx));
+    rc = reapi_cli_match_allocate (ctx, true, jobspec.c_str (), &jobid3, &reserved, &R, &at, &ov);
+    INFO (take_err_msg (ctx));
+    CHECK (rc == 0);
 
     // Test satisfy
     CHECK (reapi_cli_match_satisfy (ctx, jobspec.c_str (), &satisfiable, &ov) == 0);
@@ -137,12 +155,14 @@ TEST_CASE ("Initialize REAPI CLI and test match, satisfy, and cancel",
     CHECK (std::string (mode) == "ALLOCATED");
 
     // Test cancel with invalid jobid
-    CHECK (reapi_cli_cancel (ctx, jobid3 + 1, false) != 0);
-    INFO (reapi_cli_get_err_msg (ctx));
+    rc = reapi_cli_cancel (ctx, jobid3 + 1, false);
+    INFO (take_err_msg (ctx));
+    CHECK (rc != 0);
 
     // Test cancel with valid jobid
-    CHECK (reapi_cli_cancel (ctx, jobid2, false) == 0);
-    INFO (reapi_cli_get_err_msg (ctx));
+    rc = reapi_cli_cancel (ctx, jobid2, false);
+    INFO (take_err_msg (ctx));
+    CHECK (rc == 0);
 
     reapi_cli_destroy (ctx);
 }
@@ -234,8 +254,179 @@ TEST_CASE ("Add subgraph introducing a new resource type", "[add-subgraph-new-ty
     // returns non-zero or lets the interner's std::system_error escape, and the test
     // fails either way.
     int rc = reapi_cli_add_subgraph (ctx, add_sgraph.c_str ());
-    INFO ("reapi_cli_add_subgraph rc=" << rc << " err='" << reapi_cli_get_err_msg (ctx) << "'");
+    INFO ("reapi_cli_add_subgraph rc=" << rc << " err='" << take_err_msg (ctx) << "'");
     CHECK (rc == 0);
+
+    reapi_cli_destroy (ctx);
+}
+
+TEST_CASE ("REAPI CLI C binding null argument guards", "[null-guards C]")
+{
+    // NULL ctx must be a no-op rather than a crash, and must leave errno
+    // unchanged
+    errno = ENOENT;
+    reapi_cli_destroy (nullptr);
+    CHECK (errno == ENOENT);
+
+    errno = ENOENT;
+    reapi_cli_clear_err_msg (nullptr);
+    CHECK (errno == ENOENT);
+
+    errno = 0;
+    REQUIRE (reapi_cli_initialize (nullptr, "{}", "{}") == -1);
+    REQUIRE (errno == EINVAL);
+
+    reapi_cli_ctx_t *ctx = reapi_cli_new ();
+    REQUIRE (ctx);
+
+    errno = 0;
+    REQUIRE (reapi_cli_initialize (ctx, nullptr, "{}") == -1);
+    REQUIRE (errno == EINVAL);
+
+    errno = 0;
+    REQUIRE (reapi_cli_initialize (ctx, "{}", nullptr) == -1);
+    REQUIRE (errno == EINVAL);
+
+    reapi_cli_destroy (ctx);
+}
+
+// Every CLI match binding must reject each null required pointer argument
+// with EINVAL before dereferencing it (or writing through an output).
+TEST_CASE ("REAPI CLI match functions reject null pointer arguments", "[match-null-guards C]")
+{
+    const std::string options = "{}";
+    std::stringstream gbuffer, jbuffer;
+    const char *test_srcdir = std::getenv ("SHARNESS_TEST_SRCDIR");
+    REQUIRE (test_srcdir);
+
+    std::ifstream graphfile (std::string (test_srcdir) + "/data/resource/grugs/tiny.graphml");
+    REQUIRE (graphfile.is_open ());
+    gbuffer << graphfile.rdbuf ();
+    std::string rgraph = gbuffer.str ();
+
+    std::ifstream jobspecfile (std::string (test_srcdir)
+                               + "/data/resource/jobspecs/basics/test006.yaml");
+    REQUIRE (jobspecfile.is_open ());
+    jbuffer << jobspecfile.rdbuf ();
+    std::string jobspec = jbuffer.str ();
+
+    // Initialize a valid context so the pointer-argument guards -- not the
+    // null-context guard -- are what each assertion exercises.
+    reapi_cli_ctx_t *ctx = reapi_cli_new ();
+    REQUIRE (ctx);
+    REQUIRE (reapi_cli_initialize (ctx, rgraph.c_str (), options.c_str ()) == 0);
+
+    match_op_t match_op = match_op_t::MATCH_ALLOCATE;
+    bool reserved = false;
+    bool sat = false;
+    char *R = nullptr;
+    uint64_t jobid = 0;
+    double ov = 0.0;
+    int64_t at = 0;
+
+    struct {
+        const char *jobspec;
+        uint64_t *jobid;
+        bool *reserved;
+        char **R;
+        int64_t *at;
+        double *ov;
+    } args[] = {
+        {nullptr, &jobid, &reserved, &R, &at, &ov},
+        {jobspec.c_str (), nullptr, &reserved, &R, &at, &ov},
+        {jobspec.c_str (), &jobid, nullptr, &R, &at, &ov},
+        {jobspec.c_str (), &jobid, &reserved, nullptr, &at, &ov},
+        {jobspec.c_str (), &jobid, &reserved, &R, nullptr, &ov},
+        {jobspec.c_str (), &jobid, &reserved, &R, &at, nullptr},
+    };
+    for (auto &a : args) {
+        errno = 0;
+        CHECK (reapi_cli_match (ctx, match_op, a.jobspec, a.jobid, a.reserved, a.R, a.at, a.ov)
+               == -1);
+        CHECK (errno == EINVAL);
+    }
+
+    // reapi_cli_match_with_jobid takes the jobid by value; check the rest.
+    for (auto &a : args) {
+        if (!a.jobid)
+            continue;
+        errno = 0;
+        CHECK (reapi_cli_match_with_jobid (ctx, match_op, a.jobspec, 1, a.reserved, a.R, a.at, a.ov)
+               == -1);
+        CHECK (errno == EINVAL);
+    }
+
+    errno = 0;
+    CHECK (reapi_cli_match_satisfy (nullptr, jobspec.c_str (), &sat, &ov) == -1);
+    CHECK (errno == EINVAL);
+    errno = 0;
+    CHECK (reapi_cli_match_satisfy (ctx, nullptr, &sat, &ov) == -1);
+    CHECK (errno == EINVAL);
+    errno = 0;
+    CHECK (reapi_cli_match_satisfy (ctx, jobspec.c_str (), nullptr, &ov) == -1);
+    CHECK (errno == EINVAL);
+    errno = 0;
+    CHECK (reapi_cli_match_satisfy (ctx, jobspec.c_str (), &sat, nullptr) == -1);
+    CHECK (errno == EINVAL);
+
+    // A match must still succeed after the rejected calls (no state damage).
+    errno = 0;
+    CHECK (reapi_cli_match (ctx, match_op, jobspec.c_str (), &jobid, &reserved, &R, &at, &ov) == 0);
+    free (R);
+
+    reapi_cli_destroy (ctx);
+}
+
+TEST_CASE ("REAPI CLI repeated and failed initialization", "[reinitialize C]")
+{
+    const std::string options = "{}";
+    std::stringstream gbuffer, jbuffer;
+    const char *test_srcdir = std::getenv ("SHARNESS_TEST_SRCDIR");
+    REQUIRE (test_srcdir);
+
+    std::ifstream graphfile (std::string (test_srcdir) + "/data/resource/grugs/tiny.graphml");
+    REQUIRE (graphfile.is_open ());
+
+    gbuffer << graphfile.rdbuf ();
+    std::string rgraph = gbuffer.str ();
+
+    std::ifstream jobspecfile (std::string (test_srcdir)
+                               + "/data/resource/jobspecs/basics/test006.yaml");
+    REQUIRE (jobspecfile.is_open ());
+
+    jbuffer << jobspecfile.rdbuf ();
+    std::string jobspec = jbuffer.str ();
+
+    reapi_cli_ctx_t *ctx = reapi_cli_new ();
+    REQUIRE (ctx);
+
+    REQUIRE (reapi_cli_initialize (ctx, rgraph.c_str (), options.c_str ()) == 0);
+
+    // Re-initialization must replace the prior resource_query_t (without
+    // leaking it) and succeed
+    REQUIRE (reapi_cli_initialize (ctx, rgraph.c_str (), options.c_str ()) == 0);
+
+    // A failed re-initialization must leave the previously initialized
+    // context untouched and usable
+    REQUIRE (reapi_cli_initialize (ctx, "", "") != 0);
+
+    match_op_t match_op = match_op_t::MATCH_ALLOCATE;
+    bool reserved = false;
+    char *R = nullptr;
+    uint64_t jobid = 0;
+    double ov = 0.0;
+    int64_t at = 0;
+    int mrc = reapi_cli_match (ctx, match_op, jobspec.c_str (), &jobid, &reserved, &R, &at, &ov);
+    INFO (take_err_msg (ctx));
+    CHECK (mrc == 0);
+    free (R);
+
+    // stat with a null output parameter must fail with EINVAL
+    int64_t E, J;
+    double load, min, max, avg;
+    errno = 0;
+    CHECK (reapi_cli_stat (ctx, nullptr, &E, &J, &load, &min, &max, &avg) == -1);
+    CHECK (errno == EINVAL);
 
     reapi_cli_destroy (ctx);
 }
