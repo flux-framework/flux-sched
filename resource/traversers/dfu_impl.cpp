@@ -808,7 +808,7 @@ int dfu_impl_t::dom_dfv (const jobmeta_t &meta,
     (*m_graph)[u].idata.colors[dom] = m_color.gray ();
     if (sm == match_kind_t::SLOT_MATCH)
         dom_slot (meta, u, next, nslots, check_pres, &x_inout, dfu);
-    else
+    else if (!next.empty ())
         dom_exp (meta, u, next, check_pres, &x_inout, dfu);
     *excl = x_in;
     (*m_graph)[u].idata.colors[dom] = m_color.black ();
