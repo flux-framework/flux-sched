@@ -7,6 +7,7 @@ test_description='Test Scheduling On Tiny Machine Configuration'
 cmd_dir="${SHARNESS_TEST_SRCDIR}/data/resource/commands/basics"
 exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/basics"
 grugs="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/tiny.graphml"
+jobspec="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/basics/test001.yaml"
 query="../../resource/utilities/resource-query"
 
 #
@@ -536,6 +537,36 @@ test_expect_success "${test088_desc}" '
     sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds088} > cmds088 &&
     ${query} -L ${grugs} -S CA -P lonodex -t 088.R.out < cmds088 &&
     test_cmp 088.R.out ${exp_dir}/088.R.out
+'
+
+#
+# Match Policy -- without_allocating and without_allocating_future
+#     without_allocating is identical to allocate, except matched
+#     resources are not allocated in the planner.
+#     without_allocating_future is identical to allocate_orelse_reserve,
+#     except matched resources are not allocated or reserved in the
+#     planner.
+#
+#     This test checks that match-without-allocating succeeds on a fresh
+#     graph, it fails on a fully allocated graph, and
+#     match-without-allocating-future succeeds on a fully allocated graph by
+#     matching in the future (at t=3600).
+
+test_expect_success 'resource-query can perform match-without-allocating[_future]' '
+    ${query} -L ${grugs} -S CA -t rq.out <<-'EOF' &&
+	match without_allocating ${jobspec}
+	match allocate ${jobspec}
+	match allocate ${jobspec}
+	match allocate ${jobspec}
+	match allocate ${jobspec}
+	match without_allocating ${jobspec}
+	match without_allocating_future ${jobspec}
+	quit
+	EOF
+    test $(grep MATCHED <rq.out | wc -l) -eq 2 &&
+    test $(grep ALLOCATED <rq.out | wc -l) -eq 4 &&
+    test $(grep "No matching resources found" <rq.out | wc -l) -eq 1 &&
+    grep "SCHEDULED AT" rq.out | sed -ne "6p" | grep 3600
 '
 
 
