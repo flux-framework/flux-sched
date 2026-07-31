@@ -78,49 +78,6 @@ planner_multi::planner_multi (const planner_multi &o)
     }
 }
 
-planner_multi &planner_multi::operator= (const planner_multi &o)
-{
-    if (this == &o)
-        return *this;
-
-    // Erase *this so the vectors are empty
-    erase ();
-
-    for (const auto &iter : o.m_types_totals_planners) {
-        planner_t *np = nullptr;
-        if (iter.planner) {
-            try {
-                // Invoke copy constructor to avoid the assignment
-                // operator erase () penalty.
-                np = new planner_t (*(iter.planner->plan));
-            } catch (std::bad_alloc &e) {
-                errno = ENOMEM;
-            }
-            // planner copy ctor can throw runtime_error, resulting in nullptr
-            if (np == nullptr)
-                throw std::runtime_error (
-                    "ERROR in planner copy ctor"
-                    " in planner_multi assn"
-                    " operator\n");
-        } else {
-            try {
-                np = new planner_t ();
-            } catch (std::bad_alloc &e) {
-                errno = ENOMEM;
-                throw std::bad_alloc ();
-            }
-        }
-        m_types_totals_planners.push_back ({iter.resource_type, iter.resource_total, np});
-    }
-    m_iter = o.m_iter;
-    m_span_lookup = o.m_span_lookup;
-    // See the copy constructor: never adopt an iterator into o's container.
-    m_span_lookup_iter = m_span_lookup.end ();
-    m_span_counter = o.m_span_counter;
-
-    return *this;
-}
-
 bool planner_multi::operator== (const planner_multi &o) const
 {
     if (m_span_counter != o.m_span_counter)

@@ -180,12 +180,10 @@ static int test_planner_null_arg_guards ()
     ok (planner_copy (nullptr) == nullptr && errno == EINVAL, "planner_copy: NULL ctx");
 
     errno = 0;
-    planner_assign (nullptr, ctx);
-    ok (errno == EINVAL, "planner_assign: NULL lhs");
+    ok (planner_assign (nullptr, ctx) == -1 && errno == EINVAL, "planner_assign: NULL lhs");
 
     errno = 0;
-    planner_assign (ctx, nullptr);
-    ok (errno == EINVAL, "planner_assign: NULL rhs");
+    ok (planner_assign (ctx, nullptr) == -1 && errno == EINVAL, "planner_assign: NULL rhs");
 
     errno = 0;
     ok (planner_add_span (nullptr, 0, 10, 5) == -1 && errno == EINVAL,
@@ -216,12 +214,12 @@ static int test_planner_multi_null_arg_guards ()
     ok (planner_multi_copy (nullptr) == nullptr && errno == EINVAL, "planner_multi_copy: NULL ctx");
 
     errno = 0;
-    planner_multi_assign (nullptr, ctx);
-    ok (errno == EINVAL, "planner_multi_assign: NULL lhs");
+    ok (planner_multi_assign (nullptr, ctx) == -1 && errno == EINVAL,
+        "planner_multi_assign: NULL lhs");
 
     errno = 0;
-    planner_multi_assign (ctx, nullptr);
-    ok (errno == EINVAL, "planner_multi_assign: NULL rhs");
+    ok (planner_multi_assign (ctx, nullptr) == -1 && errno == EINVAL,
+        "planner_multi_assign: NULL rhs");
 
     ok (planner_multis_equal (nullptr, nullptr), "planner_multis_equal (NULL, NULL) returns true");
     ok (!planner_multis_equal (ctx, nullptr), "planner_multis_equal (ctx, NULL) returns false");

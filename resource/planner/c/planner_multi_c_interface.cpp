@@ -123,21 +123,20 @@ nomem_error:
     return ctx;
 }
 
-extern "C" void planner_multi_assign (planner_multi_t *lhs, planner_multi_t *rhs)
+extern "C" int planner_multi_assign (planner_multi_t *lhs, const planner_multi_t *rhs)
 {
     if (!lhs || !rhs) {
         errno = EINVAL;
-        return;
+        return -1;
     }
     try {
-        (*(lhs->plan_multi) = *(rhs->plan_multi));
-    } catch (std::bad_alloc &e) {
+        *lhs = *rhs;
+    } catch (...) {
+        // Copy-and-swap leaves lhs unmodified on throw.
         errno = ENOMEM;
-    } catch (std::runtime_error &e) {
-        // See planner_multi_copy: copy failures surface as runtime_error
-        // and must not escape this extern "C" boundary.
-        errno = ENOMEM;
+        return -1;
     }
+    return 0;
 }
 
 extern "C" int64_t planner_multi_base_time (planner_multi_t *ctx)

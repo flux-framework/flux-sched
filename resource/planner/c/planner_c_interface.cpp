@@ -348,21 +348,20 @@ extern "C" planner_t *planner_copy (planner_t *p)
     return ctx;
 }
 
-extern "C" void planner_assign (planner_t *lhs, planner_t *rhs)
+extern "C" int planner_assign (planner_t *lhs, const planner_t *rhs)
 {
     if (!lhs || !rhs) {
         errno = EINVAL;
-        return;
+        return -1;
     }
     try {
-        (*(lhs->plan) = *(rhs->plan));
-    } catch (std::bad_alloc &e) {
+        *lhs = *rhs;
+    } catch (...) {
+        // Copy-and-swap leaves lhs unmodified on throw.
         errno = ENOMEM;
-    } catch (std::runtime_error &e) {
-        // See planner_copy: copy failures surface as runtime_error and
-        // must not escape this extern "C" boundary.
-        errno = ENOMEM;
+        return -1;
     }
+    return 0;
 }
 
 extern "C" planner_t *planner_new_empty ()

@@ -103,39 +103,6 @@ planner::planner (const planner &o)
     m_p0 = m_sched_point_tree.get_state (m_plan_start);
 }
 
-planner &planner::operator= (const planner &o)
-{
-    int rc = -1;
-
-    if (this == &o)
-        return *this;
-
-    if ((rc = erase ()) != 0) {
-        throw std::runtime_error ("ERROR erasing *this\n");
-    }
-    // Important: need to copy trees first,
-    // since map copies fetch the scheduled
-    // points inserted into the trees.
-    if ((rc = copy_trees (o)) != 0) {
-        throw std::runtime_error ("ERROR copying trees to *this\n");
-    }
-    if ((rc = copy_maps (o)) != 0) {
-        throw std::runtime_error ("ERROR copying maps to *this\n");
-    }
-
-    m_total_resources = o.m_total_resources;
-    m_resource_type = o.m_resource_type;
-    m_plan_start = o.m_plan_start;
-    m_plan_end = o.m_plan_end;
-    m_current_request = o.m_current_request;
-    m_avail_time_iter_set = o.m_avail_time_iter_set;
-    m_span_counter = o.m_span_counter;
-    // After above copy the SP tree now has the full state of the base point.
-    m_p0 = m_sched_point_tree.get_state (m_plan_start);
-
-    return *this;
-}
-
 bool planner::operator== (const planner &o) const
 {
     if (m_total_resources != o.m_total_resources)
