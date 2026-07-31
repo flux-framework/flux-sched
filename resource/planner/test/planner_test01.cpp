@@ -688,8 +688,8 @@ static int test_constructors_and_overload ()
     bo = (bo || !planners_equal (ctx2, ctx3));
     ok (!bo, "empty planners should be equal");
 
-    planner_assign (ctx2, ctx);
-    planner_assign (ctx3, ctx2);
+    bo = (bo || planner_assign (ctx2, ctx) != 0);
+    bo = (bo || planner_assign (ctx3, ctx2) != 0);
     bo = (bo || !(planners_equal (ctx2, ctx3)));
     bo = (bo || !(planners_equal (ctx, ctx2)));
     ok (!bo, "test assignment overload");
@@ -709,7 +709,7 @@ static int test_constructors_and_overload ()
     bo = (bo || (planners_equal (ctx2, ctx4)) || rc == -1);
     ok (!bo, "compare planners after mutation");
 
-    planner_assign (ctx4, ctx2);
+    bo = (bo || planner_assign (ctx4, ctx2) != 0);
     bo = (bo || !(planners_equal (ctx2, ctx4)));
     ok (!bo, "assignment overload works on planners with state");
 

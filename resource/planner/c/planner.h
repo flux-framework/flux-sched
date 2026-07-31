@@ -63,14 +63,17 @@ planner_t *planner_new_empty ();
  */
 planner_t *planner_copy (planner_t *p);
 
-/*! Assign a planner.
+/*! Assign a planner: copy the state of rhs into lhs.
+ *  On error, lhs is unmodified.
  *
- *  \param lhs          the base planner which will be assigned to rhs.
- *  \param rhs          the base planner which will be copied and returned as
- *                      a new planner context.
- *
+ *  \param lhs          planner context to assign into.
+ *  \param rhs          planner context whose state is copied into lhs.
+ *  \return             0 on success; -1 on an error with errno set as
+ *                      follows:
+ *                          EINVAL: invalid argument.
+ *                          ENOMEM: memory error.
  */
-void planner_assign (planner_t *lhs, planner_t *rhs);
+int planner_assign (planner_t *lhs, planner_t *rhs);
 
 /*! Reset the planner with a new time bound. Destroy all existing planned spans.
  *
