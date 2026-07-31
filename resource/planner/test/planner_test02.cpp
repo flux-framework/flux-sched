@@ -571,7 +571,8 @@ static int test_constructors_and_overload ()
     ctx3 = planner_multi_empty ();
     bo = (bo || !planner_multis_equal (ctx2, ctx3));
 
-    planner_multi_assign (ctx2, ctx);
+    rc = planner_multi_assign (ctx2, ctx);
+    bo = (bo || rc != 0);
     bo = (bo || !(planner_multis_equal (ctx, ctx2)));
     ok (!bo, "test assignment overload");
 
@@ -590,7 +591,8 @@ static int test_constructors_and_overload ()
     size = planner_multi_span_size (ctx4);
     ok ((size == 3), "removing span doesn't change deep copy's size");
     // Assignment overload works on planners with state
-    planner_multi_assign (ctx4, ctx2);
+    rc = planner_multi_assign (ctx4, ctx2);
+    bo = (bo || rc != 0);
     size = planner_multi_span_size (ctx4);
     ok ((size == 2), "planner_multi 3 now has the size of planner_multi 2");
     bo = (bo || !(planner_multis_equal (ctx2, ctx4)));
@@ -626,7 +628,7 @@ static int test_planner_multi_self_assign ()
     ok (span_id >= 0, "multi self-assign: planner_multi_add_span");
 
     // Self-assignment must be a no-op.
-    planner_multi_assign (ctx, ctx);
+    ok (planner_multi_assign (ctx, ctx) == 0, "self-assign returns 0");
     ok (planner_multi_resources_len (ctx) == 2, "self-assign preserves the planner set");
     ok (planner_multi_span_planned_at (ctx, span_id, 0) == 5,
         "self-assign preserves span allocations");
@@ -875,7 +877,7 @@ static int test_partial_cancel ()
 
 int main (int argc, char *argv[])
 {
-    plan (125);
+    plan (126);
 
     test_multi_basics ();
 

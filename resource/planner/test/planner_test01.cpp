@@ -688,8 +688,10 @@ static int test_constructors_and_overload ()
     bo = (bo || !planners_equal (ctx2, ctx3));
     ok (!bo, "empty planners should be equal");
 
-    planner_assign (ctx2, ctx);
-    planner_assign (ctx3, ctx2);
+    rc = planner_assign (ctx2, ctx);
+    bo = (bo || rc != 0);
+    rc = planner_assign (ctx3, ctx2);
+    bo = (bo || rc != 0);
     bo = (bo || !(planners_equal (ctx2, ctx3)));
     bo = (bo || !(planners_equal (ctx, ctx2)));
     ok (!bo, "test assignment overload");
@@ -709,7 +711,8 @@ static int test_constructors_and_overload ()
     bo = (bo || (planners_equal (ctx2, ctx4)) || rc == -1);
     ok (!bo, "compare planners after mutation");
 
-    planner_assign (ctx4, ctx2);
+    rc = planner_assign (ctx4, ctx2);
+    bo = (bo || rc != 0);
     bo = (bo || !(planners_equal (ctx2, ctx4)));
     ok (!bo, "assignment overload works on planners with state");
 
@@ -740,7 +743,7 @@ static int test_planner_self_assign ()
     ok (span_id >= 0, "self-assign: planner_add_span");
 
     // Self-assignment must be a no-op.
-    planner_assign (ctx, ctx);
+    ok (planner_assign (ctx, ctx) == 0, "self-assign returns 0");
     ok (planner_avail_resources_at (ctx, 15) == 2, "self-assign preserves span allocations");
     ok (planner_span_resource_count (ctx, span_id) == 8, "self-assign preserves the span");
 
@@ -857,7 +860,7 @@ static int test_partial_cancel ()
 
 int main (int argc, char *argv[])
 {
-    plan (75);
+    plan (76);
 
     test_planner_getters ();
 

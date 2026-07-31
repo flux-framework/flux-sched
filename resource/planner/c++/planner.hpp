@@ -48,7 +48,7 @@ class planner {
              const uint64_t resource_totals,
              const char *in_resource_type);
     planner (const planner &o);
-    planner &operator= (const planner &o);
+    planner &operator= (const planner &o) = delete;
     bool operator== (const planner &o) const;
     bool operator!= (const planner &o) const;
     ~planner ();
