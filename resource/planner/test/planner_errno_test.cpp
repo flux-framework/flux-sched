@@ -181,12 +181,12 @@ static int test_planner_null_arg_guards ()
         "planner_copy (NULL) returns NULL with errno=EINVAL");
 
     errno = 0;
-    planner_assign (nullptr, ctx);
-    ok (errno == EINVAL, "planner_assign (NULL lhs) sets errno=EINVAL");
+    ok (planner_assign (nullptr, ctx) == -1 && errno == EINVAL,
+        "planner_assign (NULL lhs) returns -1 with errno=EINVAL");
 
     errno = 0;
-    planner_assign (ctx, nullptr);
-    ok (errno == EINVAL, "planner_assign (NULL rhs) sets errno=EINVAL");
+    ok (planner_assign (ctx, nullptr) == -1 && errno == EINVAL,
+        "planner_assign (NULL rhs) returns -1 with errno=EINVAL");
 
     errno = 0;
     ok (planner_add_span (nullptr, 0, 10, 5) == -1 && errno == EINVAL,
@@ -219,12 +219,12 @@ static int test_planner_multi_null_arg_guards ()
         "planner_multi_copy (NULL) returns NULL with errno=EINVAL");
 
     errno = 0;
-    planner_multi_assign (nullptr, ctx);
-    ok (errno == EINVAL, "planner_multi_assign (NULL lhs) sets errno=EINVAL");
+    ok (planner_multi_assign (nullptr, ctx) == -1 && errno == EINVAL,
+        "planner_multi_assign (NULL lhs) returns -1 with errno=EINVAL");
 
     errno = 0;
-    planner_multi_assign (ctx, nullptr);
-    ok (errno == EINVAL, "planner_multi_assign (NULL rhs) sets errno=EINVAL");
+    ok (planner_multi_assign (ctx, nullptr) == -1 && errno == EINVAL,
+        "planner_multi_assign (NULL rhs) returns -1 with errno=EINVAL");
 
     ok (planner_multis_equal (nullptr, nullptr), "planner_multis_equal (NULL, NULL) returns true");
     ok (!planner_multis_equal (ctx, nullptr), "planner_multis_equal (ctx, NULL) returns false");
@@ -293,7 +293,7 @@ static int test_planner_self_assign ()
 
     // Self-assignment must be a no-op: without the guard, operator=
     // first erases its own state and then copies from the erased state
-    planner_assign (ctx, ctx);
+    ok (planner_assign (ctx, ctx) == 0, "self-assign returns 0");
     ok (planner_avail_resources_at (ctx, 15) == 2, "self-assign preserves span allocations");
     ok (planner_span_resource_count (ctx, span_id) == 8, "self-assign preserves the span");
 
@@ -314,7 +314,7 @@ static int test_planner_multi_self_assign ()
 
     // Self-assignment must be a no-op: without the guard, operator=
     // first erases its own planners and then copies from the erased state
-    planner_multi_assign (ctx, ctx);
+    ok (planner_multi_assign (ctx, ctx) == 0, "self-assign returns 0");
     ok (planner_multi_resources_len (ctx) == 2, "self-assign preserves the planner set");
     ok (planner_multi_span_planned_at (ctx, span_id, 0) == 5,
         "self-assign preserves span allocations");
