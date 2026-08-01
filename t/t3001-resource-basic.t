@@ -8,6 +8,8 @@ cmd_dir="${SHARNESS_TEST_SRCDIR}/data/resource/commands/basics"
 exp_dir="${SHARNESS_TEST_SRCDIR}/data/resource/expected/basics"
 grugs="${SHARNESS_TEST_SRCDIR}/data/resource/grugs/tiny.graphml"
 jobspec="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/basics/test001.yaml"
+t3040_only_node="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/match_format/t3040_only_node.yaml"
+constrained_node="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/pruning/constrained_node.yaml"
 query="../../resource/utilities/resource-query"
 
 #
@@ -551,6 +553,10 @@ test_expect_success "${test088_desc}" '
 #     graph, it fails on a fully allocated graph, and
 #     match-without-allocating-future succeeds on a fully allocated graph by
 #     matching in the future (at t=3600).
+#
+#     The second test case is a regression test for a bug in which MWOAF
+#     would consider a match request infeasible while pruning if all nodes
+#     were allocated `now`, despite the fact that it can match in the future.
 
 test_expect_success 'resource-query can perform match-without-allocating[_future]' '
     ${query} -L ${grugs} -S CA -t rq.out <<-'EOF' &&
@@ -567,6 +573,17 @@ test_expect_success 'resource-query can perform match-without-allocating[_future
     test $(grep ALLOCATED <rq.out | wc -l) -eq 4 &&
     test $(grep "No matching resources found" <rq.out | wc -l) -eq 1 &&
     grep "SCHEDULED AT" rq.out | sed -ne "6p" | grep 3600
+'
+
+test_expect_success 'MWOAF must check feasibility at graph end, not now' '
+    ${query} -L ${grugs} -S CA -t rq.out <<-'EOF'
+	match allocate ${t3040_only_node}
+	match allocate ${t3040_only_node}
+	! match allocate ${t3040_only_node}
+	match allocate_orelse_reserve ${constrained_node}
+	match without_allocating_future ${constrained_node}
+	quit
+	EOF
 '
 
 
