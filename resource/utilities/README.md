@@ -34,14 +34,32 @@ interface (cli) session is started for the user:
 resource-query>
 ```
 
-The main cli command is `match.` This command takes in a jobspec file name
-and either allocates or reserves its best-matching resources. Likewise, this
-command provides two subcommands: `allocate` will try to allocate the
-best-matching resources for the given jobspec; `allocate_orelse_reserve` will
-try to reserve the resources into the future (i.e., earliest possibly
-scheduable point), if an allocation cannot be created on the current
-resource state.  By contrast, `allocate` will simply not allocate
-resources if matching resources are not found in the current resource state.
+The following CLI commands are available:
+ - `match`  takes in a jobspec file
+name and either allocates or reserves its best-matching resources.
+It has two subcommands:
+   - `allocate` will try
+to allocate the best-matching resources for the given jobspec. It will not allocate resources if matching resources
+are not found in the current resource state.
+   - `allocate_orelse_reserve` will try to reserve the resources into the
+future (i.e., earliest possibly schedulable point), if an allocation
+cannot be created on the current resource state
+   - `allocate_with_satisfiability`
+   - `satisfiability`
+   - `without_allocating` will try to match the best resources for the given jobspec, but it will not allocate
+those resources. Resources matched with `without_allocating` will be labeled as "MATCHED" and will have a jobid of
+`-1`. This invalid jobid denotes that the matched resources do not belong to any particular job. Since the
+resources aren't allocated, repeated `without_allocating` queries will generally return the same, best, resources.
+   - `without_allocating_future` will try to match the best resources at the earliest schedulable point, possibly
+in the future, but it will not allocate those resources. Also labeled with "MATCHED" and jobid `-1`.
+Note how this interacts with "overrunning" jobs, whose duration has elapsed but are still running on the nodes:
+Both `allocate_orelse_reserve` and `without_allocating_future` are safe with respect to overrunning jobs when
+matching/allocating `now`, and won't return resources that have a currently overrunning job.
+However, both are optimistic about availability at any future time, even on resources that have an overrunning job.
+If a node has an actively overrunning job but could be selected 1 second into the future along with some other
+resources, `without_allocating_future` will be able to select it.
+Similarly, `without_allocating_future` will assume that active jobs will not overrun, speculatively matching
+resources exactly at the end of active allocation.
 
 The following command allocated the best-matching resources for the
 specification contained in `test.yaml`:
