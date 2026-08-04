@@ -13,3 +13,5 @@ target_link_libraries(sched-fluxion-qmanager PRIVATE
     cppwrappers
     match_op
     )
+
+add_subdirectory( test )
