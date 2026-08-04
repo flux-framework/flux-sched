@@ -141,13 +141,34 @@ static int process_config_file (std::shared_ptr<qmanager_ctx_t> &ctx)
     optmgr_kv_t<qmanager_opts_t> opts_store;
     std::string info_str = "";
     if (queues_conf) {
-        // workaround to satisfy RFC 33
-        std::string queues = classify_queues (queues_conf);
+        // workaround to satisfy RFC 33: split the queues config table into
+        // real (internal) queues and RFC 33 virtual queues. A malformed
+        // config is rejected here. Because ctx->opts is only updated on
+        // success at the end of this function, returning an error leaves
+        // the currently-loaded config in place -- matching flux-core,
+        // where a failed config reload is reported via the reload RPC and
+        // the running config is retained.
+        std::string queues;
+        std::string vqueue_parents;
+        std::string err;
+
+        if (classify_queues (queues_conf, queues, vqueue_parents, err) < 0) {
+            flux_log_error (ctx->h, "%s: %s", __FUNCTION__, err.c_str ());
+            return -1;
+        }
         if ((rc = opts_store.put ("queues", queues)) < 0) {
             flux_log_error (ctx->h,
                             "%s: optmgr_kv_t::put ('queues', %s)",
                             __FUNCTION__,
                             queues.c_str ());
+            return rc;
+        }
+        if (!vqueue_parents.empty ()
+            && (rc = opts_store.put ("vqueue-parents", vqueue_parents)) < 0) {
+            flux_log_error (ctx->h,
+                            "%s: optmgr_kv_t::put ('vqueue-parents', %s)",
+                            __FUNCTION__,
+                            vqueue_parents.c_str ());
             return rc;
         }
     }

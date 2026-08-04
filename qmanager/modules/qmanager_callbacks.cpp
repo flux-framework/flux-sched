@@ -245,6 +245,9 @@ int qmanager_cb_t::jobmanager_hello_cb (flux_t *h, const flux_msg_t *msg, const 
         queue_name = qn_attr;
     else
         queue_name = ctx->opts.get_opt ().get_default_queue_name ();
+    // An RFC 33 virtual queue has no internal queue of its own, so look up
+    // its parent queue's internal queue instead.
+    queue_name = ctx->opts.get_opt ().resolve_queue_name (queue_name);
     if (ctx->queues.find (queue_name) == ctx->queues.end ()) {
         flux_log (h,
                   LOG_ERR,
@@ -386,6 +389,9 @@ void qmanager_cb_t::jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg, void 
         queue_name = jobspec_obj.attributes.system.queue;
     job->jobspec = jobspec_str;
     free (jobspec_str);
+    // An RFC 33 virtual queue has no internal queue of its own, so look up
+    // its parent queue's internal queue instead.
+    queue_name = ctx->opts.get_opt ().resolve_queue_name (queue_name);
     if (ctx->queues.find (queue_name) == ctx->queues.end ()) {
         snprintf (errbuf, sizeof (errbuf), "queue (%s) doesn't exist", queue_name.c_str ());
         if (schedutil_alloc_respond_deny (ctx->schedutil, msg, errbuf) < 0)
