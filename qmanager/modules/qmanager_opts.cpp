@@ -14,10 +14,24 @@ extern "C" {
 #endif
 }
 
+#include <sstream>
+
 #include "qmanager_opts.hpp"
 
 using namespace Flux;
 using namespace Flux::opts_manager;
+
+std::string Flux::opts_manager::classify_queues (json_t *queues_conf)
+{
+    const char *k = nullptr;
+    json_t *v = nullptr;
+    std::ostringstream queues;
+
+    json_object_foreach (queues_conf, k, v) {
+        queues << k << " ";
+    }
+    return queues.str ();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Private API for Queue Manager Option Class

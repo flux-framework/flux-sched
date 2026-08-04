@@ -142,15 +142,12 @@ static int process_config_file (std::shared_ptr<qmanager_ctx_t> &ctx)
     std::string info_str = "";
     if (queues_conf) {
         // workaround to satisfy RFC 33
-        std::ostringstream queues;
-        json_object_foreach (queues_conf, k, v) {
-            queues << std::string (k) << " ";
-        }
-        if ((rc = opts_store.put ("queues", queues.str ())) < 0) {
+        std::string queues = classify_queues (queues_conf);
+        if ((rc = opts_store.put ("queues", queues)) < 0) {
             flux_log_error (ctx->h,
                             "%s: optmgr_kv_t::put ('queues', %s)",
                             __FUNCTION__,
-                            queues.str ().c_str ());
+                            queues.c_str ());
             return rc;
         }
     }
