@@ -146,6 +146,14 @@ class qmanager_opts_t : public optmgr_parse_t {
     std::map<std::string, int> m_tab;
 };
 
+/*! Build a space-separated list of the queue names in an RFC 33 "queues"
+ *  config table, suitable for use as the "queues" option value.
+ *
+ *  \param queues_conf   "queues" config table (json object).
+ *  \return              space-separated list of queue names.
+ */
+std::string classify_queues (json_t *queues_conf);
+
 }  // namespace opts_manager
 }  // namespace Flux
 
