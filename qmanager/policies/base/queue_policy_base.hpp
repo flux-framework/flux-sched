@@ -38,6 +38,20 @@ namespace queue_manager {
 
 enum class job_state_kind_t { INIT, PENDING, REJECTED, RUNNING, ALLOC_RUNNING, CANCELED, COMPLETE };
 
+/*! How a job was ultimately started by the scheduler.
+ *  UNKNOWN:   not yet allocated (or fcfs before allocation).
+ *  IMMEDIATE: allocated on the first scheduling attempt with no prior
+ *             reservations in the current backfill loop.
+ *  BACKFILL:  allocated after one or more other jobs had been reserved
+ *             ahead of it in the current loop.
+ *  RESERVED:  allocated from a previous reservation if in the ALLOC
+ *             state, or retained for a future reservation if annotation
+ *             shown in the SCHED state. Note this state can be posted,
+ *             then later cleared in the SCHED state if the reservation
+ *             is lost.
+ */
+enum class job_selection_type_t { UNKNOWN, IMMEDIATE, BACKFILL, RESERVED };
+
 /*! Type to store schedule information such as the
  *  allocated or reserved (for backfill) resource set (R).
  */
@@ -52,10 +66,29 @@ struct schedule_t {
     schedule_t &operator= (const schedule_t &s) = default;
     std::string R = "";
     bool reserved = false;
+    bool was_reserved = false;
+    job_selection_type_t selection_type = job_selection_type_t::UNKNOWN;
     int64_t at = 0;
     int64_t old_at = 0;
     double ov = 0.0f;
 };
+
+/*! Map a job_selection_type_t to the string reported in the RFC 27
+ *  sched.selection_type annotation on the alloc SUCCESS response.
+ */
+inline const char *job_selection_type_str (job_selection_type_t mode)
+{
+    switch (mode) {
+        case job_selection_type_t::IMMEDIATE:
+            return "immediate";
+        case job_selection_type_t::BACKFILL:
+            return "backfill";
+        case job_selection_type_t::RESERVED:
+            return "reserved";
+        default:
+            return "unknown";
+    }
+}
 
 /*! Type to store various time stamps for queuing
  */
@@ -782,11 +815,22 @@ class queue_policy_base_t : public resource_model::queue_adapter_base_t {
         return m_scheduled;
     }
 
-    /*! Reset this queue's "scheduled" state.
+    /*! Return true if a job annotation has changed (e.g. a stale
+     *  t_estimate was cleared) and post_sched_loop must run to transmit
+     *  it, even though no job was scheduled.  Unlike is_scheduled (),
+     *  this does not cause the scheduling loop to be restarted.
+     */
+    bool is_annotation_dirty ()
+    {
+        return m_annotation_dirty;
+    }
+
+    /*! Reset this queue's "scheduled" and "annotation dirty" states.
      */
     void reset_scheduled ()
     {
         m_scheduled = false;
+        m_annotation_dirty = false;
     }
 
     /*! Implement queue_adapter_base_t's pure virtual method
@@ -1159,6 +1203,7 @@ class queue_policy_base_t : public resource_model::queue_adapter_base_t {
 
     bool m_schedulable = false;
     bool m_scheduled = false;
+    bool m_annotation_dirty = false;
     bool m_sched_loop_active = false;
     uint64_t m_pq_cnt = 0;
     uint64_t m_rq_cnt = 0;

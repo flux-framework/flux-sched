@@ -11,6 +11,29 @@ excl_1N1B="${hwloc_basepath}/001N/exclusive/01-brokers"
 export FLUX_SCHED_MODULE=none
 test_under_flux 1
 
+selection_type() {
+    flux job list-ids $1 | jq -r ".annotations.sched.selection_type"
+}
+
+t_estimate() {
+    flux job list-ids $1 | jq -r ".annotations.sched.t_estimate"
+}
+
+selection_type_is() {
+    test "$(selection_type $1)" = "$2"
+}
+
+# Annotation updates are not posted to the eventlog, so poll.
+wait_for() {
+    wf_i=0
+    while ! "$@"; do
+        wf_i=$((wf_i+1))
+        test ${wf_i} -ge 50 && return 1
+        sleep 0.2
+    done
+    return 0
+}
+
 exec_test()     { ${jq} '.attributes.system.exec.test = {}'; }
 
 test_expect_success 'qmanager: generate jobspecs of varying requirements' '
@@ -56,21 +79,88 @@ test_expect_success 'qmanager: EASY policy conforms to queue-depth=5' '
     flux cancel ${jobid7} &&
     flux job wait-event -t 10 ${jobid8} start &&
     test $(flux job list --states=active | wc -l) -eq 9 &&
-    test $(flux job list --states=running | wc -l) -eq 3 &&
-    active_jobs=$(flux job list --states=active | jq .id) &&
-    for job in ${active_jobs}; do flux cancel ${job}; done &&
-    for job in ${active_jobs}; do flux job wait-event -t 10 ${job} clean; done
+    test $(flux job list --states=running | wc -l) -eq 3
 '
-
+test_expect_success 'qmanager: selection_type is immediate and backfill' '
+    test "$(selection_type ${jobid1})" = "immediate" &&
+    test "$(selection_type ${jobid6})" = "backfill" &&
+    test "$(selection_type ${jobid7})" = "backfill" &&
+    test "$(selection_type ${jobid8})" = "backfill"
+'
+# jobid2 was reserved but has not started; its selection_type is now
+# transmitted alongside the t_estimate annotation while it waits, so it
+# reads "reserved" before it is ever allocated.
+test_expect_success 'qmanager: reserved job is annotated while pending' '
+    test "$(selection_type ${jobid2})" = "reserved"
+'
+test_expect_success 'qmanager: selection_type is reserved' '
+    flux cancel ${jobid1} &&
+    flux job wait-event -t 10 ${jobid2} start &&
+    test "$(selection_type ${jobid2})" = "reserved"
+'
+test_expect_success 'qmanager: cleanup all active jobs' '
+    cleanup_active_jobs
+'
+# A reserved job advertises sched.selection_type=reserved and a
+# sched.t_estimate.  When a higher-urgency job takes the single easy
+# reservation slot, both annotations must be cleared (issue #1424), and
+# the displaced job is later categorized by how it actually starts.
+# Here both C08 jobs fit once the squatter is gone, so the displaced job
+# allocates with no reservations ahead of it: immediate.
+test_expect_success 'qmanager: displaced reservation ends up immediate' '
+    flux queue start --all &&
+    squat=$(flux job submit C10.T3600.json) &&
+    flux job wait-event -t 10 ${squat} start &&
+    resv=$(flux job submit C08.T3600.json) &&
+    wait_for selection_type_is ${resv} reserved &&
+    test "$(t_estimate ${resv})" != "null" &&
+    hi=$(flux job submit --urgency=20 C08.T3600.json) &&
+    wait_for selection_type_is ${hi} reserved &&
+    wait_for selection_type_is ${resv} null &&
+    test "$(t_estimate ${resv})" = "null" &&
+    flux cancel ${squat} &&
+    flux job wait-event -t 10 ${resv} start &&
+    test "$(selection_type ${resv})" = "immediate" &&
+    test "$(selection_type ${hi})" = "reserved"
+'
+test_expect_success 'qmanager: cleanup displaced-immediate jobs' '
+    cleanup_active_jobs
+'
+# Same displacement, but this time the higher-urgency job (C14) still
+# cannot run after the small squatter is cancelled, so it re-reserves at
+# squatA completion time.  The displaced job is short enough (T1800) to
+# finish before that reservation, so it is backfilled past it: backfill.
+test_expect_success 'qmanager: displaced reservation ends up backfill' '
+    flux queue start --all &&
+    flux run --job-name=12 --dry-run -n8 -t 30m hostname | exec_test > C08.T1800.json &&
+    squatA=$(flux job submit C08.T3600.json) &&
+    squatB=$(flux job submit C02.T3600.json) &&
+    flux job wait-event -t 10 ${squatB} start &&
+    resv=$(flux job submit C08.T1800.json) &&
+    wait_for selection_type_is ${resv} reserved &&
+    test "$(t_estimate ${resv})" != "null" &&
+    hi=$(flux job submit --urgency=20 C14.T3600.json) &&
+    wait_for selection_type_is ${hi} reserved &&
+    wait_for selection_type_is ${resv} null &&
+    test "$(t_estimate ${resv})" = "null" &&
+    flux cancel ${squatB} &&
+    flux job wait-event -t 10 ${resv} start &&
+    test "$(selection_type ${resv})" = "backfill" &&
+    test "$(selection_type ${hi})" = "reserved"
+'
+test_expect_success 'qmanager: cleanup displaced-backfill jobs' '
+    cleanup_active_jobs
+'
 test_expect_success 'qmanager: loading with hybrid+queue-depth=5' '
     remove_resource &&
     load_resource prune-filters=ALL:core subsystems=containment policy=low &&
     load_qmanager queue-policy=hybrid \
-queue-params=queue-depth=5 policy-params=reservation-depth=3
+queue-params=queue-depth=5 policy-params=reservation-depth=3 &&
+    flux queue start --all
 '
 
 test_expect_success 'qmanager: HYBRID policy conforms to queue-depth=5' '
-    jobid1=$(flux job submit C08.T3600.json) &&
+    jobid1=$(flux job submit C08.T3600.json) && # immediate
     jobid2=$(flux job submit C10.T3600.json) && # reserved
     jobid3=$(flux job submit C12.T3600.json) && # reserved
     jobid4=$(flux job submit C14.T3600.json) && # reserved
@@ -83,22 +173,35 @@ test_expect_success 'qmanager: HYBRID policy conforms to queue-depth=5' '
     jobid11=$(flux job submit C02.T3600.json) &&
 
     flux job wait-event -t 10 ${jobid1} start &&
-    flux jobs -a &&
     test $(flux job list --states=active | wc -l) -eq 11 &&
-    test $(flux job list --states=running| wc -l) -eq 1 &&
-    active_jobs=$(flux job list --states=active | jq .id) &&
-    for job in ${active_jobs}; do flux cancel ${job}; done &&
-    for job in ${active_jobs}; do flux job wait-event -t 10 ${job} clean; done
+    test $(flux job list --states=running| wc -l) -eq 1
 '
-
+# hybrid reserves up to reservation-depth jobs; jobid1 runs on the first
+# attempt (immediate).  With the reservations held, no later job can
+# backfill without delaying them, so nothing else starts.
+test_expect_success 'qmanager: HYBRID selection_type is immediate' '
+    test "$(selection_type ${jobid1})" = "immediate"
+'
+# Cancel jobid1 to free its cores so the reserved jobid2 can finally
+# start; because it had previously been reserved it is categorized as
+# reserved.
+test_expect_success 'qmanager: HYBRID selection_type is reserved' '
+    flux cancel ${jobid1} &&
+    flux job wait-event -t 10 ${jobid2} start &&
+    test "$(selection_type ${jobid2})" = "reserved"
+'
+test_expect_success 'cancel and cleanup active jobs' '
+    cleanup_active_jobs
+'
 test_expect_success 'qmanager: loading with conservative+queue-depth=5' '
     remove_resource &&
     load_resource prune-filters=ALL:core subsystems=containment policy=low &&
-    load_qmanager queue-policy=conservative queue-params=queue-depth=5
+    load_qmanager queue-policy=conservative queue-params=queue-depth=5 &&
+    flux queue start --all
 '
 
 test_expect_success 'qmanager: CONSERVATIVE policy conforms to queue-depth=5' '
-    jobid1=$(flux job submit C08.T3600.json) &&
+    jobid1=$(flux job submit C08.T3600.json) && # immediate
     jobid2=$(flux job submit C10.T3600.json) && # reserved
     jobid3=$(flux job submit C12.T3600.json) && # reserved
     jobid4=$(flux job submit C14.T3600.json) && # reserved
@@ -112,17 +215,39 @@ test_expect_success 'qmanager: CONSERVATIVE policy conforms to queue-depth=5' '
 
     flux job wait-event -t 10 ${jobid1} start &&
     test $(flux job list --states=active | wc -l) -eq 11 &&
-    test $(flux job list --states=running | wc -l) -eq 1 &&
+    test $(flux job list --states=running | wc -l) -eq 1
+'
+# conservative reserves every job it cannot run now, so jobid1 runs on the
+# first attempt (immediate) and nothing can backfill past the reservations.
+test_expect_success 'qmanager: CONSERVATIVE selection_type is immediate' '
+    test "$(selection_type ${jobid1})" = "immediate"
+'
+# Cancel jobid1 to free its cores so the reserved jobid2 can finally
+# start; because it had previously been reserved it is categorized as
+# reserved.
+test_expect_success 'qmanager: CONSERVATIVE selection_type is reserved' '
+    flux cancel ${jobid1} &&
+    flux job wait-event -t 10 ${jobid2} start &&
+    test "$(selection_type ${jobid2})" = "reserved"
+'
+test_expect_success 'cancel and cleanup active jobs' '
+    cleanup_active_jobs
+'
+test_expect_success 'qmanager: all jobs under fcfs have sched.selection_type=immediate' '
+    remove_qmanager &&
+    reload_resource prune-filters=ALL:core \
+subsystems=containment policy=low load-allowlist=cluster,node,core &&
+    load_qmanager &&
+    flux queue start --all &&
+    jobid1=$(flux submit -n 8 -t 360s sleep 300) &&
+    flux job wait-event -t 10 ${jobid1} start &&
+    test "$(selection_type ${jobid1})" = "immediate" &&
     active_jobs=$(flux job list --states=active | jq .id) &&
     for job in ${active_jobs}; do flux cancel ${job}; done &&
     for job in ${active_jobs}; do flux job wait-event -t 10 ${job} clean; done
 '
-
-test_expect_success 'cleanup active jobs' '
-    cleanup_active_jobs
-'
-
-test_expect_success 'removing resource and qmanager modules' '
+test_expect_success 'post-test cleanup' '
+    cleanup_active_jobs &&
     remove_qmanager &&
     remove_resource
 '
