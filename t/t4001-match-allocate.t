@@ -13,6 +13,8 @@ jobspec="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/basics/test001.yaml"
 malform="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/basics/bad.yaml"
 duration_too_large="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/duration/test001.yaml"
 duration_negative="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/duration/test002.yaml"
+duration_fractional="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/duration/test003.yaml"
+duration_below_min="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/duration/test004.yaml"
 
 #
 # test_under_flux is under sharness.d/
@@ -63,11 +65,31 @@ test_expect_success 'handling of an invalid resource type works' '
 
 test_expect_success 'invalid duration is caught' '
     test_must_fail flux ion-resource match allocate ${duration_too_large} &&
-    test_must_fail flux ion-resource match allocate ${duration_negative}
+    test_must_fail flux ion-resource match allocate ${duration_negative} &&
+    test_must_fail flux ion-resource match allocate ${duration_below_min}
 '
 
-
 test_expect_success 'removing resource works' '
+    remove_resource
+'
+
+#
+# A sub-second (fractional) duration must round up to the planner's
+# minimum granularity of 1 second rather than truncate to 0, which the
+# planner would reject with EINVAL.  Reload the module to start from a
+# fully available machine.
+#
+test_expect_success 'reloading resource module works' '
+    load_resource \
+load-file=${grug} prune-filters=ALL:core \
+load-format=grug subsystems=containment policy=high
+'
+
+test_expect_success 'match-allocate accepts a fractional duration' '
+    flux ion-resource match allocate ${duration_fractional}
+'
+
+test_expect_success 'removing resource again works' '
     remove_resource
 '
 
