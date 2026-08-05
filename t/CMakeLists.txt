@@ -103,9 +103,15 @@ set(ALL_TESTS
   t6000-graph-size.t
   t6001-match-formats.t
   t6002-graph-hwloc.t
+  t7000-python-scheduler-basic.t
+  t7001-python-scheduler-jgf.t
+  t7002-python-scheduler-partial.t
+  t7003-python-scheduler-hello.t
   t8001-util-ion-R.t
   t9001-golang-basic.t
   python/t10001-resourcegraph.py
+  python/t11001-reapi-cli.py
+  python/t11002-resource-pool.py
   )
 foreach(test ${ALL_TESTS})
   flux_add_test(NAME ${test}
