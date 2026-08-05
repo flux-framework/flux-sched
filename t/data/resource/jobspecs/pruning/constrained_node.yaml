@@ -1,0 +1,16 @@
+# constrained_node.yaml — t3040_only_node.yaml plus a constraint
+version: 9999
+resources:
+  - type: node
+    exclusive: true
+    count: 1
+attributes:
+  system:
+    duration: 3600
+    constraints:
+      hostlist: [ "node[0-1]" ]
+tasks:
+  - command: [ "app" ]
+    slot: default
+    count:
+      per_slot: 1

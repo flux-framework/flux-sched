@@ -2,6 +2,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include <resource/reapi/bindings/c/reapi_cli.h>
+#include <resource/policies/base/match_op.h>
 #include <fstream>
 #include <iostream>
 
@@ -53,17 +54,75 @@ TEST_CASE ("Match basic jobspec", "[match C]")
     rc = reapi_cli_initialize (ctx, rgraph.c_str (), options.c_str ());
     REQUIRE (rc == 0);
 
-    match_op_t match_op = match_op_t::MATCH_ALLOCATE;
-    bool reserved = false;
-    char *R;
-    uint64_t jobid = 1;
-    double ov = 0.0;
-    int64_t at = 0;
+    SECTION ("MATCH_ALLOCATE")
+    {
+        match_op_t match_op = MATCH_ALLOCATE;
+        bool reserved = false;
+        char *R;
+        uint64_t jobid = 1;
+        double ov = 0.0;
+        int64_t at = 0;
 
-    rc = reapi_cli_match (ctx, match_op, jobspec.c_str (), &jobid, &reserved, &R, &at, &ov);
-    CHECK (rc == 0);
-    CHECK (reserved == false);
-    CHECK (at == 0);
+        rc = reapi_cli_match (ctx, match_op, jobspec.c_str (), &jobid, &reserved, &R, &at, &ov);
+        CHECK (rc == 0);
+        CHECK (reserved == false);
+        CHECK (at == 0);
+    }
+
+    SECTION ("MATCH_WITHOUT_ALLOCATING[_FUTURE]")
+    {
+        bool reserved = false;
+        char *R;
+        uint64_t jobid = 1;
+        double ov = 0.0;
+        int64_t at = 0;
+
+        // MWOA should succeed on an empty graph
+        match_op_t match_op = MATCH_WITHOUT_ALLOCATING;
+        rc = reapi_cli_match (ctx, match_op, jobspec.c_str (), &jobid, &reserved, &R, &at, &ov);
+        CHECK (reserved == false);
+        CHECK (at == 0);
+        CHECK (jobid == -1);
+        REQUIRE (rc == 0);
+
+        // MWOA_FUTURE should succeed on an empty graph
+        match_op = MATCH_WITHOUT_ALLOCATING_FUTURE;
+        rc = reapi_cli_match (ctx, match_op, jobspec.c_str (), &jobid, &reserved, &R, &at, &ov);
+        CHECK (reserved == false);
+        CHECK (at == 0);
+        CHECK (jobid == -1);
+        REQUIRE (rc == 0);
+
+        // Allocate all resources
+        match_op = MATCH_ALLOCATE;
+        for (int i = 1; i <= 4; i++) {
+            rc = reapi_cli_match (ctx, match_op, jobspec.c_str (), &jobid, &reserved, &R, &at, &ov);
+            CHECK (reserved == false);
+            CHECK (at == 0);
+            CHECK (jobid == i);
+            REQUIRE (rc == 0);
+        }
+
+        // The tiny graph should be full
+        rc = reapi_cli_match (ctx, match_op, jobspec.c_str (), &jobid, &reserved, &R, &at, &ov);
+        REQUIRE (rc == -1);
+
+        // MWOA_FUTURE should match the next available time, which is in the future
+        match_op = MATCH_WITHOUT_ALLOCATING_FUTURE;
+        rc = reapi_cli_match (ctx, match_op, jobspec.c_str (), &jobid, &reserved, &R, &at, &ov);
+        CHECK (reserved == false);
+        CHECK (at == 3600);
+        CHECK (jobid == -1);
+        REQUIRE (rc == 0);
+
+        // MWOA should try to match at t=0 and fail because the graph is full
+        match_op = MATCH_WITHOUT_ALLOCATING;
+        rc = reapi_cli_match (ctx, match_op, jobspec.c_str (), &jobid, &reserved, &R, &at, &ov);
+        CHECK (reserved == false);
+        CHECK (at == 0);
+        CHECK (jobid == -1);
+        REQUIRE (rc == -1);
+    }
 }
 
 TEST_CASE ("Initialize REAPI CLI and test match, satisfy, and cancel",
