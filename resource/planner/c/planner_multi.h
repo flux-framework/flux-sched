@@ -69,14 +69,17 @@ planner_multi_t *planner_multi_empty ();
  */
 planner_multi_t *planner_multi_copy (planner_multi_t *mp);
 
-/*! Assign a planner_multi_t.
+/*! Assign a planner_multi: copy the state of rhs into lhs.
+ *  On error, lhs is unmodified.
  *
- *  \param lhs          the base planner_multi which will be assigned to rhs.
- *  \param rhs          the base planner_multi which will be copied and returned as
- *                      a new planner_multi context.
- *
+ *  \param lhs          planner_multi context to assign into.
+ *  \param rhs          planner_multi context whose state is copied into lhs.
+ *  \return             0 on success; -1 on an error with errno set as
+ *                      follows:
+ *                          EINVAL: invalid argument.
+ *                          ENOMEM: memory error.
  */
-void planner_multi_assign (planner_multi_t *lhs, planner_multi_t *rhs);
+int planner_multi_assign (planner_multi_t *lhs, planner_multi_t *rhs);
 
 /*! Getters:
  *  \return             -1 or NULL on an error with errno set as follows:

@@ -75,21 +75,22 @@ extern "C" reapi_cli_ctx_t *reapi_cli_new ()
     try {
         ctx = new reapi_cli_ctx_t;
     } catch (const std::bad_alloc &e) {
-        ctx->err_msg = __FUNCTION__;
-        ctx->err_msg += ": ERROR: can't allocate memory: " + std::string (e.what ()) + "\n";
+        // ctx is still nullptr here; an error message can't be stored in an
+        // object that failed to allocate.
         errno = ENOMEM;
-        goto out;
+        return nullptr;
     }
 
     ctx->rqt = nullptr;
     ctx->err_msg = "";
 
-out:
     return ctx;
 }
 
 extern "C" void reapi_cli_destroy (reapi_cli_ctx_t *ctx)
 {
+    if (!ctx)
+        return;
     int saved_errno = errno;
     if (ctx->rqt)
         delete ctx->rqt;
@@ -99,27 +100,39 @@ extern "C" void reapi_cli_destroy (reapi_cli_ctx_t *ctx)
 
 extern "C" int reapi_cli_initialize (reapi_cli_ctx_t *ctx, const char *rgraph, const char *options)
 {
-    int rc = -1;
-    ctx->rqt = nullptr;
+    resource_query_t *rqt = nullptr;
 
-    try {
-        ctx->rqt = new resource_query_t (rgraph, options);
-    } catch (std::bad_alloc &e) {
-        ctx->err_msg += __FUNCTION__;
-        ctx->err_msg += ": ERROR: can't allocate memory: " + std::string (e.what ()) + "\n";
-        errno = ENOMEM;
-        goto out;
-    } catch (std::runtime_error &e) {
-        ctx->err_msg += __FUNCTION__;
-        ctx->err_msg += ": Runtime error: " + std::string (e.what ()) + "\n";
-        errno = EPROTO;
-        goto out;
+    if (!ctx || !rgraph || !options) {
+        errno = EINVAL;
+        return -1;
     }
 
-    rc = 0;
+    // Construct into a local first so that a failed (re)initialization
+    // neither leaks a previously installed resource_query_t nor leaves
+    // the context pointing at destroyed state.
+    try {
+        rqt = new resource_query_t (rgraph, options);
+    } catch (std::bad_alloc &e) {
+        // Keep this handler allocation-free: appending a diagnostic to
+        // err_msg allocates, and a second bad_alloc thrown while handling
+        // the first would escape this extern "C" boundary.
+        errno = ENOMEM;
+        return -1;
+    } catch (std::runtime_error &e) {
+        try {
+            // Best effort: constructing the diagnostic allocates and must
+            // not let a secondary exception escape the C boundary.
+            ctx->err_msg += __FUNCTION__;
+            ctx->err_msg += ": Runtime error: " + std::string (e.what ()) + "\n";
+        } catch (...) {
+        }
+        errno = EPROTO;
+        return -1;
+    }
 
-out:
-    return rc;
+    delete ctx->rqt;
+    ctx->rqt = rqt;
+    return 0;
 }
 
 extern "C" reapi_cli_ctx_t *reapi_cli_clone (reapi_cli_ctx_t *ctx)
@@ -135,23 +148,37 @@ extern "C" reapi_cli_ctx_t *reapi_cli_clone (reapi_cli_ctx_t *ctx)
         clone->err_msg = "";
         return clone.release ();
     } catch (std::bad_alloc &e) {
-        ctx->err_msg = __FUNCTION__;
-        ctx->err_msg += ": ERROR: can't allocate memory: " + std::string (e.what ()) + "\n";
+        // Keep this handler allocation-free: appending a diagnostic to
+        // err_msg allocates, and a second bad_alloc thrown while handling
+        // the first would escape this extern "C" boundary.
         errno = ENOMEM;
         return nullptr;
     } catch (std::system_error &e) {
-        ctx->err_msg = __FUNCTION__;
-        ctx->err_msg += ": ERROR: System error: " + std::string (e.what ()) + "\n";
+        try {
+            // Best effort: constructing the diagnostic allocates and must
+            // not let a secondary exception escape the C boundary.
+            ctx->err_msg = __FUNCTION__;
+            ctx->err_msg += ": ERROR: System error: " + std::string (e.what ()) + "\n";
+        } catch (...) {
+        }
         errno = e.code ().value ();
         return nullptr;
     } catch (std::runtime_error &e) {
-        ctx->err_msg = __FUNCTION__;
-        ctx->err_msg += ": ERROR: Runtime error: " + std::string (e.what ()) + "\n";
+        try {
+            // Best effort; see above.
+            ctx->err_msg = __FUNCTION__;
+            ctx->err_msg += ": ERROR: Runtime error: " + std::string (e.what ()) + "\n";
+        } catch (...) {
+        }
         errno = EPROTO;
         return nullptr;
     } catch (...) {
-        ctx->err_msg = __FUNCTION__;
-        ctx->err_msg += ": ERROR: unknown exception during clone\n";
+        try {
+            // Best effort; see above.
+            ctx->err_msg = __FUNCTION__;
+            ctx->err_msg += ": ERROR: unknown exception during clone\n";
+        } catch (...) {
+        }
         errno = EINVAL;
         return nullptr;
     }
@@ -170,7 +197,7 @@ extern "C" int reapi_cli_match_with_jobid (reapi_cli_ctx_t *ctx,
     std::string R_buf = "";
     char *R_buf_c = nullptr;
 
-    if (!ctx || !ctx->rqt) {
+    if (!ctx || !ctx->rqt || !jobspec || !reserved || !R || !at || !ov) {
         errno = EINVAL;
         goto out;
     }
@@ -205,7 +232,7 @@ extern "C" int reapi_cli_match (reapi_cli_ctx_t *ctx,
 {
     int rc = -1;
 
-    if (!ctx || !ctx->rqt) {
+    if (!ctx || !ctx->rqt || !jobid) {
         errno = EINVAL;
         return -1;
     }
@@ -243,12 +270,26 @@ extern "C" int reapi_cli_match_satisfy (reapi_cli_ctx_t *ctx,
     match_op_t match_op = match_op_t::MATCH_SATISFIABILITY;
     uint64_t jobid;
     bool reserved;
-    char *R;
+    char *R = nullptr;
     int64_t at;
     int ret;
+
+    // Validate every pointer argument before the *sat write below;
+    // reapi_cli_match checks the rest (ctx->rqt, jobspec, ov).
+    if (!ctx || !jobspec || !sat || !ov) {
+        errno = EINVAL;
+        return -1;
+    }
     *sat = true;
 
     ret = reapi_cli_match (ctx, match_op, jobspec, &jobid, &reserved, &R, &at, ov);
+    // R is not part of a satisfiability response; free the strdup'd buffer.
+    // Preserve errno defensively across cleanup for compatibility with older
+    // or nonconforming allocation environments (POSIX.1-2024 requires that
+    // free () not modify errno; earlier editions did not).
+    int saved_errno = errno;
+    free (R);
+    errno = saved_errno;
 
     // Not satisfiable if the match reported unsatisfiable (ENODEV) or failed
     // for any other reason (e.g. a jobspec referencing an unknown resource
@@ -408,7 +449,7 @@ extern "C" int reapi_cli_stat (reapi_cli_ctx_t *ctx,
                                double *max,
                                double *avg)
 {
-    if (!ctx || !ctx->rqt) {
+    if (!ctx || !ctx->rqt || !V || !E || !J || !load || !min || !max || !avg) {
         errno = EINVAL;
         return -1;
     }
@@ -432,6 +473,8 @@ extern "C" const char *reapi_cli_get_err_msg (reapi_cli_ctx_t *ctx)
 
 extern "C" void reapi_cli_clear_err_msg (reapi_cli_ctx_t *ctx)
 {
+    if (!ctx)
+        return;
     if (ctx->rqt)
         ctx->rqt->clear_resource_query_err_msg ();
     reapi_cli_t::clear_err_message ();

@@ -104,6 +104,9 @@ planner &planner::operator= (const planner &o)
 {
     int rc = -1;
 
+    if (this == &o)
+        return *this;
+
     if ((rc = erase ()) != 0) {
         throw std::runtime_error ("ERROR erasing *this\n");
     }
@@ -541,12 +544,18 @@ bool planner::trees_equal (const planner &o) const
 // Public Planner_t methods
 ////////////////////////////////////////////////////////////////////////////////
 
+// The wrapper constructors rethrow so that a planner_t can never be
+// observed with a null inner planner; `new planner_t (...)` either
+// succeeds completely or throws (operator new releases the wrapper
+// allocation automatically when the constructor throws).
+
 planner_t::planner_t ()
 {
     try {
         plan = new planner ();
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;
+        throw;
     }
 }
 
@@ -556,7 +565,27 @@ planner_t::planner_t (const planner &o)
         plan = new planner (o);
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;
+        throw;
     }
+}
+
+planner_t &planner_t::operator= (const planner_t &o)
+{
+    if (this != &o) {
+        // Copy-and-swap for the strong exception guarantee: build the
+        // replacement first so *this is untouched if the copy throws
+        // (bad_alloc, or runtime_error from planner's tree/map copies).
+        planner *tmp = nullptr;
+        try {
+            tmp = new planner (*o.plan);
+        } catch (std::bad_alloc &e) {
+            errno = ENOMEM;
+            throw;
+        }
+        delete plan;
+        plan = tmp;
+    }
+    return *this;
 }
 
 planner_t::planner_t (const int64_t base_time,
@@ -568,6 +597,7 @@ planner_t::planner_t (const int64_t base_time,
         plan = new planner (base_time, duration, resource_totals, in_resource_type);
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;
+        throw;
     }
 }
 
