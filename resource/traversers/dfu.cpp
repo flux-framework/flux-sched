@@ -155,6 +155,7 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
         goto out;
 
     sched_iters++;
+    traverser->set_task_labels (jobspec.tasks);
     if ((rc = traverser->select (jobspec.resources, root, meta, x)) == 0) {
         m_total_preorder = traverser->get_preorder_count ();
         m_total_postorder = traverser->get_postorder_count ();

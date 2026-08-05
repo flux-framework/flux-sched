@@ -53,6 +53,11 @@ const std::string &resource_prop_t::get_match_format () const
     return m_match_format;
 }
 
+const int resource_prop_t::get_emit_nslots () const
+{
+    return m_emit_nslots;
+}
+
 const std::string &resource_prop_t::get_match_subsystems () const
 {
     return m_match_subsystems;
@@ -146,6 +151,11 @@ void resource_prop_t::set_update_interval (const int i)
     m_update_interval = i;
 }
 
+void resource_prop_t::set_emit_nslots (const int i)
+{
+    m_emit_nslots = i;
+}
+
 bool resource_prop_t::is_load_file_set () const
 {
     return m_load_file != RESOURCE_OPTS_UNSET_STR;
@@ -196,9 +206,14 @@ bool resource_prop_t::is_traverser_policy_set () const
     return m_traverser_policy != RESOURCE_OPTS_UNSET_STR;
 }
 
+bool resource_prop_t::is_emit_nslots_set () const
+{
+    return m_emit_nslots != -1;
+}
+
 json_t *resource_prop_t::jsonify () const
 {
-    return json_pack ("{ s:s? s:s? s:s? s:s? s:s? s:s? s:i s:s? s:i s:s? }",
+    return json_pack ("{ s:s? s:s? s:s? s:s? s:s? s:s? s:i s:s? s:i s:s? s:i }",
                       "load-file",
                       is_load_file_set () ? get_load_file ().c_str () : nullptr,
                       "load-format",
@@ -218,7 +233,9 @@ json_t *resource_prop_t::jsonify () const
                       "update-interval",
                       is_update_interval_set () ? get_update_interval () : 0,
                       "traverser",
-                      is_traverser_policy_set () ? get_traverser_policy ().c_str () : nullptr);
+                      is_traverser_policy_set () ? get_traverser_policy ().c_str () : nullptr,
+                      "emit-nslots",
+                      is_emit_nslots_set () ? get_emit_nslots () : -1);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -305,6 +322,11 @@ resource_opts_t::resource_opts_t ()
                         static_cast<int> (
                             resource_opts_t ::resource_opts_key_t ::TRAVERSER_POLICY)));
     inserted &= ret.second;
+    ret = m_tab.insert (
+        std::pair<std::string, int> ("emit-nslots",
+                                     static_cast<int> (
+                                         resource_opts_t ::resource_opts_key_t ::EMIT_NSLOTS)));
+    inserted &= ret.second;
 
     if (!inserted)
         throw std::bad_alloc ();
@@ -333,6 +355,11 @@ const std::string &resource_opts_t::get_match_policy () const
 const std::string &resource_opts_t::get_match_format () const
 {
     return m_resource_prop.get_match_format ();
+}
+
+const int resource_opts_t::get_emit_nslots () const
+{
+    return m_resource_prop.get_emit_nslots ();
 }
 
 const std::string &resource_opts_t::get_match_subsystems () const
@@ -465,6 +492,11 @@ bool resource_opts_t::is_traverser_policy_set () const
     return m_resource_prop.is_traverser_policy_set ();
 }
 
+bool resource_opts_t::is_emit_nslots_set () const
+{
+    return m_resource_prop.is_emit_nslots_set ();
+}
+
 resource_opts_t &resource_opts_t::canonicalize ()
 {
     return *this;
@@ -494,6 +526,8 @@ resource_opts_t &resource_opts_t::operator+= (const resource_opts_t &src)
         m_resource_prop.set_update_interval (src.m_resource_prop.get_update_interval ());
     if (src.m_resource_prop.is_traverser_policy_set ())
         m_resource_prop.set_traverser_policy (src.m_resource_prop.get_traverser_policy ());
+    if (src.m_resource_prop.is_emit_nslots_set ())
+        m_resource_prop.set_emit_nslots (src.m_resource_prop.get_emit_nslots ());
     return *this;
 }
 
@@ -611,6 +645,10 @@ int resource_opts_t::parse (const std::string &k, const std::string &v, std::str
                 rc = -1;
                 return rc;
             }
+            break;
+
+        case static_cast<int> (resource_opts_key_t::EMIT_NSLOTS):
+            m_resource_prop.set_emit_nslots (1);
             break;
 
         default:

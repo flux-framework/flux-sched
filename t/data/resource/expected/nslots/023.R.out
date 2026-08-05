@@ -1,0 +1,6 @@
+{"version": 1, "execution": {"R_lite": [{"rank": "0-1", "children": {"core": "13-17,31-35", "gpu": "0-1"}}], "nodelist": ["node[0-1]"], "starttime": 0, "expiration": 3600, "nslots": 2}, "scheduling": {"graph": {"nodes": [{"id": "2", "metadata": {"type": "node", "id": 0, "rank": 0, "exclusive": true, "paths": {"containment": "/tiny0/rack0/node0"}}}, {"id": "3", "metadata": {"type": "node", "id": 1, "rank": 1, "exclusive": true, "paths": {"containment": "/tiny0/rack0/node1"}}}, {"id": "1", "metadata": {"type": "rack", "id": 0, "rank": -1, "paths": {"containment": "/tiny0/rack0"}}}, {"id": "0", "metadata": {"type": "cluster", "basename": "tiny", "id": 0, "rank": -1, "paths": {"containment": "/tiny0"}}}], "edges": [{"source": "1", "target": "2"}, {"source": "1", "target": "3"}, {"source": "0", "target": "1"}]}, "writer": "fluxion:jgf_shorthand"}}
+INFO: =============================
+INFO: JOBID=1
+INFO: RESOURCES=ALLOCATED
+INFO: SCHEDULED AT=Now
+INFO: =============================

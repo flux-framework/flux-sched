@@ -1,0 +1,8 @@
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/nslots/test005.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/nslots/test005.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/nslots/test005.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/nslots/test005.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/nslots/test005.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/nslots/test005.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/nslots/test005.yaml
+quit
