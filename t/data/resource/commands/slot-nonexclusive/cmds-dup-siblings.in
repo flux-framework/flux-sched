@@ -1,0 +1,4 @@
+# Must be rejected at jobspec parse time: duplicate same-type siblings
+# under a slot.
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/validation/invalid/duplicate_siblings.yaml
+quit

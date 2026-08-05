@@ -1,0 +1,32 @@
+version: 9999
+# 2 slots, each pooled 10 GiB SSD + 1 node. Under the default `first` policy
+# both slots bind the first discovered SSD: one SSD at 20 GiB total.
+resources:
+  - type: slot
+    count: 2
+    label: default
+    exclusive: false
+    with:
+      - type: ssd
+        count: 10
+        unit: GiB
+        exclusive: false
+      - type: node
+        count: 1
+        exclusive: false
+        with:
+          - type: slot
+            label: task
+            count: 1
+            exclusive: false
+            with:
+              - type: core
+                count: 1
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: task
+    count:
+      per_slot: 1

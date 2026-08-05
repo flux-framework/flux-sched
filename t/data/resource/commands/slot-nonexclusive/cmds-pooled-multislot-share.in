@@ -1,0 +1,2 @@
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/pooled-multislot-share.yaml
+quit

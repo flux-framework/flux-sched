@@ -1,0 +1,30 @@
+      ---------ssd15[3:s]
+      ------------core1[1:x]
+      ---------hetchy1018[1:x]
+      ------chassis1[1:x]
+      ---hetchy[1:s]
+INFO: =============================
+INFO: JOBID=1
+INFO: RESOURCES=ALLOCATED
+INFO: SCHEDULED AT=Now
+INFO: =============================
+      ---------ssd3[3:s]
+      ------------core1[1:x]
+      ---------hetchy1002[1:x]
+      ------chassis0[1:x]
+      ---hetchy[1:s]
+INFO: =============================
+INFO: JOBID=2
+INFO: RESOURCES=ALLOCATED
+INFO: SCHEDULED AT=Now
+INFO: =============================
+      ---------ssd15[3:s]
+      ------------core1[1:x]
+      ---------hetchy1017[1:x]
+      ------chassis1[1:x]
+      ---hetchy[1:s]
+INFO: =============================
+INFO: JOBID=3
+INFO: RESOURCES=RESERVED
+INFO: SCHEDULED AT=3600
+INFO: =============================

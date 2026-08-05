@@ -135,17 +135,90 @@ class dfu_impl_t {
     void reset_color ();
     int reset_exclusive_resource_types (const std::set<resource_type_t> &x_types);
 
-    /*! Exclusive request? Return true if a resource in resources vector
-     *  matches resource vertex u and its exclusivity field value is TRUE.
-     *  (Note that when the system default configuration is added, it can
-     *  return true even if the exclusive field value is UNSPECIFIED
-     *  if the system default is configured that way.
+    /*! Resolve a tristate exclusivity value with parent exclusivity.
+     *  Implements tristate logic:
+     *  - If explicit TRUE -> return true (exclusive)
+     *  - If explicit FALSE -> return false (not exclusive, overrides parent)
+     *  - If UNSPECIFIED -> return parent_excl (inherit from parent)
      *
-     *  \param resources Resource request vector.
-     *  \param u         visiting resource vertex.
-     *  \return          true or false.
+     *  \param tristate    Jobspec tristate exclusivity value.
+     *  \param parent_excl inherited exclusivity from parent.
+     *  \return            resolved exclusivity boolean.
      */
-    bool exclusivity (const std::vector<Jobspec::Resource> &resources, vtx_t u);
+    static bool resolve_tristate_excl (Jobspec::tristate_t tristate, bool parent_excl);
+
+    /*! Resolve exclusivity for a vertex in a single pass. Checks if a resource
+     *  in resources vector matches vertex u and returns:
+     *  - true if exclusivity field is TRUE
+     *  - false if exclusivity field is FALSE
+     *  - parent_excl if exclusivity is UNSPECIFIED or no match found
+     *
+     *  This allows explicit FALSE to override inherited slot exclusivity while
+     *  maintaining backward compatibility with UNSPECIFIED (inherit) behavior.
+     *
+     *  \param resources   Resource request vector.
+     *  \param u           visiting resource vertex.
+     *  \param parent_excl inherited exclusivity from parent.
+     *  \return            resolved exclusivity boolean.
+     */
+    bool resolve_exclusivity (const std::vector<Jobspec::Resource> &resources,
+                              vtx_t u,
+                              bool parent_excl);
+
+    /*! Return (building and caching on first use) the jobspec type -> resource
+     *  request lookup for a given level's resources vector. The map depends
+     *  only on the jobspec level, so it is computed once per traversal and
+     *  reused across every candidate graph vertex, rather than rebuilt on each
+     *  resolve_request() call. Keyed by the resources vector's address, which
+     *  is stable for the life of a traversal (it points into the Jobspec).
+     *
+     *  \param resources jobspec resource vector for the current level.
+     *  \return          const ref to the cached type -> request map.
+     */
+    const std::unordered_map<resource_type_t, const Jobspec::Resource *> &requests_for (
+        const std::vector<Jobspec::Resource> &resources);
+
+    /*! The per-vertex resolution of a jobspec resource request: how much of
+     *  the vertex the match consumes (needs) and whether the request draws
+     *  from the vertex's capacity pool (pooled).
+     */
+    struct resolved_request_t {
+        unsigned int needs = 0;
+        bool pooled = false;
+    };
+
+    /*! Resolve a jobspec resource request against a matched vertex.
+     *  Exclusive matches consume the full available amount (jobspec unit
+     *  stays advisory, the historical behavior). A non-exclusive request
+     *  against a vertex with a unit is POOLED: it consumes exactly the
+     *  requested count from the vertex's capacity pool, and if the jobspec
+     *  specifies a unit it must equal the vertex's unit (no conversion
+     *  support). A non-exclusive request against a unit-less vertex is
+     *  valid only as a WAYPOINT: an interior path vertex that defines a
+     *  containment constraint -- the element's children must be found
+     *  within the vertex's subtree -- and is not itself consumed. Where
+     *  an exclusive interior vertex is consumed whole and a pooled one by
+     *  capacity, nothing is drawn from a waypoint: enforcement skips its
+     *  planner, it adds no usage, and it appears in R at its full size
+     *  with the shared marker only to locate the resources charged below
+     *  it. A non-pooled LEAF request cannot be allocated non-exclusively
+     *  and is rejected: nothing would track the share.
+     *
+     *  \param requests  precomputed type -> request lookup (see requests_for()).
+     *  \param tgt       target vertex.
+     *  \param available available capacity from planner.
+     *  \param exclusive whether the resource is being allocated exclusively.
+     *  \param resolved  resolved needs and pooled classification (out).
+     *  \return          0 on success; -1 when the vertex cannot serve the
+     *                   request (unit mismatch, a pooled request without
+     *                   a fixed count, or a non-pooled non-exclusive leaf).
+     */
+    int resolve_request (
+        const std::unordered_map<resource_type_t, const Jobspec::Resource *> &requests,
+        vtx_t tgt,
+        unsigned int available,
+        bool exclusive,
+        resolved_request_t &resolved);
 
     /*! Prime the resource graph with subtree plans. The subtree plans are
      *  instantiated on certain resource vertices and updated with the
@@ -484,6 +557,13 @@ class dfu_impl_t {
         unsigned int prev_total = 0;  //!< total_count () seen so far
         unsigned int accum = 0;       //!< count toward the next share
         unsigned int shares = 0;      //!< completed whole-bundle shares
+        //! Next unscanned egroup index for pooled_shares_incr (); valid
+        //! across calls because egroups are append-only until the match
+        //! policy sorts them, which happens only after exploration.
+        unsigned int pooled_cursor = 0;
+        //! Whole-share fits accumulated from pooled egroups so far; stays
+        //! -1 until the first pooled egroup is seen (see pooled_shares ()).
+        int64_t pooled_accum = -1;
         bool satisfies (unsigned int multiplier) const
         {
             return per_share == 0 || shares >= multiplier;
@@ -587,11 +667,12 @@ class dfu_impl_t {
     int upd_agfilter (vtx_t u,
                       subsystem_t s,
                       jobmeta_t jobmeta,
-                      const std::map<resource_type_t, int64_t> &dfu);
+                      const std::map<resource_type_t, int64_t> &usage);
     int upd_idata (vtx_t u,
                    subsystem_t s,
                    jobmeta_t jobmeta,
-                   const std::map<resource_type_t, int64_t> &dfu);
+                   const std::map<resource_type_t, int64_t> &dfu,
+                   const std::map<resource_type_t, int64_t> &usage);
     int upd_by_outedges (subsystem_t subsystem, jobmeta_t jobmeta, vtx_t u, edg_t e);
     int upd_plan (vtx_t u,
                   subsystem_t s,
@@ -605,7 +686,9 @@ class dfu_impl_t {
                          unsigned int needs,
                          bool excl,
                          const std::map<resource_type_t, int64_t> &dfu,
-                         std::map<resource_type_t, int64_t> &to_parent);
+                         std::map<resource_type_t, int64_t> &to_parent,
+                         const std::map<resource_type_t, int64_t> &usage,
+                         std::map<resource_type_t, int64_t> &usage_to_parent);
     int upd_meta (vtx_t u,
                   subsystem_t s,
                   unsigned int needs,
@@ -613,7 +696,9 @@ class dfu_impl_t {
                   int n,
                   const jobmeta_t &jobmeta,
                   const std::map<resource_type_t, int64_t> &dfu,
-                  std::map<resource_type_t, int64_t> &to_parent);
+                  std::map<resource_type_t, int64_t> &to_parent,
+                  const std::map<resource_type_t, int64_t> &usage,
+                  std::map<resource_type_t, int64_t> &usage_to_parent);
     int upd_sched (vtx_t u,
                    std::shared_ptr<match_writers_t> &writers,
                    subsystem_t s,
@@ -624,6 +709,8 @@ class dfu_impl_t {
                    bool full,
                    const std::map<resource_type_t, int64_t> &dfu,
                    std::map<resource_type_t, int64_t> &to_parent,
+                   const std::map<resource_type_t, int64_t> &usage,
+                   std::map<resource_type_t, int64_t> &usage_to_parent,
                    bool excl_parent);
     int upd_upv (vtx_t u,
                  std::shared_ptr<match_writers_t> &writers,
@@ -640,6 +727,7 @@ class dfu_impl_t {
                  const jobmeta_t &jobmeta,
                  bool full,
                  std::map<resource_type_t, int64_t> &to_parent,
+                 std::map<resource_type_t, int64_t> &usage_to_parent,
                  bool emit_shadow,
                  bool excl_parent);
     bool rem_tag (vtx_t u, int64_t jobid);
@@ -683,6 +771,14 @@ class dfu_impl_t {
     std::shared_ptr<dfu_match_cb_t> m_match = nullptr;
     expr_eval_api_t m_expr_eval;
     std::string m_err_msg = "";
+    // Per-traversal cache of jobspec type -> resource request lookups, keyed
+    // by the address of the (jobspec-resident, stable) resources vector for
+    // each level. Populated lazily by requests_for() and cleared at the start
+    // of each select() so a single jobspec level is scanned once per traversal
+    // rather than once per visited vertex.
+    std::unordered_map<const std::vector<Jobspec::Resource> *,
+                       std::unordered_map<resource_type_t, const Jobspec::Resource *>>
+        m_level_requests;
 };  // the end of class dfu_impl_t
 
 template<class lookup_t>

@@ -1,0 +1,4 @@
+# Shared pooled request with unit GB against GiB vertices: no unit
+# conversion is supported, so the request must not match.
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/pooled-unit-mismatch.yaml
+quit

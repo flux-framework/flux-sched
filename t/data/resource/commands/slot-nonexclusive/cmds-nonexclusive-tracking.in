@@ -1,0 +1,11 @@
+# Test that non-exclusive pooled SSD usage is tracked in the planner by
+# CAPACITY: each count:1 request consumes 1 GiB of a 793 GiB SSD pool, so
+# repeated allocations all succeed while drawing down the same vertices.
+# (Whole-pool exhaustion, where a subsequent request must fail, is covered
+# by cmds-pooled-slot-single-500.in and cmds-pooled-slot-half.in.)
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/ssd-nonexclusive-limit.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/ssd-nonexclusive-limit.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/ssd-nonexclusive-limit.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/ssd-nonexclusive-limit.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/ssd-nonexclusive-limit.yaml
+quit

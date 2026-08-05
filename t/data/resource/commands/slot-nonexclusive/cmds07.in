@@ -1,0 +1,4 @@
+# Reject explicit exclusive:false on a non-pooled (unit-less) leaf: the gpu
+# request is refused at match time with a resolve_request diagnostic.
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/gpu-shared.yaml
+quit

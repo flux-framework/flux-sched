@@ -1,0 +1,26 @@
+version: 9999
+# Pooled classification through INHERITED non-exclusivity: the chassis is
+# explicitly shareable and the ssd below it says nothing, so the ssd inherits
+# exclusive:false and must be treated as a pooled 300 GiB draw -- exactly as
+# if the ssd itself carried exclusive:false. 2 slots per job; floor(793/300)=2
+# draws fit per SSD, so 4 x 793 GiB SSDs serve 8 draws = 4 jobs; the 5th fails.
+resources:
+  - type: slot
+    count: 2
+    label: default
+    with:
+      - type: chassis
+        count: 1
+        exclusive: false
+        with:
+          - type: ssd
+            count: 300
+            unit: GiB
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: default
+    count:
+      per_slot: 1

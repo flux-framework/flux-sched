@@ -1,0 +1,24 @@
+version: 9999
+# A pooled draw must come from a single SSD vertex, and no SSD carries
+# 999 GiB (each holds 793 GiB), so this request can never match -- even
+# though the aggregate capacity of a chassis (2x793 GiB) would cover it.
+resources:
+  - type: slot
+    count: 1
+    label: default
+    with:
+      - type: chassis
+        count: 1
+        with:
+          - type: ssd
+            count: 999
+            unit: GiB
+            exclusive: false
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: default
+    count:
+      per_slot: 1

@@ -1,0 +1,22 @@
+version: 9999
+# A slot is itself an exclusive allocation container: exclusive:false written
+# ON the slot element is ignored and does not propagate to its children. The
+# unspecified ssd below therefore inherits the slot's exclusive-access default
+# and each slot claims a whole SSD vertex exclusively -- it is NOT pooled.
+resources:
+  - type: slot
+    count: 2
+    label: default
+    exclusive: false
+    with:
+      - type: ssd
+        count: 300
+        unit: GiB
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: default
+    count:
+      per_slot: 1

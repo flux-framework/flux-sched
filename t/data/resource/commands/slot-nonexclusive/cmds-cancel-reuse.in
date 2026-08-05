@@ -1,0 +1,10 @@
+# Pooled capacity returns on cancel: 4 x 500 GiB exhausts the SSDs and a 5th
+# allocation fails; after canceling job 1 the same request succeeds again.
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/pooled-slot-single-500.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/pooled-slot-single-500.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/pooled-slot-single-500.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/pooled-slot-single-500.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/pooled-slot-single-500.yaml
+cancel 1
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/pooled-slot-single-500.yaml
+quit

@@ -1,0 +1,26 @@
+version: 9999
+# Three pooled 500 GiB slots against one chassis with four 793 GiB SSDs.
+# floor(793/500)=1, so each slot must land on a DIFFERENT SSD vertex even
+# though two SSDs' aggregate capacity (1586 GiB) covers 3x500. Guards the
+# dynamic-exploration share tally: counting aggregate capacity would claim
+# 3 shares after discovering only two SSDs, stop exploring, and fail this
+# satisfiable request. The second allocation must fail: the remainders
+# (293 GiB x3 + 793 GiB) fit only one more whole 500 GiB chunk.
+resources:
+  - type: slot
+    count: 3
+    label: default
+    exclusive: false
+    with:
+      - type: ssd
+        count: 500
+        unit: GiB
+        exclusive: false
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: default
+    count:
+      per_slot: 1

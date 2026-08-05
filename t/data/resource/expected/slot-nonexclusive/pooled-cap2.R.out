@@ -1,0 +1,48 @@
+      ---------ssd3[300:s]
+      ------chassis0[2:s]
+      ---------ssd6[300:s]
+      ------chassis1[2:s]
+      ---hetchy[1:s]
+INFO: =============================
+INFO: JOBID=1
+INFO: RESOURCES=ALLOCATED
+INFO: SCHEDULED AT=Now
+INFO: =============================
+INFO: =============================
+INFO: No matching resources found
+INFO: JOBID=2
+INFO: =============================
+      ---------ssd3[300:s]
+      ------chassis0[2:s]
+      ---------ssd6[300:s]
+      ------chassis1[2:s]
+      ---hetchy[1:s]
+INFO: =============================
+INFO: JOBID=3
+INFO: RESOURCES=ALLOCATED
+INFO: SCHEDULED AT=Now
+INFO: =============================
+      ---------ssd2[300:s]
+      ------chassis0[2:s]
+      ---------ssd5[300:s]
+      ------chassis1[2:s]
+      ---hetchy[1:s]
+INFO: =============================
+INFO: JOBID=4
+INFO: RESOURCES=ALLOCATED
+INFO: SCHEDULED AT=Now
+INFO: =============================
+      ---------ssd2[300:s]
+      ------chassis0[2:s]
+      ---------ssd5[300:s]
+      ------chassis1[2:s]
+      ---hetchy[1:s]
+INFO: =============================
+INFO: JOBID=5
+INFO: RESOURCES=ALLOCATED
+INFO: SCHEDULED AT=Now
+INFO: =============================
+INFO: =============================
+INFO: No matching resources found
+INFO: JOBID=6
+INFO: =============================

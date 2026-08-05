@@ -1,0 +1,6 @@
+# exclusive:true below an exclusive:false ancestor re-establishes
+# exclusivity: both allocations draw from the same shared SSD pool but must
+# take different (exclusive) nodes.
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/excl-reestablish.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/excl-reestablish.yaml
+quit

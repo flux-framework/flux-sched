@@ -87,6 +87,20 @@ unsigned int scoring_api_t::total_count (subsystem_t s, resource_type_t r)
     return m_ssys_map[s][r].total_count ();
 }
 
+int64_t scoring_api_t::pooled_shares (subsystem_t s, resource_type_t r, unsigned int per_share)
+{
+    return m_ssys_map[s][r].pooled_shares (per_share);
+}
+
+void scoring_api_t::pooled_shares_incr (subsystem_t s,
+                                        resource_type_t r,
+                                        unsigned int per_share,
+                                        unsigned int &cursor,
+                                        int64_t &shares)
+{
+    m_ssys_map[s][r].pooled_shares_incr (per_share, cursor, shares);
+}
+
 unsigned int scoring_api_t::best_k (subsystem_t s, resource_type_t r)
 {
     return m_ssys_map[s][r].best_k ();

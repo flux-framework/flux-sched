@@ -1,0 +1,4 @@
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/slot-excl-false-ignored.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/slot-excl-false-ignored.yaml
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/slot-nonexclusive/slot-excl-false-ignored.yaml
+quit
