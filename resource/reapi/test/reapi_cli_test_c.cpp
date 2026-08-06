@@ -141,7 +141,7 @@ TEST_CASE ("Initialize REAPI CLI and test match, satisfy, and cancel",
                                  + "/data/resource/jobspecs/basics/test011.yaml");
     match_op_t match_op = match_op_t::MATCH_ALLOCATE;
     uint64_t jobid, jobid2, jobid3;
-    bool reserved, satisfiable;
+    bool reserved;
     char *R = nullptr, *mode = nullptr;
     int64_t at;
     double ov;
@@ -184,12 +184,10 @@ TEST_CASE ("Initialize REAPI CLI and test match, satisfy, and cancel",
     INFO (reapi_cli_get_err_msg (ctx));
 
     // Test satisfy
-    CHECK (reapi_cli_match_satisfy (ctx, jobspec.c_str (), &satisfiable, &ov) == 0);
-    CHECK (satisfiable == true);
+    CHECK (reapi_cli_match_satisfy (ctx, jobspec.c_str (), &ov) == 0);
 
     // Test satisfy with unsatisfiable jobspec
-    CHECK (reapi_cli_match_satisfy (ctx, jobspec2.c_str (), &satisfiable, &ov) != 0);
-    CHECK (satisfiable == false);
+    CHECK (reapi_cli_match_satisfy (ctx, jobspec2.c_str (), &ov) != 0);
 
     // Test info with valid jobid
     CHECK (reapi_cli_info (ctx, jobid2, &mode, &reserved, &at, &ov) == 0);

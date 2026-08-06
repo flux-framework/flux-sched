@@ -501,22 +501,17 @@ static int test_match_satisfy_absent_type ()
     if (rc < 0)
         BAIL_OUT ("reapi_cli_initialize failed: %s", reapi_cli_get_err_msg (ctx));
 
-    bool sat = false;
     double ov = 0.0;
 
     // Sanity: a satisfiable request is reported satisfiable.
-    sat = false;
-    rc = reapi_cli_match_satisfy (ctx, simple_jobspec, &sat, &ov);
-    ok (rc == 0 && sat, "reapi_cli_match_satisfy: satisfiable request -> satisfiable");
+    rc = reapi_cli_match_satisfy (ctx, simple_jobspec, &ov);
+    ok (rc == 0, "reapi_cli_match_satisfy: satisfiable request -> 0");
 
-    // A request for a resource type absent from the graph must NOT be reported
-    // satisfiable.  reapi_cli_match_satisfy used to default *sat=true and clear
-    // it only for ENODEV, so a jobspec referencing an unknown type (which fails
-    // with errno != ENODEV) was wrongly reported satisfiable.
-    sat = true;
-    errno = 0;
-    rc = reapi_cli_match_satisfy (ctx, jobspec_absent_type, &sat, &ov);
-    ok (rc != 0 && !sat, "reapi_cli_match_satisfy: absent resource type -> unsatisfiable");
+    // A request for a resource type absent from the graph fails with an errno
+    // other than ENODEV, so it is an error rather than a plain "not
+    // satisfiable" result.
+    rc = reapi_cli_match_satisfy (ctx, jobspec_absent_type, &ov);
+    ok (rc == -1, "reapi_cli_match_satisfy: absent resource type -> -1");
 
     reapi_cli_destroy (ctx);
     return 0;
