@@ -174,6 +174,18 @@ int run_remove_subgraph (std::shared_ptr<resource_ctx_t> &ctx, const std::string
 // Resource Graph and Traverser Initialization
 ////////////////////////////////////////////////////////////////////////////////
 
+template<typename T>
+inline int required_module_option (std::shared_ptr<resource_ctx_t> &ctx,
+                                   std::optional<T> opt,
+                                   const char *name)
+{
+    if (!opt) {
+        flux_log (ctx->h, LOG_ERR, "%s: '%s' is unset", __FUNCTION__, name);
+        return -1;
+    }
+    return 0;
+}
+
 int populate_resource_db (std::shared_ptr<resource_ctx_t> &ctx);
 
 int mark (std::shared_ptr<resource_ctx_t> &ctx, const char *ids, resource_pool_t::status_t status);

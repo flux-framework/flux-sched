@@ -38,7 +38,6 @@ static void set_default_args (std::shared_ptr<resource_ctx_t> &ctx)
     ct_opts.set_match_policy ("first", e);
     ct_opts.set_prune_filters ("ALL:core,ALL:node,ALL:gpu,ALL:ssd");
     ct_opts.set_match_format ("rv1_nosched");
-    ct_opts.set_update_interval (0);
     ctx->opts += ct_opts;
 }
 
@@ -250,6 +249,17 @@ error:
 static int init_resource_graph (std::shared_ptr<resource_ctx_t> &ctx)
 {
     int rc = 0;
+    const resource_opts_t &opts = ctx->opts.get_opt ();
+    const std::optional<std::string> &match_subsystems = opts.get_match_subsystems ();
+    const std::optional<std::string> &match_format = opts.get_match_format ();
+    const std::optional<std::string> &prune_filters = opts.get_prune_filters ();
+
+    // Check for all required module options.
+    rc += required_module_option (ctx, match_subsystems, "subsystems");
+    rc += required_module_option (ctx, match_format, "match-format");
+    rc += required_module_option (ctx, opts.get_load_format (), "load-format");
+    if (rc != 0)
+        return rc;
 
     // The feasibility module should only use "first". Exclusivity has no effect.
     if (!(ctx->matcher = create_match_cb ("first"))) {
@@ -265,26 +275,31 @@ static int init_resource_graph (std::shared_ptr<resource_ctx_t> &ctx)
                   LOG_ERR,
                   "%s: error processing subsystems %s",
                   __FUNCTION__,
-                  ctx->opts.get_opt ().get_match_subsystems ().c_str ());
+                  match_subsystems->c_str ());
         return rc;
     }
 
-    // Create a writers object for matched vertices and edges
-    match_format_t format =
-        match_writers_factory_t::get_writers_type (ctx->opts.get_opt ().get_match_format ());
-    if (!(ctx->writers = match_writers_factory_t::create (format)))
-        return -1;
-
-    if (ctx->opts.get_opt ().is_prune_filters_set ()
-        && ctx->matcher->set_pruning_types_w_spec (ctx->matcher->dom_subsystem (),
-                                                   ctx->opts.get_opt ().get_prune_filters ())
-               < 0) {
+    // Create a writers object for matched vertices and edges.
+    if (!(ctx->writers = match_writers_factory_t::create (
+              match_writers_factory_t::get_writers_type (*match_format)))) {
         flux_log (ctx->h,
                   LOG_ERR,
-                  "%s: error setting pruning types with: %s",
+                  "%s: error creating match writer with: %s",
                   __FUNCTION__,
-                  ctx->opts.get_opt ().get_prune_filters ().c_str ());
+                  match_format->c_str ());
         return -1;
+    }
+
+    if (prune_filters) {
+        if (ctx->matcher->set_pruning_types_w_spec (ctx->matcher->dom_subsystem (), *prune_filters)
+            < 0) {
+            flux_log (ctx->h,
+                      LOG_ERR,
+                      "%s: error setting pruning types with: %s",
+                      __FUNCTION__,
+                      prune_filters->c_str ());
+            return -1;
+        }
     }
 
     // Initialize the DFU traverser
