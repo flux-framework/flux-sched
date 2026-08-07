@@ -23,6 +23,7 @@ extern "C" {
 #include <vector>
 #include <jansson.h>
 #include <boost/algorithm/string.hpp>
+#include <boost/optional.hpp>
 #include "resource/reapi/bindings/c++/reapi_cli.hpp"
 #include "resource/readers/resource_reader_factory.hpp"
 #include "resource/config/system_defaults.hpp"
@@ -101,7 +102,8 @@ int reapi_cli_t::match_allocate (void *h,
                                  bool &reserved,
                                  std::string &R,
                                  int64_t &at,
-                                 double &ov)
+                                 double &ov,
+                                 boost::optional<int64_t> within)
 {
     resource_query_t *rq = static_cast<resource_query_t *> (h);
     int traverser_rc;
@@ -149,7 +151,7 @@ int reapi_cli_t::match_allocate (void *h,
      * ENODEV - unsatisfiable
      * Otherwise, return immediately.
      */
-    if ((traverser_rc = rq->traverser_run (job, match_op, (int64_t)jobid, at)) < 0) {
+    if ((traverser_rc = rq->traverser_run (job, match_op, (int64_t)jobid, at, within)) < 0) {
         traverser_errno = errno;
         if (rq->get_traverser_err_msg () != "") {
             m_err_msg += __FUNCTION__;
@@ -1345,9 +1347,10 @@ void resource_query_t::incr_job_counter ()
 int resource_query_t::traverser_run (Flux::Jobspec::Jobspec &job,
                                      match_op_t op,
                                      int64_t jobid,
-                                     int64_t &at)
+                                     int64_t &at,
+                                     boost::optional<int64_t> within)
 {
-    return traverser->run (job, writers, op, jobid, &at);
+    return traverser->run (job, writers, op, jobid, &at, within);
 }
 
 int resource_query_t::traverser_find (std::string criteria)

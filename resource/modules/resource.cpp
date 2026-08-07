@@ -369,18 +369,22 @@ static void match_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t
     const char *cmd = NULL;
     const char *js_str = NULL;
     const char *status = nullptr;
+    boost::optional<int64_t> within = boost::none;
+    int64_t candidate_within = std::numeric_limits<int64_t>::min ();
     std::stringstream R;
 
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
     if (flux_request_unpack (msg,
                              NULL,
-                             "{s:s s:I s:s}",
+                             "{s:s s:I s:s s?I}",
                              "cmd",
                              &cmd,
                              "jobid",
                              &jobid,
                              "jobspec",
-                             &js_str)
+                             &js_str,
+                             "within",
+                             &candidate_within)
         < 0)
         goto error;
     // Jobid -1 denotes that the matched resources do not belong to any particular job.
@@ -394,7 +398,9 @@ static void match_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t
         flux_log_error (h, "%s: existent job (%jd).", __FUNCTION__, (intmax_t)jobid);
         goto error;
     }
-    if (run_match (ctx, jobid, cmd, js_str, &now, &at, &overhead, R, NULL) < 0) {
+    if (candidate_within != std::numeric_limits<int64_t>::min ())
+        within = candidate_within;
+    if (run_match (ctx, jobid, cmd, js_str, &now, &at, &overhead, R, NULL, within) < 0) {
         if (errno != EBUSY && errno != ENODEV)
             flux_log_error (ctx->h,
                             "%s: match failed due to match error (id=%jd)",

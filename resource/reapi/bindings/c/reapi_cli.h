@@ -142,6 +142,57 @@ int reapi_cli_match_with_jobid (reapi_cli_ctx_t *ctx,
 
 /*! Match a jobspec to the "best" resources and either allocate
  *  orelse reserve them. The best resources are determined by
+ *  the selected match policy.  This function is identical to
+ *  reapi_cli_match_with_jobid() in all respects except the
+ *  "within" parameter, which filters out late resource matches.
+ *  N.B. To avoid jobid collisions, this call should not be mixed
+ *  with the other match calls that allocate them internally.
+ *
+ *  \param ctx       reapi_cli_ctx_t context object
+ *  \param match_op  match_op_t: set to specify the specific match option
+ *                   from 1 of 4 choices:
+ *                   MATCH_ALLOCATE: try to allocate now and fail if resources
+ *                   aren't available.
+ *                   MATCH_ALLOCATE_ORELSE_RESERVE : Try to allocate and reserve
+ *                   if resources aren't available now.
+ *                   MATCH_SATISFIABILITY: Do a satisfiablity check and do not
+ *                   allocate.
+ *                   MATCH_ALLOCATE_W_SATISFIABILITY: try to allocate and run
+ *                   satisfiability check if resources are not available.
+ *                   MATCH_WITHOUT_ALLOCATING: match and return resources
+ *                   but do not allocate or reserve them.
+ *                   MATCH_WITHOUT_ALLOCATING_FUTURE: match and return resources
+ *                   but do not allocate or reserve them. Return the earliest
+ *                   match, which could be in the future.
+ *  \param jobspec   jobspec string.
+ *  \param jobid     jobid provided by caller
+ *  \param reserved  Boolean into which to return true if this job has been
+ *                   reserved instead of allocated.
+ *  \param R         String into which to return the resource set either
+ *                   allocated or reserved.
+ *  \param at        If allocated, 0 is returned; if reserved, actual time
+ *                   at which the job is reserved.
+ *  \param ov        Double into which to return performance overhead
+ *                   in terms of elapse time needed to complete
+ *                   the match operation.
+ *  \param within    Return only matches that start between now and now+within.
+ *                   If within < 0, don't apply this filter.
+ *                   If and only if within == INT64_MIN, also search for a
+ *                   'within' value in the jobspec's user attributes.
+ *  \return          0 on success; -1 on error.
+ */
+int reapi_cli_match_with_jobid_within (reapi_cli_ctx_t *ctx,
+                                       match_op_t match_op,
+                                       const char *jobspec,
+                                       uint64_t jobid,
+                                       bool *reserved,
+                                       char **R,
+                                       int64_t *at,
+                                       double *ov,
+                                       int64_t within);
+
+/*! Match a jobspec to the "best" resources and either allocate
+ *  orelse reserve them. The best resources are determined by
  *  the selected match policy.
  *
  *  \param ctx       reapi_cli_ctx_t context object

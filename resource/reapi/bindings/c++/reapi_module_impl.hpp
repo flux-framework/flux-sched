@@ -19,6 +19,8 @@ extern "C" {
 }
 
 #include <cerrno>
+#include <cstdint>
+#include <boost/optional.hpp>
 #include "resource/reapi/bindings/c++/reapi_module.hpp"
 
 namespace Flux {
@@ -32,7 +34,8 @@ int reapi_module_t::match_allocate (void *h,
                                     bool &reserved,
                                     std::string &R,
                                     int64_t &at,
-                                    double &ov)
+                                    double &ov,
+                                    boost::optional<int64_t> within)
 {
     int rc = -1;
     int64_t rj = -1;
@@ -51,13 +54,15 @@ int reapi_module_t::match_allocate (void *h,
                              "sched-fluxion-resource.match",
                              FLUX_NODEID_ANY,
                              0,
-                             "{s:s s:I s:s}",
+                             "{s:s s:I s:s s:I}",
                              "cmd",
                              cmd,
                              "jobid",
                              (const int64_t)jobid,
                              "jobspec",
-                             jobspec.c_str ()))) {
+                             jobspec.c_str (),
+                             "within",
+                             within ? *within : INT64_MIN))) {
         goto out;
     }
 
@@ -96,12 +101,13 @@ int reapi_module_t::match_allocate (void *h,
                                     bool &reserved,
                                     std::string &R,
                                     int64_t &at,
-                                    double &ov)
+                                    double &ov,
+                                    boost::optional<int64_t> within)
 {
     match_op_t match_op = (orelse_reserve) ? match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE
                                            : match_op_t::MATCH_ALLOCATE_W_SATISFIABILITY;
 
-    return match_allocate (h, match_op, jobspec, jobid, reserved, R, at, ov);
+    return match_allocate (h, match_op, jobspec, jobid, reserved, R, at, ov, within);
 }
 
 void match_allocate_multi_cont (flux_future_t *f, void *arg)
