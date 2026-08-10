@@ -175,7 +175,6 @@ static int test_clone_independence ()
     bool reserved = false;
     std::string R1;
     int64_t at = 0;
-    double ov = 0.0;
 
     int rc = reapi_cli_t::match_allocate (h_clone,
                                           MATCH_ALLOCATE,
@@ -183,8 +182,7 @@ static int test_clone_independence ()
                                           jobid1,
                                           reserved,
                                           R1,
-                                          at,
-                                          ov);
+                                          at);
     ok (rc == 0, "allocation on clone succeeded");
 
     // Test: allocate same resources on original - should succeed (clone is independent)
@@ -196,8 +194,7 @@ static int test_clone_independence ()
                                       jobid2,
                                       reserved,
                                       R2,
-                                      at,
-                                      ov);
+                                      at);
     ok (rc == 0, "allocation on original succeeded (clone is independent)");
 
     delete clone;
@@ -222,16 +219,9 @@ static int test_clone_copies_allocations ()
     bool reserved = false;
     std::string R1;
     int64_t at = 0;
-    double ov = 0.0;
 
-    int rc = reapi_cli_t::match_allocate (h,
-                                          MATCH_ALLOCATE,
-                                          simple_jobspec,
-                                          jobid1,
-                                          reserved,
-                                          R1,
-                                          at,
-                                          ov);
+    int rc =
+        reapi_cli_t::match_allocate (h, MATCH_ALLOCATE, simple_jobspec, jobid1, reserved, R1, at);
     if (rc < 0) {
         delete rq;
         BAIL_OUT ("match_allocate failed");
@@ -258,8 +248,7 @@ static int test_clone_copies_allocations ()
                                       jobid2,
                                       reserved,
                                       R2,
-                                      at,
-                                      ov);
+                                      at);
     ok (rc == -1 && errno == EBUSY, "allocation on clone fails with EBUSY (allocation was copied)");
 
     // Test: cancel on clone shouldn't affect original
@@ -295,7 +284,6 @@ static int test_clone_copies_reservations ()
     bool reserved = false;
     std::string R1;
     int64_t at = 0;
-    double ov = 0.0;
 
     int rc = reapi_cli_t::match_allocate (h,
                                           MATCH_ALLOCATE_ORELSE_RESERVE,
@@ -303,8 +291,7 @@ static int test_clone_copies_reservations ()
                                           jobid1,
                                           reserved,
                                           R1,
-                                          at,
-                                          ov);
+                                          at);
     if (rc < 0) {
         delete rq;
         BAIL_OUT ("match_allocate failed");
@@ -397,16 +384,9 @@ static int test_clone_with_multiple_jobs ()
     bool reserved = false;
     std::string R1;
     int64_t at = 0;
-    double ov = 0.0;
 
-    int rc = reapi_cli_t::match_allocate (h,
-                                          MATCH_ALLOCATE,
-                                          simple_jobspec,
-                                          jobid1,
-                                          reserved,
-                                          R1,
-                                          at,
-                                          ov);
+    int rc =
+        reapi_cli_t::match_allocate (h, MATCH_ALLOCATE, simple_jobspec, jobid1, reserved, R1, at);
     if (rc < 0) {
         delete rq;
         BAIL_OUT ("first allocation failed");
@@ -415,14 +395,7 @@ static int test_clone_with_multiple_jobs ()
     // Allocate second job on other node
     uint64_t jobid2 = 2;
     std::string R2;
-    rc = reapi_cli_t::match_allocate (h,
-                                      MATCH_ALLOCATE,
-                                      simple_jobspec,
-                                      jobid2,
-                                      reserved,
-                                      R2,
-                                      at,
-                                      ov);
+    rc = reapi_cli_t::match_allocate (h, MATCH_ALLOCATE, simple_jobspec, jobid2, reserved, R2, at);
     if (rc < 0) {
         delete rq;
         BAIL_OUT ("second allocation failed");
@@ -482,16 +455,9 @@ static int test_clone_of_clone ()
     bool reserved = false;
     std::string R1;
     int64_t at = 0;
-    double ov = 0.0;
 
-    int rc = reapi_cli_t::match_allocate (h,
-                                          MATCH_ALLOCATE,
-                                          simple_jobspec,
-                                          jobid1,
-                                          reserved,
-                                          R1,
-                                          at,
-                                          ov);
+    int rc =
+        reapi_cli_t::match_allocate (h, MATCH_ALLOCATE, simple_jobspec, jobid1, reserved, R1, at);
     if (rc < 0) {
         delete rq;
         BAIL_OUT ("allocation failed");
@@ -641,7 +607,6 @@ static int test_clone_planner_state ()
     bool reserved = false;
     std::string R_alloc;
     int64_t at = 0;
-    double ov = 0.0;
 
     int rc = reapi_cli_t::match_allocate (h,
                                           MATCH_ALLOCATE,
@@ -649,8 +614,7 @@ static int test_clone_planner_state ()
                                           jobid_alloc1,
                                           reserved,
                                           R_alloc,
-                                          at,
-                                          ov);
+                                          at);
     if (rc < 0) {
         delete rq;
         BAIL_OUT ("first allocation failed");
@@ -662,8 +626,7 @@ static int test_clone_planner_state ()
                                       jobid_alloc2,
                                       reserved,
                                       R_alloc,
-                                      at,
-                                      ov);
+                                      at);
     if (rc < 0) {
         delete rq;
         BAIL_OUT ("second allocation failed");
@@ -679,8 +642,7 @@ static int test_clone_planner_state ()
                                       jobid1,
                                       reserved,
                                       R1,
-                                      at1,
-                                      ov);
+                                      at1);
     if (rc < 0 || !reserved) {
         delete rq;
         BAIL_OUT ("first reservation failed");
@@ -696,8 +658,7 @@ static int test_clone_planner_state ()
                                       jobid2,
                                       reserved,
                                       R2,
-                                      at2,
-                                      ov);
+                                      at2);
     if (rc < 0 || !reserved) {
         delete rq;
         BAIL_OUT ("second reservation failed");
@@ -754,16 +715,9 @@ static int test_clone_perf_stats_independence ()
     bool reserved = false;
     std::string R1;
     int64_t at = 0;
-    double ov = 0.0;
 
-    int rc = reapi_cli_t::match_allocate (h,
-                                          MATCH_ALLOCATE,
-                                          simple_jobspec,
-                                          jobid1,
-                                          reserved,
-                                          R1,
-                                          at,
-                                          ov);
+    int rc =
+        reapi_cli_t::match_allocate (h, MATCH_ALLOCATE, simple_jobspec, jobid1, reserved, R1, at);
     if (rc < 0) {
         delete rq;
         BAIL_OUT ("allocation failed");
@@ -830,7 +784,6 @@ static int test_clone_traverser_independence ()
     bool reserved = false;
     std::string R1, R2;
     int64_t at = 0;
-    double ov = 0.0;
 
     int rc1 = reapi_cli_t::match_allocate (h_orig,
                                            MATCH_ALLOCATE,
@@ -838,16 +791,14 @@ static int test_clone_traverser_independence ()
                                            jobid1,
                                            reserved,
                                            R1,
-                                           at,
-                                           ov);
+                                           at);
     int rc2 = reapi_cli_t::match_allocate (h_clone,
                                            MATCH_ALLOCATE,
                                            simple_jobspec,
                                            jobid2,
                                            reserved,
                                            R2,
-                                           at,
-                                           ov);
+                                           at);
 
     ok (rc1 == 0 && rc2 == 0, "traverser works independently on both contexts");
 
@@ -862,16 +813,14 @@ static int test_clone_traverser_independence ()
                                        jobid3,
                                        reserved,
                                        R3,
-                                       at,
-                                       ov);
+                                       at);
     rc2 = reapi_cli_t::match_allocate (h_clone,
                                        MATCH_ALLOCATE,
                                        simple_jobspec,
                                        jobid4,
                                        reserved,
                                        R4,
-                                       at,
-                                       ov);
+                                       at);
 
     ok (rc1 == 0 && rc2 == 0, "multiple traverser operations work independently on both contexts");
 

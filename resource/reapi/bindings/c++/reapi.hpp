@@ -25,6 +25,7 @@ extern "C" {
 #include <string>
 #include <optional>
 #include "resource/schema/resource_data.hpp"
+#include "resource/traversers/dfu.hpp"
 
 namespace Flux {
 namespace resource_model {
@@ -128,9 +129,8 @@ class reapi_t {
      *                   allocated or reserved.
      *  \param at        If allocated, 0 is returned; if reserved, actual time
      *                   at which the job is reserved.
-     *  \param ov        Double into which to return performance overhead
-     *                   in terms of elapse time needed to complete
-     *                   the match operation.
+     *  \param attrs     Optional traversal attributes:
+     *    match_overhead    Double into which to return performance overhead.
      *  \return          0 on success; -1 on error.
      */
     static int match_allocate (void *h,
@@ -140,7 +140,7 @@ class reapi_t {
                                bool &reserved,
                                std::string &R,
                                int64_t &at,
-                               double &ov)
+                               traverser_match_attrs *attrs)
     {
         return -1;
     }

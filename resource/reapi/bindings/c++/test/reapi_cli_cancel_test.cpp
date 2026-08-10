@@ -116,17 +116,10 @@ static int test_cancel_full ()
     bool reserved = false;
     std::string R;
     int64_t at = 0;
-    double ov = 0.0;
 
     // Allocate a job (precondition for the cancel under test)
-    int rc = reapi_cli_t::match_allocate (h,
-                                          MATCH_ALLOCATE,
-                                          two_core_jobspec,
-                                          jobid,
-                                          reserved,
-                                          R,
-                                          at,
-                                          ov);
+    int rc =
+        reapi_cli_t::match_allocate (h, MATCH_ALLOCATE, two_core_jobspec, jobid, reserved, R, at);
 
     if (rc != 0)
         BAIL_OUT ("match_allocate failed to set up full cancel test");
@@ -167,17 +160,10 @@ static int test_cancel_with_r ()
     bool reserved = false;
     std::string R;
     int64_t at = 0;
-    double ov = 0.0;
 
     // Allocate a job (precondition for the cancel under test)
-    int rc = reapi_cli_t::match_allocate (h,
-                                          MATCH_ALLOCATE,
-                                          two_core_jobspec,
-                                          jobid,
-                                          reserved,
-                                          R,
-                                          at,
-                                          ov);
+    int rc =
+        reapi_cli_t::match_allocate (h, MATCH_ALLOCATE, two_core_jobspec, jobid, reserved, R, at);
     if (rc != 0)
         BAIL_OUT ("match_allocate failed to set up full R cancel test");
 
@@ -232,17 +218,10 @@ static int test_cancel_partial ()
     bool reserved = false;
     std::string R;
     int64_t at = 0;
-    double ov = 0.0;
 
     // Allocate 2 nodes (precondition for the partial cancel under test)
-    int rc = reapi_cli_t::match_allocate (h,
-                                          MATCH_ALLOCATE,
-                                          two_node_jobspec,
-                                          jobid,
-                                          reserved,
-                                          R,
-                                          at,
-                                          ov);
+    int rc =
+        reapi_cli_t::match_allocate (h, MATCH_ALLOCATE, two_node_jobspec, jobid, reserved, R, at);
     if (rc != 0)
         BAIL_OUT ("match_allocate failed to allocate 2 nodes");
     ok (rc == 0, "allocated 2 nodes");
@@ -396,20 +375,13 @@ static int test_cancel_bad_writer ()
     bool reserved = false;
     std::string R;
     int64_t at = 0;
-    double ov = 0.0;
 
     // Allocate a job so cancel reaches format detection in remove_job.
     // (cancel checks allocation_exists() first and returns ENOENT otherwise.)
     // This is a precondition for the test, not the behavior under test, so a
     // failure here means the test itself is broken -> bail out loudly.
-    int rc = reapi_cli_t::match_allocate (h,
-                                          MATCH_ALLOCATE,
-                                          two_core_jobspec,
-                                          jobid,
-                                          reserved,
-                                          R,
-                                          at,
-                                          ov);
+    int rc =
+        reapi_cli_t::match_allocate (h, MATCH_ALLOCATE, two_core_jobspec, jobid, reserved, R, at);
     if (rc != 0)
         BAIL_OUT ("match_allocate failed to set up bad-writer test");
 

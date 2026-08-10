@@ -111,7 +111,6 @@ TEST_CASE ("Match basic jobspec", "[match C++]")
         bool reserved = false;
         std::string R = "";
         uint64_t jobid = 1;
-        double ov = 0.0;
         int64_t at = 0;
 
         rc = detail::reapi_cli_t::match_allocate (ctx.get (),
@@ -120,8 +119,7 @@ TEST_CASE ("Match basic jobspec", "[match C++]")
                                                   jobid,
                                                   reserved,
                                                   R,
-                                                  at,
-                                                  ov);
+                                                  at);
         CHECK (rc == 0);
         CHECK (reserved == false);
         CHECK (at == 0);
@@ -132,7 +130,6 @@ TEST_CASE ("Match basic jobspec", "[match C++]")
         bool reserved = false;
         std::string R = "";
         uint64_t jobid = 1;
-        double ov = 0.0;
         int64_t at = 0;
 
         // MWOA should succeed on an empty graph
@@ -143,8 +140,7 @@ TEST_CASE ("Match basic jobspec", "[match C++]")
                                                   jobid,
                                                   reserved,
                                                   R,
-                                                  at,
-                                                  ov);
+                                                  at);
         REQUIRE (rc == 0);
         REQUIRE (reserved == false);
         REQUIRE (at == 0);
@@ -157,8 +153,7 @@ TEST_CASE ("Match basic jobspec", "[match C++]")
                                                   jobid,
                                                   reserved,
                                                   R,
-                                                  at,
-                                                  ov);
+                                                  at);
         REQUIRE (rc == 0);
         REQUIRE (reserved == false);
         REQUIRE (at == 0);
@@ -172,8 +167,7 @@ TEST_CASE ("Match basic jobspec", "[match C++]")
                                                       jobid,
                                                       reserved,
                                                       R,
-                                                      at,
-                                                      ov);
+                                                      at);
             CHECK (reserved == false);
             CHECK (at == 0);
             REQUIRE (rc == 0);
@@ -186,8 +180,7 @@ TEST_CASE ("Match basic jobspec", "[match C++]")
                                                   jobid,
                                                   reserved,
                                                   R,
-                                                  at,
-                                                  ov);
+                                                  at);
         REQUIRE (rc == -1);
 
         // MWOA_FUTURE should match the next available time, which is in the future
@@ -198,8 +191,7 @@ TEST_CASE ("Match basic jobspec", "[match C++]")
                                                   jobid,
                                                   reserved,
                                                   R,
-                                                  at,
-                                                  ov);
+                                                  at);
         CHECK (reserved == false);
         CHECK (at == 3600);
         CHECK (rc == 0);
@@ -212,8 +204,7 @@ TEST_CASE ("Match basic jobspec", "[match C++]")
                                                   jobid,
                                                   reserved,
                                                   R,
-                                                  at,
-                                                  ov);
+                                                  at);
         CHECK (reserved == false);
         CHECK (at == 0);
         CHECK (rc == -1);
@@ -293,7 +284,6 @@ TEST_CASE ("Test the graph idempotence of certain match operations", "[match C++
     bool reserved = false;
     std::string R = "";
     uint64_t jobid = 1;
-    double ov = 0.0;
     int64_t at = 0;
 
     SECTION ("Non-mutating match options don't change the graph")
@@ -307,8 +297,7 @@ TEST_CASE ("Test the graph idempotence of certain match operations", "[match C++
                                                   jobid,
                                                   reserved,
                                                   R,
-                                                  at,
-                                                  ov);
+                                                  at);
         CHECK (reserved == false);
         CHECK (at == 0);
         REQUIRE (rc == 0);
@@ -331,8 +320,7 @@ TEST_CASE ("Test the graph idempotence of certain match operations", "[match C++
                                                   jobid,
                                                   reserved,
                                                   R,
-                                                  at,
-                                                  ov);
+                                                  at);
         CHECK (reserved == false);
         CHECK (at == 0);
         REQUIRE (rc == 0);

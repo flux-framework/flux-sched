@@ -371,7 +371,8 @@ int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
                           std::shared_ptr<match_writers_t> &writers,
                           match_op_t op,
                           int64_t jobid,
-                          int64_t *at)
+                          int64_t *at,
+                          traverser_match_attrs *attrs)
 {
     // Clear the error message to disambiguate errors
     clear_err_message ();

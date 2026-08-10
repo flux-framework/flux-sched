@@ -54,7 +54,7 @@ extern "C" int reapi_module_match (reapi_module_ctx_t *ctx,
                                    bool *reserved,
                                    char **R,
                                    int64_t *at,
-                                   double *ov)
+                                   struct traverser_match_attrs *attrs)
 {
     int rc = -1;
     std::string R_buf = "";
@@ -65,7 +65,7 @@ extern "C" int reapi_module_match (reapi_module_ctx_t *ctx,
         goto out;
     }
     if ((rc = reapi_module_t::
-             match_allocate (ctx->h, match_op, jobspec, jobid, *reserved, R_buf, *at, *ov))
+             match_allocate (ctx->h, match_op, jobspec, jobid, *reserved, R_buf, *at, attrs))
         < 0) {
         goto out;
     }
@@ -86,15 +86,17 @@ extern "C" int reapi_module_match_allocate (reapi_module_ctx_t *ctx,
                                             bool *reserved,
                                             char **R,
                                             int64_t *at,
-                                            double *ov)
+                                            struct traverser_match_attrs *attrs)
 {
     match_op_t match_op =
         orelse_reserve ? match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE : match_op_t::MATCH_ALLOCATE;
 
-    return reapi_module_match (ctx, match_op, jobspec, jobid, reserved, R, at, ov);
+    return reapi_module_match (ctx, match_op, jobspec, jobid, reserved, R, at, attrs);
 }
 
-extern "C" int reapi_module_match_satisfy (reapi_module_ctx_t *ctx, const char *jobspec, double *ov)
+extern "C" int reapi_module_match_satisfy (reapi_module_ctx_t *ctx,
+                                           const char *jobspec,
+                                           struct traverser_match_attrs *attrs)
 {
     match_op_t match_op = match_op_t::MATCH_SATISFIABILITY;
     const uint64_t jobid = 0;
@@ -102,7 +104,7 @@ extern "C" int reapi_module_match_satisfy (reapi_module_ctx_t *ctx, const char *
     char **R;
     int64_t *at;
 
-    return reapi_module_match (ctx, match_op, jobspec, jobid, reserved, R, at, ov);
+    return reapi_module_match (ctx, match_op, jobspec, jobid, reserved, R, at, attrs);
 }
 
 extern "C" int reapi_module_update_allocate (reapi_module_ctx_t *ctx,
@@ -115,6 +117,7 @@ extern "C" int reapi_module_update_allocate (reapi_module_ctx_t *ctx,
     int rc = -1;
     std::string R_buf = "";
     const char *R_buf_c = NULL;
+    traverser_match_attrs attrs = default_match_attrs;
 
     if (!ctx || !ctx->h || !R) {
         errno = EINVAL;
@@ -128,6 +131,7 @@ extern "C" int reapi_module_update_allocate (reapi_module_ctx_t *ctx,
         goto out;
     }
     *R_out = R_buf_c;
+    *ov = attrs.match_overhead;
 out:
     return rc;
 }

@@ -32,12 +32,13 @@ int reapi_module_t::match_allocate (void *h,
                                     bool &reserved,
                                     std::string &R,
                                     int64_t &at,
-                                    double &ov)
+                                    traverser_match_attrs *attrs)
 {
     int rc = -1;
     int64_t rj = -1;
     flux_t *fh = (flux_t *)h;
     flux_future_t *f = NULL;
+    double ov = 0.0f;
     const char *rset = NULL;
     const char *status = NULL;
     const char *cmd = match_op_to_string (match_op);
@@ -78,6 +79,8 @@ int reapi_module_t::match_allocate (void *h,
     }
     reserved = (std::string ("RESERVED") == status) ? true : false;
     R = rset;
+    if (attrs)
+        attrs->match_overhead = ov;
     if (rj != (int64_t)jobid) {
         errno = EINVAL;
         goto out;
@@ -96,12 +99,12 @@ int reapi_module_t::match_allocate (void *h,
                                     bool &reserved,
                                     std::string &R,
                                     int64_t &at,
-                                    double &ov)
+                                    traverser_match_attrs *attrs)
 {
     match_op_t match_op = (orelse_reserve) ? match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE
                                            : match_op_t::MATCH_ALLOCATE_W_SATISFIABILITY;
 
-    return match_allocate (h, match_op, jobspec, jobid, reserved, R, at, ov);
+    return match_allocate (h, match_op, jobspec, jobid, reserved, R, at, attrs);
 }
 
 void match_allocate_multi_cont (flux_future_t *f, void *arg)
@@ -188,7 +191,7 @@ int reapi_module_t::update_allocate (void *h,
                                      const uint64_t jobid,
                                      const std::string &R,
                                      int64_t &at,
-                                     double &ov,
+                                     double &overhead,
                                      std::string &R_out)
 {
     int rc = -1;
@@ -196,7 +199,6 @@ int reapi_module_t::update_allocate (void *h,
     flux_t *fh = (flux_t *)h;
     flux_future_t *f = NULL;
     int64_t scheduled_at = -1;
-    double overhead = 0.0f;
     const char *rset = NULL;
     const char *status = NULL;
 
@@ -235,7 +237,6 @@ int reapi_module_t::update_allocate (void *h,
         goto out;
     }
     R_out = rset;
-    ov = overhead;
     at = scheduled_at;
 
 out:

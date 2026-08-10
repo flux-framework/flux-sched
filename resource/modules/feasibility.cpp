@@ -204,12 +204,12 @@ static void feasibility_request_cb (flux_t *h,
 {
     int64_t at = 0;
     int64_t now = 0;
-    double overhead = 0.0f;
     int saved_errno = 0;
     std::stringstream R;
     json_t *jobspec = nullptr;
     const char *js_str = nullptr;
     std::string errmsg;
+    traverser_match_attrs attrs = default_match_attrs;
     flux_error_t error;
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
 
@@ -220,7 +220,7 @@ static void feasibility_request_cb (flux_t *h,
         goto error;
     }
     error.text[0] = '\0';
-    if (run_match (ctx, -1, "satisfiability", js_str, &now, &at, &overhead, R, &error) < 0) {
+    if (run_match (ctx, -1, "satisfiability", js_str, &now, &at, R, &attrs, &error) < 0) {
         if (errno == ENODEV)
             errmsg = "Unsatisfiable request";
         else {

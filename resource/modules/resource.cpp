@@ -287,10 +287,10 @@ static void update_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
 {
     char *R = NULL;
     int64_t at = 0;
-    double overhead = 0.0f;
     int64_t jobid = 0;
     uint64_t duration = 0;
     const char *status = nullptr;
+    traverser_match_attrs attrs = default_match_attrs;
     std::stringstream o;
     std::chrono::time_point<std::chrono::system_clock> start;
     std::chrono::duration<double> elapsed;
@@ -317,7 +317,7 @@ static void update_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
         }
         elapsed = std::chrono::system_clock::now () - start;
         // If a jobid with matching R exists, no need to update
-        overhead = elapsed.count ();
+        attrs.match_overhead = elapsed.count ();
         status = get_jobstate_str (ctx->jobs[jobid]->state);
         o << ctx->jobs[jobid]->R;
         at = ctx->jobs[jobid]->scheduled_at;
@@ -326,7 +326,7 @@ static void update_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
                   "%s: jobid (%jd) with matching R exists",
                   __FUNCTION__,
                   static_cast<intmax_t> (jobid));
-    } else if (run_update (ctx, jobid, R, at, overhead, o) < 0) {
+    } else if (run_update (ctx, jobid, R, at, &attrs, o) < 0) {
         flux_log_error (ctx->h,
                         "%s: update failed (id=%jd)",
                         __FUNCTION__,
@@ -345,7 +345,7 @@ static void update_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
                            "status",
                            status,
                            "overhead",
-                           overhead,
+                           attrs.match_overhead,
                            "R",
                            o.str ().c_str (),
                            "at",
@@ -365,11 +365,11 @@ static void match_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t
     int64_t at = 0;
     int64_t now = 0;
     int64_t jobid = -1;
-    double overhead = 0.0f;
     const char *cmd = NULL;
     const char *js_str = NULL;
     const char *status = nullptr;
     std::stringstream R;
+    traverser_match_attrs attrs = default_match_attrs;
 
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
     if (flux_request_unpack (msg,
@@ -394,7 +394,7 @@ static void match_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t
         flux_log_error (h, "%s: existent job (%jd).", __FUNCTION__, (intmax_t)jobid);
         goto error;
     }
-    if (run_match (ctx, jobid, cmd, js_str, &now, &at, &overhead, R, NULL) < 0) {
+    if (run_match (ctx, jobid, cmd, js_str, &now, &at, R, &attrs, NULL) < 0) {
         if (errno != EBUSY && errno != ENODEV)
             flux_log_error (ctx->h,
                             "%s: match failed due to match error (id=%jd)",
@@ -417,7 +417,7 @@ static void match_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t
                            "status",
                            status,
                            "overhead",
-                           overhead,
+                           attrs.match_overhead,
                            "R",
                            R.str ().c_str (),
                            "at",
@@ -463,8 +463,8 @@ static void match_multi_request_cb (flux_t *h,
         char *jobspec_str = nullptr;
         int64_t at = 0;
         int64_t now = 0;
-        double overhead = 0.0f;
         std::stringstream R;
+        traverser_match_attrs attrs = default_match_attrs;
 
         if (json_unpack (value, "{s:I s:o}", "jobid", &jobid, "jobspec", &jobspec_obj) < 0)
             goto error;
@@ -481,7 +481,7 @@ static void match_multi_request_cb (flux_t *h,
             free (jobspec_str);
             goto error;
         }
-        if (run_match (ctx, jobid, cmd, jobspec_str, &now, &at, &overhead, R, NULL) < 0) {
+        if (run_match (ctx, jobid, cmd, jobspec_str, &now, &at, R, &attrs, NULL) < 0) {
             if (errno != EBUSY && errno != ENODEV)
                 flux_log_error (ctx->h,
                                 "%s: match failed due to match error (id=%jd)",
@@ -506,7 +506,7 @@ static void match_multi_request_cb (flux_t *h,
                                "status",
                                status,
                                "overhead",
-                               overhead,
+                               attrs.match_overhead,
                                "R",
                                R.str ().c_str (),
                                "at",

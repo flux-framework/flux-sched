@@ -57,7 +57,6 @@ static int test_find_allocated ()
     bool reserved = false;
     std::string R;
     int64_t at = 0;
-    double ov = 0.0;
 
     std::string jobspec = R"({
         "version": 1,
@@ -81,13 +80,13 @@ static int test_find_allocated ()
 
     // Allocate two jobs
     uint64_t jobid1 = 1;
-    int rc = reapi_cli_t::match_allocate (h, MATCH_ALLOCATE, jobspec, jobid1, reserved, R, at, ov);
+    int rc = reapi_cli_t::match_allocate (h, MATCH_ALLOCATE, jobspec, jobid1, reserved, R, at);
     if (rc != 0)
         BAIL_OUT ("match_allocate failed for jobid 1");
     ok (rc == 0, "allocated job 1");
 
     uint64_t jobid2 = 2;
-    rc = reapi_cli_t::match_allocate (h, MATCH_ALLOCATE, jobspec, jobid2, reserved, R, at, ov);
+    rc = reapi_cli_t::match_allocate (h, MATCH_ALLOCATE, jobspec, jobid2, reserved, R, at);
     if (rc != 0)
         BAIL_OUT ("match_allocate failed for jobid 2");
     ok (rc == 0, "allocated job 2");

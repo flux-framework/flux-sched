@@ -60,10 +60,9 @@ TEST_CASE ("Match basic jobspec", "[match C]")
         bool reserved = false;
         char *R;
         uint64_t jobid = 1;
-        double ov = 0.0;
         int64_t at = 0;
 
-        rc = reapi_cli_match (ctx, match_op, jobspec.c_str (), &jobid, &reserved, &R, &at, &ov);
+        rc = reapi_cli_match (ctx, match_op, jobspec.c_str (), &jobid, &reserved, &R, &at, NULL);
         CHECK (rc == 0);
         CHECK (reserved == false);
         CHECK (at == 0);
@@ -74,12 +73,11 @@ TEST_CASE ("Match basic jobspec", "[match C]")
         bool reserved = false;
         char *R;
         uint64_t jobid = 1;
-        double ov = 0.0;
         int64_t at = 0;
 
         // MWOA should succeed on an empty graph
         match_op_t match_op = MATCH_WITHOUT_ALLOCATING;
-        rc = reapi_cli_match (ctx, match_op, jobspec.c_str (), &jobid, &reserved, &R, &at, &ov);
+        rc = reapi_cli_match (ctx, match_op, jobspec.c_str (), &jobid, &reserved, &R, &at, NULL);
         CHECK (reserved == false);
         CHECK (at == 0);
         CHECK (jobid == -1);
@@ -87,7 +85,7 @@ TEST_CASE ("Match basic jobspec", "[match C]")
 
         // MWOA_FUTURE should succeed on an empty graph
         match_op = MATCH_WITHOUT_ALLOCATING_FUTURE;
-        rc = reapi_cli_match (ctx, match_op, jobspec.c_str (), &jobid, &reserved, &R, &at, &ov);
+        rc = reapi_cli_match (ctx, match_op, jobspec.c_str (), &jobid, &reserved, &R, &at, NULL);
         CHECK (reserved == false);
         CHECK (at == 0);
         CHECK (jobid == -1);
@@ -96,7 +94,8 @@ TEST_CASE ("Match basic jobspec", "[match C]")
         // Allocate all resources
         match_op = MATCH_ALLOCATE;
         for (int i = 1; i <= 4; i++) {
-            rc = reapi_cli_match (ctx, match_op, jobspec.c_str (), &jobid, &reserved, &R, &at, &ov);
+            rc =
+                reapi_cli_match (ctx, match_op, jobspec.c_str (), &jobid, &reserved, &R, &at, NULL);
             CHECK (reserved == false);
             CHECK (at == 0);
             CHECK (jobid == i);
@@ -104,12 +103,12 @@ TEST_CASE ("Match basic jobspec", "[match C]")
         }
 
         // The tiny graph should be full
-        rc = reapi_cli_match (ctx, match_op, jobspec.c_str (), &jobid, &reserved, &R, &at, &ov);
+        rc = reapi_cli_match (ctx, match_op, jobspec.c_str (), &jobid, &reserved, &R, &at, NULL);
         REQUIRE (rc == -1);
 
         // MWOA_FUTURE should match the next available time, which is in the future
         match_op = MATCH_WITHOUT_ALLOCATING_FUTURE;
-        rc = reapi_cli_match (ctx, match_op, jobspec.c_str (), &jobid, &reserved, &R, &at, &ov);
+        rc = reapi_cli_match (ctx, match_op, jobspec.c_str (), &jobid, &reserved, &R, &at, NULL);
         CHECK (reserved == false);
         CHECK (at == 3600);
         CHECK (jobid == -1);
@@ -117,7 +116,7 @@ TEST_CASE ("Match basic jobspec", "[match C]")
 
         // MWOA should try to match at t=0 and fail because the graph is full
         match_op = MATCH_WITHOUT_ALLOCATING;
-        rc = reapi_cli_match (ctx, match_op, jobspec.c_str (), &jobid, &reserved, &R, &at, &ov);
+        rc = reapi_cli_match (ctx, match_op, jobspec.c_str (), &jobid, &reserved, &R, &at, NULL);
         CHECK (reserved == false);
         CHECK (at == 0);
         CHECK (jobid == -1);
@@ -144,7 +143,7 @@ TEST_CASE ("Initialize REAPI CLI and test match, satisfy, and cancel",
     bool reserved, satisfiable;
     char *R = nullptr, *mode = nullptr;
     int64_t at;
-    double ov;
+    double ov = 0.0f;
 
     REQUIRE (resource_file.is_open () == true);
     buffer << resource_file.rdbuf ();
@@ -165,7 +164,7 @@ TEST_CASE ("Initialize REAPI CLI and test match, satisfy, and cancel",
     INFO (reapi_cli_get_err_msg (ctx));
 
     // Test match with empty resource graph
-    REQUIRE (reapi_cli_match (ctx, match_op, jobspec.c_str (), &jobid, &reserved, &R, &at, &ov)
+    REQUIRE (reapi_cli_match (ctx, match_op, jobspec.c_str (), &jobid, &reserved, &R, &at, NULL)
              != 0);
 
     // Test initialization with valid params
@@ -173,22 +172,22 @@ TEST_CASE ("Initialize REAPI CLI and test match, satisfy, and cancel",
     INFO (reapi_cli_get_err_msg (ctx));
 
     // Test match with populated resource graph
-    CHECK (reapi_cli_match (ctx, match_op, jobspec.c_str (), &jobid2, &reserved, &R, &at, &ov)
+    CHECK (reapi_cli_match (ctx, match_op, jobspec.c_str (), &jobid2, &reserved, &R, &at, NULL)
            == 0);
     CHECK (reserved == false);
     INFO (reapi_cli_get_err_msg (ctx));
 
     // Test match_allocate with orelse_reserve = true
-    CHECK (reapi_cli_match_allocate (ctx, true, jobspec.c_str (), &jobid3, &reserved, &R, &at, &ov)
+    CHECK (reapi_cli_match_allocate (ctx, true, jobspec.c_str (), &jobid3, &reserved, &R, &at, NULL)
            == 0);
     INFO (reapi_cli_get_err_msg (ctx));
 
     // Test satisfy
-    CHECK (reapi_cli_match_satisfy (ctx, jobspec.c_str (), &satisfiable, &ov) == 0);
+    CHECK (reapi_cli_match_satisfy (ctx, jobspec.c_str (), &satisfiable, NULL) == 0);
     CHECK (satisfiable == true);
 
     // Test satisfy with unsatisfiable jobspec
-    CHECK (reapi_cli_match_satisfy (ctx, jobspec2.c_str (), &satisfiable, &ov) != 0);
+    CHECK (reapi_cli_match_satisfy (ctx, jobspec2.c_str (), &satisfiable, NULL) != 0);
     CHECK (satisfiable == false);
 
     // Test info with valid jobid
