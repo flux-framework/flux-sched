@@ -1,3 +1,22 @@
+flux-sched version 0.54.0 - 2026-08-10
+--------------------------------------
+
+### New Features
+ * Add match_without_allocating match option (#1387)
+ * qmanager: annotate jobs with `sched.selection_type` and update
+   `t_estimate` for jobs (#1528)
+ * traverser: support fractional durations (#1541)
+
+### Fixes
+ * dfu: Stop implicit subplan initialization for non-mutating match
+   traversals (#1534)
+
+### Build/Testsuite/Documentation
+ * t: add valgrind suppression for hwloc after realloc (#1537)
+ * doc: relax requirements.txt as documentation allows (#1535)
+ * Update catch2 to current stable version 3.15.2 (#1527)
+
+
 flux-sched version 0.53.0 - 2026-07-13
 --------------------------------------
 
