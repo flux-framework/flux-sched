@@ -191,8 +191,9 @@ static int populate_resource_db_file (std::shared_ptr<resource_ctx_t> &ctx)
     if ((rc = ctx->db->load (buffer.str (), ctx->reader)) < 0) {
         flux_log (ctx->h,
                   LOG_ERR,
-                  "%s: reader: %s",
+                  "%s: reader: invalid file for selected format (%s): %s",
                   __FUNCTION__,
+                  load_format.c_str (),
                   ctx->reader->err_message ().c_str ());
         goto done;
     }
