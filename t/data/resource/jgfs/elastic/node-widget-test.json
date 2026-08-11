@@ -1,0 +1,97 @@
+{
+    "graph": {
+        "nodes": [
+            {
+                "id": "0",
+                "metadata": {
+                    "type": "cluster",
+                    "basename": "tiny",
+                    "name": "tiny0",
+                    "id": 0,
+                    "uniq_id": 0,
+                    "rank": -1,
+                    "exclusive": false,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/tiny0"
+                    }
+                }
+            },
+            {
+                "id": "1",
+                "metadata": {
+                    "type": "rack",
+                    "basename": "rack",
+                    "name": "rack0",
+                    "id": 0,
+                    "uniq_id": 1,
+                    "rank": -1,
+                    "exclusive": false,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/tiny0/rack0"
+                    }
+                }
+            },
+            {
+                "id": "2",
+                "metadata": {
+                    "type": "node",
+                    "basename": "node",
+                    "name": "node0",
+                    "id": 0,
+                    "uniq_id": 2,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/tiny0/rack0/node0"
+                    }
+                }
+            },
+            {
+                "id": "3",
+                "metadata": {
+                    "type": "widget",
+                    "basename": "widget",
+                    "name": "widget0",
+                    "id": 0,
+                    "uniq_id": 3,
+                    "rank": -1,
+                    "exclusive": true,
+                    "unit": "",
+                    "size": 1,
+                    "paths": {
+                        "containment": "/tiny0/rack0/node0/widget0"
+                    }
+                }
+            }
+        ],
+        "edges": [
+            {
+                "source": "0",
+                "target": "1",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "1",
+                "target": "2",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            },
+            {
+                "source": "2",
+                "target": "3",
+                "metadata": {
+                    "subsystem": "containment"
+                }
+            }
+        ]
+    }
+}

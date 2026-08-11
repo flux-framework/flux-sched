@@ -371,4 +371,58 @@ TEST_CASE ("Test the graph idempotence of certain match operations", "[match C++
     }
 }
 
+// Regression test for the interner scope guard in the resource_query_t
+// (rgraph, options) constructor.
+//
+// The subsystem_t and resource_type_t interners are process-global statics that
+// the constructor finalizes after loading its graph.  A second resource_query_t
+// built in the same process therefore inherits an already-finalized interner,
+// so loading a graph that introduces a resource type not yet interned used to
+// throw ("interner is finalized ... found new string: 'widget'").  The
+// constructor guards its load with open_for_scope() to allow this; without the
+// guard this test throws and fails.
+//
+// The interner is a process-global that accumulates across every test case in
+// this binary and is never reset, so the second graph must introduce a type
+// that NO other fixture in the suite loads -- otherwise an earlier case would
+// already have interned it and the finalized-interner path would never be hit,
+// making the test pass even without the fix (and dependent on case order).
+// node-widget-test.json uses the type "widget", which appears in no other
+// fixture here, so this second construction is always the first to intern it
+// regardless of Catch2's randomized case order.
+TEST_CASE ("Constructing a second resource_query_t with new types",
+           "[initialize C++][interner-finalize C++]")
+{
+    const std::string options = "{\"load_format\": \"jgf\"}";
+    const char *test_srcdir = std::getenv ("SHARNESS_TEST_SRCDIR");
+    REQUIRE (test_srcdir);
+    const std::string data = std::string (test_srcdir) + "/data/resource/jgfs/elastic/";
+
+    // First graph: finalizes the interners.  Any graph without a "widget" type
+    // works; node-test.json is cluster/rack/node/socket/core.
+    std::stringstream base_buf;
+    std::ifstream base_file (data + "node-test.json");
+    REQUIRE (base_file.is_open ());
+    base_buf << base_file.rdbuf ();
+    const std::string base_graph = base_buf.str ();
+
+    // Second graph: introduces the type "widget", not present in any other
+    // fixture loaded by this test binary.
+    std::stringstream widget_buf;
+    std::ifstream widget_file (data + "node-widget-test.json");
+    REQUIRE (widget_file.is_open ());
+    widget_buf << widget_file.rdbuf ();
+    const std::string widget_graph = widget_buf.str ();
+
+    std::shared_ptr<resource_query_t> first =
+        std::make_shared<resource_query_t> (base_graph, options);
+    REQUIRE (first);
+
+    // Before the fix this construction throws std::system_error because "widget"
+    // is a new string and the interner was finalized by the first construction.
+    std::shared_ptr<resource_query_t> second;
+    REQUIRE_NOTHROW (second = std::make_shared<resource_query_t> (widget_graph, options));
+    REQUIRE (second);
+}
+
 }  // namespace Flux::resource_model::detail
