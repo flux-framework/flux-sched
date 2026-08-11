@@ -14,6 +14,8 @@ extern "C" {
 #endif
 }
 
+#include <sstream>
+
 #include "qmanager_opts.hpp"
 
 using namespace Flux;
@@ -46,6 +48,61 @@ int qmanager_opts_t::parse_queues (const std::string &queues)
     }
 done:
     return rc;
+}
+
+int qmanager_opts_t::parse_vqueue_parents (const std::string &vqueue_parents)
+{
+    m_vqueue_parents.clear ();
+    return parse_multi_options (vqueue_parents, ' ', ':', m_vqueue_parents);
+}
+
+// Return the parent queue name if this queue config entry is an RFC 33
+// virtual queue (i.e., has a string "parent" key), or nullptr otherwise.
+// json_object_get() and json_is_string() both tolerate a nullptr argument,
+// so this is safe for a missing key or a null entry.
+static const char *vqueue_parent (json_t *entry)
+{
+    json_t *parent = json_object_get (entry, "parent");
+    return json_is_string (parent) ? json_string_value (parent) : nullptr;
+}
+
+int Flux::opts_manager::classify_queues (json_t *queues_conf,
+                                         std::string &queues,
+                                         std::string &vqueue_parents,
+                                         std::string &err)
+{
+    const char *k = nullptr;
+    json_t *v = nullptr;
+    std::ostringstream queues_ss;
+    std::ostringstream vqueue_parents_ss;
+
+    json_object_foreach (queues_conf, k, v) {
+        const char *parent = vqueue_parent (v);
+        if (!parent) {
+            queues_ss << k << " ";
+            continue;
+        }
+        // k is a virtual queue: its parent must be a configured queue that
+        // is not itself virtual. flux-core validation normally enforces
+        // this before the config reaches us, so a violation is a malformed
+        // config: reject it rather than silently reinterpreting the entry.
+        json_t *parent_entry = json_object_get (queues_conf, parent);
+        if (!parent_entry) {
+            err = std::string ("queue '") + k + "' names unknown parent queue '" + parent + "'";
+            errno = EINVAL;
+            return -1;
+        }
+        if (vqueue_parent (parent_entry)) {
+            err = std::string ("queue '") + k + "' names parent '" + parent
+                  + "' that is itself a virtual queue";
+            errno = EINVAL;
+            return -1;
+        }
+        vqueue_parents_ss << k << ":" << parent << " ";
+    }
+    queues = queues_ss.str ();
+    vqueue_parents = vqueue_parents_ss.str ();
+    return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -162,6 +219,10 @@ qmanager_opts_t::qmanager_opts_t ()
                                      static_cast<int> (
                                          qmanager_opts_key_t::POLICY_PARAMS_PER_QUEUE)));
     inserted &= ret.second;
+    ret = m_tab.insert (
+        std::pair<std::string, int> ("vqueue-parents",
+                                     static_cast<int> (qmanager_opts_key_t::VQUEUE_PARENTS)));
+    inserted &= ret.second;
 
     if (!inserted)
         throw std::bad_alloc ();
@@ -212,6 +273,12 @@ const std::map<std::string, queue_prop_t> &qmanager_opts_t::get_per_queue_prop (
     return m_per_queue_prop;
 }
 
+std::string qmanager_opts_t::resolve_queue_name (const std::string &name) const
+{
+    auto i = m_vqueue_parents.find (name);
+    return (i == m_vqueue_parents.end ()) ? name : i->second;
+}
+
 bool qmanager_opts_t::is_queue_policy_set () const
 {
     return m_queue_prop.is_queue_policy_set ();
@@ -257,6 +324,8 @@ qmanager_opts_t &qmanager_opts_t::operator+= (const qmanager_opts_t &src)
         m_queue_prop.set_policy_params (src.m_queue_prop.get_policy_params ());
     if (!src.m_per_queue_prop.empty ())
         m_per_queue_prop = src.get_per_queue_prop ();
+    if (!src.m_vqueue_parents.empty ())
+        m_vqueue_parents = src.m_vqueue_parents;
     return *this;
 }
 
@@ -336,6 +405,11 @@ int qmanager_opts_t::parse (const std::string &k, const std::string &v, std::str
             break;
 
         case static_cast<int> (qmanager_opts_key_t::QUEUE_POLICY_PER_QUEUE):
+            // m_per_queue_prop only contains queues that have an internal
+            // queue (i.e., RFC 33 virtual queues are excluded), so this
+            // also rejects a queue-policy-per-queue entry that names a
+            // virtual queue, since a virtual queue cannot have its own
+            // scheduler policy.
             tmp_mp.clear ();
             if ((rc = parse_multi_options (v, ' ', ':', tmp_mp)) < 0)
                 break;
@@ -381,6 +455,10 @@ int qmanager_opts_t::parse (const std::string &k, const std::string &v, std::str
                 }
                 m_per_queue_prop[kv.first].set_policy_params (kv.second);
             }
+            break;
+
+        case static_cast<int> (qmanager_opts_key_t::VQUEUE_PARENTS):
+            rc = parse_vqueue_parents (v);
             break;
 
         default:

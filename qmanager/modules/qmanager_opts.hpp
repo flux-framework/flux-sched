@@ -63,6 +63,7 @@ class qmanager_opts_t : public optmgr_parse_t {
         QUEUE_POLICY_PER_QUEUE = 40,   // queue-policy-per_queue
         QUEUE_PARAMS_PER_QUEUE = 50,   // queue-params-per_queue
         POLICY_PARAMS_PER_QUEUE = 60,  // policy-params-per_queue
+        VQUEUE_PARENTS = 70,           // vqueue-parents (RFC 33 virtual queues)
         UNKNOWN = 5000
     };
 
@@ -84,6 +85,18 @@ class qmanager_opts_t : public optmgr_parse_t {
     const std::string &get_queue_params () const;
     const std::string &get_policy_params () const;
     const std::map<std::string, queue_prop_t> &get_per_queue_prop () const;
+
+    /*! Resolve a queue name to the name of the internal queue that it
+     *  should be scheduled in. An RFC 33 virtual queue (i.e., a queue
+     *  configured with a "parent" key) has no internal queue of its own,
+     *  so its jobs are scheduled as part of its parent queue's internal
+     *  queue instead. If "name" is not a known virtual queue, it is
+     *  returned unmodified.
+     *
+     *  \param name      queue name, as set on a job.
+     *  \return          the name of the internal queue to use.
+     */
+    std::string resolve_queue_name (const std::string &name) const;
 
     bool is_queue_policy_set () const;
     bool is_queue_params_set () const;
@@ -133,18 +146,48 @@ class qmanager_opts_t : public optmgr_parse_t {
 
    private:
     int parse_queues (const std::string &queues);
+    int parse_vqueue_parents (const std::string &vqueue_parents);
 
     std::string m_default_queue_name = "default";
 
     // default queue properties
     queue_prop_t m_queue_prop;
 
-    // properties of each queue
+    // properties of each queue that has an internal queue (i.e., excludes
+    // RFC 33 virtual queues)
     std::map<std::string, queue_prop_t> m_per_queue_prop;
+
+    // map of RFC 33 virtual queue name to parent queue name
+    std::map<std::string, std::string> m_vqueue_parents;
 
     // mapping each option to an integer
     std::map<std::string, int> m_tab;
 };
+
+/*! Classify a queues config table into real (internal) queues and RFC 33
+ *  virtual queues.
+ *
+ *  A queue entry with a string "parent" key is a virtual queue whose jobs
+ *  are scheduled in the parent queue's internal queue. A virtual queue is
+ *  only valid when its named parent is a configured queue that is not
+ *  itself a virtual queue; flux-core normally enforces this, so a
+ *  violation is treated as a malformed config and rejected here.
+ *
+ *  \param queues_conf   RFC 33 "queues" config table (json object).
+ *  \param queues        On success, space-separated list of real queue
+ *                       names, suitable for the "queues" option.
+ *  \param vqueue_parents On success, space-separated "vqueue:parent"
+ *                       pairs, suitable for the "vqueue-parents" option
+ *                       (empty when there are no virtual queues).
+ *  \param err           On failure, a human-readable reason.
+ *  \return              0 on success; -1 on malformed config (errno set to
+ *                       EINVAL). On failure the output strings are
+ *                       unspecified and must not be used.
+ */
+int classify_queues (json_t *queues_conf,
+                     std::string &queues,
+                     std::string &vqueue_parents,
+                     std::string &err);
 
 }  // namespace opts_manager
 }  // namespace Flux
