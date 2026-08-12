@@ -89,14 +89,9 @@ func main() {
 	}
 	printOutput(reserved, allocated, at, jobid, err)
 
-	sat, overhead, err := cli.MatchSatisfy(string(jobspec))
+	code, overhead, err := cli.MatchSatisfy(string(jobspec))
 	fmt.Println("Errors so far: \n", cli.GetErrMsg())
-
-	if err != nil {
-		fmt.Printf("Error in ReapiClient MatchAllocate: %v\n", err)
-		return
-	}
-	printSatOutput(sat, err)
+	printSatOutput(code, err)
 
 	err = cli.Cancel(1, false)
 	if err != nil {
@@ -126,7 +121,7 @@ func printOutput(reserved bool, allocated string, at int64, jobid uint64, err er
 	fmt.Printf("jobid: %d\nreserved: %t\nallocated: %s\nat: %d\nerror: %v\n", jobid, reserved, allocated, at, err)
 }
 
-func printSatOutput(sat bool, err error) {
+func printSatOutput(code int, err error) {
 	fmt.Println("\n\t----Match Satisfy output---")
-	fmt.Printf("satisfied: %t\nerror: %v\n", sat, err)
+	fmt.Printf("result (0=satisfiable, 1=not satisfiable, -1=error): %d\nerror: %v\n", code, err)
 }
