@@ -1076,11 +1076,23 @@ resource_query_t::resource_query_t (const std::string &rgraph, const std::string
             m_err_msg += "WARN: allowlist unsupported\n";
     }
 
-    if (db->load (rgraph, rd) != 0) {
-        tmp_err = __FUNCTION__;
-        tmp_err += ": ERROR: " + rd->err_message () + "\n";
-        tmp_err += "ERROR: error generating resources\n";
-        throw std::runtime_error (tmp_err);
+    {
+        // The interner storages are process-global statics that this
+        // constructor finalizes below.  When more than one resource_query_t is
+        // created in a process (e.g. across test cases, or a re-init), an
+        // earlier instance will have already finalized them, so loading a graph
+        // that introduces a resource type or subsystem not yet interned would
+        // throw ("interner is finalized ...").  Reopen the storages across the
+        // load so new strings can be added, mirroring add_subgraph().
+        auto subsystem_open = subsystem_t::storage_t::open_for_scope ();
+        auto resource_open = resource_type_t::storage_t::open_for_scope ();
+
+        if (db->load (rgraph, rd) != 0) {
+            tmp_err = __FUNCTION__;
+            tmp_err += ": ERROR: " + rd->err_message () + "\n";
+            tmp_err += "ERROR: error generating resources\n";
+            throw std::runtime_error (tmp_err);
+        }
     }
 
     jobid_counter = 1;
