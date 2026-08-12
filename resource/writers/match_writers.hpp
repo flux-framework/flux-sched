@@ -69,6 +69,14 @@ class match_writers_t {
     {
         return 0;
     }
+    virtual int emit_nslots (int64_t nslots)
+    {
+        return 0;
+    }
+    virtual int set_nslots (int64_t nslots)
+    {
+        return 0;
+    }
     int compress_ids (std::stringstream &o, const std::vector<int64_t> &ids);
     int compress_hosts (const std::vector<std::string> &hosts,
                         const char *hostlist_init,
@@ -276,6 +284,8 @@ class rv1_match_writers_t : public match_writers_t {
                   bool excl_parent) override;
     virtual int emit_tm (int64_t start_tm, int64_t end_tm);
     virtual int emit_attrs (const std::string &k, const std::string &v);
+    virtual int emit_nslots (int64_t nslots);
+    virtual int set_nslots (int64_t nslots);
 
    protected:
     virtual jgf_match_writers_t &get_jgf ();
@@ -286,6 +296,7 @@ class rv1_match_writers_t : public match_writers_t {
     rlite_match_writers_t rlite;
     int64_t m_starttime = 0;
     int64_t m_expiration = 0;
+    int64_t m_nslots = -1;
     std::map<std::string, std::string> m_attrs;
     jgf_match_writers_t jgf_writer;
 };
@@ -305,11 +316,14 @@ class rv1_nosched_match_writers_t : public match_writers_t {
                   bool exclusive,
                   bool excl_parent) override;
     virtual int emit_tm (int64_t start_tm, int64_t end_tm);
+    virtual int emit_nslots (int64_t nslots);
+    virtual int set_nslots (int64_t nslots);
 
    private:
     rlite_match_writers_t rlite;
     int64_t m_starttime = 0;
     int64_t m_expiration = 0;
+    int64_t m_nslots = -1;
 };
 
 /*! R Version 1 with JGF shorthand writer
@@ -346,7 +360,7 @@ class pretty_sim_match_writers_t : public match_writers_t {
 class match_writers_factory_t {
    public:
     static match_format_t get_writers_type (const std::string &n);
-    static std::shared_ptr<match_writers_t> create (match_format_t f);
+    static std::shared_ptr<match_writers_t> create (match_format_t f, int emit_nslots = -1);
 };
 
 bool known_match_format (const std::string &format);

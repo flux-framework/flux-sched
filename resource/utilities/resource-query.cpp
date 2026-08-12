@@ -39,7 +39,7 @@ namespace fs = std::filesystem;
 using namespace Flux::resource_model;
 using boost::tie;
 
-#define OPTIONS "L:f:W:S:P:T:F:g:o:p:t:r:edh"
+#define OPTIONS "L:f:W:S:P:T:F:g:o:p:t:r:sedh"
 static const struct option longopts[] = {
     {"load-file", required_argument, 0, 'L'},
     {"load-format", required_argument, 0, 'f'},
@@ -53,6 +53,7 @@ static const struct option longopts[] = {
     {"prune-filters", required_argument, 0, 'p'},
     {"test-output", required_argument, 0, 't'},
     {"reserve-vtx-vec", required_argument, 0, 'r'},
+    {"emit-nslots", no_argument, 0, 's'},
     {"elapse-time", no_argument, 0, 'e'},
     {"disable-prompt", no_argument, 0, 'd'},
     {"help", no_argument, 0, 'h'},
@@ -175,6 +176,9 @@ OPTIONS:
     -r, --reserve-vtx-vec=<size>
             Reserve the graph vertex size to optimize resource graph loading.
             The size value must be a non-zero integer up to 2000000.
+
+    -s, --emit-nslots
+            Emit slot count to the matched resource set
 
     -e, --elapse-time
             Print the elapse time per scheduling operation.
@@ -575,6 +579,9 @@ static void process_args (json_t *options, int argc, char *argv[])
                     std::cerr << "WARN: out of range specified for --reserve-vtx-vec: ";
                     std::cerr << optarg << std::endl;
                 }
+                break;
+            case 's': /* --emit-nslots */
+                json_object_set_new (options, "emit_nslots", json_integer (1));
                 break;
             case 'e': /* --elapse-time */
                 json_object_set_new (options, "elapse_time", json_true ());

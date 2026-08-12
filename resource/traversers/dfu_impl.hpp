@@ -136,6 +136,7 @@ class dfu_impl_t {
 
     void set_graph_db (std::shared_ptr<resource_graph_db_t> db);
     void set_match_cb (std::shared_ptr<dfu_match_cb_t> m);
+    void set_task_labels (const std::vector<Jobspec::Task> &tasks);
     void clear_err_message ();
     void reset_color ();
     int reset_exclusive_resource_types (const std::set<resource_type_t> &x_types);
@@ -425,7 +426,8 @@ class dfu_impl_t {
         const std::vector<Jobspec::Resource> &resources,
         bool &pristine,
         unsigned int &nslots,
-        match_kind_t &ko);
+        match_kind_t &ko,
+        std::string &label);
     bool is_pconstraint_matched (vtx_t u, const std::string &property);
 
     /*! Accumulate count into accum if type matches with one of the resource
@@ -531,6 +533,7 @@ class dfu_impl_t {
                           unsigned int nslots,
                           bool pristine,
                           bool *excl,
+                          const std::string &label,
                           scoring_api_t &dfu);
     int dom_exp (const jobmeta_t &meta,
                  vtx_t u,
@@ -645,6 +648,7 @@ class dfu_impl_t {
                  const jobmeta_t &jobmeta,
                  bool full,
                  std::map<resource_type_t, int64_t> &to_parent,
+                 int64_t &nslots,
                  bool emit_shadow,
                  bool excl_parent);
     bool rem_tag (vtx_t u, int64_t jobid);
@@ -686,6 +690,7 @@ class dfu_impl_t {
     resource_graph_t *m_graph = nullptr;
     std::shared_ptr<resource_graph_db_t> m_graph_db = nullptr;
     std::shared_ptr<dfu_match_cb_t> m_match = nullptr;
+    std::vector<std::string> m_task_labels;
     expr_eval_api_t m_expr_eval;
     std::string m_err_msg = "";
 };  // the end of class dfu_impl_t
