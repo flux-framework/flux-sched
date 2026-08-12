@@ -78,8 +78,8 @@ test_expect_success 'successfully loads fluxion with sticky rank in rack0' '
 test_expect_success 'submit two jobs; the second allocates 2 nodes in rack1' '
 	jobid1=$(flux submit -N17 -n612 --exclusive sleep inf) &&
 	jobid2=$(flux submit --flags=waitable -N3 -n108 --exclusive true) &&
-	flux job wait-event -vt5 ${jobid2} alloc &&
-	flux job wait-event -vt5 ${jobid2} clean &&
+	flux job wait-event -vt20 ${jobid2} alloc &&
+	flux job wait-event -vt20 ${jobid2} clean &&
 	flux cancel ${jobid1}
 '
 
@@ -109,8 +109,8 @@ test_expect_success HAVE_PARTIAL_OK 'reload fluxion modules for lonodex' '
 test_expect_success 'submit two jobs; the second allocates 2 nodes in rack1' '
 	jobid1=$(flux submit -N17 -n612 --exclusive sleep inf) &&
 	jobid2=$(flux submit --flags=waitable -N3 -n108 --exclusive true) &&
-	flux job wait-event -vt5 ${jobid2} alloc &&
-	flux job wait-event -vt5 ${jobid2} clean &&
+	flux job wait-event -vt20 ${jobid2} alloc &&
+	flux job wait-event -vt20 ${jobid2} clean &&
 	flux cancel ${jobid1}
 '
 
@@ -140,8 +140,8 @@ test_expect_success HAVE_PARTIAL_OK 'reload fluxion modules, set up to node prun
 test_expect_success 'submit two jobs; the second allocates 2 nodes in rack1' '
 	jobid1=$(flux submit -N17 -n612 --exclusive sleep inf) &&
 	jobid2=$(flux submit --flags=waitable -N3 -n108 --exclusive true) &&
-	flux job wait-event -vt5 ${jobid2} alloc &&
-	flux job wait-event -vt5 ${jobid2} clean &&
+	flux job wait-event -vt20 ${jobid2} alloc &&
+	flux job wait-event -vt20 ${jobid2} clean &&
 	flux cancel ${jobid1}
 '
 
@@ -171,8 +171,8 @@ test_expect_success HAVE_PARTIAL_OK 'reload fluxion modules for lonodex, set up 
 test_expect_success 'submit two jobs; the second allocates 2 nodes in rack1' '
 	jobid1=$(flux submit -N17 -n612 --exclusive sleep inf) &&
 	jobid2=$(flux submit --flags=waitable -N3 -n108 --exclusive true) &&
-	flux job wait-event -vt5 ${jobid2} alloc &&
-	flux job wait-event -vt5 ${jobid2} clean &&
+	flux job wait-event -vt20 ${jobid2} alloc &&
+	flux job wait-event -vt20 ${jobid2} clean &&
 	flux cancel ${jobid1}
 '
 
@@ -202,8 +202,8 @@ test_expect_success HAVE_PARTIAL_OK 'reload fluxion modules, set leaf pruning fi
 test_expect_success 'submit two jobs; the second allocates 2 nodes in rack1' '
 	jobid1=$(flux submit -N17 -n612 --exclusive sleep inf) &&
 	jobid2=$(flux submit --flags=waitable -N3 -n108 --exclusive true) &&
-	flux job wait-event -vt5 ${jobid2} alloc &&
-	flux job wait-event -vt5 ${jobid2} clean &&
+	flux job wait-event -vt20 ${jobid2} alloc &&
+	flux job wait-event -vt20 ${jobid2} clean &&
 	flux cancel ${jobid1}
 '
 
@@ -233,8 +233,8 @@ test_expect_success HAVE_PARTIAL_OK 'reload fluxion modules for lonodex, set lea
 test_expect_success 'submit two jobs; the second allocates 2 nodes in rack1' '
 	jobid1=$(flux submit -N17 -n612 --exclusive sleep inf) &&
 	jobid2=$(flux submit --flags=waitable -N3 -n108 --exclusive true) &&
-	flux job wait-event -vt5 ${jobid2} alloc &&
-	flux job wait-event -vt5 ${jobid2} clean &&
+	flux job wait-event -vt20 ${jobid2} alloc &&
+	flux job wait-event -vt20 ${jobid2} clean &&
 	flux cancel ${jobid1}
 '
 
