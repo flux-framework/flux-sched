@@ -272,6 +272,13 @@ int dfu_impl_t::upd_sched (vtx_t u,
         }
     }
     if (n > 0) {
+        // Drop any ephemeral data left from an older traversal before emitting
+        // this vertex. The emit path (jgf writer) serializes the raw ephemeral
+        // map without an epoch check, so a label (e.g. "slot_label") tagged by
+        // a previous job that reused this vertex would otherwise leak into this
+        // job's R. Tags written during this job's select () share the current
+        // m_sequence_number and so are preserved.
+        (*m_graph)[u].idata.ephemeral.check_and_clear_if_stale (m_sequence_number);
         if ((rc = emit_vtx (u, writers, needs, excl, excl_parent)) == -1) {
             m_err_msg += __FUNCTION__;
             m_err_msg += ": emit_vtx returned -1.\n";

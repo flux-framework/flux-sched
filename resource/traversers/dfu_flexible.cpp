@@ -472,6 +472,19 @@ int dfu_flexible_t::dom_slot (const jobmeta_t &meta,
                                    (*egroup_i).edges[0].edge);
                 score += (*egroup_i).score;
                 edg_group.edges.push_back (ev_edg);
+                // Tag each vertex consumed by this slot with the winning slot's
+                // label so it can be recovered from R (via the vertex's
+                // ephemeral data emitted under the "scheduling" key). This lets
+                // the shell select the task command bound to the matched slot
+                // label. Uses set () rather than insert () because a vertex may
+                // be revisited within a match (e.g. allocate_orelse_reserve
+                // retries) which reuse the same sequence number/epoch.
+                if (!slots[slot_index].label.empty ()) {
+                    vtx_t tgt = target ((*egroup_i).edges[0].edge, *m_graph);
+                    (*m_graph)[tgt].idata.ephemeral.set (m_sequence_number,
+                                                         "slot_label",
+                                                         slots[slot_index].label);
+                }
                 j += (*egroup_i).edges[0].count;
             }
         }
