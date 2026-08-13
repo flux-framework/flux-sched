@@ -800,8 +800,8 @@ int resource_reader_jgf_t::cancel_vtx (vtx_t vtx,
     }
     // rem plan
     span_it = g[vtx].schedule.allocations.find (update_data.jobid);
-    sched_span = span_it->second;
     if (span_it != g[vtx].schedule.allocations.end ()) {
+        sched_span = span_it->second;
         g[vtx].schedule.allocations.erase (update_data.jobid);
     } else {
         m_err_msg += __FUNCTION__;
