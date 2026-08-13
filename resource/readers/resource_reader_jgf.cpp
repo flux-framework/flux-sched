@@ -768,6 +768,7 @@ int resource_reader_jgf_t::cancel_vtx (vtx_t vtx,
     rank_data *rdata = nullptr;
 
     static const subsystem_t containment_sub{"containment"};
+    update_data.n_visited++;
     // remove from aggregate filter if present
     auto agg_span = job2span.find (update_data.jobid);
     if (agg_span != job2span.end ()) {
@@ -835,6 +836,7 @@ int resource_reader_jgf_t::cancel_vtx (vtx_t vtx,
     // All of the vertex's state for this job has been removed above
     if (update_data.metadata)
         update_data.metadata->remove_job_vertex (update_data.jobid, vtx);
+    update_data.n_purged++;
 
     return 0;
 error:
@@ -1363,6 +1365,8 @@ int resource_reader_jgf_t::partial_cancel (resource_graph_t &g,
         mod_data.ranks.insert (rank);
         mod_data.rank_to_root[rank] = data.root;
     }
+    mod_data.n_visited = p_cancel_data.n_visited;
+    mod_data.n_purged = p_cancel_data.n_purged;
 
 done:
     json_decref (jgf);

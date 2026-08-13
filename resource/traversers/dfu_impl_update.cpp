@@ -975,6 +975,11 @@ int dfu_impl_t::remove (vtx_t root,
         m_err_msg += ": partial_cancel returned error.\n";
         return -1;
     }
+    // A reader-driven cancel (e.g. JGF) visits and releases vertices
+    // itself; fold its counts in so both reader paths report the same
+    // statistics for an equivalent release
+    m_preorder += mod_data.n_visited;
+    m_postorder += mod_data.n_purged;
 
     // If rank_to_counts size is 0, reader was not JGF
     if (mod_data.rank_to_counts.size () == 0) {
@@ -993,12 +998,14 @@ int dfu_impl_t::remove (vtx_t root,
                 // If no job tag is found on the vertex, job must not have
                 // allocated all rank resources
                 if ((*m_graph)[vtx].idata.tags.find (jobid) != (*m_graph)[vtx].idata.tags.end ()) {
+                    m_preorder++;
                     if ((rc = cancel_vertex (vtx, mod_data, jobid)) != 0) {
                         m_err_msg += __FUNCTION__;
                         m_err_msg += ": cancel_vertex failed\n.";
                         m_err_msg += (*m_graph)[vtx].name + ".\n";
                         return rc;
                     }
+                    m_postorder++;
                 }
                 if ((*m_graph)[vtx].paths.at (dom).length () < subgraph_root_len) {
                     subgraph_root_len = (*m_graph)[vtx].paths.at (dom).length ();
@@ -1034,11 +1041,14 @@ int dfu_impl_t::remove (vtx_t root,
         }
     }
 
-    // Reduce the ancestor aggregate filters by the freed counts
+    // Reduce the ancestor aggregate filters by the freed counts.
+    // Ancestors are visited (their aggregate spans reduced) but not
+    // purged: they retain the job's state until the job is removed.
     for (const auto &v : parent_counts) {
         modify_data_t mod_data_new;
         mod_data_new.mod_type = job_modify_t::PARTIAL_CANCEL;
         mod_data_new.type_to_count = v.second;
+        m_preorder++;
         if ((rc = cancel_vertex (v.first, mod_data_new, jobid)) != 0) {
             m_err_msg += __FUNCTION__;
             m_err_msg += ": cancel_vertex failed\n.";
@@ -1080,12 +1090,15 @@ int dfu_impl_t::remove (vtx_t root,
             for (const vtx_t &vtx : vertices) {
                 modify_data_t mod_data_new;
                 mod_data_new.mod_type = job_modify_t::CANCEL;
+                m_preorder++;
                 if (cancel_vertex (vtx, mod_data_new, jobid) != 0) {
                     m_err_msg += __FUNCTION__;
                     m_err_msg += ": cancel_vertex failed on " + (*m_graph)[vtx].name + ".\n";
                     purge_failed = true;
                     rc = -1;
+                    continue;
                 }
+                m_postorder++;
             }
             full_cancel = !purge_failed;
         }

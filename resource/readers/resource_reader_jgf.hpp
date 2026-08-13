@@ -89,6 +89,9 @@ struct jgf_updater_data {
     // graph metadata for by_jobid maintenance; set by the update and
     // partial_cancel entry points
     resource_graph_metadata_t *metadata = nullptr;
+    // count of vertices visited and fully released by cancel_vtx
+    unsigned int n_visited = 0;
+    unsigned int n_purged = 0;
 };
 
 struct vmap_val_t {

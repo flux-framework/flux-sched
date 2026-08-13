@@ -31,6 +31,12 @@ struct modify_data_t {
     std::unordered_map<int64_t, std::unordered_map<resource_type_t, int64_t>> rank_to_counts;
     std::unordered_map<resource_type_t, int64_t> type_to_count;
     uint64_t sequence_number = 0;
+    // Vertices a reader-driven cancel visited and fully released,
+    // reported back so the traverser's visit statistics cover
+    // reader-side cancellation (e.g. JGF partial cancel) the same way
+    // as the traverser's own rank walk
+    unsigned int n_visited = 0;
+    unsigned int n_purged = 0;
 };
 
 /*!  Base resource reader class.
