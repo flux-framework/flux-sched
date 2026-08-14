@@ -19913,7 +19913,7 @@ INFO: RESOURCES=RESERVED
 INFO: SCHEDULED AT=147601
 INFO: =============================
 INFO: =============================
-INFO: CANCEL PREORDER COUNT="73"
+INFO: CANCEL PREORDER COUNT="41"
 INFO: CANCEL POSTORDER COUNT="41"
 INFO: =============================
       ---------------core0[1:x]
@@ -19963,7 +19963,7 @@ INFO: RESOURCES=ALLOCATED
 INFO: SCHEDULED AT=Now
 INFO: =============================
 INFO: =============================
-INFO: CANCEL PREORDER COUNT="4915"
+INFO: CANCEL PREORDER COUNT="3907"
 INFO: CANCEL POSTORDER COUNT="3907"
 INFO: =============================
       ---------------core0[1:x]
@@ -23879,7 +23879,7 @@ INFO: RESOURCES=ALLOCATED
 INFO: SCHEDULED AT=Now
 INFO: =============================
 INFO: =============================
-INFO: CANCEL PREORDER COUNT="3151"
+INFO: CANCEL PREORDER COUNT="3141"
 INFO: CANCEL POSTORDER COUNT="3141"
 INFO: =============================
       ---------------core0[1:x]

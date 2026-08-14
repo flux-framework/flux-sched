@@ -14,6 +14,7 @@
 #include <string>
 #include <memory>
 #include <chrono>
+#include <unordered_set>
 #include "resource/schema/resource_graph.hpp"
 #include "resource/config/system_defaults.hpp"
 
@@ -40,6 +41,15 @@ struct resource_graph_metadata_t {
     std::map<std::string, std::vector<vtx_t>> by_name;
     std::map<int64_t, std::vector<vtx_t>> by_rank;
     std::map<std::string, std::vector<vtx_t>> by_path;
+    // by_jobid maps a job to every vertex holding any state keyed by
+    // that job (schedule.allocations/reservations and the idata
+    // tags/x_spans/job2span entries), so that job removal can visit
+    // exactly the job's vertices without a graph traversal, a rank
+    // index, or a tag trail. The stored descriptors rely on vertices
+    // never being deleted from the graph: shrink and subgraph removal
+    // clear vertices and their metadata but never call remove_vertex,
+    // so vecS descriptors are stable for the lifetime of the graph.
+    std::map<int64_t, std::unordered_set<vtx_t>> by_jobid;
     // by_outedges enables graph traversing order to edge "weight"
     // E.g., the more available resources an edge point to, the heavier
     std::map<
@@ -57,6 +67,28 @@ struct resource_graph_metadata_t {
     void set_graph_duration (graph_duration_t &g_duration);
     void update_node_stats (int count, resource_pool_t::status_t status);
     void initialize_node_stats (resource_graph_t const &g);
+
+    /*! Record in by_jobid that vertex v holds state keyed by jobid.
+     */
+    void add_job_vertex (int64_t jobid, vtx_t v);
+
+    /*! Erase vertex v from by_jobid[jobid]; drops the jobid entry when
+     *  its vertex set becomes empty.
+     */
+    void remove_job_vertex (int64_t jobid, vtx_t v);
+
+    /*! Return true if vertex v holds any state keyed by jobid
+     *  (allocations, reservations, tags, exclusive-filter spans, or
+     *  aggregate-filter spans).
+     */
+    bool vertex_has_job_state (const resource_graph_t &g, int64_t jobid, vtx_t v) const;
+
+    /*! Verify the by_jobid index bidirectionally against the graph:
+     *  every indexed (jobid, vertex) pair must have state on the
+     *  vertex, and every vertex holding job-keyed state must be
+     *  indexed. Intended for tests and debugging; O(V).
+     */
+    bool verify_job_index (const resource_graph_t &g) const;
 };
 
 /*! Resource graph data store.

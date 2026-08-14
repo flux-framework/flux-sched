@@ -299,6 +299,8 @@ int resource_reader_rv1exec_t::update_vertex (resource_graph_t &g,
         g[vtx].schedule.reservations[update_data.jobid] = span;
     else
         g[vtx].schedule.allocations[update_data.jobid] = span;
+    if (update_data.metadata)
+        update_data.metadata->add_job_vertex (update_data.jobid, vtx);
 
     update_data.updated_vertices[g[vtx].rank].push_back (vtx);
 
@@ -331,6 +333,8 @@ int resource_reader_rv1exec_t::undo_vertices (resource_graph_t &g, updater_data 
                 span = g[vtx].schedule.allocations.at (update_data.jobid);
                 g[vtx].schedule.allocations.erase (update_data.jobid);
             }
+            if (update_data.metadata)
+                update_data.metadata->remove_job_vertex (update_data.jobid, vtx);
             // Remove the span.
             if (planner_rem_span (plans, span) == -1) {
                 m_err_msg += __FUNCTION__;
@@ -432,6 +436,8 @@ int resource_reader_rv1exec_t::update_exclusivity (resource_graph_t &g,
         g[vtx].schedule.reservations[update_data.jobid] = span;
     else
         g[vtx].schedule.allocations[update_data.jobid] = span;
+    if (update_data.metadata)
+        update_data.metadata->add_job_vertex (update_data.jobid, vtx);
     // Add to the updated vertices vector to undo upon error.
     update_data.updated_vertices[g[vtx].rank].push_back (vtx);
 
@@ -1061,6 +1067,7 @@ int resource_reader_rv1exec_t::update (resource_graph_t &g,
     update_data.duration = dur;
     update_data.reserved = rsv;
     update_data.sequence_number = sequence_number;
+    update_data.metadata = &m;
 
     if ((rc = unpack_internal (g, m, rv1, update_data)) == -1) {
         undo_vertices (g, update_data);

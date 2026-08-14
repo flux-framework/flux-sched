@@ -878,15 +878,8 @@ INFO: =============================
 INFO: =============================
 INFO: EXPRESSION="jobid-span=2"
 INFO: =============================
-      ------rack0[1:x]
-      ------rack1[1:x]
-      ---power0[1:x]
 INFO: =============================
 INFO: EXPRESSION="jobid-tag=2"
-INFO: =============================
-INFO: =============================
-INFO: CANCEL PREORDER COUNT="43"
-INFO: CANCEL POSTORDER COUNT="3"
 INFO: =============================
       ---------------core0[1:x]
       ---------------core1[1:x]

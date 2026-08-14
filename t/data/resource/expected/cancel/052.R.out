@@ -147,13 +147,14 @@ INFO: =============================
       ------------socket0[1:x]
       ---------node1[1:x]
       ------rack0[1:x]
+      ------rack1[1:x]
       ---power0[1:x]
 INFO: =============================
 INFO: EXPRESSION="jobid-tag=1"
 INFO: =============================
 INFO: =============================
-INFO: CANCEL PREORDER COUNT="74"
-INFO: CANCEL POSTORDER COUNT="10"
+INFO: CANCEL PREORDER COUNT="11"
+INFO: CANCEL POSTORDER COUNT="11"
 INFO: =============================
 INFO: =============================
 INFO: EXPRESSION="sched-now=allocated"

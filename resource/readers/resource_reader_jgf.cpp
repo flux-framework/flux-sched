@@ -730,6 +730,8 @@ int resource_reader_jgf_t::update_vtx_plan (vtx_t v,
             g[v].schedule.reservations[update_data.jobid] = span;
         else
             g[v].schedule.allocations[update_data.jobid] = span;
+        if (update_data.metadata)
+            update_data.metadata->add_job_vertex (update_data.jobid, v);
     } else {
         if (avail < g[v].size) {
             // if g[v] has already been allocated/reserved, this is an error
@@ -830,6 +832,9 @@ int resource_reader_jgf_t::cancel_vtx (vtx_t vtx,
         rdata->length = path_len;
         rdata->root = vtx;
     }
+    // All of the vertex's state for this job has been removed above
+    if (update_data.metadata)
+        update_data.metadata->remove_job_vertex (update_data.jobid, vtx);
 
     return 0;
 error:
@@ -895,6 +900,8 @@ int resource_reader_jgf_t::undo_vertices (resource_graph_t &g,
                 span = g[v].schedule.allocations.at (update_data.jobid);
                 g[v].schedule.allocations.erase (update_data.jobid);
             }
+            if (update_data.metadata)
+                update_data.metadata->remove_job_vertex (update_data.jobid, v);
 
             plans = g[v].schedule.plans;
             if ((rc2 = planner_rem_span (plans, span)) == -1) {
@@ -1304,6 +1311,7 @@ int resource_reader_jgf_t::update (resource_graph_t &g,
     update_data.reserved = rsv;
     update_data.update = true;
     update_data.sequence_number = sequence_number;
+    update_data.metadata = &m;
 
     if ((rc = fetch_jgf (str, &jgf, &nodes, &edges, update_data)) != 0)
         goto done;
@@ -1343,6 +1351,7 @@ int resource_reader_jgf_t::partial_cancel (resource_graph_t &g,
     p_cancel_data.jobid = jobid;
     p_cancel_data.update = false;
     p_cancel_data.sequence_number = mod_data.sequence_number;
+    p_cancel_data.metadata = &m;
     if ((rc = fetch_jgf (R, &jgf, &nodes, &edges, p_cancel_data)) != 0)
         goto done;
 
