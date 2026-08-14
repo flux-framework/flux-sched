@@ -36,6 +36,7 @@ set(ALL_TESTS
   t1031-add-remove-resources.t
   t1032-without-alloc-check.t
   t1033-qmanager-vqueue.t
+  t1034-rabbit-partial-release.t
   t2317-resource-shrink.t
   t3000-jobspec.t
   t3001-resource-basic.t
