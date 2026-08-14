@@ -1,0 +1,33 @@
+version: 9999
+resources:
+  - type: slot
+    count: 2
+    label: default
+    with:
+      - type: node
+        count: 1
+        exclusive: true
+        with:
+          - type: core
+            count: 1
+      - type: rabbit
+        count: 1
+        with:
+          - type: ssd
+            count: 101
+            exclusive: true
+
+# Variant of dyn_explore/test001.yaml for the nested rabbit topology
+# (jgfs/rabbit-nested.json), where the rank-less ssd vertices sit two
+# containment hops below chassis (chassis -> rabbit(ranked) -> ssd
+# (rank-less)) instead of being direct chassis children. The jobspec
+# mirrors that extra "rabbit" containment hop so the CA matcher can find
+# the ssd resources alongside the node/core resources in the same slot.
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: default
+    count:
+      per_slot: 1

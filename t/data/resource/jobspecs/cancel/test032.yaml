@@ -1,0 +1,31 @@
+version: 9999
+resources:
+  - type: chassis
+    count: 2
+    exclusive: true
+    with:
+      - type: node
+        count: 1
+        with:
+          - type: slot
+            count: 1
+            label: default
+            with:
+              - type: core
+                count: 1
+
+# Requests BOTH of rabbit.json's two chassis, each taken exclusively. There
+# are exactly two chassis in the graph, so this can only be satisfied when
+# every chassis is simultaneously free of any other job's exclusive hold --
+# it is used to probe whether a partially-released chassis (one that still
+# retains an ancestor's exclusive-filter span) is available for a fresh
+# exclusive-chassis request.
+
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: default
+    count:
+      per_slot: 1
