@@ -36,6 +36,7 @@ set(ALL_TESTS
   t1031-add-remove-resources.t
   t1032-without-alloc-check.t
   t1033-qmanager-vqueue.t
+  t1034-rabbit-partial-release.t
   t2317-resource-shrink.t
   t3000-jobspec.t
   t3001-resource-basic.t
@@ -80,6 +81,7 @@ set(ALL_TESTS
   t3040-jgf-shorthand-match-format.t
   t3041-jgf-shorthand-load-format.t
   t3042-storage-node.t
+  t3044-resource-rabbit-cancel.t
   t3300-system-dontblock.t
   t3301-system-latestart.t
   t4000-match-params.t

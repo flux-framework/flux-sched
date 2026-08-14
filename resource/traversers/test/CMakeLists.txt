@@ -35,3 +35,23 @@ catch_discover_tests(jobmeta_test
   TEST_PREFIX "resource traversers jobmeta_test: "
   DISCOVERY_MODE PRE_TEST
   )
+
+add_executable(by_jobid_index_test
+  ${CMAKE_CURRENT_SOURCE_DIR}/by_jobid_index_test.cpp
+  )
+target_link_libraries(by_jobid_index_test PRIVATE resource Catch2::Catch2WithMain)
+target_include_directories(by_jobid_index_test PRIVATE
+  ${CMAKE_SOURCE_DIR}
+  ${CMAKE_SOURCE_DIR}/resource
+  )
+target_compile_definitions(by_jobid_index_test PRIVATE
+  CATCH_CONFIG_FAST_COMPILE=1
+  )
+add_sanitizers(by_jobid_index_test)
+# See the jobmeta_test note above: PRE_TEST discovery is required so the
+# trailing space in TEST_PREFIX survives and `ctest -R by_jobid_index_test`
+# works.
+catch_discover_tests(by_jobid_index_test
+  TEST_PREFIX "resource traversers by_jobid_index_test: "
+  DISCOVERY_MODE PRE_TEST
+  )

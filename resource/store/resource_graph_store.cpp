@@ -53,6 +53,67 @@ void resource_graph_metadata_t::initialize_node_stats (resource_graph_t const &g
     }
 }
 
+void resource_graph_metadata_t::add_job_vertex (int64_t jobid, vtx_t v)
+{
+    by_jobid[jobid].insert (v);
+}
+
+void resource_graph_metadata_t::remove_job_vertex (int64_t jobid, vtx_t v)
+{
+    auto job_it = by_jobid.find (jobid);
+    if (job_it == by_jobid.end ())
+        return;
+    job_it->second.erase (v);
+    if (job_it->second.empty ())
+        by_jobid.erase (job_it);
+}
+
+bool resource_graph_metadata_t::vertex_has_job_state (const resource_graph_t &g,
+                                                      int64_t jobid,
+                                                      vtx_t v) const
+{
+    return g[v].schedule.allocations.contains (jobid) || g[v].schedule.reservations.contains (jobid)
+           || g[v].idata.tags.contains (jobid) || g[v].idata.x_spans.contains (jobid)
+           || g[v].idata.job2span.contains (jobid);
+}
+
+bool resource_graph_metadata_t::verify_job_index (const resource_graph_t &g) const
+{
+    // Direction 1: every indexed pair corresponds to actual state
+    for (const auto &[jobid, vertices] : by_jobid) {
+        if (vertices.empty ())
+            return false;
+        for (const vtx_t &v : vertices) {
+            if (!vertex_has_job_state (g, jobid, v))
+                return false;
+        }
+    }
+    // Direction 2: every vertex holding job-keyed state is indexed
+    vtx_iterator_t vi, v_end;
+    for (boost::tie (vi, v_end) = boost::vertices (g); vi != v_end; ++vi) {
+        auto check = [&] (int64_t jobid) {
+            auto job_it = by_jobid.find (jobid);
+            return job_it != by_jobid.end () && job_it->second.contains (*vi);
+        };
+        for (const auto &kv : g[*vi].schedule.allocations)
+            if (!check (kv.first))
+                return false;
+        for (const auto &kv : g[*vi].schedule.reservations)
+            if (!check (kv.first))
+                return false;
+        for (const auto &kv : g[*vi].idata.tags)
+            if (!check (kv.first))
+                return false;
+        for (const auto &kv : g[*vi].idata.x_spans)
+            if (!check (kv.first))
+                return false;
+        for (const auto &kv : g[*vi].idata.job2span)
+            if (!check (kv.first))
+                return false;
+    }
+    return true;
+}
+
 static void rebuild_by_outedges (resource_graph_t &g, resource_graph_metadata_t &meta)
 {
     // Boost adjacency_list<vecS,vecS> edge descriptors hold raw pointers

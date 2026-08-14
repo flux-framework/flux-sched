@@ -51,6 +51,9 @@ int dfu_impl_t::upd_txfilter (vtx_t u,
 
     // Tag on a vertex with exclusive access or all of its ancestors
     (*m_graph)[u].idata.tags[jobmeta.jobid] = (jobmeta.jobid);
+    // Every vertex receiving job-keyed state gets a tag here first, so
+    // this is the single site that indexes the vertex under the job.
+    m_graph_db->metadata.add_job_vertex (jobmeta.jobid, u);
     // Update x_checker used for quick exclusivity check during matching
     if ((x_checker = (*m_graph)[u].idata.x_checker) == NULL) {
         m_err_msg += __FUNCTION__;
@@ -498,11 +501,15 @@ int dfu_impl_t::mod_agfilter (vtx_t u,
             goto done;
         }
         if (removed) {
-            // Fully removed; need to remove job2span and tag
+            // The aggregate span is fully drained and gone from the
+            // planner; drop the dangling span id. The vertex's tag and
+            // exclusive-filter span are owned by the final purge
+            // (cancel_vertex with CANCEL): removing them here would let
+            // another job match this vertex exclusively while this job
+            // still holds resources beneath it, and severs the state
+            // needed for exact full-cancel accounting.
             job2span.erase (span_it);
-            rem_tag (u, jobid);
         }
-        rc = rem_exclusive_filter (u, jobid, mod_data);
     }
 
 done:
@@ -524,9 +531,9 @@ int dfu_impl_t::mod_idata (vtx_t u,
         if (rem_exclusive_filter (u, jobid, mod_data) != 0)
             return -1;
     }
-    // If mod_type == job_modify_t::PARTIAL_CANCEL here,
-    // job_mod_agfilter determines if all resources are removed. If so,
-    // job_mod_agfilter will then call rem_tag.
+    // If mod_type == job_modify_t::PARTIAL_CANCEL here, mod_agfilter
+    // only reduces the aggregate-filter span; tags and exclusive-filter
+    // spans are removed by the final purge (CANCEL) alone.
     return mod_agfilter (u, jobid, subsystem, mod_data, stop);
 }
 
@@ -595,83 +602,6 @@ done:
     return rc;
 }
 
-int dfu_impl_t::mod_upv (vtx_t u, int64_t jobid, const modify_data_t &mod_data)
-{
-    // NYI: remove schedule data for upwalk
-    return 0;
-}
-
-int dfu_impl_t::mod_dfv (vtx_t u, int64_t jobid, modify_data_t &mod_data)
-{
-    int rc = 0;
-    bool stop = false;
-    subsystem_t dom = m_match->dom_subsystem ();
-    f_out_edg_iterator_t ei, ei_end;
-
-    m_preorder++;
-    (*m_graph)[u].idata.colors[dom] = m_color.gray ();
-    if ((rc = mod_idata (u, jobid, dom, mod_data, stop)) != 0 || stop)
-        goto done;
-    if ((rc = mod_plan (u, jobid, mod_data)) != 0)
-        goto done;
-    for (auto const &subsystem : m_match->subsystems ()) {
-        for (tie (ei, ei_end) = out_edges (u, *m_graph); ei != ei_end; ++ei) {
-            if (!in_subsystem (*ei, subsystem) || stop_explore (*ei, subsystem))
-                continue;
-            vtx_t tgt = target (*ei, *m_graph);
-            if (subsystem == dom)
-                rc += mod_dfv (tgt, jobid, mod_data);
-            else
-                rc += mod_upv (tgt, jobid, mod_data);
-        }
-    }
-    (*m_graph)[u].idata.colors[dom] = m_color.black ();
-    m_postorder++;
-done:
-    return rc;
-}
-
-int dfu_impl_t::mod_exv (int64_t jobid, const modify_data_t &mod_data)
-{
-    int rc = -1;
-    int64_t span = -1;
-    vtx_iterator_t vi, v_end;
-    edg_iterator_t ei, e_end;
-    resource_graph_t &g = m_graph_db->resource_graph;
-
-    // Exhausitive visit (exv) is required when jobid came from an allocation
-    // created by a traverser different from this traverser, for example, one
-    // that uses a different dominant subsystem. If this code is used
-    // in Flux's resource module, this condition can arise when this module
-    // is reloaded with a different match policy and the job-manager wants
-    // to reconstruct a previously allocated job.
-    // In this case, you can't find allocated resources from an accelerated
-    // depth first visit (dfv). There won't be no idata for that allocation.
-    for (boost::tie (vi, v_end) = boost::vertices (g); vi != v_end; ++vi) {
-        if (g[*vi].schedule.allocations.find (jobid) != g[*vi].schedule.allocations.end ()) {
-            span = g[*vi].schedule.allocations[jobid];
-            g[*vi].schedule.allocations.erase (jobid);
-        } else if (g[*vi].schedule.reservations.find (jobid)
-                   != g[*vi].schedule.reservations.end ()) {
-            span = g[*vi].schedule.reservations[jobid];
-            g[*vi].schedule.reservations.erase (jobid);
-        } else {
-            continue;
-        }
-
-        if ((rc += planner_rem_span (g[*vi].schedule.plans, span)) == -1) {
-            m_err_msg += __FUNCTION__;
-            m_err_msg += ": planner_rem_span returned -1.\n";
-            m_err_msg += "name=" + g[*vi].name + "uniq_id=";
-            m_err_msg += std::to_string (g[*vi].uniq_id) + ".\n";
-            m_err_msg += strerror (errno);
-            m_err_msg += ".\n";
-        }
-    }
-
-    return (!rc) ? 0 : -1;
-}
-
 int dfu_impl_t::cancel_vertex (vtx_t vtx, modify_data_t &mod_data, int64_t jobid)
 {
     int rc = -1;
@@ -684,6 +614,13 @@ int dfu_impl_t::cancel_vertex (vtx_t vtx, modify_data_t &mod_data, int64_t jobid
     }
     if ((rc = mod_plan (vtx, jobid, mod_data)) == -1)
         errno = EINVAL;
+    // A PARTIAL_CANCEL visit only reduces the vertex's aggregate span;
+    // the vertex still holds state for the job and stays indexed. Full
+    // per-vertex removal (CANCEL/VTX_CANCEL) unindexes it -- but only
+    // on success: a vertex whose purge failed must remain discoverable
+    // so that a retry revisits it instead of silently succeeding.
+    if (rc == 0 && mod_data.mod_type != job_modify_t::PARTIAL_CANCEL)
+        m_graph_db->metadata.remove_job_vertex (jobid, vtx);
 
     return rc;
 }
@@ -732,6 +669,19 @@ int dfu_impl_t::clear_vertex (vtx_t vtx, modify_data_t &mod_data)
             return -1;
         }
     }
+    // Unindex the vertex from every job holding state on it (pair-wise:
+    // each job's other vertices remain indexed). Enumerate all five
+    // keyed containers rather than assuming tags accompany the rest.
+    for (const auto &kv : (*m_graph)[vtx].idata.tags)
+        m_graph_db->metadata.remove_job_vertex (kv.first, vtx);
+    for (const auto &kv : (*m_graph)[vtx].idata.x_spans)
+        m_graph_db->metadata.remove_job_vertex (kv.first, vtx);
+    for (const auto &kv : (*m_graph)[vtx].idata.job2span)
+        m_graph_db->metadata.remove_job_vertex (kv.first, vtx);
+    for (const auto &kv : (*m_graph)[vtx].schedule.allocations)
+        m_graph_db->metadata.remove_job_vertex (kv.first, vtx);
+    for (const auto &kv : (*m_graph)[vtx].schedule.reservations)
+        m_graph_db->metadata.remove_job_vertex (kv.first, vtx);
     // Clear tags, xspans, agfilters
     (*m_graph)[vtx].idata.tags.clear ();
     (*m_graph)[vtx].idata.x_spans.clear ();
@@ -826,6 +776,20 @@ void dfu_impl_t::remove_graph_metadata (vtx_t v)
             break;
         }
     }
+    // Unindex the vertex from every job holding state on it so no
+    // by_jobid entry points at an orphaned vertex (pair-wise: each
+    // job's other vertices remain indexed). Enumerate all five keyed
+    // containers rather than assuming tags accompany the rest.
+    for (const auto &kv : (*m_graph)[v].idata.tags)
+        m_graph_db->metadata.remove_job_vertex (kv.first, v);
+    for (const auto &kv : (*m_graph)[v].idata.x_spans)
+        m_graph_db->metadata.remove_job_vertex (kv.first, v);
+    for (const auto &kv : (*m_graph)[v].idata.job2span)
+        m_graph_db->metadata.remove_job_vertex (kv.first, v);
+    for (const auto &kv : (*m_graph)[v].schedule.allocations)
+        m_graph_db->metadata.remove_job_vertex (kv.first, v);
+    for (const auto &kv : (*m_graph)[v].schedule.reservations)
+        m_graph_db->metadata.remove_job_vertex (kv.first, v);
 }
 
 int dfu_impl_t::remove_subgraph (const std::vector<vtx_t> &roots, std::set<vtx_t> &vertices)
@@ -958,15 +922,36 @@ int dfu_impl_t::update (vtx_t root,
 
 int dfu_impl_t::remove (vtx_t root, int64_t jobid)
 {
+    int rc = 0;
     m_preorder = 0;
     m_postorder = 0;
 
-    bool root_has_jtag =
-        ((*m_graph)[root].idata.tags.find (jobid) != (*m_graph)[root].idata.tags.end ());
-    modify_data_t mod_data;
-    mod_data.mod_type = job_modify_t::CANCEL;
-    m_color.reset ();
-    return (root_has_jtag) ? mod_dfv (root, jobid, mod_data) : mod_exv (jobid, mod_data);
+    auto job_it = m_graph_db->metadata.by_jobid.find (jobid);
+    if (job_it == m_graph_db->metadata.by_jobid.end ())
+        // Removing an unknown (or already fully removed) job is
+        // idempotent by design: callers issue final cancels with
+        // noent_ok semantics.
+        return 0;
+    // Visit exactly the vertices holding the job's state -- no graph
+    // traversal, no dependence on rank indexes or tag trails. Iterate
+    // a snapshot of the descriptors: cancel_vertex () unindexes each
+    // vertex from the live entry as its purge succeeds, so on failure
+    // the entry retains exactly the vertices still holding state and a
+    // retry revisits them.
+    std::vector<vtx_t> vertices (job_it->second.begin (), job_it->second.end ());
+    for (const vtx_t &vtx : vertices) {
+        modify_data_t mod_data;
+        mod_data.mod_type = job_modify_t::CANCEL;
+        m_preorder++;
+        if (cancel_vertex (vtx, mod_data, jobid) != 0) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": cancel_vertex failed on " + (*m_graph)[vtx].name + ".\n";
+            rc = -1;
+            continue;
+        }
+        m_postorder++;
+    }
+    return rc;
 }
 
 int dfu_impl_t::remove (vtx_t root,
@@ -990,6 +975,11 @@ int dfu_impl_t::remove (vtx_t root,
         m_err_msg += ": partial_cancel returned error.\n";
         return -1;
     }
+    // A reader-driven cancel (e.g. JGF) visits and releases vertices
+    // itself; fold its counts in so both reader paths report the same
+    // statistics for an equivalent release
+    m_preorder += mod_data.n_visited;
+    m_postorder += mod_data.n_purged;
 
     // If rank_to_counts size is 0, reader was not JGF
     if (mod_data.rank_to_counts.size () == 0) {
@@ -1008,12 +998,14 @@ int dfu_impl_t::remove (vtx_t root,
                 // If no job tag is found on the vertex, job must not have
                 // allocated all rank resources
                 if ((*m_graph)[vtx].idata.tags.find (jobid) != (*m_graph)[vtx].idata.tags.end ()) {
+                    m_preorder++;
                     if ((rc = cancel_vertex (vtx, mod_data, jobid)) != 0) {
                         m_err_msg += __FUNCTION__;
                         m_err_msg += ": cancel_vertex failed\n.";
                         m_err_msg += (*m_graph)[vtx].name + ".\n";
                         return rc;
                     }
+                    m_postorder++;
                 }
                 if ((*m_graph)[vtx].paths.at (dom).length () < subgraph_root_len) {
                     subgraph_root_len = (*m_graph)[vtx].paths.at (dom).length ();
@@ -1049,26 +1041,67 @@ int dfu_impl_t::remove (vtx_t root,
         }
     }
 
-    // Now partial cancel if root has job tag
-    // Otherwise exv cancel
-    if ((*m_graph)[root].idata.tags.find (jobid) != (*m_graph)[root].idata.tags.end ()) {
-        for (const auto &v : parent_counts) {
-            modify_data_t mod_data_new;
-            mod_data_new.mod_type = job_modify_t::PARTIAL_CANCEL;
-            mod_data_new.type_to_count = v.second;
-            if ((rc = cancel_vertex (v.first, mod_data_new, jobid)) != 0) {
-                m_err_msg += __FUNCTION__;
-                m_err_msg += ": cancel_vertex failed\n.";
-                m_err_msg += (*m_graph)[v.first].name + ".\n";
-                return rc;
+    // Reduce the ancestor aggregate filters by the freed counts.
+    // Ancestors are visited (their aggregate spans reduced) but not
+    // purged: they retain the job's state until the job is removed.
+    for (const auto &v : parent_counts) {
+        modify_data_t mod_data_new;
+        mod_data_new.mod_type = job_modify_t::PARTIAL_CANCEL;
+        mod_data_new.type_to_count = v.second;
+        m_preorder++;
+        if ((rc = cancel_vertex (v.first, mod_data_new, jobid)) != 0) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": cancel_vertex failed\n.";
+            m_err_msg += (*m_graph)[v.first].name + ".\n";
+            return rc;
+        }
+    }
+
+    // Exact full-cancel semantics: the job is fully canceled when no
+    // vertex holds any of its state. The walk above purged and
+    // unindexed the freed ranked vertices, so what remains in by_jobid
+    // is either real resource state (e.g. vertices whose rank is never
+    // named in a freed R -- not a full cancel) or bookkeeping-only
+    // residue on the ancestor chain (tags and exclusive-filter spans
+    // whose aggregate spans have fully drained). Checking the whole
+    // remainder costs O(|remainder|), so use the root's drained
+    // aggregate span as a cheap trigger for the exact check.
+    full_cancel = false;
+    auto job_it = m_graph_db->metadata.by_jobid.find (jobid);
+    if (job_it == m_graph_db->metadata.by_jobid.end ()) {
+        full_cancel = true;
+    } else if ((*m_graph)[root].idata.job2span.find (jobid)
+               == (*m_graph)[root].idata.job2span.end ()) {
+        bool residue_only = true;
+        for (const vtx_t &vtx : job_it->second) {
+            if ((*m_graph)[vtx].schedule.allocations.contains (jobid)
+                || (*m_graph)[vtx].schedule.reservations.contains (jobid)
+                || (*m_graph)[vtx].idata.job2span.contains (jobid)) {
+                residue_only = false;
+                break;
             }
         }
-        // Was the root vertex's job tag removed? If so, full_cancel
-        full_cancel =
-            ((*m_graph)[root].idata.tags.find (jobid) == (*m_graph)[root].idata.tags.end ());
-    } else {
-        m_color.reset ();
-        rc = mod_exv (jobid, mod_data);
+        if (residue_only) {
+            bool purge_failed = false;
+            // Snapshot as in remove (root, jobid): the live entry
+            // shrinks as each vertex's purge succeeds and retains any
+            // vertex whose purge fails.
+            std::vector<vtx_t> vertices (job_it->second.begin (), job_it->second.end ());
+            for (const vtx_t &vtx : vertices) {
+                modify_data_t mod_data_new;
+                mod_data_new.mod_type = job_modify_t::CANCEL;
+                m_preorder++;
+                if (cancel_vertex (vtx, mod_data_new, jobid) != 0) {
+                    m_err_msg += __FUNCTION__;
+                    m_err_msg += ": cancel_vertex failed on " + (*m_graph)[vtx].name + ".\n";
+                    purge_failed = true;
+                    rc = -1;
+                    continue;
+                }
+                m_postorder++;
+            }
+            full_cancel = !purge_failed;
+        }
     }
 
     return rc;

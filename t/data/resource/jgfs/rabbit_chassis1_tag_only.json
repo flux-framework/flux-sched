@@ -1,0 +1,1 @@
+{"graph": {"nodes": [{"id": "13", "metadata": {"type": "chassis", "id": 1, "rank": -1, "properties": {"rabbit": "hetchy202", "ssdcount": "36"}, "paths": {"containment": "/hetchy/chassis1"}}}], "edges": []}}

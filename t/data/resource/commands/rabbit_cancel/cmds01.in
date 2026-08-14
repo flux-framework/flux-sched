@@ -1,0 +1,11 @@
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/dyn_explore/test001.yaml
+find sched-now=allocated
+partial-cancel 1 rv1exec @TEST_SRCDIR@/data/resource/rv1exec/cancel/rabbit_ranks17-18.json
+find sched-now=allocated
+cancel 1
+find sched-now=allocated
+find jobid-tag=1
+find jobid-alloc=1
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/dyn_explore/test001.yaml
+find sched-now=allocated
+quit

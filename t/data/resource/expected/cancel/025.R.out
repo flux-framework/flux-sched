@@ -104,8 +104,8 @@ INFO: RESOURCES=ALLOCATED
 INFO: SCHEDULED AT=Now
 INFO: =============================
 INFO: =============================
-INFO: PARTIAL CANCEL PREORDER COUNT="0"
-INFO: PARTIAL CANCEL POSTORDER COUNT="0"
+INFO: PARTIAL CANCEL VISITED COUNT="51"
+INFO: PARTIAL CANCEL PURGED COUNT="49"
 INFO: =============================
       ---------------core0[1:x]
       ---------------core1[1:x]
@@ -162,8 +162,8 @@ INFO: =============================
 INFO: EXPRESSION="sched-now=allocated"
 INFO: =============================
 INFO: =============================
-INFO: CANCEL PREORDER COUNT="52"
-INFO: CANCEL POSTORDER COUNT="51"
+INFO: CANCEL VISITED COUNT="51"
+INFO: CANCEL PURGED COUNT="51"
 INFO: =============================
 INFO: =============================
 INFO: EXPRESSION="sched-now=allocated"

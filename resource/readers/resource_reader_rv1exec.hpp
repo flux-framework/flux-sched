@@ -21,6 +21,8 @@ extern "C" {
 namespace Flux {
 namespace resource_model {
 
+struct resource_graph_metadata_t;
+
 // Struct to track data for update
 struct updater_data {
     int64_t jobid = 0;
@@ -31,6 +33,9 @@ struct updater_data {
     // track updated vertices to undo upon error
     std::map<int64_t, std::vector<vtx_t>> updated_vertices;
     bool update = true;  // Updating or adding vertex
+    // graph metadata for by_jobid maintenance; set by the update
+    // entry points
+    resource_graph_metadata_t *metadata = nullptr;
 };
 
 /*! RV1EXEC resource reader class.

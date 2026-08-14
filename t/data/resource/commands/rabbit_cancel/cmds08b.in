@@ -1,0 +1,11 @@
+update allocate jgf alloc011.json 1 0 3600
+find sched-now=allocated
+find jobid-tag=1
+find jobid-alloc=1
+cancel 1
+find sched-now=allocated
+find jobid-tag=1
+find jobid-alloc=1
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/dyn_explore/test001.yaml
+find sched-now=allocated
+quit

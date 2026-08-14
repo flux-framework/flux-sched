@@ -660,9 +660,6 @@ class dfu_impl_t {
                    const modify_data_t &mod_data,
                    bool &stop);
     int mod_plan (vtx_t u, int64_t jobid, modify_data_t &mod_data);
-    int mod_upv (vtx_t u, int64_t jobid, const modify_data_t &mod_data);
-    int mod_dfv (vtx_t u, int64_t jobid, modify_data_t &mod_data);
-    int mod_exv (int64_t jobid, const modify_data_t &mod_data);
     int cancel_vertex (vtx_t vtx, modify_data_t &mod_data, int64_t jobid);
     int clear_vertex (vtx_t vtx, modify_data_t &mod_data);
 

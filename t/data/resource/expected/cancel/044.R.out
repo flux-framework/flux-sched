@@ -994,8 +994,8 @@ INFO: RESOURCES=ALLOCATED
 INFO: SCHEDULED AT=Now
 INFO: =============================
 INFO: =============================
-INFO: PARTIAL CANCEL PREORDER COUNT="0"
-INFO: PARTIAL CANCEL POSTORDER COUNT="0"
+INFO: PARTIAL CANCEL VISITED COUNT="153"
+INFO: PARTIAL CANCEL PURGED COUNT="150"
 INFO: =============================
       ---------------core0[1:x]
       ---------------core1[1:x]

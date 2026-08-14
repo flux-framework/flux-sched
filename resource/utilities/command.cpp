@@ -663,9 +663,9 @@ int cmd_cancel (std::shared_ptr<detail::resource_query_t> &ctx,
         out << "INFO:"
             << " =============================" << std::endl;
         out << "INFO:"
-            << " CANCEL PREORDER COUNT=\"" << preorder_count << "\"" << std::endl;
+            << " CANCEL VISITED COUNT=\"" << preorder_count << "\"" << std::endl;
         out << "INFO:"
-            << " CANCEL POSTORDER COUNT=\"" << postorder_count << "\"" << std::endl;
+            << " CANCEL PURGED COUNT=\"" << postorder_count << "\"" << std::endl;
         out << "INFO:"
             << " =============================" << std::endl;
     }
@@ -747,9 +747,9 @@ int cmd_partial_cancel (std::shared_ptr<detail::resource_query_t> &ctx,
         out << "INFO:"
             << " =============================" << std::endl;
         out << "INFO:"
-            << " PARTIAL CANCEL PREORDER COUNT=\"" << preorder_count << "\"" << std::endl;
+            << " PARTIAL CANCEL VISITED COUNT=\"" << preorder_count << "\"" << std::endl;
         out << "INFO:"
-            << " PARTIAL CANCEL POSTORDER COUNT=\"" << postorder_count << "\"" << std::endl;
+            << " PARTIAL CANCEL PURGED COUNT=\"" << postorder_count << "\"" << std::endl;
         out << "INFO:"
             << " =============================" << std::endl;
     }
