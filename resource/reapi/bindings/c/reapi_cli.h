@@ -20,6 +20,7 @@ extern "C" {
 #endif
 #include <flux/core.h>
 #include "resource/policies/base/match_op.h"
+#include "resource/traversers/dfu_match_attributes.h"
 #include "resource_status.h"
 
 typedef struct reapi_cli_ctx reapi_cli_ctx_t;
@@ -80,9 +81,9 @@ int reapi_cli_initialize (reapi_cli_ctx_t *ctx, const char *rgraph, const char *
  *                   allocated or reserved.
  *  \param at        If allocated, 0 is returned; if reserved, actual time
  *                   at which the job is reserved.
- *  \param ov        Double into which to return performance overhead
- *                   in terms of elapse time needed to complete
- *                   the match operation.
+ *  \param attrs     Optional traversal attributes:
+ *    match_overhead    Double into which to return performance overhead.
+ *    match_within      Don't return matches starting after this duration.
  *  \return          0 on success; -1 on error.
  */
 int reapi_cli_match (reapi_cli_ctx_t *ctx,
@@ -92,7 +93,7 @@ int reapi_cli_match (reapi_cli_ctx_t *ctx,
                      bool *reserved,
                      char **R,
                      int64_t *at,
-                     double *ov);
+                     struct traverser_match_attrs *attrs);
 
 /*! Match a jobspec to the "best" resources and either allocate
  *  orelse reserve them. The best resources are determined by
@@ -126,9 +127,9 @@ int reapi_cli_match (reapi_cli_ctx_t *ctx,
  *                   allocated or reserved.
  *  \param at        If allocated, 0 is returned; if reserved, actual time
  *                   at which the job is reserved.
- *  \param ov        Double into which to return performance overhead
- *                   in terms of elapse time needed to complete
- *                   the match operation.
+ *  \param attrs     Optional traversal attributes:
+ *    match_overhead    Double into which to return performance overhead.
+ *    match_within      Don't return matches starting after this duration.
  *  \return          0 on success; -1 on error.
  */
 int reapi_cli_match_with_jobid (reapi_cli_ctx_t *ctx,
@@ -138,7 +139,7 @@ int reapi_cli_match_with_jobid (reapi_cli_ctx_t *ctx,
                                 bool *reserved,
                                 char **R,
                                 int64_t *at,
-                                double *ov);
+                                struct traverser_match_attrs *attrs);
 
 /*! Match a jobspec to the "best" resources and either allocate
  *  orelse reserve them. The best resources are determined by
@@ -156,9 +157,9 @@ int reapi_cli_match_with_jobid (reapi_cli_ctx_t *ctx,
  *                   allocated or reserved.
  *  \param at        If allocated, 0 is returned; if reserved, actual time
  *                   at which the job is reserved.
- *  \param ov        Double into which to return performance overhead
- *                   in terms of elapse time needed to complete
- *                   the match operation.
+ *  \param attrs     Optional traversal attributes:
+ *    match_overhead    Double into which to return performance overhead.
+ *    match_within      Don't return matches starting after this duration.
  *  \return          0 on success; -1 on error.
  */
 int reapi_cli_match_allocate (reapi_cli_ctx_t *ctx,
@@ -168,7 +169,7 @@ int reapi_cli_match_allocate (reapi_cli_ctx_t *ctx,
                               bool *reserved,
                               char **R,
                               int64_t *at,
-                              double *ov);
+                              struct traverser_match_attrs *attrs);
 
 /*! Run Satisfiability check for jobspec.
  *  When sat is true, there is no error and the job is satisfiable.
@@ -179,12 +180,15 @@ int reapi_cli_match_allocate (reapi_cli_ctx_t *ctx,
  *  \param jobspec   jobspec string.
  *  \param sat       bool sat into which to return if jobspec is
  *                   satisfiable.
- *  \param ov        Double into which to return performance overhead
- *                   in terms of elapse time needed to complete
- *                   the match operation.
+ *  \param attrs     Optional traversal attributes:
+ *    match_overhead    Double into which to return performance overhead.
+ *    match_within      Don't return matches starting after this duration.
  *  \return          0 on success; -1 on error.
  */
-int reapi_cli_match_satisfy (reapi_cli_ctx_t *ctx, const char *jobspec, bool *sat, double *ov);
+int reapi_cli_match_satisfy (reapi_cli_ctx_t *ctx,
+                             const char *jobspec,
+                             bool *sat,
+                             struct traverser_match_attrs *attrs);
 
 /*! Update the resource state with R.
  *

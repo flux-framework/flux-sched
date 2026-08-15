@@ -1463,12 +1463,13 @@ static int run (std::shared_ptr<resource_ctx_t> &ctx,
                 match_op_t op,
                 const std::string &jstr,
                 int64_t *at,
+                traverser_match_attrs *attrs,
                 flux_error_t *errp)
 {
     int rc = -1;
     try {
         Flux::Jobspec::Jobspec j{jstr};
-        rc = ctx->traverser->run (j, ctx->writers, op, jobid, at);
+        rc = ctx->traverser->run (j, ctx->writers, op, jobid, at, attrs);
     } catch (const Flux::Jobspec::parse_error &e) {
         errno = EINVAL;
         if (errp && e.what ()) {
@@ -1550,14 +1551,15 @@ int run_match (std::shared_ptr<resource_ctx_t> &ctx,
                const std::string &jstr,
                int64_t *now,
                int64_t *at,
-               double *overhead,
                std::stringstream &o,
+               traverser_match_attrs *attrs,
                flux_error_t *errp)
 {
     int rc = 0;
     std::chrono::time_point<std::chrono::system_clock> start;
     std::chrono::duration<double> elapsed;
     std::chrono::duration<int64_t> epoch;
+    double overhead = 0.0f;
     bool rsv = false;
 
     start = std::chrono::system_clock::now ();
@@ -1571,10 +1573,12 @@ int run_match (std::shared_ptr<resource_ctx_t> &ctx,
 
     epoch = std::chrono::duration_cast<std::chrono::seconds> (start.time_since_epoch ());
     *at = *now = epoch.count ();
-    if ((rc = run (ctx, jobid, op, jstr, at, errp)) < 0) {
+    if ((rc = run (ctx, jobid, op, jstr, at, attrs, errp)) < 0) {
         elapsed = std::chrono::system_clock::now () - start;
-        *overhead = elapsed.count ();
-        update_match_perf (*overhead, jobid, false);
+        overhead = elapsed.count ();
+        update_match_perf (overhead, jobid, false);
+        if (attrs)
+            attrs->match_overhead = overhead;
         goto done;
     }
     if ((rc = ctx->writers->emit (o)) < 0) {
@@ -1584,12 +1588,14 @@ int run_match (std::shared_ptr<resource_ctx_t> &ctx,
 
     rsv = (*now != *at) ? true : false;
     elapsed = std::chrono::system_clock::now () - start;
-    *overhead = elapsed.count ();
-    update_match_perf (*overhead, jobid, true);
+    overhead = elapsed.count ();
+    update_match_perf (overhead, jobid, true);
+    if (attrs)
+        attrs->match_overhead = overhead;
 
     if (op != match_op_t::MATCH_SATISFIABILITY && op != match_op_t::MATCH_WITHOUT_ALLOCATING
         && op != match_op_t::MATCH_WITHOUT_ALLOCATING_FUTURE) {
-        if ((rc = track_schedule_info (ctx, jobid, rsv, *at, jstr, o, *overhead)) != 0) {
+        if ((rc = track_schedule_info (ctx, jobid, rsv, *at, jstr, o, overhead)) != 0) {
             flux_log_error (ctx->h,
                             "%s: can't add job info (id=%jd)",
                             __FUNCTION__,
@@ -1606,7 +1612,7 @@ int run_update (std::shared_ptr<resource_ctx_t> &ctx,
                 int64_t jobid,
                 const char *R,
                 int64_t &at,
-                double &overhead,
+                traverser_match_attrs *attrs,
                 std::stringstream &o)
 {
     int rc = 0;
@@ -1615,6 +1621,7 @@ int run_update (std::shared_ptr<resource_ctx_t> &ctx,
     std::chrono::duration<double> elapsed;
     std::string R_graph_fmt;
     std::string format;
+    double overhead = 0.0f;
 
     start = std::chrono::system_clock::now ();
     if ((rc = parse_R (ctx, R, R_graph_fmt, at, duration, format)) < 0) {
@@ -1625,6 +1632,8 @@ int run_update (std::shared_ptr<resource_ctx_t> &ctx,
         elapsed = std::chrono::system_clock::now () - start;
         overhead = elapsed.count ();
         update_match_perf (overhead, jobid, false);
+        if (attrs)
+            attrs->match_overhead = overhead;
         flux_log_error (ctx->h, "%s: run", __FUNCTION__);
         goto done;
     }
@@ -1635,6 +1644,8 @@ int run_update (std::shared_ptr<resource_ctx_t> &ctx,
     elapsed = std::chrono::system_clock::now () - start;
     overhead = elapsed.count ();
     update_match_perf (overhead, jobid, true);
+    if (attrs)
+        attrs->match_overhead = overhead;
     if ((rc = track_schedule_info (ctx, jobid, false, at, "", o, overhead)) != 0) {
         flux_log_error (ctx->h, "%s: can't add job info (id=%jd)", __FUNCTION__, (intmax_t)jobid);
         goto done;

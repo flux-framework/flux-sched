@@ -31,11 +31,10 @@ static int test_match_allocate_invalid_match_op ()
     std::string jobspec = "{}";
     std::string R;
     int64_t at = 0;
-    double ov = 0.0;
 
     // Test with invalid match_op (use out of range enum value)
     errno = 0;
-    int rc = reapi_cli_t::match_allocate (h, (match_op_t)999, jobspec, jobid, reserved, R, at, ov);
+    int rc = reapi_cli_t::match_allocate (h, (match_op_t)999, jobspec, jobid, reserved, R, at);
 
     ok (rc == -1 && errno == EINVAL,
         "match_allocate returns -1 with errno=EINVAL for invalid match_op");
@@ -61,13 +60,11 @@ static int test_match_allocate_invalid_jobspec_with_ctx ()
     bool reserved = false;
     std::string R;
     int64_t at = 0;
-    double ov = 0.0;
 
     // Test with invalid JSON
     errno = 0;
     std::string invalid_json = "not valid json";
-    int rc =
-        reapi_cli_t::match_allocate (h, MATCH_ALLOCATE, invalid_json, jobid, reserved, R, at, ov);
+    int rc = reapi_cli_t::match_allocate (h, MATCH_ALLOCATE, invalid_json, jobid, reserved, R, at);
 
     ok (rc == -1 && errno == EINVAL,
         "match_allocate returns -1 with errno=EINVAL for invalid JSON");
@@ -78,14 +75,8 @@ static int test_match_allocate_invalid_jobspec_with_ctx ()
         "version": 1,
         "tasks": [{"command": ["app"], "slot": "task", "count": {"per_slot": 1}}]
     })";
-    rc = reapi_cli_t::match_allocate (h,
-                                      MATCH_ALLOCATE,
-                                      incomplete_jobspec,
-                                      jobid,
-                                      reserved,
-                                      R,
-                                      at,
-                                      ov);
+    rc =
+        reapi_cli_t::match_allocate (h, MATCH_ALLOCATE, incomplete_jobspec, jobid, reserved, R, at);
 
     ok (rc == -1 && errno == EINVAL,
         "match_allocate returns -1 with errno=EINVAL for jobspec missing required fields");
@@ -129,7 +120,6 @@ static int test_match_allocate_ebusy ()
     bool reserved = false;
     std::string R;
     int64_t at = 0;
-    double ov = 0.0;
 
     // Clear any previous error messages
     reapi_cli_t::clear_err_message ();
@@ -167,14 +157,14 @@ static int test_match_allocate_ebusy ()
     })";
 
     errno = 0;
-    int rc = reapi_cli_t::match_allocate (h, MATCH_ALLOCATE, jobspec1, jobid1, reserved, R, at, ov);
+    int rc = reapi_cli_t::match_allocate (h, MATCH_ALLOCATE, jobspec1, jobid1, reserved, R, at);
     int saved_errno = errno;
 
     if (rc == 0) {
         // Now try to allocate again - should get EBUSY
         errno = 0;
         std::string jobspec2 = jobspec1;  // Same request
-        rc = reapi_cli_t::match_allocate (h, MATCH_ALLOCATE, jobspec2, jobid2, reserved, R, at, ov);
+        rc = reapi_cli_t::match_allocate (h, MATCH_ALLOCATE, jobspec2, jobid2, reserved, R, at);
 
         ok (rc == -1 && errno == EBUSY,
             "match_allocate returns -1 with errno=EBUSY when resources unavailable");
@@ -235,7 +225,6 @@ static int test_match_allocate_enodev ()
     bool reserved = false;
     std::string R;
     int64_t at = 0;
-    double ov = 0.0;
 
     // Clear any previous error messages
     reapi_cli_t::clear_err_message ();
@@ -255,8 +244,7 @@ static int test_match_allocate_enodev ()
                                           jobid,
                                           reserved,
                                           R,
-                                          at,
-                                          ov);
+                                          at);
 
     ok (rc == -1 && errno == ENODEV,
         "match_allocate (satisfiability mode) returns -1 with errno=ENODEV for infeasible request");
@@ -266,7 +254,7 @@ static int test_match_allocate_enodev ()
     // Before commit 38d34b75, resolve_graph() failure could leave errno=0
     errno = 0;
     jobid = 2;
-    rc = reapi_cli_t::match_allocate (h, MATCH_ALLOCATE, jobspec, jobid, reserved, R, at, ov);
+    rc = reapi_cli_t::match_allocate (h, MATCH_ALLOCATE, jobspec, jobid, reserved, R, at);
 
     ok (rc == -1 && errno == EBUSY,
         "match_allocate (regular mode) returns -1 with errno=EBUSY for infeasible request");
@@ -405,7 +393,6 @@ static int test_match_allocate_orelse_reserve ()
     bool reserved = false;
     std::string R;
     int64_t at = 0;
-    double ov = 0.0;
 
     // Request a resource type that doesn't exist (gpu) - infeasible
     // MATCH_ALLOCATE_ORELSE_RESERVE uses satisfiability checking, so returns ENODEV for infeasible
@@ -422,8 +409,7 @@ static int test_match_allocate_orelse_reserve ()
                                           jobid,
                                           reserved,
                                           R,
-                                          at,
-                                          ov);
+                                          at);
     ok (rc == -1 && errno == ENODEV,
         "match_allocate (orelse_reserve) returns -1 with errno=ENODEV for infeasible request");
 
@@ -462,7 +448,6 @@ static int test_allocate_then_cancel ()
     bool reserved = false;
     std::string R;
     int64_t at = 0;
-    double ov = 0.0;
 
     std::string jobspec = R"({
         "version": 1,
@@ -486,7 +471,7 @@ static int test_allocate_then_cancel ()
 
     // Allocate the job
     errno = 0;
-    int rc = reapi_cli_t::match_allocate (h, MATCH_ALLOCATE, jobspec, jobid, reserved, R, at, ov);
+    int rc = reapi_cli_t::match_allocate (h, MATCH_ALLOCATE, jobspec, jobid, reserved, R, at);
 
     if (rc != 0) {
         ok (1, "# SKIP: allocation failed, can't test cancel");
