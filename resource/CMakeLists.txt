@@ -100,6 +100,7 @@ target_link_libraries(resource PUBLIC
     Boost::graph
     jobspec_conv
     match_op
+    dfu_match_attrs
     )
 add_sanitizers(resource)
 
@@ -109,7 +110,7 @@ add_subdirectory(evaluators)
 add_subdirectory(policies)
 add_subdirectory(schema)
 add_subdirectory(writers)
-add_subdirectory(traversers/test)
+add_subdirectory(traversers)
 
 # programs that depend on libresource
 add_subdirectory(utilities)

@@ -62,9 +62,9 @@ void reapi_module_destroy (reapi_module_ctx_t *ctx);
  *                   allocated or reserved.
  *  \param at        If allocated, 0 is returned; if reserved, actual time
  *                   at which the job is reserved.
- *  \param ov        Double into which to return performance overhead
- *                   in terms of elapse time needed to complete
- *                   the match operation.
+ *  \param attrs     Optional traversal attributes:
+ *    match_overhead    Double into which to return performance overhead.
+ *    match_within      Don't return matches starting after this duration.
  *  \return          0 on success; -1 on error.
  */
 int reapi_module_match (reapi_module_ctx_t *ctx,
@@ -74,7 +74,7 @@ int reapi_module_match (reapi_module_ctx_t *ctx,
                         bool *reserved,
                         char **R,
                         int64_t *at,
-                        double *ov);
+                        struct traverser_match_attrs *attrs);
 
 /*! Match a jobspec to the "best" resources and either allocate
  *  orelse reserve them. The best resources are determined by
@@ -92,9 +92,9 @@ int reapi_module_match (reapi_module_ctx_t *ctx,
  *                   allocated or reserved.
  *  \param at        If allocated, 0 is returned; if reserved, actual time
  *                   at which the job is reserved.
- *  \param ov        Double into which to return performance overhead
- *                   in terms of elapse time needed to complete
- *                   the match operation.
+ *  \param attrs     Optional traversal attributes:
+ *    match_overhead    Double into which to return performance overhead.
+ *    match_within      Don't return matches starting after this duration.
  *  \return          0 on success; -1 on error.
  */
 int reapi_module_match_allocate (reapi_module_ctx_t *ctx,
@@ -104,18 +104,20 @@ int reapi_module_match_allocate (reapi_module_ctx_t *ctx,
                                  bool *reserved,
                                  char **R,
                                  int64_t *at,
-                                 double *ov);
+                                 struct traverser_match_attrs *attrs);
 
 /*! Run Satisfiability check for jobspec.
  *
  *  \param ctx       reapi_module_ctx_t context object
  *  \param jobspec   jobspec string.
- *  \param ov        Double into which to return performance overhead
- *                   in terms of elapse time needed to complete
- *                   the match operation.
+ *  \param attrs     Optional traversal attributes:
+ *    match_overhead    Double into which to return performance overhead.
+ *    match_within      Don't return matches starting after this duration.
  *  \return          0 on success; -1 on error.
  */
-int reapi_module_match_satisfy (reapi_module_ctx_t *ctx, const char *jobspec, double *ov);
+int reapi_module_match_satisfy (reapi_module_ctx_t *ctx,
+                                const char *jobspec,
+                                struct traverser_match_attrs *attrs);
 
 /*! Update the resource state with R.
  *

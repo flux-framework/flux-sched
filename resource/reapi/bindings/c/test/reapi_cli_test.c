@@ -110,7 +110,6 @@ static int test_match_with_jobid ()
     bool reserved = false;
     char *R = NULL;
     int64_t at = 0;
-    double ov = 0.0;
 
     // Test reapi_cli_match_with_jobid with explicit jobid
     errno = 0;
@@ -121,7 +120,7 @@ static int test_match_with_jobid ()
                                      &reserved,
                                      &R,
                                      &at,
-                                     &ov);
+                                     NULL);
     ok (rc == 0, "reapi_cli_match_with_jobid succeeded");
     ok (R != NULL, "reapi_cli_match_with_jobid returned R string");
     free (R);
@@ -147,7 +146,7 @@ static int test_match_with_jobid ()
                                      &reserved,
                                      &R,
                                      &at,
-                                     &ov);
+                                     NULL);
     ok (rc == -1 && errno == EINVAL,
         "reapi_cli_match_with_jobid returns -1 with errno=EINVAL for NULL context");
 
@@ -349,10 +348,9 @@ static int test_cancel_ex ()
     bool reserved = false;
     char *R = NULL;
     int64_t at = 0;
-    double ov = 0.0;
 
     // Allocate a job first
-    rc = reapi_cli_match_allocate (ctx, false, simple_jobspec, &jobid, &reserved, &R, &at, &ov);
+    rc = reapi_cli_match_allocate (ctx, false, simple_jobspec, &jobid, &reserved, &R, &at, NULL);
     if (rc < 0)
         BAIL_OUT ("reapi_cli_match_allocate failed: %s", reapi_cli_get_err_msg (ctx));
 
@@ -432,7 +430,6 @@ static int test_find ()
     bool reserved = false;
     char *R = NULL;
     int64_t at = 0;
-    double ov = 0.0;
 
     rc = reapi_cli_match_with_jobid (ctx,
                                      MATCH_ALLOCATE,
@@ -441,7 +438,7 @@ static int test_find ()
                                      &reserved,
                                      &R,
                                      &at,
-                                     &ov);
+                                     NULL);
     if (rc < 0)
         BAIL_OUT ("reapi_cli_match_with_jobid failed");
     ok (rc == 0, "allocated job for find test");
@@ -502,11 +499,10 @@ static int test_match_satisfy_absent_type ()
         BAIL_OUT ("reapi_cli_initialize failed: %s", reapi_cli_get_err_msg (ctx));
 
     bool sat = false;
-    double ov = 0.0;
 
     // Sanity: a satisfiable request is reported satisfiable.
     sat = false;
-    rc = reapi_cli_match_satisfy (ctx, simple_jobspec, &sat, &ov);
+    rc = reapi_cli_match_satisfy (ctx, simple_jobspec, &sat, NULL);
     ok (rc == 0 && sat, "reapi_cli_match_satisfy: satisfiable request -> satisfiable");
 
     // A request for a resource type absent from the graph must NOT be reported
@@ -515,7 +511,7 @@ static int test_match_satisfy_absent_type ()
     // with errno != ENODEV) was wrongly reported satisfiable.
     sat = true;
     errno = 0;
-    rc = reapi_cli_match_satisfy (ctx, jobspec_absent_type, &sat, &ov);
+    rc = reapi_cli_match_satisfy (ctx, jobspec_absent_type, &sat, NULL);
     ok (rc != 0 && !sat, "reapi_cli_match_satisfy: absent resource type -> unsatisfiable");
 
     reapi_cli_destroy (ctx);

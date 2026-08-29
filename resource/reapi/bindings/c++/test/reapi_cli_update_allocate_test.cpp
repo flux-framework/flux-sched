@@ -53,7 +53,6 @@ static int test_update_allocate_basic ()
     bool reserved = false;
     std::string R;
     int64_t at = 0;
-    double ov = 0.0;
 
     std::string jobspec = R"({
         "version": 1,
@@ -77,7 +76,7 @@ static int test_update_allocate_basic ()
 
     // Allocate a job to get an R string
     errno = 0;
-    int rc = reapi_cli_t::match_allocate (h, MATCH_ALLOCATE, jobspec, jobid, reserved, R, at, ov);
+    int rc = reapi_cli_t::match_allocate (h, MATCH_ALLOCATE, jobspec, jobid, reserved, R, at);
     if (rc != 0)
         BAIL_OUT ("match_allocate failed for jobid 1");
 
@@ -91,10 +90,10 @@ static int test_update_allocate_basic ()
     uint64_t jobid2 = 2;
     std::string R_out;
     int64_t at_out = 0;
-    double ov_out = 0.0;
+    double ov = 0.0f;
 
     errno = 0;
-    rc = reapi_cli_t::update_allocate (h, jobid2, R, at_out, ov_out, R_out);
+    rc = reapi_cli_t::update_allocate (h, jobid2, R, at_out, ov, R_out);
     ok (rc == 0, "update_allocate succeeded for jobid 2");
     ok (!R_out.empty (), "update_allocate returned non-empty R_out");
 
@@ -132,7 +131,6 @@ static int test_update_allocate_duplicate_jobid ()
     bool reserved = false;
     std::string R;
     int64_t at = 0;
-    double ov = 0.0;
 
     std::string jobspec = R"({
         "version": 1,
@@ -156,17 +154,17 @@ static int test_update_allocate_duplicate_jobid ()
 
     // Allocate a job
     errno = 0;
-    int rc = reapi_cli_t::match_allocate (h, MATCH_ALLOCATE, jobspec, jobid, reserved, R, at, ov);
+    int rc = reapi_cli_t::match_allocate (h, MATCH_ALLOCATE, jobspec, jobid, reserved, R, at);
     if (rc != 0)
         BAIL_OUT ("match_allocate failed for jobid 1");
 
     // Try update_allocate with the same jobid - should fail with EEXIST
     std::string R_out;
     int64_t at_out = 0;
-    double ov_out = 0.0;
+    double ov = 0.0f;
 
     errno = 0;
-    rc = reapi_cli_t::update_allocate (h, jobid, R, at_out, ov_out, R_out);
+    rc = reapi_cli_t::update_allocate (h, jobid, R, at_out, ov, R_out);
     ok (rc == -1 && errno == EEXIST,
         "update_allocate returns -1 with errno=EEXIST for duplicate jobid");
 
@@ -204,7 +202,6 @@ static int test_update_allocate_no_expiration ()
     bool reserved = false;
     std::string R;
     int64_t at = 0;
-    double ov = 0.0;
 
     std::string jobspec = R"({
         "version": 1,
@@ -228,7 +225,7 @@ static int test_update_allocate_no_expiration ()
 
     // Allocate a job to get an R string, then free the resources
     errno = 0;
-    int rc = reapi_cli_t::match_allocate (h, MATCH_ALLOCATE, jobspec, jobid, reserved, R, at, ov);
+    int rc = reapi_cli_t::match_allocate (h, MATCH_ALLOCATE, jobspec, jobid, reserved, R, at);
     if (rc != 0)
         BAIL_OUT ("match_allocate failed for jobid 1");
     rc = reapi_cli_t::cancel (h, jobid, false);
@@ -253,10 +250,10 @@ static int test_update_allocate_no_expiration ()
     uint64_t jobid2 = 2;
     std::string R_out;
     int64_t at_out = 0;
-    double ov_out = 0.0;
+    double ov = 0.0f;
 
     errno = 0;
-    rc = reapi_cli_t::update_allocate (h, jobid2, R_no_exp, at_out, ov_out, R_out);
+    rc = reapi_cli_t::update_allocate (h, jobid2, R_no_exp, at_out, ov, R_out);
     ok (rc == 0, "update_allocate succeeded for R with no expiration key");
     ok (!R_out.empty (), "update_allocate returned non-empty R_out");
 
@@ -271,7 +268,7 @@ static int test_update_allocate_null_ctx ()
     std::string R = "{}";
     std::string R_out;
     int64_t at = 0;
-    double ov = 0.0;
+    double ov = 0.0f;
 
     errno = 0;
     int rc = reapi_cli_t::update_allocate (h, jobid, R, at, ov, R_out);

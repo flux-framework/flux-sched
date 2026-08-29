@@ -101,12 +101,12 @@ int reapi_cli_t::match_allocate (void *h,
                                  bool &reserved,
                                  std::string &R,
                                  int64_t &at,
-                                 double &ov)
+                                 traverser_match_attrs *attrs)
 {
     resource_query_t *rq = static_cast<resource_query_t *> (h);
     int traverser_rc;
     at = 0;
-    ov = 0.0f;
+    double ov = 0.0f;
     job_lifecycle_t st;
     std::shared_ptr<job_info_t> job_info = nullptr;
     struct timeval start_time, end_time;
@@ -149,7 +149,7 @@ int reapi_cli_t::match_allocate (void *h,
      * ENODEV - unsatisfiable
      * Otherwise, return immediately.
      */
-    if ((traverser_rc = rq->traverser_run (job, match_op, (int64_t)jobid, at)) < 0) {
+    if ((traverser_rc = rq->traverser_run (job, match_op, (int64_t)jobid, at, attrs)) < 0) {
         traverser_errno = errno;
         if (rq->get_traverser_err_msg () != "") {
             m_err_msg += __FUNCTION__;
@@ -180,6 +180,8 @@ int reapi_cli_t::match_allocate (void *h,
     }
 
     ov = get_elapsed_time (start_time, end_time);
+    if (attrs)
+        attrs->match_overhead = ov;
 
     if (matched) {
         if (match_op == match_op_t::MATCH_WITHOUT_ALLOCATING
@@ -1357,9 +1359,10 @@ void resource_query_t::incr_job_counter ()
 int resource_query_t::traverser_run (Flux::Jobspec::Jobspec &job,
                                      match_op_t op,
                                      int64_t jobid,
-                                     int64_t &at)
+                                     int64_t &at,
+                                     traverser_match_attrs *attrs)
 {
-    return traverser->run (job, writers, op, jobid, &at);
+    return traverser->run (job, writers, op, jobid, &at, attrs);
 }
 
 int resource_query_t::traverser_find (std::string criteria)

@@ -144,15 +144,15 @@ int run_match (std::shared_ptr<resource_ctx_t> &ctx,
                const std::string &jstr,
                int64_t *now,
                int64_t *at,
-               double *overhead,
                std::stringstream &o,
+               traverser_match_attrs *attrs,
                flux_error_t *errp);
 
 int run_update (std::shared_ptr<resource_ctx_t> &ctx,
                 int64_t jobid,
                 const char *R,
                 int64_t &at,
-                double &overhead,
+                traverser_match_attrs *attrs,
                 std::stringstream &o);
 
 int run_remove (std::shared_ptr<resource_ctx_t> &ctx,

@@ -164,7 +164,7 @@ extern "C" int reapi_cli_match_with_jobid (reapi_cli_ctx_t *ctx,
                                            bool *reserved,
                                            char **R,
                                            int64_t *at,
-                                           double *ov)
+                                           struct traverser_match_attrs *attrs)
 {
     int rc = -1;
     std::string R_buf = "";
@@ -176,7 +176,7 @@ extern "C" int reapi_cli_match_with_jobid (reapi_cli_ctx_t *ctx,
     }
 
     if ((rc = reapi_cli_t::
-             match_allocate (ctx->rqt, match_op, jobspec, jobid, *reserved, R_buf, *at, *ov))
+             match_allocate (ctx->rqt, match_op, jobspec, jobid, *reserved, R_buf, *at, attrs))
         < 0) {
         goto out;
     }
@@ -201,7 +201,7 @@ extern "C" int reapi_cli_match (reapi_cli_ctx_t *ctx,
                                 bool *reserved,
                                 char **R,
                                 int64_t *at,
-                                double *ov)
+                                struct traverser_match_attrs *attrs)
 {
     int rc = -1;
 
@@ -217,7 +217,7 @@ extern "C" int reapi_cli_match (reapi_cli_ctx_t *ctx,
         || match_op == match_op_t::MATCH_WITHOUT_ALLOCATING_FUTURE)
         seq = -1;
 
-    if ((rc = reapi_cli_match_with_jobid (ctx, match_op, jobspec, seq, reserved, R, at, ov)) < 0)
+    if ((rc = reapi_cli_match_with_jobid (ctx, match_op, jobspec, seq, reserved, R, at, attrs)) < 0)
         goto done;
     *jobid = seq;
 
@@ -232,18 +232,18 @@ extern "C" int reapi_cli_match_allocate (reapi_cli_ctx_t *ctx,
                                          bool *reserved,
                                          char **R,
                                          int64_t *at,
-                                         double *ov)
+                                         struct traverser_match_attrs *attrs)
 {
     match_op_t match_op =
         orelse_reserve ? match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE : match_op_t::MATCH_ALLOCATE;
 
-    return reapi_cli_match (ctx, match_op, jobspec, jobid, reserved, R, at, ov);
+    return reapi_cli_match (ctx, match_op, jobspec, jobid, reserved, R, at, attrs);
 }
 
 extern "C" int reapi_cli_match_satisfy (reapi_cli_ctx_t *ctx,
                                         const char *jobspec,
                                         bool *sat,
-                                        double *ov)
+                                        struct traverser_match_attrs *attrs)
 {
     match_op_t match_op = match_op_t::MATCH_SATISFIABILITY;
     uint64_t jobid;
@@ -253,7 +253,7 @@ extern "C" int reapi_cli_match_satisfy (reapi_cli_ctx_t *ctx,
     int ret;
     *sat = true;
 
-    ret = reapi_cli_match (ctx, match_op, jobspec, &jobid, &reserved, &R, &at, ov);
+    ret = reapi_cli_match (ctx, match_op, jobspec, &jobid, &reserved, &R, &at, attrs);
 
     // Not satisfiable if the match reported unsatisfiable (ENODEV) or failed
     // for any other reason (e.g. a jobspec referencing an unknown resource
@@ -274,6 +274,7 @@ extern "C" int reapi_cli_update_allocate (reapi_cli_ctx_t *ctx,
     int rc = -1;
     std::string R_buf = "";
     const char *R_buf_c = NULL;
+
     if (!ctx || !ctx->rqt || !R) {
         errno = EINVAL;
         goto out;

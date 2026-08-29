@@ -97,7 +97,11 @@ class resource_query_t {
     void incr_job_counter ();
 
     /* Run the traverser to match the jobspec */
-    int traverser_run (Flux::Jobspec::Jobspec &job, match_op_t op, int64_t jobid, int64_t &at);
+    int traverser_run (Flux::Jobspec::Jobspec &job,
+                       match_op_t op,
+                       int64_t jobid,
+                       int64_t &at,
+                       traverser_match_attrs *attrs = nullptr);
     int traverser_find (std::string criteria);
 
     // must be public; results in a deleted stringstream if converted to
@@ -143,7 +147,7 @@ class reapi_cli_t : public reapi_t {
                                bool &reserved,
                                std::string &R,
                                int64_t &at,
-                               double &ov);
+                               traverser_match_attrs *attrs = nullptr);
     static int match_allocate_multi (void *h,
                                      bool orelse_reserve,
                                      const char *jobs,

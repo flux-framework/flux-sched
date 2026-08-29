@@ -39,7 +39,7 @@ class reapi_module_t : public reapi_t {
                                bool &reserved,
                                std::string &R,
                                int64_t &at,
-                               double &ov);
+                               traverser_match_attrs *attrs = nullptr);
     static int match_allocate (void *h,
                                bool orelse_reserve,
                                const std::string &jobspec,
@@ -47,7 +47,7 @@ class reapi_module_t : public reapi_t {
                                bool &reserved,
                                std::string &R,
                                int64_t &at,
-                               double &ov);
+                               traverser_match_attrs *attrs = nullptr);
     static int match_allocate_multi (void *h,
                                      bool orelse_reserve,
                                      json_t *jobs,

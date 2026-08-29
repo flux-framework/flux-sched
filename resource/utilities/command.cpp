@@ -243,6 +243,7 @@ static int run_match (std::shared_ptr<detail::resource_query_t> &ctx,
                       int64_t jobid,
                       const match_op_t match_op,
                       const std::string &jobspec_fn,
+                      traverser_match_attrs *attrs,
                       std::ostream &out)
 {
     int rc = 0;
@@ -250,9 +251,12 @@ static int run_match (std::shared_ptr<detail::resource_query_t> &ctx,
     bool reserved = false;
     bool sat = true;
     bool matched = true;
-    double ov = 0.0;
     std::string R = "";
 
+    if (!attrs) {
+        std::cerr << "ERROR: invalid match attributes" << std::endl;
+        return -1;
+    }
     std::ifstream jobspec_in (jobspec_fn);
     if (!jobspec_in) {
         std::cerr << "ERROR: can't open " << jobspec_fn << std::endl;
@@ -270,7 +274,7 @@ static int run_match (std::shared_ptr<detail::resource_query_t> &ctx,
                                               reserved,
                                               R,
                                               at,
-                                              ov);
+                                              attrs);
 
     // check for match success - only check errno if match_allocate failed
     if (rc < 0) {
@@ -288,7 +292,7 @@ static int run_match (std::shared_ptr<detail::resource_query_t> &ctx,
     out << R;
 
     if (match_op == match_op_t::MATCH_SATISFIABILITY)
-        print_sat_info (ctx, out, sat, ov);
+        print_sat_info (ctx, out, sat, attrs->match_overhead);
     else
         print_schedule_info (ctx,
                              out,
@@ -299,7 +303,7 @@ static int run_match (std::shared_ptr<detail::resource_query_t> &ctx,
                                  && match_op != match_op_t::MATCH_WITHOUT_ALLOCATING_FUTURE,
                              at,
                              sat,
-                             ov);
+                             attrs->match_overhead);
 
     return rc;
 }
@@ -309,8 +313,9 @@ int cmd_match (std::shared_ptr<detail::resource_query_t> &ctx,
                std::ostream &out)
 {
     match_op_t match_op;
+    traverser_match_attrs attrs = default_match_attrs;
 
-    if (args.size () != 3) {
+    if (args.size () < 3 || args.size () > 4) {
         std::cerr << "ERROR: malformed command" << std::endl;
         return 0;
     }
@@ -323,7 +328,16 @@ int cmd_match (std::shared_ptr<detail::resource_query_t> &ctx,
     uint64_t jobid = ctx->get_job_counter ();
     std::string &jobspec_fn = args[2];
 
-    run_match (ctx, jobid, match_op, jobspec_fn, out);
+    if (args.size () == 4) {
+        try {
+            attrs.match_within = std::stoi (args[3]);
+        } catch (...) {
+            std::cerr << "ERROR: invalid integer for 'within' param: " << args[3] << std::endl;
+            return 0;
+        }
+    }
+
+    run_match (ctx, jobid, match_op, jobspec_fn, &attrs, out);
 
     return 0;
 }
@@ -335,6 +349,7 @@ int cmd_match_multi (std::shared_ptr<detail::resource_query_t> &ctx,
     int rc = 0;
     size_t i;
     match_op_t match_op;
+    traverser_match_attrs attrs = default_match_attrs;
 
     if (args.size () <= 3) {
         std::cerr << "ERROR: malformed command" << std::endl;
@@ -349,7 +364,7 @@ int cmd_match_multi (std::shared_ptr<detail::resource_query_t> &ctx,
     for (i = 2; i < args.size (); i++) {
         int64_t jobid = ctx->jobid_counter;
         std::string &jobspec_fn = args[i];
-        rc = run_match (ctx, jobid, match_op, jobspec_fn, out);
+        rc = run_match (ctx, jobid, match_op, jobspec_fn, &attrs, out);
         if (rc != 0)
             break;
     }

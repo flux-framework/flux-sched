@@ -371,7 +371,8 @@ int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
                           std::shared_ptr<match_writers_t> &writers,
                           match_op_t op,
                           int64_t jobid,
-                          int64_t *at)
+                          int64_t *at,
+                          traverser_match_attrs *attrs)
 {
     // Clear the error message to disambiguate errors
     clear_err_message ();
@@ -389,6 +390,8 @@ int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
     int64_t graph_end = std::chrono::duration_cast<std::chrono::seconds> (
                             graph_duration.graph_end.time_since_epoch ())
                             .count ();
+    int64_t within = attrs ? attrs->match_within : INT64_MIN;
+    int64_t latest = std::numeric_limits<int64_t>::max ();
     detail::jobmeta_t meta;
     vtx_t root = get_graph_db ()->metadata.roots.at (dom);
     bool x = traverser->exclusivity (jobspec.resources, root);
@@ -399,6 +402,15 @@ int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
     if (meta.build (jobspec, detail::jobmeta_t::alloc_type_t::AT_ALLOC, jobid, *at, graph_duration)
         < 0)
         return -1;
+
+    // If within is not specified , read it from the jobspec's user attributes.
+    // Note within == INT64_MIN when it is unspecified.
+    YAML::Node match_within_node = jobspec.attributes.user["match-within"];
+    if ((within == INT64_MIN) && match_within_node.IsDefined ())
+        within = match_within_node.as<int64_t> ();
+
+    if (within >= 0 && within <= std::numeric_limits<int64_t>::max () - *at)
+        latest = *at + within;
 
     // If matching without allocation, set alloc_type to prevent allocation in update
     if (op == match_op_t::MATCH_WITHOUT_ALLOCATING
@@ -412,7 +424,7 @@ int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
         }
     } else if ((rc = schedule (jobspec, meta, x, op, root, dfv)) == 0) {
         *at = meta.at;
-        if (*at == graph_end) {
+        if (*at == graph_end || *at > latest) {
             traverser->reset_exclusive_resource_types (exclusive_types);
             // no schedulable point found even at the end of the time, return EBUSY
             errno = EBUSY;

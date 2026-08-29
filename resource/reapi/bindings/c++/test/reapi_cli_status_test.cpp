@@ -387,7 +387,6 @@ static void test_allocation_with_down_node ()
     std::string R;
     bool reserved = false;
     int64_t at = 0;
-    double ov = 0.0;
     errno = 0;
     rc = reapi_cli_t::match_allocate (ctx,
                                       match_op_t::MATCH_ALLOCATE,
@@ -395,8 +394,7 @@ static void test_allocation_with_down_node ()
                                       1,
                                       reserved,
                                       R,
-                                      at,
-                                      ov);
+                                      at);
 
     ok (rc == -1, "allocation_with_down_node: allocation fails when all nodes are down");
 
@@ -448,7 +446,6 @@ static void test_allocation_with_mixed_status ()
     std::string R;
     bool reserved = false;
     int64_t at = 0;
-    double ov = 0.0;
     errno = 0;
     rc = reapi_cli_t::match_allocate (ctx,
                                       match_op_t::MATCH_ALLOCATE,
@@ -456,8 +453,7 @@ static void test_allocation_with_mixed_status ()
                                       1,
                                       reserved,
                                       R,
-                                      at,
-                                      ov);
+                                      at);
 
     ok (rc == 0, "allocation_with_mixed_status: allocation succeeds with one node down");
 

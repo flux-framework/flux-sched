@@ -13,6 +13,7 @@ target_link_libraries( reapi_cli PUBLIC
     flux::core
     flux::idset
     match_op
+    dfu_match_attrs
     )
 install(TARGETS reapi_cli LIBRARY DESTINATION "${FLUX_LIB_DIR}")
 
@@ -28,6 +29,7 @@ target_link_libraries( reapi_module PRIVATE
     )
 target_link_libraries( reapi_module PUBLIC
     match_op
+    dfu_match_attrs
     )
 
 if(BUILD_TESTING)
