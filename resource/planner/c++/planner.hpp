@@ -12,6 +12,9 @@
 #define PLANNER_HPP
 
 #include <memory>
+#include <cstdint>
+#include <map>
+#include <string>
 #include "planner_internal_tree.hpp"
 
 struct request_t {

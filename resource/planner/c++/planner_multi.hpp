@@ -12,8 +12,13 @@
 #define PLANNER_MULTI_HPP
 
 #include "planner.hpp"
+#include <cstdint>
+#include <map>
+#include <memory>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <vector>
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/member.hpp>
 #include <boost/multi_index/random_access_index.hpp>
