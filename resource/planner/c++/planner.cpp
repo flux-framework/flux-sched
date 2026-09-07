@@ -14,8 +14,11 @@ extern "C" {
 #endif
 }
 
+#include <cerrno>
 #include <limits>
 #include <map>
+#include <new>
+#include <stdexcept>
 #include <string>
 
 #include "planner.hpp"

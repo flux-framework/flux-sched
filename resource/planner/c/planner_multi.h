@@ -86,7 +86,6 @@ int64_t planner_multi_base_time (planner_multi_t *ctx);
 int64_t planner_multi_duration (planner_multi_t *ctx);
 size_t planner_multi_resources_len (planner_multi_t *ctx);
 const char *planner_multi_resource_type_at (planner_multi_t *ctx, unsigned int i);
-const uint64_t *planner_multi_resource_totals (planner_multi_t *ctx);
 int64_t planner_multi_resource_total_at (planner_multi_t *ctx, unsigned int i);
 int64_t planner_multi_resource_total_by_type (planner_multi_t *ctx, const char *resource_type);
 

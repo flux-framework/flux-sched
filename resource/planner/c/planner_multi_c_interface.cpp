@@ -14,7 +14,13 @@
 #include <limits>
 #include <vector>
 #include <map>
+#include <set>
+#include <string>
+#include <unordered_set>
 #include <numeric>
+#include <functional>
+#include <new>
+#include <utility>
 
 #include "planner_multi.h"
 #include "resource/planner/c++/planner_multi.hpp"

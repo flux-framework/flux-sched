@@ -11,7 +11,9 @@
 #include <limits>
 #include <map>
 #include <list>
-#include <string>
+#include <memory>
+#include <new>
+#include <utility>
 
 #include "resource/planner/c++/planner.hpp"
 
