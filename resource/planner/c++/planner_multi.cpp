@@ -16,6 +16,7 @@ extern "C" {
 
 #include <cstdlib>
 #include <cerrno>
+#include <new>
 #include <cstring>
 #include <vector>
 #include <map>
