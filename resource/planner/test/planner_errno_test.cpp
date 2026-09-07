@@ -17,6 +17,9 @@ extern "C" {
 #include <cerrno>
 #include "planner.h"
 #include "planner_multi.h"
+// planner_t's definition, needed to copy-construct one at the C++ level.
+#include "resource/planner/c++/planner.hpp"
+#include "resource/planner/c++/planner_multi.hpp"
 #include "src/common/libtap/tap.h"
 
 static int test_planner_avail_resources_at_errno ()
@@ -514,6 +517,97 @@ static int test_planner_multi_iterator_after_tail_growth ()
     return 0;
 }
 
+// planner_t owns its inner planner and frees it in ~planner_t, so the
+// wrapper needs a deep copy constructor. Note that planner_copy () does
+// not cover this: it constructs through planner_t (const planner &),
+// which takes the inner type and has always deep copied. Only a
+// planner_t-from-planner_t construction reaches the constructor that was
+// implicitly declared, and shallow, before the rule-of-five change.
+static void test_planner_t_value_semantics ()
+{
+    planner_t *src = planner_new (0, 10, 10, "core");
+    int64_t span = planner_add_span (src, 0, 5, 3);
+
+    ok (span != -1, "value semantics: span added to the source planner");
+    ok (planner_avail_resources_at (src, 0) == 7, "source reports 7 of 10 available");
+
+    {
+        planner_t copy (*src);
+
+        ok (copy.plan != src->plan, "copy construction allocates a distinct inner planner");
+        ok (planner_avail_resources_at (&copy, 0) == 7, "the copy sees the source's span");
+
+        // Mutating the source must not reach the copy.
+        ok (planner_rem_span (src, span) == 0, "span removed from the source");
+        ok (planner_avail_resources_at (src, 0) == 10, "source is back to 10 available");
+        ok (planner_avail_resources_at (&copy, 0) == 7, "the copy is unaffected by the source");
+    }
+
+    // The copy's destructor ran at scope exit. A shallow copy would have
+    // freed the planner src still points at, so everything below this
+    // line is a use-after-free under the old implicit copy constructor.
+    ok (planner_avail_resources_at (src, 0) == 10, "source survives destruction of the copy");
+
+    planner_t *other = planner_new (0, 10, 4, "core");
+
+    ok (planner_assign (other, src) == 0, "planner_assign succeeds");
+    ok (planner_avail_resources_at (other, 0) == 10, "assignment copied the source's state");
+
+    // planner_assign now delegates to the by-value copy-and-swap operator,
+    // which is self-assignment safe without an explicit this != &o guard:
+    // the parameter is copied before *this is touched.
+    ok (planner_assign (src, src) == 0, "self-assignment succeeds");
+    ok (planner_avail_resources_at (src, 0) == 10, "self-assignment preserves state");
+
+    planner_destroy (&other);
+    planner_destroy (&src);
+}
+
+// The planner_multi_t half of the case above. planner_multi_copy () goes
+// through planner_multi_t (const planner_multi &), so it does not reach
+// the wrapper's own copy constructor either.
+static void test_planner_multi_t_value_semantics ()
+{
+    const uint64_t totals[] = {10, 20};
+    const char *types[] = {"core", "gpu"};
+    const uint64_t requests[] = {3, 4};
+
+    planner_multi_t *src = planner_multi_new (0, 10, totals, types, 2);
+    int64_t span = planner_multi_add_span (src, 0, 5, requests, 2);
+
+    ok (span != -1, "value semantics: span added to the source planner_multi");
+    ok (planner_multi_span_planned_at (src, span, 0) == 3, "source records 3 cores");
+
+    {
+        planner_multi_t copy (*src);
+
+        ok (copy.plan_multi != src->plan_multi,
+            "copy construction allocates a distinct inner planner_multi");
+        ok (planner_multi_span_planned_at (&copy, span, 0) == 3, "the copy sees the span");
+
+        // Mutating the source must not reach the copy.
+        ok (planner_multi_rem_span (src, span) == 0, "span removed from the source");
+        ok (planner_multi_span_size (src) == 0, "source has no spans left");
+        ok (planner_multi_span_planned_at (&copy, span, 0) == 3,
+            "the copy is unaffected by the source");
+    }
+
+    // The copy's destructor ran at scope exit. A shallow copy would have
+    // freed the planner_multi src still points at.
+    ok (planner_multi_resources_len (src) == 2, "source survives destruction of the copy");
+
+    planner_multi_t *other = planner_multi_new (0, 10, totals, types, 2);
+
+    ok (planner_multi_assign (other, src) == 0, "planner_multi_assign succeeds");
+    ok (planner_multis_equal (other, src), "assignment copied the source's state");
+
+    ok (planner_multi_assign (src, src) == 0, "self-assignment succeeds");
+    ok (planner_multi_resources_len (src) == 2, "self-assignment preserves state");
+
+    planner_multi_destroy (&other);
+    planner_multi_destroy (&src);
+}
+
 int main (int argc, char *argv[])
 {
     plan (NO_PLAN);
@@ -534,6 +628,9 @@ int main (int argc, char *argv[])
     test_planner_multi_avail_time_next_after_front_insert ();
     test_planner_multi_short_span_vector ();
     test_planner_multi_iterator_after_tail_growth ();
+
+    test_planner_t_value_semantics ();
+    test_planner_multi_t_value_semantics ();
 
     done_testing ();
     return EXIT_SUCCESS;
