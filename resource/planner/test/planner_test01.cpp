@@ -22,6 +22,7 @@ extern "C" {
 #include <vector>
 #include <map>
 #include "planner.h"
+#include "resource/planner/c++/planner.hpp"
 #include "src/common/libtap/tap.h"
 
 static void to_stream (int64_t base_time,
@@ -751,6 +752,47 @@ static int test_planner_self_assign ()
     return 0;
 }
 
+// planner_t owns its inner planner and frees it in ~planner_t, so the
+// wrapper needs a deep copy constructor. planner_copy () does not cover
+// this: it goes through planner_t (const planner &), which has always
+// deep copied.
+static void test_planner_t_value_semantics ()
+{
+    planner_t *src = planner_new (0, 10, 10, "core");
+    int64_t span = planner_add_span (src, 0, 5, 3);
+
+    ok (span != -1, "value semantics: span added to the source planner");
+    ok (planner_avail_resources_at (src, 0) == 7, "source reports 7 of 10 available");
+
+    {
+        planner_t copy (*src);
+
+        ok (copy.plan != src->plan, "copy construction allocates a distinct inner planner");
+        ok (planner_avail_resources_at (&copy, 0) == 7, "the copy sees the source's span");
+
+        // Mutating the source must not reach the copy.
+        ok (planner_rem_span (src, span) == 0, "span removed from the source");
+        ok (planner_avail_resources_at (src, 0) == 10, "source is back to 10 available");
+        ok (planner_avail_resources_at (&copy, 0) == 7, "the copy is unaffected by the source");
+    }
+
+    // The copy's destructor ran at scope exit; a shallow copy would have freed
+    // src's planner, making everything below a use-after-free.
+    ok (planner_avail_resources_at (src, 0) == 10, "source survives destruction of the copy");
+
+    planner_t *other = planner_new (0, 10, 4, "core");
+
+    ok (planner_assign (other, src) == 0, "planner_assign succeeds");
+    ok (planner_avail_resources_at (other, 0) == 10, "assignment copied the source's state");
+
+    // Copy-and-swap is self-assignment safe without an explicit guard.
+    ok (planner_assign (src, src) == 0, "self-assignment succeeds");
+    ok (planner_avail_resources_at (src, 0) == 10, "self-assignment preserves state");
+
+    planner_destroy (&other);
+    planner_destroy (&src);
+}
+
 static int test_update ()
 {
     int rc;
@@ -860,7 +902,7 @@ static int test_partial_cancel ()
 
 int main (int argc, char *argv[])
 {
-    plan (76);
+    plan (88);
 
     test_planner_getters ();
 
@@ -884,6 +926,7 @@ int main (int argc, char *argv[])
 
     test_constructors_and_overload ();
     test_planner_self_assign ();
+    test_planner_t_value_semantics ();
 
     test_update ();
 

@@ -22,6 +22,7 @@ extern "C" {
 #include <vector>
 #include <map>
 #include "resource/planner/c/planner_multi.h"
+#include "resource/planner/c++/planner_multi.hpp"
 #include "src/common/libtap/tap.h"
 
 static void to_stream (int64_t base_time,
@@ -669,6 +670,49 @@ static int test_planner_multi_copy_iterator_independent ()
     return 0;
 }
 
+// The planner_multi_t half of the case above.
+static void test_planner_multi_t_value_semantics ()
+{
+    const uint64_t totals[] = {10, 20};
+    const char *types[] = {"core", "gpu"};
+    const uint64_t requests[] = {3, 4};
+
+    planner_multi_t *src = planner_multi_new (0, 10, totals, types, 2);
+    int64_t span = planner_multi_add_span (src, 0, 5, requests, 2);
+
+    ok (span != -1, "value semantics: span added to the source planner_multi");
+    ok (planner_multi_span_planned_at (src, span, 0) == 3, "source records 3 cores");
+
+    {
+        planner_multi_t copy (*src);
+
+        ok (copy.plan_multi != src->plan_multi,
+            "copy construction allocates a distinct inner planner_multi");
+        ok (planner_multi_span_planned_at (&copy, span, 0) == 3, "the copy sees the span");
+
+        // Mutating the source must not reach the copy.
+        ok (planner_multi_rem_span (src, span) == 0, "span removed from the source");
+        ok (planner_multi_span_size (src) == 0, "source has no spans left");
+        ok (planner_multi_span_planned_at (&copy, span, 0) == 3,
+            "the copy is unaffected by the source");
+    }
+
+    // The copy's destructor ran at scope exit. A shallow copy would have
+    // freed the planner_multi src still points at.
+    ok (planner_multi_resources_len (src) == 2, "source survives destruction of the copy");
+
+    planner_multi_t *other = planner_multi_new (0, 10, totals, types, 2);
+
+    ok (planner_multi_assign (other, src) == 0, "planner_multi_assign succeeds");
+    ok (planner_multis_equal (other, src), "assignment copied the source's state");
+
+    ok (planner_multi_assign (src, src) == 0, "self-assignment succeeds");
+    ok (planner_multi_resources_len (src) == 2, "self-assignment preserves state");
+
+    planner_multi_destroy (&other);
+    planner_multi_destroy (&src);
+}
+
 static int test_multi_update ()
 {
     bool bo = false, found = true;
@@ -877,7 +921,7 @@ static int test_partial_cancel ()
 
 int main (int argc, char *argv[])
 {
-    plan (126);
+    plan (138);
 
     test_multi_basics ();
 
@@ -894,6 +938,7 @@ int main (int argc, char *argv[])
     test_constructors_and_overload ();
     test_planner_multi_self_assign ();
     test_planner_multi_copy_iterator_independent ();
+    test_planner_multi_t_value_semantics ();
 
     test_multi_update ();
     test_planner_multi_iterator_after_tail_growth ();
