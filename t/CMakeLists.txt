@@ -81,6 +81,7 @@ set(ALL_TESTS
   t3040-jgf-shorthand-match-format.t
   t3041-jgf-shorthand-load-format.t
   t3042-storage-node.t
+  t3043-resource-slot-labels.t
   t3044-resource-rabbit-cancel.t
   t3300-system-dontblock.t
   t3301-system-latestart.t
@@ -102,6 +103,7 @@ set(ALL_TESTS
   t4015-notify-feasibility.t
   t4016-match-flexible.t
   t4017-match-without-allocating.t
+  t4018-match-slot-labels.t
   t5000-valgrind.t
   t5100-issues-test-driver.t
   t5200-jgf-load-no-parent-jgf.t
