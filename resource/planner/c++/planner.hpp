@@ -12,6 +12,9 @@
 #define PLANNER_HPP
 
 #include <memory>
+#include <cstdint>
+#include <map>
+#include <string>
 #include "planner_internal_tree.hpp"
 
 struct request_t {
@@ -102,7 +105,10 @@ class planner {
     mintime_resource_tree_t m_mt_resource_tree; /* min-time resource rb tree */
     scheduled_point_t *m_p0 = nullptr;          /* system's scheduled point at base time */
     std::map<int64_t, std::shared_ptr<span_t>> m_span_lookup; /* span lookup */
-    std::map<int64_t, std::shared_ptr<span_t>>::iterator m_span_lookup_iter;
+    /* Defaults to end () so the iterator is never singular: no constructor
+     * assigns it, and copying or comparing a singular iterator is undefined.
+     * m_span_lookup is declared first, so it is built before this runs. */
+    std::map<int64_t, std::shared_ptr<span_t>>::iterator m_span_lookup_iter = m_span_lookup.end ();
     std::map<int64_t, scheduled_point_t *> m_avail_time_iter; /* MT node track */
     int m_avail_time_iter_set = 0;                            /* iterator set flag */
     request_t m_current_request; /* the req copy for avail time iteration */
@@ -117,12 +123,36 @@ class planner {
 
 struct planner_t {
     planner_t ();
-    planner_t (const planner &o);
+    explicit planner_t (const planner &o);
     planner_t (const int64_t base_time,
                const uint64_t duration,
                const uint64_t resource_totals,
                const char *in_resource_type);
+
+    // Rule of five, resolved deliberately:
+    //  - copy constructor: deep. The implicitly declared one is shallow
+    //    and double frees through ~planner_t. A user-declared destructor
+    //    or copy assignment operator deprecates it but does not delete
+    //    it, so it has to be replaced rather than relied on.
+    //  - copy assignment: copy-and-swap, strong exception guarantee.
+    //  - move operations: not declared. A moved-from planner_t would
+    //    hold a null inner planner, and the C interface guarantees a
+    //    planner_t is never observable in that state. The user-declared
+    //    copy operations and destructor suppress them, so assigning or
+    //    constructing from an rvalue deep copies.
+    planner_t (const planner_t &o);
+    planner_t &operator= (planner_t o);
     ~planner_t ();
+
+    // Hidden friend so the copy-and-swap body resolves through ADL.
+    // Swapping the handle cannot fail, which is what makes the
+    // assignment's strong guarantee hold once the copy has succeeded.
+    friend void swap (planner_t &lhs, planner_t &rhs) noexcept
+    {
+        planner *tmp = lhs.plan;
+        lhs.plan = rhs.plan;
+        rhs.plan = tmp;
+    }
 
     planner *plan = nullptr;
 };

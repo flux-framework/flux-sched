@@ -104,6 +104,9 @@ planner &planner::operator= (const planner &o)
 {
     int rc = -1;
 
+    if (this == &o)
+        return *this;
+
     if ((rc = erase ()) != 0) {
         throw std::runtime_error ("ERROR erasing *this\n");
     }
@@ -183,6 +186,10 @@ int planner::erase ()
     // returns 0 or a negative number
     rc = restore_track_points ();
     m_span_lookup.clear ();
+    // clear () invalidates every iterator into the map, so an iterator left
+    // pointing at an element would dangle.  operator= erases before it copies
+    // and so is covered by this too.
+    m_span_lookup_iter = m_span_lookup.end ();
     if (m_p0 && m_p0->in_mt_resource_tree)
         rc += m_mt_resource_tree.remove (m_p0);
     m_sched_point_tree.destroy ();
@@ -318,6 +325,7 @@ scheduled_point_t *planner::mt_tree_get_mintime (int64_t request) const
 void planner::clear_span_lookup ()
 {
     m_span_lookup.clear ();
+    m_span_lookup_iter = m_span_lookup.end ();
 }
 
 void planner::span_lookup_erase (std::map<int64_t, std::shared_ptr<span_t>>::iterator &it)
@@ -541,12 +549,18 @@ bool planner::trees_equal (const planner &o) const
 // Public Planner_t methods
 ////////////////////////////////////////////////////////////////////////////////
 
+// The wrapper constructors rethrow so that a planner_t can never be
+// observed with a null inner planner; `new planner_t (...)` either
+// succeeds completely or throws (operator new releases the wrapper
+// allocation automatically when the constructor throws).
+
 planner_t::planner_t ()
 {
     try {
         plan = new planner ();
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;
+        throw;
     }
 }
 
@@ -556,7 +570,34 @@ planner_t::planner_t (const planner &o)
         plan = new planner (o);
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;
+        throw;
     }
+}
+
+// Deep copy. o.plan is non-null by the wrapper constructors' invariant.
+// Follows the errno convention of the other wrapper constructors:
+// bad_alloc is reported as ENOMEM and rethrown, while runtime_error from
+// planner's tree and map copies propagates and is translated at the
+// extern "C" boundary.
+planner_t::planner_t (const planner_t &o)
+{
+    try {
+        plan = new planner (*o.plan);
+    } catch (std::bad_alloc &e) {
+        errno = ENOMEM;
+        throw;
+    }
+}
+
+// Copy-and-swap. The parameter is copy-constructed before the call, so
+// *this is untouched if that copy throws (bad_alloc, or runtime_error
+// from planner's tree/map copies) and the body itself cannot fail. o's
+// destructor then releases the planner *this used to own. Self-assignment
+// is correct without a guard: the copy is independent of *this.
+planner_t &planner_t::operator= (planner_t o)
+{
+    swap (*this, o);
+    return *this;
 }
 
 planner_t::planner_t (const int64_t base_time,
@@ -568,6 +609,7 @@ planner_t::planner_t (const int64_t base_time,
         plan = new planner (base_time, duration, resource_totals, in_resource_type);
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;
+        throw;
     }
 }
 

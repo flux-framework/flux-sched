@@ -14,6 +14,7 @@ extern "C" {
 #endif
 }
 
+#include <stdexcept>
 #include "resource/schema/sched_data.hpp"
 
 namespace Flux {
@@ -28,7 +29,8 @@ schedule_t::schedule_t (const schedule_t &o)
 
     if (plans) {
         if (o.plans) {
-            planner_assign (plans, o.plans);
+            if (planner_assign (plans, o.plans) != 0)
+                throw std::runtime_error ("ERROR assigning planners\n");
         } else {
             planner_destroy (&plans);
         }
@@ -50,7 +52,8 @@ schedule_t &schedule_t::operator= (const schedule_t &o)
 
     if (plans) {
         if (o.plans) {
-            planner_assign (plans, o.plans);
+            if (planner_assign (plans, o.plans) != 0)
+                throw std::runtime_error ("ERROR assigning planners\n");
         } else {
             planner_destroy (&plans);
         }

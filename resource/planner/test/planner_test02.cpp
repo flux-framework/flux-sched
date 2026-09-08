@@ -571,7 +571,7 @@ static int test_constructors_and_overload ()
     ctx3 = planner_multi_empty ();
     bo = (bo || !planner_multis_equal (ctx2, ctx3));
 
-    planner_multi_assign (ctx2, ctx);
+    bo = (bo || planner_multi_assign (ctx2, ctx) != 0);
     bo = (bo || !(planner_multis_equal (ctx, ctx2)));
     ok (!bo, "test assignment overload");
 
@@ -590,7 +590,7 @@ static int test_constructors_and_overload ()
     size = planner_multi_span_size (ctx4);
     ok ((size == 3), "removing span doesn't change deep copy's size");
     // Assignment overload works on planners with state
-    planner_multi_assign (ctx4, ctx2);
+    bo = (bo || planner_multi_assign (ctx4, ctx2) != 0);
     size = planner_multi_span_size (ctx4);
     ok ((size == 2), "planner_multi 3 now has the size of planner_multi 2");
     bo = (bo || !(planner_multis_equal (ctx2, ctx4)));

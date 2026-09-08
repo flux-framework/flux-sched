@@ -15,6 +15,7 @@ extern "C" {
 }
 
 #include <limits>
+#include <stdexcept>
 #include "resource/schema/infra_data.hpp"
 
 namespace Flux {
@@ -71,7 +72,8 @@ pool_infra_t::pool_infra_t (const pool_infra_t &o) : infra_base_t (o)
         if (!x_checker) {
             x_checker = planner_copy (o.x_checker);
         } else {
-            planner_assign (x_checker, o.x_checker);
+            if (planner_assign (x_checker, o.x_checker) != 0)
+                throw std::runtime_error ("ERROR assigning x_checker planner\n");
         }
     }
 }
@@ -98,7 +100,8 @@ pool_infra_t &pool_infra_t::operator= (const pool_infra_t &o)
         if (!x_checker) {
             x_checker = planner_copy (o.x_checker);
         } else {
-            planner_assign (x_checker, o.x_checker);
+            if (planner_assign (x_checker, o.x_checker) != 0)
+                throw std::runtime_error ("ERROR assigning x_checker planner\n");
         }
     }
     return *this;

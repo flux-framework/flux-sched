@@ -17,6 +17,7 @@ extern "C" {
 #include <cstdlib>
 #include <cerrno>
 #include <cstring>
+#include <memory>
 #include <vector>
 #include <map>
 
@@ -82,12 +83,19 @@ planner_multi::planner_multi (const planner_multi &o)
     }
     m_iter = o.m_iter;
     m_span_lookup = o.m_span_lookup;
-    m_span_lookup_iter = o.m_span_lookup_iter;
+    // o's iterator points into o's m_span_lookup; copying it would leave
+    // this object holding an iterator into another container.  Reset it to
+    // a defined state instead; users must call avail_time_first () before
+    // avail_time_next () anyway.
+    m_span_lookup_iter = m_span_lookup.end ();
     m_span_counter = o.m_span_counter;
 }
 
 planner_multi &planner_multi::operator= (const planner_multi &o)
 {
+    if (this == &o)
+        return *this;
+
     // Erase *this so the vectors are empty
     erase ();
 
@@ -119,7 +127,8 @@ planner_multi &planner_multi::operator= (const planner_multi &o)
     }
     m_iter = o.m_iter;
     m_span_lookup = o.m_span_lookup;
-    m_span_lookup_iter = o.m_span_lookup_iter;
+    // See the copy constructor: never adopt an iterator into o's container.
+    m_span_lookup_iter = m_span_lookup.end ();
     m_span_counter = o.m_span_counter;
 
     return *this;
@@ -187,22 +196,26 @@ void planner_multi::add_planner (int64_t base_time,
                                  size_t i)
 {
     std::string type;
-    planner_t *p = nullptr;
+    std::unique_ptr<planner_t> p;
 
+    // Own the new planner via unique_ptr until it is safely inserted so
+    // that a failed map or multi-index insertion cannot leak it.
     try {
         type = std::string (resource_type);
-        p = new planner_t (base_time, duration, resource_total, resource_type);
+        p = std::make_unique<planner_t> (base_time, duration, resource_total, resource_type);
+        m_iter.counts[type] = 0;
+        if (i > m_types_totals_planners.size ())
+            m_types_totals_planners.push_back ({type, resource_total, p.get ()});
+        else {
+            auto it = m_types_totals_planners.begin () + i;
+            m_types_totals_planners.insert (it, planner_multi_meta{type, resource_total, p.get ()});
+        }
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;
         throw std::bad_alloc ();
     }
-    m_iter.counts[type] = 0;
-    if (i > m_types_totals_planners.size ())
-        m_types_totals_planners.push_back ({type, resource_total, p});
-    else {
-        auto it = m_types_totals_planners.begin () + i;
-        m_types_totals_planners.insert (it, planner_multi_meta{type, resource_total, p});
-    }
+    // The container now references the planner; release ownership.
+    p.release ();
 }
 
 void planner_multi::delete_planners (const std::unordered_set<std::string> &rtypes)
@@ -334,12 +347,18 @@ void planner_multi::incr_span_counter ()
 // Public Planner_multi_t methods
 ////////////////////////////////////////////////////////////////////////////////
 
+// The wrapper constructors rethrow so that a planner_multi_t can never
+// be observed with a null inner planner_multi; `new planner_multi_t (...)`
+// either succeeds completely or throws (operator new releases the wrapper
+// allocation automatically when the constructor throws).
+
 planner_multi_t::planner_multi_t ()
 {
     try {
         plan_multi = new planner_multi ();
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;
+        throw;
     }
 }
 
@@ -349,7 +368,34 @@ planner_multi_t::planner_multi_t (const planner_multi &o)
         plan_multi = new planner_multi (o);
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;
+        throw;
     }
+}
+
+// Deep copy.  o.plan_multi is non-null by the wrapper constructors'
+// invariant.  Follows the errno convention of the other wrapper
+// constructors: bad_alloc is reported as ENOMEM and rethrown, while
+// runtime_error from the inner planner copies propagates and is
+// translated at the extern "C" boundary.
+planner_multi_t::planner_multi_t (const planner_multi_t &o)
+{
+    try {
+        plan_multi = new planner_multi (*o.plan_multi);
+    } catch (std::bad_alloc &e) {
+        errno = ENOMEM;
+        throw;
+    }
+}
+
+// Copy-and-swap.  The parameter is copy-constructed before the call, so
+// *this is untouched if that copy throws and the body itself cannot
+// fail.  o's destructor then releases the planner_multi *this used to
+// own.  Self-assignment is correct without a guard: the copy is
+// independent of *this.
+planner_multi_t &planner_multi_t::operator= (planner_multi_t o)
+{
+    swap (*this, o);
+    return *this;
 }
 
 planner_multi_t::planner_multi_t (int64_t base_time,
@@ -362,6 +408,7 @@ planner_multi_t::planner_multi_t (int64_t base_time,
         plan_multi = new planner_multi (base_time, duration, resource_totals, resource_types, len);
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;
+        throw;
     }
 }
 
