@@ -678,6 +678,14 @@ extern "C" int64_t planner_multi_span_next (planner_multi_t *ctx)
         errno = EINVAL;
         goto done;
     }
+    // Test before the increment.  The iterator sits at end () until
+    // planner_multi_span_first sets it, after the previous call ran off the
+    // end, and after a copy or an assignment, which reset it to end ().
+    // Incrementing an end iterator is undefined.
+    if (ctx->plan_multi->get_span_lookup_iter () == ctx->plan_multi->get_span_lookup ().end ()) {
+        errno = ENOENT;
+        goto done;
+    }
     ctx->plan_multi->incr_span_lookup_iter ();
     if (ctx->plan_multi->get_span_lookup_iter () == ctx->plan_multi->get_span_lookup ().end ()) {
         errno = ENOENT;
