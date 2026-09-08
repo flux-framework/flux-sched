@@ -1,3 +1,21 @@
+flux-sched version 0.55.0 - 2026-09-08
+--------------------------------------
+
+### New Features
+ * qmanager: support RFC 33 virtual queues (#1543)
+
+### Fixes
+ * Sweep vertices by jobid to ensure partial cancel correctness (#1551)
+ * reapi: reopen interners for constructor graph load (#1547)
+
+### Build/Testsuite/Documentation
+ * t: increase timeouts in t1016, t1018, & t1028 (#1548)
+
+### Cleanup
+ * modules: Merge resource_prop_t into resource_opt_t (#1517)
+ * reapi: drop sat output param from satisfy interfaces (#1526)
+
+
 flux-sched version 0.54.0 - 2026-08-10
 --------------------------------------
 
