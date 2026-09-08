@@ -423,6 +423,79 @@ static int test_planner_multi_short_span_vector ()
     return 0;
 }
 
+// planner_span_next must reject every state that leaves the iterator at end ().
+static void test_planner_span_iterator_guards ()
+{
+    planner_t *ctx = planner_new (0, 10, 10, "core");
+
+    int64_t span = planner_add_span (ctx, 0, 5, 3);
+    ok (span != -1, "span iterator guards: span added");
+    ok (planner_span_first (ctx) == span, "span_first returns the only span");
+
+    errno = 0;
+    ok (planner_span_next (ctx) == -1, "span_next past the last span returns -1");
+    errno = 0;
+    ok (planner_span_next (ctx) == -1,
+        "span_next again returns -1 rather than incrementing end ()");
+
+    // A fresh copy has its iterator at end (), so the same guard applies.
+    planner_t *copy = planner_copy (ctx);
+    ok (copy != nullptr, "planner_copy succeeds");
+    errno = 0;
+    ok (planner_span_next (copy) == -1, "span_next on a fresh copy returns -1");
+
+    // An empty span map leaves the iterator at end () too.
+    planner_t *empty = planner_new (0, 10, 10, "core");
+    errno = 0;
+    ok (planner_span_next (empty) == -1, "span_next before span_first returns -1");
+
+    planner_destroy (&empty);
+    planner_destroy (&copy);
+    planner_destroy (&ctx);
+}
+
+// The planner_multi_t half of the case above.
+static void test_planner_multi_span_iterator_guards ()
+{
+    const uint64_t totals[] = {10};
+    const char *types[] = {"core"};
+    const uint64_t requests[] = {3};
+    planner_multi_t *ctx = planner_multi_new (0, 10, totals, types, 1);
+
+    int64_t span = planner_multi_add_span (ctx, 0, 5, requests, 1);
+    ok (span != -1, "multi span iterator guards: span added");
+    ok (planner_multi_span_first (ctx) == span, "multi span_first returns the only span");
+
+    errno = 0;
+    ok (planner_multi_span_next (ctx) == -1 && errno == ENOENT,
+        "multi span_next past the last span returns -1");
+    errno = 0;
+    ok (planner_multi_span_next (ctx) == -1 && errno == ENOENT,
+        "multi span_next again returns -1 rather than incrementing end ()");
+
+    planner_multi_t *copy = planner_multi_copy (ctx);
+    ok (copy != nullptr, "planner_multi_copy succeeds");
+    errno = 0;
+    ok (planner_multi_span_next (copy) == -1 && errno == ENOENT,
+        "multi span_next on a fresh copy returns -1");
+
+    planner_multi_t *empty = planner_multi_new (0, 10, totals, types, 1);
+    errno = 0;
+    ok (planner_multi_span_first (empty) == -1 && errno == ENOENT,
+        "multi span_first on an empty span map returns -1");
+
+    // Nothing has set this planner's iterator; it must start out at end ().
+    planner_multi_t *fresh = planner_multi_new (0, 10, totals, types, 1);
+    errno = 0;
+    ok (planner_multi_span_next (fresh) == -1 && errno == ENOENT,
+        "multi span_next before span_first returns -1");
+
+    planner_multi_destroy (&fresh);
+    planner_multi_destroy (&empty);
+    planner_multi_destroy (&copy);
+    planner_multi_destroy (&ctx);
+}
+
 int main (int argc, char *argv[])
 {
     plan (NO_PLAN);
@@ -439,6 +512,8 @@ int main (int argc, char *argv[])
     test_planner_multi_rem_span_after_planner_delete ();
     test_planner_multi_avail_time_next_after_front_insert ();
     test_planner_multi_short_span_vector ();
+    test_planner_span_iterator_guards ();
+    test_planner_multi_span_iterator_guards ();
 
     done_testing ();
     return EXIT_SUCCESS;
