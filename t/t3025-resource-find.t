@@ -395,4 +395,135 @@ EOF
     ${query} -L ${grugs} -F jgf -S CA -P high < cmds028 2>&1 | grep 'invalid criteria'
 "
 
+# Regex-only tests
+test_expect_success 'find names=... fails with more than one []' "
+    cat > cmds029 <<-EOF &&
+    find names=[cn]o[rd]e[0-1]
+    find names=core[2][7]
+    find names=core[1][^0-9]+
+    quit
+EOF
+    ${query} -L ${grugs} -F jgf -S CA -P high -t cores3.out < cmds029 &&
+    cat cores3.out | test_must_fail grep -v INFO
+"
+
+test_expect_success 'find names=.* succeeds' "
+    cat > cmds030 <<-EOF &&
+    find names=.*
+    quit
+EOF
+    ${query} -L ${grugs} -F jgf -S CA -P high -t cores4.out < cmds030 &&
+    cat cores4.out | grep -v INFO > cores4.json &&
+    jq '.graph.nodes[].metadata | select(.type==\"core\")' cores4.json > cores_selected4.json &&
+    grep core0  cores_selected4.json &&
+    grep core17 cores_selected4.json &&
+    grep core35 cores_selected4.json
+"
+
+test_expect_success 'find names=core3.+ succeeds' "
+    cat > cmds031 <<-EOF &&
+    find names=core3.+
+    quit
+EOF
+    ${query} -L ${grugs} -F jgf -S CA -P high -t cores5.out < cmds031 &&
+    cat cores5.out | grep -v INFO > cores5.json &&
+    jq '.graph.nodes[].metadata | select(.type==\"core\")' cores5.json > cores_selected5.json &&
+    grep core30 cores_selected5.json &&
+    grep core32 cores_selected5.json &&
+    grep core35 cores_selected5.json &&
+    test_must_fail grep core1 cores_selected5.json &&
+    test_must_fail grep core2 cores_selected5.json
+"
+
+test_expect_success 'find names=core(12|24) succeeds' "
+    cat > cmds032 <<-EOF &&
+    find names=core(12|24)
+    quit
+EOF
+    ${query} -L ${grugs} -F jgf -S CA -P high -t cores6.out < cmds032 &&
+    cat cores6.out | grep -v INFO > cores6.json &&
+    jq '.graph.nodes[].metadata | select(.type==\"core\")' cores6.json > cores_selected6.json &&
+    grep 'core12\"' cores_selected6.json &&
+    grep 'core24\"' cores_selected6.json &&
+    test_must_fail grep 'core1\"' cores_selected6.json &&
+    test_must_fail grep 'core2\"' cores_selected6.json
+"
+
+# Regex + hostlist tests
+test_expect_success 'find names=c.*e[22-30] succeeds' "
+    cat > cmds033 <<-EOF &&
+    find names=c.*e[22-30]
+    quit
+EOF
+    ${query} -L ${grugs} -F jgf -S CA -P high -t cores7.out < cmds033 &&
+    cat cores7.out | grep -v INFO > cores7.json &&
+    jq '.graph.nodes[].metadata | select(.type==\"core\")' cores7.json > cores_selected7.json &&
+    grep core22 cores_selected7.json &&
+    grep core27 cores_selected7.json &&
+    grep core30 cores_selected7.json &&
+    test_must_fail grep core21 cores_selected7.json &&
+    test_must_fail grep core31 cores_selected7.json
+"
+
+test_expect_success 'find names=core1[0] succeeds' "
+    cat > cmds034 <<-EOF &&
+    find names=core1[0]
+    quit
+EOF
+    ${query} -L ${grugs} -F jgf -S CA -P high -t cores8.out < cmds034 &&
+    cat cores8.out | grep -v INFO > cores8.json &&
+    jq '.graph.nodes[].metadata | select(.type==\"core\")' cores8.json > cores_selected8.json &&
+    grep 'core10\"' cores_selected8.json &&
+    test_must_fail grep 'core1\"' cores_selected8.json
+"
+
+test_expect_success 'find names=core[1](4|7) succeeds' "
+    cat > cmds035 <<-EOF &&
+    find names=core[1](4|7)
+    quit
+EOF
+    ${query} -L ${grugs} -F jgf -S CA -P high -t cores9.out < cmds035 &&
+    cat cores9.out | grep -v INFO > cores9.json &&
+    jq '.graph.nodes[].metadata | select(.type==\"core\")' cores9.json > cores_selected9.json &&
+    grep 'core14\"' cores_selected9.json &&
+    grep 'core17\"' cores_selected9.json &&
+    test_must_fail grep 'core1\"' cores_selected9.json &&
+    test_must_fail grep 'core4\"' cores_selected9.json &&
+    test_must_fail grep 'core7\"' cores_selected9.json
+"
+
+test_expect_success 'find names=(()co(r|d)e[1](4|7)) succeeds' "
+    cat > cmds036 <<-EOF &&
+    find names=(()co(r|d)e[1](4|7))
+    quit
+EOF
+    ${query} -L ${grugs} -F jgf -S CA -P high -t cores10.out < cmds036 &&
+    cat cores10.out | grep -v INFO > cores10.json &&
+    jq '.graph.nodes[].metadata | select(.type==\"core\")' cores10.json > cores_selected10.json &&
+    grep 'core14\"' cores_selected10.json &&
+    grep 'core17\"' cores_selected10.json &&
+    test_must_fail grep 'core1\"' cores_selected10.json &&
+    test_must_fail grep 'core4\"' cores_selected10.json &&
+    test_must_fail grep 'core7\"' cores_selected10.json
+"
+
+# Note this cannot be 0-35 because e.g. core10 would match 1->[0-35] and 0->.+
+test_expect_success 'find names=core[4-35].+ fails' "
+    cat > cmds037 <<-EOF &&
+    find names=core[4-37].+
+    quit
+EOF
+    ${query} -L ${grugs} -F jgf -S CA -P high -t cores11.out < cmds037 &&
+    cat cores11.out | test_must_fail grep -v INFO
+"
+
+test_expect_success 'find names=[0].* fails' "
+    cat > cmds038 <<-EOF &&
+    find names=[].*
+    quit
+EOF
+    ${query} -L ${grugs} -F jgf -S CA -P high -t cores12.out < cmds038 &&
+    cat cores12.out | test_must_fail grep -v INFO
+"
+
 test_done

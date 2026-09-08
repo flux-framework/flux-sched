@@ -4,6 +4,7 @@
 #include <resource/reapi/bindings/c++/reapi_cli.hpp>
 #include <resource/policies/base/match_op.h>
 #include <resource/schema/resource_graph.hpp>
+#include <jansson.h>
 #include <fstream>
 #include <cstdlib>
 
@@ -368,6 +369,49 @@ TEST_CASE ("Test the graph idempotence of certain match operations", "[match C++
             changed |= !(sched_map.at (*u) == ctx->db->resource_graph[*u].schedule);
         }
         REQUIRE (changed == true);
+    }
+}
+
+TEST_CASE ("Test the graph idempotence of loading from the output of find()", "[find C++]")
+{
+    const std::string options = "{\"load_format\": \"jgf\"}";
+    std::stringstream buffer;
+    const char *test_srcdir = std::getenv ("SHARNESS_TEST_SRCDIR");
+    REQUIRE (test_srcdir);
+
+    std::ifstream inputFile (std::string (test_srcdir)
+                             + "/data/resource/jgfs/elastic/node-test.json");
+    REQUIRE (inputFile.is_open ());
+
+    buffer << inputFile.rdbuf ();
+    std::string rgraph = buffer.str ();
+
+    std::shared_ptr<resource_query_t> ctx = nullptr;
+    ctx = std::make_shared<resource_query_t> (rgraph, options);
+    REQUIRE (ctx);
+
+    // Store the initial state of the graph
+    std::map<vtx_t, pool_infra_t> idata_map;
+    std::map<vtx_t, schedule_t> sched_map;
+    vtx_iterator_t u, end;
+    for (boost::tuples::tie (u, end) = boost::vertices (ctx->db->resource_graph); u != end; u++) {
+        idata_map[*u] = ctx->db->resource_graph[*u].idata;
+        sched_map[*u] = ctx->db->resource_graph[*u].schedule;
+        REQUIRE (idata_map[*u] == ctx->db->resource_graph[*u].idata);
+        REQUIRE (sched_map[*u] == ctx->db->resource_graph[*u].schedule);
+    }
+
+    json_t *output;
+    REQUIRE (detail::reapi_cli_t::find (ctx.get (), "names=.*", output, "jgf") == 0);
+
+    // Construct a new graph from the output of find(names=.*)
+    ctx.reset (new resource_query_t (std::string (json_dumps (output, 0)), options));
+    REQUIRE (ctx);
+
+    // Check that the post-load graph state is the same as the initial state
+    for (boost::tuples::tie (u, end) = boost::vertices (ctx->db->resource_graph); u != end; u++) {
+        CHECK (idata_map.at (*u).equal_except_color (ctx->db->resource_graph[*u].idata));
+        CHECK (sched_map.at (*u) == ctx->db->resource_graph[*u].schedule);
     }
 }
 

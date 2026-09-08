@@ -10,6 +10,8 @@
 
 #include "resource_match.hpp"
 
+using namespace Flux::resource_notify;
+
 MOD_NAME ("sched-fluxion-resource");
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1201,11 +1203,14 @@ static void notify_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
         const char *route;
         std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
         std::shared_ptr<msg_wrap_t> m = std::make_shared<msg_wrap_t> ();
+        json_t *requested = NULL;
 
-        if (flux_request_decode (msg, NULL, NULL) < 0) {
-            flux_log_error (h, "%s: flux_request_decode", __FUNCTION__);
+        if (flux_request_unpack (msg, NULL, "{s?:o}", NOTIFY_REQUEST_KEY, &requested) < 0) {
+            flux_log_error (h, "%s: flux_request_unpack", __FUNCTION__);
             goto error;
         }
+        // notify_flags_from_json returns NOTIFY_NONE when requested is NULL.
+        m->set_notify_flags (notify_flags_from_json (requested));
         if (!flux_msg_is_streaming (msg)) {
             errno = EPROTO;
             flux_log_error (h, "%s: streaming flag not set", __FUNCTION__);
@@ -1220,6 +1225,15 @@ static void notify_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
             // Since m_acquired_resources is null,
             flux_log_error (ctx->h, "%s: cannot notify when load-file set", __FUNCTION__);
             goto error;
+        }
+
+        // Traverse all nodes to calculate the current resource set
+        json_t *resource_graph_json = nullptr;
+        if (m->get_notify_flags () & NOTIFY_RESOURCES) {
+            if (run_find (ctx, "names=.*", "rv1", &resource_graph_json) < 0) {
+                flux_log_error (h, "%s: run_find", __FUNCTION__);
+                goto error;
+            }
         }
 
         // Traverse all nodes to calculate the # of UP/DOWN
@@ -1248,7 +1262,6 @@ static void notify_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
 
         char *up_str = idset_encode (up, IDSET_FLAG_RANGE);
         char *down_str = idset_encode (down, IDSET_FLAG_RANGE);
-        char *lost_str = idset_encode (ctx->m_notify_lost, IDSET_FLAG_RANGE);
 
         if (strcmp (up_str, "") == 0) {
             free (up_str);
@@ -1258,10 +1271,6 @@ static void notify_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
             free (down_str);
             down_str = NULL;
         }
-        if (strcmp (lost_str, "") == 0) {
-            free (lost_str);
-            lost_str = NULL;
-        }
 
         // Respond only after sched-fluxion-resource gets
         //  resources from its resource.acquire RPC.
@@ -1269,24 +1278,20 @@ static void notify_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
         //  init_resource_graph runs before flux_reactor_run.
         // Only send resources at first so that the
         //  module can initialize its graph.
-        if (flux_respond_pack (ctx->h, msg, "{s:O*}", "resources", ctx->m_notify_resources.get ())
-            < 0) {
-            flux_log_error (ctx->h, "%s: flux_respond_pack", __FUNCTION__);
-            goto error;
-        }
-
-        // Once the module's graph is initialized, send the node statuses.
         if (flux_respond_pack (ctx->h,
                                msg,
-                               "{s:s* s:s* s:s* s:f}",
-                               "up",
-                               up_str,
-                               "down",
-                               down_str,
-                               "shrink",
-                               lost_str,
-                               "expiration",
-                               ctx->m_notify_expiration)
+                               "{s:O* s:s* s:s* s:f}",
+                               NOTIFY_RESOURCES_KEY,
+                               resource_graph_json,
+                               NOTIFY_UP_KEY,
+                               m->get_notify_flags () & NOTIFY_UP ? up_str : nullptr,
+                               NOTIFY_DOWN_KEY,
+                               m->get_notify_flags () & NOTIFY_DOWN ? down_str : nullptr,
+                               NOTIFY_EXPIRATION_KEY,
+                               m->get_notify_flags () & NOTIFY_EXPIRATION
+                                   ? std::chrono::system_clock::to_time_t (
+                                         ctx->db->metadata.graph_duration.graph_end)
+                                   : -1.)
             < 0) {
             flux_log_error (ctx->h, "%s: flux_respond_pack", __FUNCTION__);
             goto error;
@@ -1294,7 +1299,6 @@ static void notify_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
 
         free (up_str);
         free (down_str);
-        free (lost_str);
         idset_destroy (up);
         idset_destroy (down);
 
@@ -1491,7 +1495,7 @@ error:
 }
 
 /*
- * Send a NULL resource.notify message to get qmanager to reconsider jobs
+ * Send an empty resource.notify message to get qmanager to reconsider jobs
  */
 static int reconsider_blocked_jobs (
     flux_t *h,
@@ -1499,7 +1503,7 @@ static int reconsider_blocked_jobs (
 {
     int rc = 0;
     for (auto &kv : notify_msgs) {
-        if (flux_respond (h, kv.second->get_msg (), NULL) < 0) {
+        if (flux_respond (h, kv.second->get_msg (), "{}") < 0) {
             rc = -1;
             flux_log_error (h, "%s: flux_respond", __FUNCTION__);
         }

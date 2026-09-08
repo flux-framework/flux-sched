@@ -16,6 +16,8 @@ extern "C" {
 
 #include <algorithm>
 #include <cctype>
+#include <string>
+#include <regex>
 #include <flux/hostlist.h>
 #include <flux/core/job.h>
 #include "resource/evaluators/expr_eval_vtx_target.hpp"
@@ -71,6 +73,58 @@ done:
     return rc;
 }
 
+static int evaluate_regex_and_hostlist (const std::string &name,
+                                        const std::string &lcx,
+                                        bool &result)
+{
+    struct hostlist *hlist;
+    std::smatch brackets;
+    std::smatch hostids;
+    std::string hlist_name = name;
+
+    // Example name: "core11"
+    // Example lcx: "core1[0].*"
+    // Check if the regex string contains brackets. Otherwise, it's a simple regex match.
+    // The example name contains brackets, so we continue.
+    if (!std::regex_search (lcx, brackets, std::regex ("\\[.*\\]"))) {
+        result = std::regex_match (name, std::regex (lcx, std::regex_constants::extended));
+        return 0;
+    }
+
+    const std::string prefix = brackets.prefix ().str ();
+    const std::string suffix = brackets.suffix ().str ();
+
+    // Count '('s to calculate the submatch index representing the hostlist brackets.
+    const size_t submatch_idx = 1 + std::count (prefix.cbegin (), prefix.cend (), '(');
+
+    // Check if name matches the regex string, but ignore everything in the brackets.
+    // Example lcx becomes: "core1[0-9+].*"
+    // The example name matches the new regex, so we continue.
+    if (!std::regex_match (name,
+                           hostids,
+                           std::regex (prefix + "([0-9]+)" + suffix,
+                                       std::regex_constants::extended))) {
+        result = false;
+        return 0;
+    }
+
+    // Generate hlist_name, the format for hostlist checking.
+    // Example hlist_name: "core1[0]"
+    hlist_name.replace (hostids.position (submatch_idx),
+                        hostids.length (submatch_idx),
+                        brackets.str ());
+    if (!(hlist = hostlist_decode (hlist_name.c_str ()))) {
+        return -1;
+    }
+
+    // Check if name matches hlist_name.
+    // Example hlist_name: "core1[0]"
+    // The example name "core11" does not match.
+    result = (hostlist_find (hlist, name.c_str ()) >= 0);
+    hostlist_destroy (hlist);
+    return 0;
+}
+
 int expr_eval_vtx_target_t::evaluate (const std::string &p,
                                       const std::string &x,
                                       bool &result) const
@@ -78,7 +132,6 @@ int expr_eval_vtx_target_t::evaluate (const std::string &p,
     int rc = 0;
     std::string lcx = x;
     flux_jobid_t jobid = 0;
-    struct hostlist *hlist;
 
     result = false;
     if ((rc = validate (p, x)) < 0)
@@ -131,16 +184,12 @@ int expr_eval_vtx_target_t::evaluate (const std::string &p,
             result = false;
         }
     } else if (p == "names") {
-        if (!(hlist = hostlist_decode (lcx.c_str ()))) {
+        try {
+            rc = evaluate_regex_and_hostlist ((*m_g)[m_u].name, lcx, result);
+        } catch (std::regex_error e) {
             rc = -1;
-            goto done;
+            errno = EINVAL;
         }
-        if (hostlist_find (hlist, (*m_g)[m_u].name.c_str ()) >= 0) {
-            result = true;
-        } else {
-            result = false;
-        }
-        hostlist_destroy (hlist);
     } else if (p == "property") {
         result = (*m_g)[m_u].properties.contains (lcx);
     } else {
