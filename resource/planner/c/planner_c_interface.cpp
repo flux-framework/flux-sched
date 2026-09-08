@@ -700,6 +700,11 @@ extern "C" int64_t planner_span_next (planner_t *ctx)
         errno = EINVAL;
         return -1;
     }
+    // Test before incrementing; incrementing an end iterator is undefined.
+    if (ctx->plan->get_span_lookup_iter () == ctx->plan->get_span_lookup ().end ()) {
+        errno = EINVAL;
+        return -1;
+    }
     ctx->plan->incr_span_lookup_iter ();
     if (ctx->plan->get_span_lookup_iter () == ctx->plan->get_span_lookup ().end ()) {
         errno = EINVAL;
