@@ -608,6 +608,37 @@ static void test_planner_multi_t_value_semantics ()
     planner_multi_destroy (&src);
 }
 
+// planner_span_next increments the span-lookup iterator before testing it
+// against end (), so it has to reject the states in which the iterator is
+// already there.  The copy case also covers planner's iterator being
+// initialized to end () rather than left singular.
+static void test_planner_span_iterator_guards ()
+{
+    planner_t *ctx = planner_new (0, 10, 10, "core");
+
+    errno = 0;
+    ok (planner_span_next (ctx) == -1, "span_next before span_first returns -1");
+
+    int64_t span = planner_add_span (ctx, 0, 5, 3);
+    ok (span != -1, "span iterator guards: span added");
+    ok (planner_span_first (ctx) == span, "span_first returns the only span");
+
+    errno = 0;
+    ok (planner_span_next (ctx) == -1, "span_next past the last span returns -1");
+    errno = 0;
+    ok (planner_span_next (ctx) == -1,
+        "span_next again returns -1 rather than incrementing end ()");
+
+    // A fresh copy has its iterator at end (), so the same guard applies.
+    planner_t *copy = planner_copy (ctx);
+    ok (copy != nullptr, "planner_copy succeeds");
+    errno = 0;
+    ok (planner_span_next (copy) == -1, "span_next on a fresh copy returns -1");
+
+    planner_destroy (&copy);
+    planner_destroy (&ctx);
+}
+
 int main (int argc, char *argv[])
 {
     plan (NO_PLAN);
@@ -631,6 +662,7 @@ int main (int argc, char *argv[])
 
     test_planner_t_value_semantics ();
     test_planner_multi_t_value_semantics ();
+    test_planner_span_iterator_guards ();
 
     done_testing ();
     return EXIT_SUCCESS;
