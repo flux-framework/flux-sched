@@ -84,6 +84,7 @@ set(ALL_TESTS
   t3044-resource-rabbit-cancel.t
   t3300-system-dontblock.t
   t3301-system-latestart.t
+  t3099-coalloc-drop.t
   t4000-match-params.t
   t4001-match-allocate.t
   t4002-match-reserve.t
