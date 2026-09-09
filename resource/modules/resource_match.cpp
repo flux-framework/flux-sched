@@ -242,12 +242,9 @@ static void update_resource (flux_future_t *f, void *arg)
                                    &expiration))
         < 0) {
         flux_log_error (ctx->h,
-                        ctx->m_acquire_resources_from_core ? "%s: exiting due to resource.acquire "
-                                                             "failure"
-                                                           : "%s: exiting due to "
-                                                             "sched-fluxion-resource.notify "
-                                                             "failure",
-                        __FUNCTION__);
+                        "%s: exiting due to %s failure",
+                        __FUNCTION__,
+                        ctx->m_acquire_topic);
         flux_reactor_stop (flux_get_reactor (ctx->h)); /* Cancels notify msgs */
         goto done;
     }
@@ -268,7 +265,7 @@ static void update_resource (flux_future_t *f, void *arg)
             std::chrono::system_clock::from_time_t (detail::SYSTEM_MAX_DURATION);
         flux_log (ctx->h, LOG_INFO, "resource expiration updated to 0. (unlimited)");
     }
-    if (ctx->m_acquire_resources_from_core) {
+    if (ctx->m_acquire_topic == std::string ("resource.acquire")) {
         // Broadcast UP/DOWN/SHRINK updates to subscribed fluxion modules.
         // There are no subscribers until the first notify_request_cb,
         //  which must happen after the first run of update_resource
@@ -299,38 +296,28 @@ done:
 static int populate_resource_db_acquire (std::shared_ptr<resource_ctx_t> &ctx)
 {
     int rc = -1;
+    const json_t *requested = nullptr;
 
-    if (ctx->m_acquire_resources_from_core) {
-        if (!(ctx->update_f = flux_rpc (ctx->h,
-                                        "resource.acquire",
-                                        NULL,
-                                        FLUX_NODEID_ANY,
-                                        FLUX_RPC_STREAMING))) {
-            flux_log_error (ctx->h, "%s: flux_rpc (acquire)", __FUNCTION__);
-            goto done;
-        }
-    } else {
-        const json_t *requested =
-            notify_flags_to_json (NOTIFY_RESOURCES | NOTIFY_SHRINK | NOTIFY_EXPIRATION);
-
+    if (ctx->m_notify_flags) {
+        requested = notify_flags_to_json (ctx->m_notify_flags);
         if (!requested) {
             flux_log_error (ctx->h, "%s: notify_flags_to_json", __FUNCTION__);
             goto done;
         }
+    }
 
-        // If this module is not getting resources from core, use
-        //  sched-fluxion-resource.notify instead of resource.acquire to avoid
-        //  using more than one resource.acquire RPC, which is not allowed
-        if (!(ctx->update_f = flux_rpc_pack (ctx->h,
-                                             "sched-fluxion-resource.notify",
-                                             FLUX_NODEID_ANY,
-                                             FLUX_RPC_STREAMING,
-                                             "{s:o}",
-                                             NOTIFY_REQUEST_KEY,
-                                             requested))) {
-            flux_log_error (ctx->h, "%s: flux_rpc (notify)", __FUNCTION__);
-            goto done;
-        }
+    // If this module is not getting resources from core, use
+    //  sched-fluxion-resource.notify instead of resource.acquire to avoid
+    //  using more than one resource.acquire RPC, which is not allowed
+    if (!(ctx->update_f = flux_rpc_pack (ctx->h,
+                                         ctx->m_acquire_topic,
+                                         FLUX_NODEID_ANY,
+                                         FLUX_RPC_STREAMING,
+                                         "{s:o*}",
+                                         NOTIFY_REQUEST_KEY,
+                                         requested))) {
+        flux_log_error (ctx->h, "%s: flux_rpc (notify)", __FUNCTION__);
+        goto done;
     }
 
     update_resource (ctx->update_f, static_cast<void *> (&ctx));
@@ -374,11 +361,9 @@ int populate_resource_db (std::shared_ptr<resource_ctx_t> &ctx)
         }
         flux_log (ctx->h,
                   LOG_INFO,
-                  ctx->m_acquire_resources_from_core ? "%s: loaded resources from core's "
-                                                       "resource.acquire"
-                                                     : "%s: loaded resources from "
-                                                       "sched-fluxion-resource.notify",
-                  __FUNCTION__);
+                  "%s: loaded resources from %s",
+                  __FUNCTION__,
+                  ctx->m_acquire_topic);
     }
 
     elapsed = std::chrono::system_clock::now () - start;

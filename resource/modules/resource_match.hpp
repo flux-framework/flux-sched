@@ -113,8 +113,9 @@ struct resource_ctx_t : public resource_interface_t {
     json::value m_r_down;
     json::value m_r_alloc;
 
-    /* Resource acquire behavior */
-    bool m_acquire_resources_from_core = false; /* s.-f.-resource only */
+    /* Module initialization */
+    const char *m_acquire_topic = "sched-fluxion-resource.notify";
+    notify_flag_t m_notify_flags = NOTIFY_NONE;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

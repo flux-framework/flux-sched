@@ -162,7 +162,8 @@ static std::shared_ptr<resource_ctx_t> getctx (flux_t *h)
         ctx->m_resources_updated = true;
         ctx->m_resources_down_updated = true;
         ctx->m_resources_alloc_updated = std::chrono::system_clock::now ();
-        ctx->m_acquire_resources_from_core = true;
+        ctx->m_acquire_topic = "resource.acquire";
+        ctx->m_notify_flags = NOTIFY_NONE;
     }
 
 done:
