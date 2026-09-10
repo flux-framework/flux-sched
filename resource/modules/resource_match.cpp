@@ -28,6 +28,7 @@ extern "C" {
 #include "resource_match.hpp"
 #include "resource/schema/resource_graph.hpp"
 #include "resource/readers/resource_reader_factory.hpp"
+#include "resource/readers/resource_reader_jgf.hpp"
 #include "resource/traversers/dfu.hpp"
 #include "resource/jobinfo/jobinfo.hpp"
 #include "resource/policies/dfu_match_policy_factory.hpp"
@@ -482,6 +483,7 @@ ret:
 static int unpack_resources (json_t *resobj,
                              struct idset **idset,
                              json_t **r_lite_p,
+                             json_t **properties_p,
                              json_t **jgf_p,
                              graph_duration_t &duration)
 {
@@ -490,6 +492,7 @@ static int unpack_resources (json_t *resobj,
     int version;
     double start = 0.0, end = 0.0;
     json_t *r_lite = NULL;
+    json_t *properties = NULL;
     json_t *jgf = NULL;
     size_t index;
     json_t *val;
@@ -502,12 +505,14 @@ static int unpack_resources (json_t *resobj,
         return -1;
     if (resobj) {
         if (json_unpack (resobj,
-                         "{s:i s:{s:o s?F s?F} s?:o}",
+                         "{s:i s:{s:o s?o s?F s?F} s?:o}",
                          "version",
                          &version,
                          "execution",
                          "R_lite",
                          &r_lite,
+                         "properties",
+                         &properties,
                          "starttime",
                          &start,
                          "expiration",
@@ -582,6 +587,8 @@ static int unpack_resources (json_t *resobj,
     }
     *idset = ids;
     *r_lite_p = r_lite;
+    if (properties_p)
+        *properties_p = properties;
     *jgf_p = jgf;
     return 0;
 inval:
@@ -898,7 +905,8 @@ static int unpack_parent_job_resources (std::shared_ptr<resource_ctx_t> &ctx,
     struct idset *p_grow_set = NULL;
     if ((rc = get_parent_job_resources (ctx, &p_resources)) < 0 || !p_resources)
         goto done;
-    if ((rc = unpack_resources (p_resources, &p_grow_set, &p_r_lite, &p_jgf, duration)) < 0)
+    if ((rc = unpack_resources (p_resources, &p_grow_set, &p_r_lite, nullptr, &p_jgf, duration))
+        < 0)
         goto done;
     if (!p_grow_set || !p_r_lite) {
         // Parent must have R_lite, but JGF is optional
@@ -921,7 +929,10 @@ done:
     return rc;
 }
 
-static int grow_resource_db_jgf (std::shared_ptr<resource_ctx_t> &ctx, json_t *r_lite, json_t *jgf)
+static int grow_resource_db_jgf (std::shared_ptr<resource_ctx_t> &ctx,
+                                 json_t *r_lite,
+                                 json_t *properties,
+                                 json_t *jgf)
 {
     int rc = -1;
     int saved_errno;
@@ -949,6 +960,11 @@ static int grow_resource_db_jgf (std::shared_ptr<resource_ctx_t> &ctx, json_t *r
         rc = 0;
     }
     if (db.metadata.roots.find (containment_sub) == db.metadata.roots.end ()) {
+        auto jgf_reader = std::dynamic_pointer_cast<resource_reader_jgf_t> (ctx->reader);
+        if (!jgf_reader || jgf_reader->set_node_properties (properties) < 0) {
+            flux_log_error (ctx->h, "%s: invalid execution properties", __FUNCTION__);
+            goto done;
+        }
         // Only remap if parent has JGF - otherwise assume JGF ranks match R_lite
         if (p_r_lite && parent_has_jgf && (rc = remap_jgf_namespace (ctx, r_lite, p_r_lite)) < 0) {
             flux_log_error (ctx->h, "%s: remap_jgf_namespace", __FUNCTION__);
@@ -984,12 +1000,13 @@ static int grow_resource_db (std::shared_ptr<resource_ctx_t> &ctx, json_t *resou
     graph_duration_t duration;
     struct idset *grow_set = NULL;
     json_t *r_lite = NULL;
+    json_t *properties = NULL;
     json_t *jgf = NULL;
     const char *writer_uri = NULL;
     bool jgf_shorthand = false;
     auto guard = resource_type_t::storage_t::open_for_scope ();
 
-    if ((rc = unpack_resources (resources, &grow_set, &r_lite, &jgf, duration)) < 0) {
+    if ((rc = unpack_resources (resources, &grow_set, &r_lite, &properties, &jgf, duration)) < 0) {
         flux_log_error (ctx->h, "%s: unpack_resources", __FUNCTION__);
         goto done;
     }
@@ -1011,7 +1028,7 @@ static int grow_resource_db (std::shared_ptr<resource_ctx_t> &ctx, json_t *resou
             flux_log (ctx->h, LOG_ERR, "%s: can't create jgf reader", __FUNCTION__);
             goto done;
         }
-        rc = grow_resource_db_jgf (ctx, r_lite, jgf);
+        rc = grow_resource_db_jgf (ctx, r_lite, properties, jgf);
     } else {
         if (ctx->opts.get_opt ().get_load_format () == "hwloc") {
             if (!ctx->reader && (rc = create_reader (ctx, "hwloc")) < 0) {

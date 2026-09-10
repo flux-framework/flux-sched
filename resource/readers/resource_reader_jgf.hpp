@@ -107,6 +107,12 @@ class resource_reader_jgf_t : public resource_reader_base_t {
    public:
     virtual ~resource_reader_jgf_t ();
 
+    /*! Set node properties encoded as an RFC 20 execution.properties
+     *  object. Properties are indexed by execution target rank and are
+     *  merged into node vertices as they are unpacked.
+     */
+    int set_node_properties (json_t *properties);
+
     /*! Unpack str into a resource graph.
      *
      * \param g      resource graph
@@ -202,6 +208,8 @@ class resource_reader_jgf_t : public resource_reader_base_t {
                          uint64_t sequence_number);
 
    private:
+    std::map<int64_t, std::map<std::string, std::string>> m_node_properties;
+
     int fetch_jgf (const std::string &str,
                    json_t **jgf_p,
                    json_t **nodes_p,

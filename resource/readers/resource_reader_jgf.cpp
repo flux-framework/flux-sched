@@ -29,6 +29,39 @@ extern "C" {
 using namespace Flux;
 using namespace Flux::resource_model;
 
+int resource_reader_jgf_t::set_node_properties (json_t *properties)
+{
+    const char *name = nullptr;
+    json_t *ranks_json = nullptr;
+    struct idset *ranks = nullptr;
+
+    m_node_properties.clear ();
+    if (!properties)
+        return 0;
+    if (!json_is_object (properties)) {
+        errno = EINVAL;
+        return -1;
+    }
+    json_object_foreach (properties, name, ranks_json) {
+        unsigned int rank;
+
+        if (!json_is_string (ranks_json)
+            || !(ranks = idset_decode (json_string_value (ranks_json)))) {
+            errno = EINVAL;
+            m_node_properties.clear ();
+            return -1;
+        }
+        rank = idset_first (ranks);
+        while (rank != IDSET_INVALID_ID) {
+            m_node_properties[rank].emplace (name, "");
+            rank = idset_next (ranks, rank);
+        }
+        idset_destroy (ranks);
+        ranks = nullptr;
+    }
+    return 0;
+}
+
 int64_t fetch_remap_support_t::get_remapped_id () const
 {
     return m_remapped_id;
@@ -478,6 +511,13 @@ vtx_t resource_reader_jgf_t::create_vtx (resource_graph_t &g, const fetch_helper
     g[v].id = fetcher.get_proper_id ();
     g[v].name = fetcher.get_proper_name ();
     g[v].properties = fetcher.properties;
+    if (g[v].type == node_rt) {
+        auto properties = m_node_properties.find (g[v].rank);
+        if (properties != m_node_properties.end ()) {
+            for (const auto &property : properties->second)
+                g[v].properties.emplace (property);
+        }
+    }
     g[v].paths = fetcher.paths;
     g[v].schedule.plans = plans;
     g[v].idata.x_checker = x_checker;
