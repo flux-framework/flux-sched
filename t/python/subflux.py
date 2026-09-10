@@ -42,6 +42,14 @@ def rerun_under_flux(*args):
     child_env = dict(**os.environ)
     child_env["IN_SUBFLUX"] = "1"
 
+    os.environ.setdefault("FLUX_MODULE_PATH_PREPEND", "")
+    child_env["FLUX_MODULE_PATH_PREPEND"] = (
+        f'{os.environ["SHARNESS_BUILD_DIRECTORY"]}/resource/modules/:{os.environ["FLUX_MODULE_PATH_PREPEND"]}'
+    )
+    child_env["FLUX_MODULE_PATH_PREPEND"] += (
+        f'{os.environ["SHARNESS_BUILD_DIRECTORY"]}/qmanager/modules/:{os.environ["FLUX_MODULE_PATH_PREPEND"]}'
+    )
+
     # ported from sharness.d/flux-sharness.sh
     command = [shutil.which("flux"), "start", *args]
 
