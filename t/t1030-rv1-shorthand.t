@@ -11,6 +11,12 @@ SIZE="$(flux hostlist -c ${HOSTLIST})"
 
 test_under_flux ${SIZE}
 
+test_expect_success 'add overlapping property to JGF' '
+    jq "(.graph.nodes[] | select(.metadata.name == \"hetchy1002\") |
+        .metadata.properties.bardpeak) = \"from_jgf\"" \
+        ${cluster_jgf} > test.jgf
+'
+
 test_expect_success 'configure Flux' '
     flux config load <<-EOF
     [sched-fluxion-resource]
@@ -19,11 +25,22 @@ test_expect_success 'configure Flux' '
     [resource]
     noverify = true
     norestrict = true
-    scheduling = "${cluster_jgf}"
+    scheduling = "$(pwd)/test.jgf"
 
     [[resource.config]]
     hosts = "${HOSTLIST}"
     cores = "0-1"
+
+    [[resource.config]]
+    hosts = "hetchy[1,1001-1002,1005,1007-1009]"
+    properties = ["from_r", "bardpeak"]
+
+    [queues.default]
+    [queues.production]
+    requires = ["from_r"]
+
+    [policy.jobspec.defaults.system]
+    queue = "default"
 EOF
 '
 
@@ -36,8 +53,32 @@ test_expect_success 'load resource' '
     flux module load sched-fluxion-qmanager &&
     test_debug flux module list &&
     flux resource list &&
-    FLUX_RESOURCE_LIST_RPC=sched.resource-status flux resource list
+    FLUX_RESOURCE_LIST_RPC=sched.resource-status flux resource list &&
+    flux queue start --all
 
+'
+
+test_expect_success 'R properties with complex IDSets are merged into JGF' '
+    flux ion-resource find -q --format=jgf property=from_r > from_r.jgf &&
+    jq -r "[.graph.nodes[] |
+        select(.metadata.type == \"node\") | .metadata.rank] |
+        sort | join(\",\")" from_r.jgf > from_r.ranks &&
+    echo "0,3,4,7,9,10,11" > expected.ranks &&
+    test_cmp expected.ranks from_r.ranks
+'
+
+test_expect_success 'job schedules in queue defined only by R property' '
+    jq -e "[.graph.nodes[].metadata.properties.from_r] |
+        all(. == null)" test.jgf &&
+    flux kvs get resource.R |
+        jq -e ".execution.properties.from_r == \"0,3-4,7,9-11\"" &&
+    flux run --queue=production -N1 true
+'
+
+test_expect_success 'JGF property values take precedence over R properties' '
+    flux ion-resource find -q --format=jgf property=bardpeak > bardpeak.jgf &&
+    jq -e ".graph.nodes[] | select(.metadata.name == \"hetchy1002\") |
+        .metadata.properties.bardpeak == \"from_jgf\"" bardpeak.jgf
 '
 
 test_expect_success 'run a job' '
