@@ -39,8 +39,8 @@ class distinct_range_t {
 
 class resource_namespace_remapper_t {
    public:
-    int add (const uint64_t exec_target_high,
-             const uint64_t exec_target_low,
+    int add (const uint64_t exec_target_low,
+             const uint64_t exec_target_high,
              const std::string &name_type,
              uint64_t ref_id,
              uint64_t remapped_id);
