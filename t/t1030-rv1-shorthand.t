@@ -6,10 +6,16 @@ test_description='Test a rabbit cluster with rv1_shorthand'
 
 cluster_jgf="${SHARNESS_TEST_SRCDIR}/data/resource/jgfs/rabbit.json"
 rabbit_jobspec="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/advanced/rabbit.yaml"
-HOSTLIST="hetchy[1,201-202,1001-1018]"
+HOSTLIST="hetchy[1,1001-1018,201-202]"
 SIZE="$(flux hostlist -c ${HOSTLIST})"
 
 test_under_flux ${SIZE}
+
+test_expect_success 'add overlapping property to JGF' '
+    jq "(.graph.nodes[] | select(.metadata.name == \"hetchy1002\") |
+        .metadata.properties.overlapping) = \"from_jgf\"" \
+        ${cluster_jgf} > test.jgf
+'
 
 test_expect_success 'configure Flux' '
     flux config load <<-EOF
@@ -19,11 +25,26 @@ test_expect_success 'configure Flux' '
     [resource]
     noverify = true
     norestrict = true
-    scheduling = "${cluster_jgf}"
+    scheduling = "$(pwd)/test.jgf"
 
     [[resource.config]]
     hosts = "${HOSTLIST}"
     cores = "0-1"
+
+    [[resource.config]]
+    hosts = "hetchy[1,1001-1002,1005,1007-1009]"
+    properties = ["from_r", "overlapping"]
+
+    [[resource.config]]
+    hosts = "hetchy[201-202]"
+    properties = ["rabbit_from_r"]
+
+    [queues.default]
+    [queues.production]
+    requires = ["from_r"]
+
+    [policy.jobspec.defaults.system]
+    queue = "default"
 EOF
 '
 
@@ -36,8 +57,44 @@ test_expect_success 'load resource' '
     flux module load sched-fluxion-qmanager &&
     test_debug flux module list &&
     flux resource list &&
-    FLUX_RESOURCE_LIST_RPC=sched.resource-status flux resource list
+    FLUX_RESOURCE_LIST_RPC=sched.resource-status flux resource list &&
+    flux queue start --all
 
+'
+
+test_expect_success 'R properties with complex IDSets are merged into JGF' '
+    flux ion-resource find -q --format=jgf property=from_r > from_r.jgf &&
+    jq -r "[.graph.nodes[] |
+        select(.metadata.type == \"node\") | .metadata.rank] |
+        sort | join(\",\")" from_r.jgf > from_r.ranks &&
+    echo "0,1,2,5,7,8,9" > expected.ranks &&
+    test_cmp expected.ranks from_r.ranks
+'
+
+test_expect_success 'R properties are merged into JGF storage_nodes' '
+    flux ion-resource find -q --format=jgf property=rabbit_from_r > rabbit_from_r.jgf &&
+    jq -r "[.graph.nodes[] |
+        select(.metadata.type == \"storage_node\") | .metadata.rank] |
+        sort | join(\",\")" rabbit_from_r.jgf > rabbit_from_r.ranks &&
+    echo "19,20" > rabbit_expected.ranks &&
+    test_cmp rabbit_expected.ranks rabbit_from_r.ranks
+'
+
+test_expect_success 'job schedules in queue defined only by R property' '
+    jq -e "[.graph.nodes[].metadata.properties.from_r] |
+        all(. == null)" test.jgf &&
+    flux kvs get resource.R |
+        jq -e ".execution.properties.from_r == \"0-2,5,7-9\"" &&
+    flux run --queue=production -N1 true
+'
+
+test_expect_success 'JGF property values take precedence over R properties' '
+    flux ion-resource find -q --format=jgf property=overlapping > overlapping.jgf &&
+    jq -e ".graph.nodes[] | select(.metadata.name == \"hetchy1002\") |
+        .metadata.properties.overlapping == \"from_jgf\"" overlapping.jgf &&
+    # unlike hetchy1002, hetchy1005 should have an empty string for the property value
+    jq -e ".graph.nodes[] | select(.metadata.name == \"hetchy1005\") |
+        .metadata.properties.overlapping == \"\"" overlapping.jgf
 '
 
 test_expect_success 'run a job' '
