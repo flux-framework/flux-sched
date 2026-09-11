@@ -270,8 +270,7 @@ static void update_resource (flux_future_t *f, void *arg)
         // There are no subscribers until the first notify_request_cb,
         //  which must happen after the first run of update_resource
         for (const auto &[_, m] : ctx->notify_msgs) {
-            if (rc +=
-                flux_respond_pack (ctx->h,
+            if (flux_respond_pack (ctx->h,
                                    m->get_msg (),
                                    "{s:s* s:s* s:s* s:f}",
                                    NOTIFY_UP_KEY,
@@ -284,7 +283,7 @@ static void update_resource (flux_future_t *f, void *arg)
                                    m->get_notify_flags () & NOTIFY_EXPIRATION ? expiration : -1.)
                 < 0) {
                 flux_log_error (ctx->h, "%s: flux_respond_pack", __FUNCTION__);
-                goto done;
+                rc = -1;
             }
         }
     }
