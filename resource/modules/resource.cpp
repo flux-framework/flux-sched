@@ -1209,6 +1209,7 @@ static void notify_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
         std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
         std::shared_ptr<msg_wrap_t> m = std::make_shared<msg_wrap_t> ();
         json_t *requested = NULL;
+        char *requested_str = NULL;
 
         if (flux_request_unpack (msg, NULL, "{s?:o}", NOTIFY_REQUEST_KEY, &requested) < 0) {
             flux_log_error (h, "%s: flux_request_unpack", __FUNCTION__);
@@ -1225,6 +1226,10 @@ static void notify_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
             flux_log_error (h, "%s: flux_msg_route_first", __FUNCTION__);
             goto error;
         }
+
+        requested_str = json_dumps (requested, JSON_INDENT (4));
+        flux_log (h, LOG_INFO, "received request for notifications: %s", requested_str);
+        free (requested_str);
 
         // Traverse all nodes to calculate the # of UP/DOWN
         up = idset_create (0, IDSET_FLAG_AUTOGROW);
