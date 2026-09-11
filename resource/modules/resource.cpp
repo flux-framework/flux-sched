@@ -1197,6 +1197,11 @@ static void disconnect_request_cb (flux_t *h,
 
 static void notify_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t *msg, void *arg)
 {
+    struct idset *up;
+    struct idset *down;
+    char *lost_str;
+    char *up_str;
+    char *down_str;
     try {
         const char *route;
         std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
@@ -1223,8 +1228,8 @@ static void notify_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
         }
 
         // Traverse all nodes to calculate the # of UP/DOWN
-        struct idset *up = idset_create (0, IDSET_FLAG_AUTOGROW);
-        struct idset *down = idset_create (0, IDSET_FLAG_AUTOGROW);
+        up = idset_create (0, IDSET_FLAG_AUTOGROW);
+        down = idset_create (0, IDSET_FLAG_AUTOGROW);
 
         resource_graph_t rg = ctx->db->resource_graph;
 
@@ -1246,9 +1251,9 @@ static void notify_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
             idset_destroy (rank);
         }
 
-        char *up_str = idset_encode (up, IDSET_FLAG_RANGE);
-        char *down_str = idset_encode (down, IDSET_FLAG_RANGE);
-        char *lost_str = idset_encode (ctx->m_notify_lost, IDSET_FLAG_RANGE);
+        up_str = idset_encode (up, IDSET_FLAG_RANGE);
+        down_str = idset_encode (down, IDSET_FLAG_RANGE);
+        lost_str = idset_encode (ctx->m_notify_lost, IDSET_FLAG_RANGE);
 
         if (strcmp (up_str, "") == 0) {
             free (up_str);
@@ -1313,6 +1318,11 @@ static void notify_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
     return;
 
 error:
+    free (up_str);
+    free (down_str);
+    free (lost_str);
+    idset_destroy (up);
+    idset_destroy (down);
     if (flux_respond_error (h, msg, errno, NULL) < 0)
         flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
 }
