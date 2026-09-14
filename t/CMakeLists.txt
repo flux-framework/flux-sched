@@ -37,6 +37,7 @@ set(ALL_TESTS
   t1032-without-alloc-check.t
   t1033-qmanager-vqueue.t
   t1034-rabbit-partial-release.t
+  t1035-reconfig-reload-sweep.t
   t2317-resource-shrink.t
   t3000-jobspec.t
   t3001-resource-basic.t
