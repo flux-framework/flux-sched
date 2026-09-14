@@ -176,7 +176,7 @@ int resource_reader_jgf_t::fetch_jgf (const std::string &str,
     json_t *graph = NULL;
     json_t *free_ranks = NULL;
     struct idset *r_ids = nullptr;
-    const char *ranks = nullptr;
+    char *ranks = nullptr;
     std::string ranks_stripped;
     json_error_t json_err;
 
@@ -235,6 +235,8 @@ int resource_reader_jgf_t::fetch_jgf (const std::string &str,
     rc = 0;
 
 done:
+    idset_destroy (r_ids);
+    free (ranks);
     return rc;
 }
 
