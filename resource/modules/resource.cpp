@@ -1379,7 +1379,7 @@ static void status_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_
         R_alloc = json_deep_copy (ctx->m_r_alloc.get ());
 
     if (ctx->m_resources_updated) {
-        if (run_find (ctx, "status=up or status=down", "rv1_nosched", &R_all) < 0)
+        if (run_find (ctx, "", "rv1_nosched", &R_all) < 0)
             goto error;
         ctx->m_r_all = json::value::take (json_deep_copy (R_all));
         ctx->m_resources_updated = false;
