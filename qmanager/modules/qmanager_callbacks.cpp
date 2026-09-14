@@ -205,6 +205,7 @@ int qmanager_cb_t::jobmanager_hello_cb (flux_t *h, const flux_msg_t *msg, const 
     json_t *sched = NULL;
     json_error_t json_err;
     const char *R_final = NULL;
+    char *R_dumped = NULL;
 
     /* Don't expect jobspec to be set here as it is not currently defined
      * in RFC 27.  However, add it anyway in case the hello protocol
@@ -267,13 +268,18 @@ int qmanager_cb_t::jobmanager_hello_cb (flux_t *h, const flux_msg_t *msg, const 
         if ((sched = json_object_get (R_jsontmp, "scheduling")) == NULL) {
             R_final = R;
         } else {
-            free_ranks_j = json_string (free_ranks);
-            json_object_set (sched, "free_ranks", free_ranks_j);
-            if (!(R_final = json_dumps (R_jsontmp, JSON_COMPACT))) {
+            if (!(free_ranks_j = json_string (free_ranks))
+                || json_object_set (sched, "free_ranks", free_ranks_j) < 0) {
+                errno = ENOMEM;
+                flux_log (h, LOG_ERR, "%s: json_object_set", __FUNCTION__);
+                goto out;
+            }
+            if (!(R_dumped = json_dumps (R_jsontmp, JSON_COMPACT))) {
                 errno = ENOMEM;
                 flux_log (h, LOG_ERR, "%s: json_dumps", __FUNCTION__);
                 goto out;
             }
+            R_final = R_dumped;
         }
     } else {
         R_final = R;
@@ -301,6 +307,9 @@ int qmanager_cb_t::jobmanager_hello_cb (flux_t *h, const flux_msg_t *msg, const 
               static_cast<intmax_t> (id));
     rc = 0;
 out:
+    json_decref (free_ranks_j);
+    json_decref (R_jsontmp);
+    free (R_dumped);
     flux_future_destroy (f);
     return rc;
 }
