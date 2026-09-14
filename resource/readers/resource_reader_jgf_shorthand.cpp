@@ -105,6 +105,12 @@ int resource_reader_jgf_shorthand_t::update_additional_edges (
     vtx_t v;
     std::map<std::string, vmap_val_t> empty_vmap{};  // so `find_vtx` doesn't error out
     std::string vertex_id = std::to_string (fetcher.uniq_id);
+    // update_vtx () skips a vertex whose rank was released by a previous
+    // partial free, so it has no vmap entry and no edges to update here.
+    // update_edges () tolerates this for a complete JGF via unpack_edge ();
+    // do the same for the vertices elided from a shorthand JGF.
+    if (vmap.find (vertex_id) == vmap.end ())
+        return 0;
     fetcher.vertex_id = vertex_id.c_str ();
     if (resource_reader_jgf_t::find_vtx (g, m, empty_vmap, fetcher, v) != 0
         || v == boost::graph_traits<resource_graph_t>::null_vertex ())
