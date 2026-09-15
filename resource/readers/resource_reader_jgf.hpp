@@ -94,11 +94,16 @@ struct jgf_updater_data {
     unsigned int n_purged = 0;
 };
 
+/*! Note: std::map::operator[] default-constructs a value for a key that is
+ *  not present, so these members must be initialized here. Otherwise a
+ *  lookup miss on a vmap silently yields indeterminate values rather than
+ *  a detectable error.
+ */
 struct vmap_val_t {
-    vtx_t v;
+    vtx_t v = boost::graph_traits<resource_graph_t>::null_vertex ();
     std::map<subsystem_t, bool> is_roots;
-    unsigned int needs;
-    unsigned int exclusive;
+    unsigned int needs = 0;
+    unsigned int exclusive = 0;
 };
 
 /*! JGF resource reader class.
