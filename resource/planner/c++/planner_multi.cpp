@@ -58,35 +58,24 @@ planner_multi::planner_multi (int64_t base_time,
 
 planner_multi::planner_multi (const planner_multi &o)
 {
-    for (auto &iter : o.m_types_totals_planners) {
-        planner_t *np = nullptr;
-        if (iter.planner) {
-            try {
-                np = new planner_t (*(iter.planner->plan));
-            } catch (std::bad_alloc &e) {
-                errno = ENOMEM;
-            }
-            // planner copy ctor can throw runtime_error, resulting in nullptr
-            if (np == nullptr)
-                throw std::runtime_error (
-                    "ERROR in planner copy ctor"
-                    " in planner_multi copy"
-                    " constructor\n");
-        } else {
-            try {
-                np = new planner_t ();
-            } catch (std::bad_alloc &e) {
-                errno = ENOMEM;
-                throw std::bad_alloc ();
-            }
+    try {
+        for (const auto &iter : o.m_types_totals_planners) {
+            auto np = iter.planner ? std::make_unique<planner_t> (*(iter.planner->plan))
+                                   : std::make_unique<planner_t> ();
+            m_types_totals_planners.push_back (
+                {iter.resource_type, iter.resource_total, np.get ()});
+            np.release ();
         }
-        m_types_totals_planners.push_back ({iter.resource_type, iter.resource_total, np});
+        m_iter = o.m_iter;
+        m_span_lookup = o.m_span_lookup;
+        // o's iterator points into o's m_span_lookup; never adopt it.
+        m_span_lookup_iter = m_span_lookup.end ();
+        m_span_counter = o.m_span_counter;
+    } catch (...) {
+        erase ();
+        errno = ENOMEM;
+        throw;
     }
-    m_iter = o.m_iter;
-    m_span_lookup = o.m_span_lookup;
-    // o's iterator points into o's m_span_lookup; never adopt it.
-    m_span_lookup_iter = m_span_lookup.end ();
-    m_span_counter = o.m_span_counter;
 }
 
 planner_multi &planner_multi::operator= (const planner_multi &o)
@@ -171,13 +160,9 @@ bool planner_multi::operator!= (const planner_multi &o) const
 
 void planner_multi::erase ()
 {
-    if (!m_types_totals_planners.empty ()) {
-        for (auto iter : m_types_totals_planners) {
-            if (iter.planner) {
-                delete iter.planner;
-                iter.planner = nullptr;
-            }
-        }
+    for (const auto &iter : m_types_totals_planners) {
+        if (iter.planner)
+            delete iter.planner;
     }
     m_types_totals_planners.clear ();
 }
