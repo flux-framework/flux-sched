@@ -65,6 +65,12 @@ extern "C" planner_multi_t *planner_multi_new (int64_t base_time,
                 errno = ERANGE;
                 goto error;
             }
+            for (size_t j = 0; j < i; ++j) {
+                if (!strcmp (resource_types[i], resource_types[j])) {
+                    errno = EINVAL;
+                    goto error;
+                }
+            }
         }
     }
 
@@ -72,6 +78,9 @@ extern "C" planner_multi_t *planner_multi_new (int64_t base_time,
         ctx = new planner_multi_t (base_time, duration, resource_totals, resource_types, len);
     } catch (std::bad_alloc &e) {
         goto nomem_error;
+    } catch (...) {
+        errno = EINVAL;
+        goto error;
     }
     return ctx;
 
@@ -726,6 +735,12 @@ extern "C" int planner_multi_update (planner_multi_t *ctx,
         if (resource_totals[i] > static_cast<uint64_t> (std::numeric_limits<int64_t>::max ())) {
             errno = ERANGE;
             goto done;
+        }
+        for (size_t j = 0; j < i; ++j) {
+            if (!strcmp (resource_types[i], resource_types[j])) {
+                errno = EINVAL;
+                goto done;
+            }
         }
     }
 
