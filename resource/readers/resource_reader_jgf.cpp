@@ -991,7 +991,7 @@ int resource_reader_jgf_t::update_vertices (resource_graph_t &g,
             // it shares its rank and would be skipped too, so don't walk it.
             continue;
         }
-        if (fetch_additional_vertices (g, m, fetcher, additional_vertices) != 0)
+        if ((rc = fetch_additional_vertices (g, m, fetcher, additional_vertices)) != 0)
             goto done;
         for (auto &additional_fetcher : additional_vertices) {
             std::string vertex_id = std::to_string (additional_fetcher.uniq_id);
@@ -1000,13 +1000,13 @@ int resource_reader_jgf_t::update_vertices (resource_graph_t &g,
                 goto done;
             }
         }
-        if (fetch_additional_edges (g,
-                                    m,
-                                    vmap,
-                                    fetcher,
-                                    additional_vertices,
-                                    update_data.sequence_number)
-            < 0) {
+        if ((rc = fetch_additional_edges (g,
+                                          m,
+                                          vmap,
+                                          fetcher,
+                                          additional_vertices,
+                                          update_data.sequence_number))
+            != 0) {
             goto done;
         }
     }
