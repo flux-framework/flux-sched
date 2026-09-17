@@ -855,6 +855,7 @@ int resource_reader_jgf_t::update_vtx (resource_graph_t &g,
     vtx_t v = boost::graph_traits<resource_graph_t>::null_vertex ();
     std::pair<std::map<std::string, vmap_val_t>::iterator, bool> ptr;
 
+    update_data.skipped = false;
     if ((rc = find_vtx (g, m, vmap, fetcher, v)) != 0)
         goto done;
     if ((rc = check_root (v, g, root_checks)) != 0)
@@ -862,6 +863,7 @@ int resource_reader_jgf_t::update_vtx (resource_graph_t &g,
     // Check if skipping due to previous partial free
     if (update_data.isect_ranks && !update_data.ranks.empty ()) {
         if (update_data.ranks.find (fetcher.rank) != update_data.ranks.end ()) {
+            update_data.skipped = true;
             rc = 0;
             goto done;
         }
@@ -981,6 +983,12 @@ int resource_reader_jgf_t::update_vertices (resource_graph_t &g,
             goto done;
         if ((rc = update_vtx (g, m, vmap, fetcher, update_data)) != 0)
             goto done;
+        if (update_data.skipped) {
+            // The rank was released by a previous partial free, so this
+            // vertex is not in vmap.  Anything a reader would collect below
+            // it shares its rank and would be skipped too, so don't walk it.
+            continue;
+        }
         if (fetch_additional_vertices (g, m, fetcher, additional_vertices) != 0)
             goto done;
         for (auto &additional_fetcher : additional_vertices) {
