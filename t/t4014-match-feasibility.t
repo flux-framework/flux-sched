@@ -33,6 +33,11 @@ test_expect_success 'removing sched-simple works' '
     flux dmesg -c | grep -q "rmmod sched-simple"
 '
 
+test_expect_success 'loading qmanager before resource fails' '
+    load_qmanager &&
+    flux dmesg -c | grep -q "Function not implemented"
+'
+
 test_expect_success 'loading feasibility module before resource fails' '
     load_feasibility &&
     flux dmesg -c | grep -q "Function not implemented"
