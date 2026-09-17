@@ -10,6 +10,8 @@
 
 #include "resource_match.hpp"
 
+#include <flux/hostlist.h>
+
 using namespace Flux::resource_notify;
 
 MOD_NAME ("sched-fluxion-resource");
@@ -1500,23 +1502,6 @@ error:
 }
 
 /*
- * Send an empty resource.notify message to get qmanager to reconsider jobs
- */
-static int reconsider_blocked_jobs (
-    flux_t *h,
-    const std::map<std::string, std::shared_ptr<msg_wrap_t>> &notify_msgs)
-{
-    int rc = 0;
-    for (auto &kv : notify_msgs) {
-        if (flux_respond (h, kv.second->get_msg (), "{}") < 0) {
-            rc = -1;
-            flux_log_error (h, "%s: flux_respond", __FUNCTION__);
-        }
-    }
-    return rc;
-}
-
-/*
  * Mark a vertex as up or down
  */
 static void set_status_request_cb (flux_t *h,
@@ -1530,7 +1515,19 @@ static void set_status_request_cb (flux_t *h,
     resource_pool_t::string_to_status sts = resource_pool_t::str_to_status;
     std::map<std::string, std::vector<vtx_t>>::const_iterator it{};
     resource_pool_t::string_to_status::iterator status_it{};
+    std::set<int> ranks_affected;
+    struct hostlist *rank_list = hostlist_create ();
+    char *msg_rank_list_str = nullptr;
+    char *rank_list_str;
+    bool is_up_req;
+    bool is_down_req;
+    const char *key;
 
+    if (!rank_list) {
+        errno = ENOMEM;
+        errmsg = "could not create hostlist object";
+        goto error;
+    }
     if (flux_request_unpack (msg, NULL, "{s:s, s:s}", "resource_path", &rp, "status", &st) < 0) {
         errmsg = "malformed RPC";
         goto error;
@@ -1549,8 +1546,10 @@ static void set_status_request_cb (flux_t *h,
         errmsg = "unrecognized status '" + status + "'";
         goto error;
     }
+    is_up_req = (status_it->second == resource_pool_t::status_t::UP);
+    is_down_req = (status_it->second == resource_pool_t::status_t::DOWN);
     // mark the vertex
-    if (ctx->traverser->mark (resource_path, status_it->second) < 0) {
+    if (ctx->traverser->mark (resource_path, status_it->second, ranks_affected) < 0) {
         flux_log_error (h,
                         "%s: traverser::mark: %s",
                         __FUNCTION__,
@@ -1562,17 +1561,36 @@ static void set_status_request_cb (flux_t *h,
     if (flux_respond (h, msg, NULL) < 0) {
         flux_log_error (h, "%s: flux_respond", __FUNCTION__);
     }
-    // if status was UP, need to reconsider blocked jobs
-    if (status_it->second == resource_pool_t::status_t::UP) {
-        if (reconsider_blocked_jobs (h, ctx->notify_msgs) < 0) {
-            flux_log_error (h, "%s: reconsider_blocked_jobs", __FUNCTION__);
+    // populate the rank_list with affected ranks
+    for (int rank : ranks_affected) {
+        if (!hostlist_append (rank_list, std::to_string (rank).c_str ())) {
+            errmsg = "failed to append to rank hostlist";
+            goto error;
         }
     }
+    if (!(rank_list_str = hostlist_encode (rank_list))) {
+        errmsg = "failed to encode rank hostlist";
+        goto error;
+    }
+    // Forward the UP/DOWN update to subscribed modules and reconsider blocked jobs
+    key = is_up_req ? NOTIFY_UP_KEY : NOTIFY_DOWN_KEY;
+    for (const auto &[_, m] : ctx->notify_msgs) {
+        if ((is_up_req && (m->get_notify_flags () & NOTIFY_UP))
+            || (is_down_req && (m->get_notify_flags () & NOTIFY_DOWN)))
+            msg_rank_list_str = rank_list_str;
+        if (flux_respond_pack (ctx->h, m->get_msg (), "{s:s*}", key, msg_rank_list_str) < 0)
+            flux_log_error (ctx->h, "%s: flux_respond_pack", __FUNCTION__);
+    }
+
+    hostlist_destroy (rank_list);
+    free (rank_list_str);
     return;
 
 error:
     if (flux_respond_error (h, msg, EINVAL, errmsg.c_str ()) < 0)
         flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
+    hostlist_destroy (rank_list);
+    free (rank_list_str);
     return;
 }
 

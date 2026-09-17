@@ -232,19 +232,22 @@ static void set_default (std::shared_ptr<qmanager_ctx_t> &ctx)
 static void update_on_resource_response (flux_future_t *f, void *arg)
 {
     int rc = -1;
+    const char *up = nullptr;
     qmanager_ctx_t *ctx = static_cast<qmanager_ctx_t *> (arg);
 
-    if ((rc = flux_rpc_get (f, NULL)) < 0) {
+    if ((rc = flux_rpc_get_unpack (f, "{s?:s}", NOTIFY_UP_KEY, &up)) < 0) {
         flux_log_error (ctx->h,
                         "%s: exiting due to sched-fluxion-resource.notify failure",
                         __FUNCTION__);
         flux_reactor_stop (flux_get_reactor (ctx->h));
         goto out;
     }
-    for (auto &[_, queue] : ctx->queues) {
-        queue->set_schedulability (true);
-        // constraints must be reconsidered if node status changes
-        queue->reconsider_blocked_jobs ();
+    if (up) {
+        for (auto &[_, queue] : ctx->queues) {
+            queue->set_schedulability (true);
+            // constraints must be reconsidered if node status changes
+            queue->reconsider_blocked_jobs ();
+        }
     }
 
 out:
@@ -256,7 +259,7 @@ out:
 static int handshake_resource (std::shared_ptr<qmanager_ctx_t> &ctx)
 {
     int rc = -1;
-    const json_t *requested = notify_flags_to_json (NOTIFY_NONE);
+    const json_t *requested = notify_flags_to_json (NOTIFY_UP);
 
     if (!requested) {
         flux_log_error (ctx->h, "%s: notify_flags_to_json", __FUNCTION__);
