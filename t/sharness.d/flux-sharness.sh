@@ -248,8 +248,7 @@ test_under_flux() {
 
     if test -n "$FLUX_TEST_VALGRIND" ; then
         VALGRIND_SUPPRESSIONS=${SHARNESS_TEST_SRCDIR}/valgrind/valgrind.supp
-        valgrind="--wrap=libtool,e"
-        valgrind="$valgrind,valgrind,--leak-check=full"
+        valgrind="--wrap=valgrind,--leak-check=full"
         valgrind="$valgrind,--trace-children=no,--child-silent-after-fork=yes"
         valgrind="$valgrind,--leak-resolution=med,--error-exitcode=1"
         valgrind="$valgrind,--suppressions=${VALGRIND_SUPPRESSIONS}"
