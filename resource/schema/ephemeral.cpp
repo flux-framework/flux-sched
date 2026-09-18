@@ -39,6 +39,22 @@ int ephemeral_t::insert (uint64_t epoch, const std::string &key, const std::stri
     return rc;
 }
 
+int ephemeral_t::set (uint64_t epoch, const std::string &key, const std::string &value)
+{
+    int rc = 0;
+
+    try {
+        check_and_clear_if_stale (epoch);
+        m_epoch = epoch;
+        m_store[key] = value;
+    } catch (std::bad_alloc &) {
+        errno = ENOMEM;
+        rc = -1;
+    }
+
+    return rc;
+}
+
 boost::optional<std::string> ephemeral_t::get (uint64_t epoch, const std::string &key)
 {
     if (check_and_clear_if_stale (epoch)) {

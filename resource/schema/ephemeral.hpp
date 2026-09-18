@@ -21,6 +21,12 @@ namespace resource_model {
 class ephemeral_t {
    public:
     int insert (uint64_t epoch, const std::string &key, const std::string &value);
+    /*! Insert or overwrite key with value for the given epoch. Unlike insert (),
+     *  this does not fail with EEXIST when the key already exists in the current
+     *  epoch; the existing value is replaced. Stale data from an older epoch is
+     *  cleared first.
+     */
+    int set (uint64_t epoch, const std::string &key, const std::string &value);
     boost::optional<std::string> get (uint64_t epoch, const std::string &key);
     const std::map<std::string, std::string> &to_map (uint64_t epoch);
     const std::map<std::string, std::string> &to_map () const;
