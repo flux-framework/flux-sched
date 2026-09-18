@@ -22,6 +22,7 @@ extern "C" {
 #include <vector>
 #include <map>
 #include "resource/planner/c/planner_multi.h"
+#include "resource/planner/c++/planner_multi.hpp"
 #include "src/common/libtap/tap.h"
 
 static void to_stream (int64_t base_time,
@@ -571,7 +572,8 @@ static int test_constructors_and_overload ()
     ctx3 = planner_multi_empty ();
     bo = (bo || !planner_multis_equal (ctx2, ctx3));
 
-    planner_multi_assign (ctx2, ctx);
+    rc = planner_multi_assign (ctx2, ctx);
+    bo = (bo || rc != 0);
     bo = (bo || !(planner_multis_equal (ctx, ctx2)));
     ok (!bo, "test assignment overload");
 
@@ -590,7 +592,8 @@ static int test_constructors_and_overload ()
     size = planner_multi_span_size (ctx4);
     ok ((size == 3), "removing span doesn't change deep copy's size");
     // Assignment overload works on planners with state
-    planner_multi_assign (ctx4, ctx2);
+    rc = planner_multi_assign (ctx4, ctx2);
+    bo = (bo || rc != 0);
     size = planner_multi_span_size (ctx4);
     ok ((size == 2), "planner_multi 3 now has the size of planner_multi 2");
     bo = (bo || !(planner_multis_equal (ctx2, ctx4)));
@@ -612,6 +615,102 @@ static int test_constructors_and_overload ()
     planner_multi_destroy (&ctx4);
 
     return 0;
+}
+
+static int test_planner_multi_self_assign ()
+{
+    const uint64_t totals[] = {10, 20};
+    const char *types[] = {"core", "memory"};
+    planner_multi_t *ctx = planner_multi_new (0, 100, totals, types, 2);
+    ok (ctx != nullptr, "multi self-assign: planner_multi_new");
+
+    const uint64_t requests[] = {5, 10};
+    int64_t span_id = planner_multi_add_span (ctx, 0, 10, requests, 2);
+    ok (span_id >= 0, "multi self-assign: planner_multi_add_span");
+
+    // Self-assignment must be a no-op.
+    ok (planner_multi_assign (ctx, ctx) == 0, "self-assign returns 0");
+    ok (planner_multi_resources_len (ctx) == 2, "self-assign preserves the planner set");
+    ok (planner_multi_span_planned_at (ctx, span_id, 0) == 5,
+        "self-assign preserves span allocations");
+    ok (planner_multi_avail_resources_at (ctx, 5, 0) == 5, "self-assign preserves availability");
+
+    planner_multi_destroy (&ctx);
+    return 0;
+}
+
+static int test_planner_multi_copy_iterator_independent ()
+{
+    const uint64_t totals[] = {10};
+    const char *types[] = {"core"};
+    planner_multi_t *orig = planner_multi_new (0, 100, totals, types, 1);
+    ok (orig != nullptr, "copy iterator: planner_multi_new");
+
+    const uint64_t requests[] = {1};
+    int64_t s0 = planner_multi_add_span (orig, 0, 10, requests, 1);
+    int64_t s1 = planner_multi_add_span (orig, 20, 10, requests, 1);
+    ok (s0 >= 0 && s1 >= 0, "added two spans");
+
+    // Position the source's span iterator mid-iteration, then copy
+    ok (planner_multi_span_first (orig) == s0, "planner_multi_span_first on the source");
+    planner_multi_t *copy = planner_multi_copy (orig);
+    ok (copy != nullptr, "planner_multi_copy succeeded");
+
+    // The copy iterates its own map from the start.
+    ok (planner_multi_span_first (copy) == s0, "planner_multi_span_first on the copy");
+    ok (planner_multi_span_next (orig) == s1, "the source's iteration is unaffected by the copy");
+
+    // Destroy the source: the copy's iterator must not reference the
+    // source's (now freed) span map
+    planner_multi_destroy (&orig);
+    ok (planner_multi_span_next (copy) == s1, "the copy's iterator survives destroying the source");
+    ok (planner_multi_span_next (copy) == -1, "the copy's iteration ends cleanly");
+
+    planner_multi_destroy (&copy);
+    return 0;
+}
+
+// The planner_multi_t half of the case above.
+static void test_planner_multi_t_value_semantics ()
+{
+    const uint64_t totals[] = {10, 20};
+    const char *types[] = {"core", "gpu"};
+    const uint64_t requests[] = {3, 4};
+
+    planner_multi_t *src = planner_multi_new (0, 10, totals, types, 2);
+    int64_t span = planner_multi_add_span (src, 0, 5, requests, 2);
+
+    ok (span != -1, "value semantics: span added to the source planner_multi");
+    ok (planner_multi_span_planned_at (src, span, 0) == 3, "source records 3 cores");
+
+    {
+        planner_multi_t copy (*src);
+
+        ok (copy.plan_multi != src->plan_multi,
+            "copy construction allocates a distinct inner planner_multi");
+        ok (planner_multi_span_planned_at (&copy, span, 0) == 3, "the copy sees the span");
+
+        // Mutating the source must not reach the copy.
+        ok (planner_multi_rem_span (src, span) == 0, "span removed from the source");
+        ok (planner_multi_span_size (src) == 0, "source has no spans left");
+        ok (planner_multi_span_planned_at (&copy, span, 0) == 3,
+            "the copy is unaffected by the source");
+    }
+
+    // The copy's destructor ran at scope exit. A shallow copy would have
+    // freed the planner_multi src still points at.
+    ok (planner_multi_resources_len (src) == 2, "source survives destruction of the copy");
+
+    planner_multi_t *other = planner_multi_new (0, 10, totals, types, 2);
+
+    ok (planner_multi_assign (other, src) == 0, "planner_multi_assign succeeds");
+    ok (planner_multis_equal (other, src), "assignment copied the source's state");
+
+    ok (planner_multi_assign (src, src) == 0, "self-assignment succeeds");
+    ok (planner_multi_resources_len (src) == 2, "self-assignment preserves state");
+
+    planner_multi_destroy (&other);
+    planner_multi_destroy (&src);
 }
 
 static int test_multi_update ()
@@ -687,6 +786,41 @@ static int test_multi_update ()
     planner_multi_destroy (&ctx);
     planner_multi_destroy (&ctx2);
 
+    return 0;
+}
+
+static int test_planner_multi_iterator_after_tail_growth ()
+{
+    const uint64_t totals[] = {10};
+    const char *types[] = {"core"};
+    planner_multi_t *ctx = planner_multi_new (0, 100, totals, types, 1);
+    ok (ctx != nullptr, "iterator after tail growth: planner_multi_new");
+
+    // Occupy 5 cores in [10, 20) so a request for all 10 cores has a
+    // next satisfiable point (t=20) after the first (t=0)
+    const uint64_t span_requests[] = {5};
+    int64_t span_id = planner_multi_add_span (ctx, 10, 10, span_requests, 1);
+    ok (span_id >= 0, "tail growth: planner_multi_add_span");
+
+    const uint64_t requests[] = {10};
+    ok (planner_multi_avail_time_first (ctx, 0, 5, requests, 1) == 0,
+        "tail growth: avail_time_first");
+
+    // Grow the planner_multi between avail_time_first and avail_time_next;
+    // planner_multi_update registers the added type in the iterator request
+    // with a zero count
+    const uint64_t new_totals[] = {10, 20};
+    const char *new_types[] = {"core", "memory"};
+    ok (planner_multi_update (ctx, new_totals, new_types, 2) == 0,
+        "planner_multi_update to add a resource type succeeded");
+
+    // The added type is a zero request, so the next point at which all 10
+    // cores are free is t=20 (span end).
+    errno = 0;
+    ok (planner_multi_avail_time_next (ctx) == 20,
+        "avail_time_next: next satisfiable time after update");
+
+    planner_multi_destroy (&ctx);
     return 0;
 }
 
@@ -787,7 +921,7 @@ static int test_partial_cancel ()
 
 int main (int argc, char *argv[])
 {
-    plan (107);
+    plan (138);
 
     test_multi_basics ();
 
@@ -802,8 +936,12 @@ int main (int argc, char *argv[])
     test_multi_add_remove ();
 
     test_constructors_and_overload ();
+    test_planner_multi_self_assign ();
+    test_planner_multi_copy_iterator_independent ();
+    test_planner_multi_t_value_semantics ();
 
     test_multi_update ();
+    test_planner_multi_iterator_after_tail_growth ();
 
     test_partial_cancel ();
 

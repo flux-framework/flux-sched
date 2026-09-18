@@ -55,25 +55,14 @@ pool_infra_t::pool_infra_t (const pool_infra_t &o) : infra_base_t (o)
     x_spans = o.x_spans;
     job2span = o.job2span;
 
-    // destroy existing planners
-    for (planner_multi_t *&p : subplans) {
-        if (p) {
-            planner_multi_destroy (&p);
-        }
-    }
     for (auto s : o.subplans.key_range ()) {
         auto opt_p = o.subplans.try_at (s);
         if (!opt_p || !*opt_p)
             continue;
         subplans[s] = planner_multi_copy (*opt_p);
     }
-    if (o.x_checker) {
-        if (!x_checker) {
-            x_checker = planner_copy (o.x_checker);
-        } else {
-            planner_assign (x_checker, o.x_checker);
-        }
-    }
+    if (o.x_checker)
+        x_checker = planner_copy (o.x_checker);
 }
 
 pool_infra_t &pool_infra_t::operator= (const pool_infra_t &o)
@@ -94,13 +83,8 @@ pool_infra_t &pool_infra_t::operator= (const pool_infra_t &o)
             continue;
         subplans[k] = planner_multi_copy (*opt_p);
     }
-    if (o.x_checker) {
-        if (!x_checker) {
-            x_checker = planner_copy (o.x_checker);
-        } else {
-            planner_assign (x_checker, o.x_checker);
-        }
-    }
+    if (o.x_checker)
+        x_checker = planner_copy (o.x_checker);
     return *this;
 }
 

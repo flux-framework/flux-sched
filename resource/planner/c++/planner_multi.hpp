@@ -12,8 +12,13 @@
 #define PLANNER_MULTI_HPP
 
 #include "planner.hpp"
+#include <cstdint>
+#include <map>
+#include <memory>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <vector>
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/member.hpp>
 #include <boost/multi_index/random_access_index.hpp>
@@ -73,7 +78,7 @@ class planner_multi {
                    const char **resource_types,
                    size_t len);
     planner_multi (const planner_multi &o);
-    planner_multi &operator= (const planner_multi &o);
+    planner_multi &operator= (const planner_multi &o) = delete;
     bool operator== (const planner_multi &o) const;
     bool operator!= (const planner_multi &o) const;
     void erase ();
@@ -113,19 +118,31 @@ class planner_multi {
     multi_container m_types_totals_planners;
     struct request_multi m_iter;
     std::map<uint64_t, std::vector<int64_t>> m_span_lookup;
-    std::map<uint64_t, std::vector<int64_t>>::iterator m_span_lookup_iter;
+    std::map<uint64_t, std::vector<int64_t>>::iterator m_span_lookup_iter = m_span_lookup.end ();
     uint64_t m_span_counter = 0;
 };
 
 struct planner_multi_t {
     planner_multi_t ();
-    planner_multi_t (const planner_multi &o);
+    explicit planner_multi_t (const planner_multi &o);
     planner_multi_t (int64_t base_time,
                      uint64_t duration,
                      const uint64_t *resource_totals,
                      const char **resource_types,
                      size_t len);
+
+    // Rule of three, mirroring planner_t; see planner.hpp.
+    planner_multi_t (const planner_multi_t &o);
+    planner_multi_t &operator= (planner_multi_t o);
     ~planner_multi_t ();
+
+    // Hidden friend so the copy-and-swap body resolves through ADL.
+    friend void swap (planner_multi_t &lhs, planner_multi_t &rhs) noexcept
+    {
+        planner_multi *tmp = lhs.plan_multi;
+        lhs.plan_multi = rhs.plan_multi;
+        rhs.plan_multi = tmp;
+    }
 
     planner_multi *plan_multi = nullptr;
 };

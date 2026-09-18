@@ -11,7 +11,9 @@
 #include <limits>
 #include <map>
 #include <list>
-#include <string>
+#include <memory>
+#include <new>
+#include <utility>
 
 #include "resource/planner/c++/planner.hpp"
 
@@ -331,18 +333,35 @@ extern "C" planner_t *planner_copy (planner_t *p)
 {
     planner_t *ctx = nullptr;
 
+    if (!p) {
+        errno = EINVAL;
+        return nullptr;
+    }
+
     try {
         ctx = new planner_t (*(p->plan));
-    } catch (std::bad_alloc &e) {
+    } catch (...) {
+        // Every failure here is an allocation failure; nothing may cross the C boundary.
         errno = ENOMEM;
     }
 
     return ctx;
 }
 
-extern "C" void planner_assign (planner_t *lhs, planner_t *rhs)
+extern "C" int planner_assign (planner_t *lhs, const planner_t *rhs)
 {
-    (*(lhs->plan) = *(rhs->plan));
+    if (!lhs || !rhs) {
+        errno = EINVAL;
+        return -1;
+    }
+    try {
+        *lhs = *rhs;
+    } catch (...) {
+        // Copy-and-swap leaves lhs unmodified on throw.
+        errno = ENOMEM;
+        return -1;
+    }
+    return 0;
 }
 
 extern "C" planner_t *planner_new_empty ()
@@ -525,6 +544,10 @@ extern "C" int64_t planner_add_span (planner_t *ctx,
     scheduled_point_t *start_point = nullptr;
     scheduled_point_t *last_point = nullptr;
 
+    if (!ctx) {
+        errno = EINVAL;
+        return -1;
+    }
     if (!avail_during (ctx, start_time, duration, (int64_t)request)) {
         errno = EINVAL;
         return -1;
@@ -676,6 +699,11 @@ extern "C" int64_t planner_span_next (planner_t *ctx)
         errno = EINVAL;
         return -1;
     }
+    // Test before incrementing; incrementing an end iterator is undefined.
+    if (ctx->plan->get_span_lookup_iter () == ctx->plan->get_span_lookup ().end ()) {
+        errno = EINVAL;
+        return -1;
+    }
     ctx->plan->incr_span_lookup_iter ();
     if (ctx->plan->get_span_lookup_iter () == ctx->plan->get_span_lookup ().end ()) {
         errno = EINVAL;
@@ -756,11 +784,21 @@ extern "C" int64_t planner_span_resource_count (planner_t *ctx, int64_t span_id)
 
 extern "C" bool planners_equal (planner_t *lhs, planner_t *rhs)
 {
+    // planner members of vertex data are nullable; two NULL planners must compare equal to
+    // keep operator== reflexive.
+    if (lhs == rhs)
+        return true;
+    if (!lhs || !rhs)
+        return false;
     return (*(lhs->plan) == *(rhs->plan));
 }
 
 extern "C" int planner_update_total (planner_t *ctx, uint64_t resource_total)
 {
+    if (!ctx) {
+        errno = EINVAL;
+        return -1;
+    }
     return ctx->plan->update_total (resource_total);
 }
 

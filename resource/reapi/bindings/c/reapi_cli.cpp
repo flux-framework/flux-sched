@@ -75,21 +75,24 @@ extern "C" reapi_cli_ctx_t *reapi_cli_new ()
     try {
         ctx = new reapi_cli_ctx_t;
     } catch (const std::bad_alloc &e) {
-        ctx->err_msg = __FUNCTION__;
-        ctx->err_msg += ": ERROR: can't allocate memory: " + std::string (e.what ()) + "\n";
+        // ctx is still nullptr; there is nowhere to store a message.
         errno = ENOMEM;
-        goto out;
+        return nullptr;
+    } catch (...) {
+        errno = EINVAL;
+        return nullptr;
     }
 
     ctx->rqt = nullptr;
     ctx->err_msg = "";
 
-out:
     return ctx;
 }
 
 extern "C" void reapi_cli_destroy (reapi_cli_ctx_t *ctx)
 {
+    if (!ctx)
+        return;
     int saved_errno = errno;
     if (ctx->rqt)
         delete ctx->rqt;
@@ -99,27 +102,38 @@ extern "C" void reapi_cli_destroy (reapi_cli_ctx_t *ctx)
 
 extern "C" int reapi_cli_initialize (reapi_cli_ctx_t *ctx, const char *rgraph, const char *options)
 {
-    int rc = -1;
-    ctx->rqt = nullptr;
+    resource_query_t *rqt = nullptr;
 
-    try {
-        ctx->rqt = new resource_query_t (rgraph, options);
-    } catch (std::bad_alloc &e) {
-        ctx->err_msg += __FUNCTION__;
-        ctx->err_msg += ": ERROR: can't allocate memory: " + std::string (e.what ()) + "\n";
-        errno = ENOMEM;
-        goto out;
-    } catch (std::runtime_error &e) {
-        ctx->err_msg += __FUNCTION__;
-        ctx->err_msg += ": Runtime error: " + std::string (e.what ()) + "\n";
-        errno = EPROTO;
-        goto out;
+    if (!ctx || !rgraph || !options) {
+        errno = EINVAL;
+        return -1;
     }
 
-    rc = 0;
+    // Construct into a local so a failed re-initialization leaves the installed
+    // resource_query_t intact.
+    try {
+        rqt = new resource_query_t (rgraph, options);
+    } catch (std::bad_alloc &e) {
+        // Keep allocation-free: a second bad_alloc here would escape.
+        errno = ENOMEM;
+        return -1;
+    } catch (std::runtime_error &e) {
+        try {
+            // Best effort: building the diagnostic allocates.
+            ctx->err_msg += __FUNCTION__;
+            ctx->err_msg += ": Runtime error: " + std::string (e.what ()) + "\n";
+        } catch (...) {
+        }
+        errno = EPROTO;
+        return -1;
+    } catch (...) {
+        errno = EINVAL;
+        return -1;
+    }
 
-out:
-    return rc;
+    delete ctx->rqt;
+    ctx->rqt = rqt;
+    return 0;
 }
 
 extern "C" reapi_cli_ctx_t *reapi_cli_clone (reapi_cli_ctx_t *ctx)
@@ -135,23 +149,34 @@ extern "C" reapi_cli_ctx_t *reapi_cli_clone (reapi_cli_ctx_t *ctx)
         clone->err_msg = "";
         return clone.release ();
     } catch (std::bad_alloc &e) {
-        ctx->err_msg = __FUNCTION__;
-        ctx->err_msg += ": ERROR: can't allocate memory: " + std::string (e.what ()) + "\n";
+        // Keep allocation-free; see reapi_cli_initialize.
         errno = ENOMEM;
         return nullptr;
     } catch (std::system_error &e) {
-        ctx->err_msg = __FUNCTION__;
-        ctx->err_msg += ": ERROR: System error: " + std::string (e.what ()) + "\n";
+        try {
+            // Best effort: building the diagnostic allocates.
+            ctx->err_msg = __FUNCTION__;
+            ctx->err_msg += ": ERROR: System error: " + std::string (e.what ()) + "\n";
+        } catch (...) {
+        }
         errno = e.code ().value ();
         return nullptr;
     } catch (std::runtime_error &e) {
-        ctx->err_msg = __FUNCTION__;
-        ctx->err_msg += ": ERROR: Runtime error: " + std::string (e.what ()) + "\n";
+        try {
+            // Best effort; see above.
+            ctx->err_msg = __FUNCTION__;
+            ctx->err_msg += ": ERROR: Runtime error: " + std::string (e.what ()) + "\n";
+        } catch (...) {
+        }
         errno = EPROTO;
         return nullptr;
     } catch (...) {
-        ctx->err_msg = __FUNCTION__;
-        ctx->err_msg += ": ERROR: unknown exception during clone\n";
+        try {
+            // Best effort; see above.
+            ctx->err_msg = __FUNCTION__;
+            ctx->err_msg += ": ERROR: unknown exception during clone\n";
+        } catch (...) {
+        }
         errno = EINVAL;
         return nullptr;
     }
@@ -170,7 +195,7 @@ extern "C" int reapi_cli_match_with_jobid (reapi_cli_ctx_t *ctx,
     std::string R_buf = "";
     char *R_buf_c = nullptr;
 
-    if (!ctx || !ctx->rqt) {
+    if (!ctx || !ctx->rqt || !jobspec || !reserved || !R || !at || !ov) {
         errno = EINVAL;
         goto out;
     }
@@ -182,8 +207,11 @@ extern "C" int reapi_cli_match_with_jobid (reapi_cli_ctx_t *ctx,
     }
 
     if (!(R_buf_c = strdup (R_buf.c_str ()))) {
-        ctx->err_msg = __FUNCTION__;
-        ctx->err_msg += ": ERROR: can't allocate memory\n";
+        try {
+            ctx->err_msg = __FUNCTION__;
+            ctx->err_msg += ": ERROR: can't allocate memory\n";
+        } catch (...) {
+        }
         errno = ENOMEM;
         rc = -1;
         goto out;
@@ -205,7 +233,7 @@ extern "C" int reapi_cli_match (reapi_cli_ctx_t *ctx,
 {
     int rc = -1;
 
-    if (!ctx || !ctx->rqt) {
+    if (!ctx || !ctx->rqt || !jobid) {
         errno = EINVAL;
         return -1;
     }
@@ -242,17 +270,35 @@ extern "C" int reapi_cli_match_allocate (reapi_cli_ctx_t *ctx,
 
 extern "C" int reapi_cli_match_satisfy (reapi_cli_ctx_t *ctx, const char *jobspec, double *ov)
 {
+    int rc = -1;
+    int saved_errno = 0;
     match_op_t match_op = match_op_t::MATCH_SATISFIABILITY;
     uint64_t jobid;
-    bool reserved;
-    char *R;
+    bool reserved = false;
+    char *R = nullptr;
     int64_t at;
 
-    if (reapi_cli_match (ctx, match_op, jobspec, &jobid, &reserved, &R, &at, ov) == 0)
-        return 0;
+    // Validate the arguments forwarded from here; the match functions
+    // validate ctx->rqt and the outputs they write.
+    if (!ctx || !jobspec || !ov) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    rc = reapi_cli_match (ctx, match_op, jobspec, &jobid, &reserved, &R, &at, ov);
+    // R is not part of a satisfiability response. Save errno across the free ():
+    // only POSIX.1-2024 requires free () to preserve it.
+    saved_errno = errno;
+    free (R);
+    errno = saved_errno;
+
     // The traverser reports an unsatisfiable request as ENODEV; any other
     // errno is a genuine error (errno is left set for the caller).
-    return (errno == ENODEV) ? 1 : -1;
+    if (rc == 0)
+        return 0;
+    if (errno == ENODEV)
+        return 1;
+    return -1;
 }
 
 extern "C" int reapi_cli_update_allocate (reapi_cli_ctx_t *ctx,
@@ -265,7 +311,7 @@ extern "C" int reapi_cli_update_allocate (reapi_cli_ctx_t *ctx,
     int rc = -1;
     std::string R_buf = "";
     const char *R_buf_c = NULL;
-    if (!ctx || !ctx->rqt || !R) {
+    if (!ctx || !ctx->rqt || !R || !at || !ov || !R_out) {
         errno = EINVAL;
         goto out;
     }
@@ -314,7 +360,7 @@ extern "C" int reapi_cli_partial_cancel (reapi_cli_ctx_t *ctx,
                                          bool noent_ok,
                                          bool *full_removal)
 {
-    if (!ctx || !ctx->rqt || !R) {
+    if (!ctx || !ctx->rqt || !R || !full_removal) {
         errno = EINVAL;
         return -1;
     }
@@ -332,15 +378,18 @@ extern "C" int reapi_cli_info (reapi_cli_ctx_t *ctx,
     std::string mode_buf = "";
     char *mode_buf_c = nullptr;
 
-    if (!ctx || !ctx->rqt) {
+    if (!ctx || !ctx->rqt || !mode || !reserved || !at || !ov) {
         errno = EINVAL;
         return -1;
     }
     if ((rc = reapi_cli_t::info (ctx->rqt, jobid, mode_buf, *reserved, *at, *ov)) < 0)
         goto out;
     if (!(mode_buf_c = strdup (mode_buf.c_str ()))) {
-        ctx->err_msg = __FUNCTION__;
-        ctx->err_msg += ": ERROR: can't allocate memory\n";
+        try {
+            ctx->err_msg = __FUNCTION__;
+            ctx->err_msg += ": ERROR: can't allocate memory\n";
+        } catch (...) {
+        }
         errno = ENOMEM;
         rc = -1;
         goto out;
@@ -378,8 +427,11 @@ extern "C" int reapi_cli_find (reapi_cli_ctx_t *ctx,
 
     if (o) {
         if (!(json_str = json_dumps (o, JSON_COMPACT))) {
-            ctx->err_msg = __FUNCTION__;
-            ctx->err_msg += ": ERROR: can't serialize JSON\n";
+            try {
+                ctx->err_msg = __FUNCTION__;
+                ctx->err_msg += ": ERROR: can't serialize JSON\n";
+            } catch (...) {
+            }
             json_decref (o);
             errno = ENOMEM;
             rc = -1;
@@ -404,7 +456,7 @@ extern "C" int reapi_cli_stat (reapi_cli_ctx_t *ctx,
                                double *max,
                                double *avg)
 {
-    if (!ctx || !ctx->rqt) {
+    if (!ctx || !ctx->rqt || !V || !E || !J || !load || !min || !max || !avg) {
         errno = EINVAL;
         return -1;
     }
@@ -428,6 +480,8 @@ extern "C" const char *reapi_cli_get_err_msg (reapi_cli_ctx_t *ctx)
 
 extern "C" void reapi_cli_clear_err_msg (reapi_cli_ctx_t *ctx)
 {
+    if (!ctx)
+        return;
     if (ctx->rqt)
         ctx->rqt->clear_resource_query_err_msg ();
     reapi_cli_t::clear_err_message ();
@@ -450,20 +504,29 @@ extern "C" int reapi_cli_set_status (reapi_cli_ctx_t *ctx,
     try {
         return reapi_cli_t::set_status (ctx->rqt, resource_path, cpp_status);
     } catch (std::system_error &e) {
-        ctx->err_msg = __FUNCTION__;
-        ctx->err_msg += ": ERROR: System error: " + std::string (e.what ()) + "\n";
+        try {
+            ctx->err_msg = __FUNCTION__;
+            ctx->err_msg += ": ERROR: System error: " + std::string (e.what ()) + "\n";
+        } catch (...) {
+        }
         errno = e.code ().value ();
         return -1;
     } catch (std::exception &e) {
         // Translate C++ exceptions to errno - unexpected errors default to EINVAL.
         errno = EINVAL;
-        ctx->err_msg = __FUNCTION__;
-        ctx->err_msg += ": ERROR: " + std::string (e.what ()) + "\n";
+        try {
+            ctx->err_msg = __FUNCTION__;
+            ctx->err_msg += ": ERROR: " + std::string (e.what ()) + "\n";
+        } catch (...) {
+        }
         return -1;
     } catch (...) {
         errno = EINVAL;
-        ctx->err_msg = __FUNCTION__;
-        ctx->err_msg += ": ERROR: unknown exception\n";
+        try {
+            ctx->err_msg = __FUNCTION__;
+            ctx->err_msg += ": ERROR: unknown exception\n";
+        } catch (...) {
+        }
         return -1;
     }
 }
@@ -484,20 +547,29 @@ extern "C" int reapi_cli_get_status (reapi_cli_ctx_t *ctx,
             return -1;
         return rc;
     } catch (std::system_error &e) {
-        ctx->err_msg = __FUNCTION__;
-        ctx->err_msg += ": ERROR: System error: " + std::string (e.what ()) + "\n";
+        try {
+            ctx->err_msg = __FUNCTION__;
+            ctx->err_msg += ": ERROR: System error: " + std::string (e.what ()) + "\n";
+        } catch (...) {
+        }
         errno = e.code ().value ();
         return -1;
     } catch (std::exception &e) {
         // Translate C++ exceptions to errno - unexpected errors default to EINVAL.
         errno = EINVAL;
-        ctx->err_msg = __FUNCTION__;
-        ctx->err_msg += ": ERROR: " + std::string (e.what ()) + "\n";
+        try {
+            ctx->err_msg = __FUNCTION__;
+            ctx->err_msg += ": ERROR: " + std::string (e.what ()) + "\n";
+        } catch (...) {
+        }
         return -1;
     } catch (...) {
         errno = EINVAL;
-        ctx->err_msg = __FUNCTION__;
-        ctx->err_msg += ": ERROR: unknown exception\n";
+        try {
+            ctx->err_msg = __FUNCTION__;
+            ctx->err_msg += ": ERROR: unknown exception\n";
+        } catch (...) {
+        }
         return -1;
     }
 }
@@ -506,7 +578,7 @@ extern "C" int reapi_cli_set_rank_status (reapi_cli_ctx_t *ctx,
                                           const char *ranks,
                                           resource_status_t status)
 {
-    if (!ctx || !ctx->rqt) {
+    if (!ctx || !ctx->rqt || !ranks) {
         errno = EINVAL;
         return -1;
     }
@@ -518,20 +590,29 @@ extern "C" int reapi_cli_set_rank_status (reapi_cli_ctx_t *ctx,
     try {
         return reapi_cli_t::set_rank_status (ctx->rqt, ranks, cpp_status);
     } catch (std::system_error &e) {
-        ctx->err_msg = __FUNCTION__;
-        ctx->err_msg += ": ERROR: System error: " + std::string (e.what ()) + "\n";
+        try {
+            ctx->err_msg = __FUNCTION__;
+            ctx->err_msg += ": ERROR: System error: " + std::string (e.what ()) + "\n";
+        } catch (...) {
+        }
         errno = e.code ().value ();
         return -1;
     } catch (std::exception &e) {
         // Translate C++ exceptions to errno - unexpected errors default to EINVAL.
         errno = EINVAL;
-        ctx->err_msg = __FUNCTION__;
-        ctx->err_msg += ": ERROR: " + std::string (e.what ()) + "\n";
+        try {
+            ctx->err_msg = __FUNCTION__;
+            ctx->err_msg += ": ERROR: " + std::string (e.what ()) + "\n";
+        } catch (...) {
+        }
         return -1;
     } catch (...) {
         errno = EINVAL;
-        ctx->err_msg = __FUNCTION__;
-        ctx->err_msg += ": ERROR: unknown exception\n";
+        try {
+            ctx->err_msg = __FUNCTION__;
+            ctx->err_msg += ": ERROR: unknown exception\n";
+        } catch (...) {
+        }
         return -1;
     }
 }
@@ -540,7 +621,7 @@ extern "C" int reapi_cli_get_rank_status (reapi_cli_ctx_t *ctx,
                                           const char *rank,
                                           resource_status_t *status)
 {
-    if (!ctx || !ctx->rqt || !status) {
+    if (!ctx || !ctx->rqt || !rank || !status) {
         errno = EINVAL;
         return -1;
     }
@@ -552,20 +633,29 @@ extern "C" int reapi_cli_get_rank_status (reapi_cli_ctx_t *ctx,
             return -1;
         return rc;
     } catch (std::system_error &e) {
-        ctx->err_msg = __FUNCTION__;
-        ctx->err_msg += ": ERROR: System error: " + std::string (e.what ()) + "\n";
+        try {
+            ctx->err_msg = __FUNCTION__;
+            ctx->err_msg += ": ERROR: System error: " + std::string (e.what ()) + "\n";
+        } catch (...) {
+        }
         errno = e.code ().value ();
         return -1;
     } catch (std::exception &e) {
         // Translate C++ exceptions to errno - unexpected errors default to EINVAL.
         errno = EINVAL;
-        ctx->err_msg = __FUNCTION__;
-        ctx->err_msg += ": ERROR: " + std::string (e.what ()) + "\n";
+        try {
+            ctx->err_msg = __FUNCTION__;
+            ctx->err_msg += ": ERROR: " + std::string (e.what ()) + "\n";
+        } catch (...) {
+        }
         return -1;
     } catch (...) {
         errno = EINVAL;
-        ctx->err_msg = __FUNCTION__;
-        ctx->err_msg += ": ERROR: unknown exception\n";
+        try {
+            ctx->err_msg = __FUNCTION__;
+            ctx->err_msg += ": ERROR: unknown exception\n";
+        } catch (...) {
+        }
         return -1;
     }
 }
