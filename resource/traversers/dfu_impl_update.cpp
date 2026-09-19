@@ -1188,7 +1188,9 @@ int dfu_impl_t::remove (vtx_t root, const std::set<int64_t> &ranks)
     return rc;
 }
 
-int dfu_impl_t::mark (const std::string &root_path, resource_pool_t::status_t status)
+int dfu_impl_t::mark (const std::string &root_path,
+                      resource_pool_t::status_t status,
+                      boost::optional<std::set<int> &> ranks_out)
 {
     std::map<std::string, std::vector<vtx_t>>::const_iterator vit_root =
         m_graph_db->metadata.by_path.find (root_path);
@@ -1211,9 +1213,16 @@ int dfu_impl_t::mark (const std::string &root_path, resource_pool_t::status_t st
     for (const auto &v : vtx_set) {
         if ((*m_graph)[v].type == node_rt)
             m_graph_db->metadata.update_node_stats ((*m_graph)[v].size, status);
+        if (ranks_out)
+            (*ranks_out).insert ((*m_graph)[v].rank);
     }
 
     return 0;
+}
+
+int dfu_impl_t::mark (const std::string &root_path, resource_pool_t::status_t status)
+{
+    return mark (root_path, status, boost::none);
 }
 
 int dfu_impl_t::mark (std::set<int64_t> &ranks, resource_pool_t::status_t status)

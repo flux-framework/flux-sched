@@ -33,6 +33,11 @@ test_expect_success 'removing sched-simple works' '
     flux dmesg -c | grep -q "rmmod sched-simple"
 '
 
+test_expect_success 'loading qmanager before resource fails' '
+    load_qmanager &&
+    flux dmesg -c | grep -q "Function not implemented"
+'
+
 test_expect_success 'loading feasibility module before resource fails' '
     load_feasibility &&
     flux dmesg -c | grep -q "Function not implemented"
@@ -44,17 +49,47 @@ prune-filters=ALL:core subsystems=containment policy=high &&
     test -z "$(flux dmesg -c | grep -q err)"
 '
 
-test_expect_success 'loading feasibility module with a tiny machine config works' '
-    load_feasibility load-file=${grug} load-format=grug \
-subsystems=containment policy=high &&
+# Tests for the feasibility module loaded from the resource module loaded from a load-file
+test_expect_success 'loading feasibility module from load-file resource module works' '
+    load_feasibility &&
     test -z "$(flux dmesg -c | grep -q err)"
 '
 
-test_expect_success 'satisfiability works with a 1-node, 1-socket jobspec' '
-    flux ion-resource match allocate_with_satisfiability ${jobspec1} &&
-    flux ion-resource match allocate_with_satisfiability ${jobspec1} &&
-    flux ion-resource match allocate_with_satisfiability ${jobspec1} &&
-    flux ion-resource match allocate_with_satisfiability ${jobspec1}
+test_expect_success 'allocating all resources works' '
+    flux ion-resource match allocate ${jobspec1} &&
+    flux ion-resource match allocate ${jobspec1} &&
+    flux ion-resource match allocate ${jobspec1} &&
+    flux ion-resource match allocate ${jobspec1}
+'
+
+test_expect_success 'lf: satisfiability returns EBUSY when no available resources' '
+    test_expect_code 16 flux ion-resource \
+match allocate_with_satisfiability ${jobspec1} &&
+    test_expect_code 16 flux ion-resource \
+match allocate_with_satisfiability ${jobspec1} &&
+    test_expect_code 16 flux ion-resource \
+match allocate_with_satisfiability ${jobspec1} &&
+    test_expect_code 16 flux ion-resource \
+match allocate_with_satisfiability ${jobspec1}
+'
+
+test_expect_success 'lf: jobspec is still satisfiable even when no available resources' '
+    flux ion-resource match satisfiability ${jobspec1} &&
+    flux ion-resource match satisfiability ${jobspec1} &&
+    flux ion-resource match satisfiability ${jobspec1} &&
+    flux ion-resource match satisfiability ${jobspec1}
+'
+
+test_expect_success 'removing feasibility loaded from load-file resource module works' '
+    remove_feasibility &&
+    test -z "$(flux dmesg -c | grep -q err)"
+'
+
+# Tests for the feasibility module loaded from its own load-file
+test_expect_success 'loading feasibility module with its own tiny machine config works' '
+    load_feasibility load-file=${grug} load-format=grug \
+subsystems=containment policy=high &&
+    test -z "$(flux dmesg -c | grep -q err)"
 '
 
 test_expect_success 'satisfiability returns EBUSY when no available resources' '
@@ -80,14 +115,6 @@ test_expect_success 'removing load-file feasibility module works' '
     test -z "$(flux dmesg -c | grep -q err)"
 '
 
-# A resource module that has a load-file will not relay those resources to
-# the feasibility module. The feasibility module needs the same load-file.
-test_expect_success 'loading feasibility module from load-file resource module fails' '
-    load_feasibility &&
-    flux dmesg -c | grep -q err &&
-    ! flux module list | grep -q sched-fluxion-feasib
-'
-
 test_expect_success 'removing resource module works' '
     remove_resource
 '
@@ -97,6 +124,7 @@ test_expect_success 'loading non-load-file resource module works' '
     test -z "$(flux dmesg -c | grep -q err)"
 '
 
+# Tests for the feasibility module loaded from the resource module loaded normally
 test_expect_success 'loading feasibility from non-load-file resource module works' '
     load_feasibility &&
     test -z "$(flux dmesg -c | grep -q err)"

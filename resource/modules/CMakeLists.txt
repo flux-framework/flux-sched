@@ -1,3 +1,7 @@
+add_library(sched-fluxion-resource-notify INTERFACE
+        ${CMAKE_CURRENT_SOURCE_DIR}/resource_notify.hpp
+    )
+
 add_library(sched-fluxion-resource-module SHARED
     ${CMAKE_CURRENT_SOURCE_DIR}/resource_match.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/resource_match.hpp
@@ -9,6 +13,7 @@ target_link_libraries (sched-fluxion-resource-module PUBLIC
     PkgConfig::JANSSON
     PkgConfig::UUID
     cppwrappers
+    sched-fluxion-resource-notify
     )
 install(TARGETS sched-fluxion-resource-module LIBRARY)
 

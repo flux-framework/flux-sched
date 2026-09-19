@@ -32,7 +32,7 @@ args, remainder = parser.parse_known_args()
 sys.argv[1:] = remainder
 
 
-def rerun_under_flux(size=1):
+def rerun_under_flux(*args):
     try:
         if os.environ["IN_SUBFLUX"] == "1":
             return True
@@ -42,8 +42,16 @@ def rerun_under_flux(size=1):
     child_env = dict(**os.environ)
     child_env["IN_SUBFLUX"] = "1"
 
+    os.environ.setdefault("FLUX_MODULE_PATH_PREPEND", "")
+    child_env["FLUX_MODULE_PATH_PREPEND"] = (
+        f'{os.environ["SHARNESS_BUILD_DIRECTORY"]}/resource/modules/:{os.environ["FLUX_MODULE_PATH_PREPEND"]}'
+    )
+    child_env["FLUX_MODULE_PATH_PREPEND"] += (
+        f'{os.environ["SHARNESS_BUILD_DIRECTORY"]}/qmanager/modules/:{os.environ["FLUX_MODULE_PATH_PREPEND"]}'
+    )
+
     # ported from sharness.d/flux-sharness.sh
-    command = [shutil.which("flux"), "start", "--test-size", str(size)]
+    command = [shutil.which("flux"), "start", *args]
 
     command.extend([sys.executable, sys.argv[0]])
 

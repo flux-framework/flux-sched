@@ -65,7 +65,8 @@ static std::shared_ptr<resource_ctx_t> getctx (flux_t *h)
         ctx->m_resources_updated = false;
         ctx->m_resources_down_updated = true;
         ctx->m_resources_alloc_updated = std::chrono::system_clock::now ();
-        ctx->m_acquire_resources_from_core = false;
+        ctx->m_acquire_topic = "sched-fluxion-resource.notify";
+        ctx->m_notify_flags = (notify_flag_t)(NOTIFY_RESOURCES | NOTIFY_SHRINK | NOTIFY_EXPIRATION);
     }
 
 done:
