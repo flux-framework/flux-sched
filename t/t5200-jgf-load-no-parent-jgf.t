@@ -23,7 +23,9 @@ test_expect_success 'amend R with JGF' '
 	    -W cluster,node,socket,core,gpu | head -1 > test.jgf &&
 	test -s test.jgf &&
 	flux kvs get resource.R | \
-	jq --slurpfile jgf test.jgf ".scheduling = \$jgf[0]" > test.R
+	jq --slurpfile jgf test.jgf \
+	    ".execution.properties.from_r = \"0\" | .scheduling = \$jgf[0]" \
+	    > test.R
 '
 
 test_expect_success 'parent instance has R_lite but no JGF' '
@@ -61,6 +63,13 @@ test_expect_success 'JGF was loaded in subinstance' '
 
 test_expect_success 'can query resources with JGF' '
 	flux proxy $jobid flux ion-resource find status=up
+'
+
+test_expect_success 'JGF nodes include properties from R execution data' '
+	flux proxy $jobid flux ion-resource find property=from_r --format=jgf -q \
+	    > property.jgf &&
+	jq -e ".graph.nodes[] | select(.metadata.type == \"node\") |
+	       .metadata.properties.from_r == \"\"" property.jgf
 '
 
 test_done
