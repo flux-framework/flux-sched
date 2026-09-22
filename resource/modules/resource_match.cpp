@@ -1208,6 +1208,11 @@ int shrink_resources (std::shared_ptr<resource_ctx_t> &ctx, const char *ids)
                   ids,
                   ctx->traverser->err_message ().c_str ());
     }
+    // Invalidate the cached resource-status views so that the next
+    // sched.resource-status request reflects the smaller resource set.
+    ctx->m_resources_updated = true;
+    ctx->m_resources_down_updated = true;
+    flux_log (ctx->h, LOG_DEBUG, "successfully removed ranks %s from resource set", ids);
     // A failure here can leave the graph between the two states: the removal
     // of the out-edges of a rank root can succeed before the failure. Report
     // the failure and do not publish the ranks, because the set of the ranks
@@ -1225,7 +1230,6 @@ int shrink_resources (std::shared_ptr<resource_ctx_t> &ctx, const char *ids)
         flux_log (ctx->h, LOG_ERR, "initialize after the removal of ranks %s failed", ids);
         goto done;
     }
-    flux_log (ctx->h, LOG_DEBUG, "successfully removed ranks %s from resource set", ids);
 
 done:
     return rc;
