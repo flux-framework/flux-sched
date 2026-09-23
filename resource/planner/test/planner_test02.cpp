@@ -539,6 +539,36 @@ static int test_multi_add_remove ()
     return 0;
 }
 
+// A failure on a later planner must undo the spans already added to earlier ones.
+static void test_multi_add_span_rollback ()
+{
+    const uint64_t totals[] = {10, 20};
+    const char *types[] = {"core", "memory"};
+    const uint64_t too_much[] = {5, 21};
+    const uint64_t all[] = {10, 20};
+    planner_multi_t *ctx = planner_multi_new (0, 100, totals, types, 2);
+    ok (ctx != nullptr, "rollback: planner_multi_new");
+
+    // The errno the failing planner reports must survive the rollback.
+    planner_t *probe = planner_new (0, 100, 20, "memory");
+    errno = 0;
+    planner_add_span (probe, 0, 10, 21);
+    int expected_errno = errno;
+    planner_destroy (&probe);
+
+    errno = 0;
+    ok (planner_multi_add_span (ctx, 0, 10, too_much, 2) == -1 && errno == expected_errno,
+        "rollback: add_span fails with the failing planner's errno");
+    ok (planner_multi_avail_resources_at (ctx, 5, 0) == 10
+            && planner_multi_avail_resources_at (ctx, 5, 1) == 20,
+        "rollback: both planners are back to full availability");
+    ok (planner_multi_span_size (ctx) == 0, "rollback: no span record remains");
+    ok (planner_multi_add_span (ctx, 0, 10, all, 2) != -1,
+        "rollback: full capacity can be allocated afterwards");
+
+    planner_multi_destroy (&ctx);
+}
+
 static int test_constructors_and_overload ()
 {
     bool bo = false;
@@ -921,7 +951,7 @@ static int test_partial_cancel ()
 
 int main (int argc, char *argv[])
 {
-    plan (138);
+    plan (143);
 
     test_multi_basics ();
 
@@ -934,6 +964,7 @@ int main (int argc, char *argv[])
     test_multi_many_spans ();
 
     test_multi_add_remove ();
+    test_multi_add_span_rollback ();
 
     test_constructors_and_overload ();
     test_planner_multi_self_assign ();

@@ -457,7 +457,13 @@ extern "C" int64_t planner_multi_add_span (planner_multi_t *ctx,
                                       duration,
                                       resource_requests[i]))
             == -1) {
+            // Remove the spans already added so their resources are not stranded.
+            int saved_errno = errno;
+            auto &added = ctx->plan_multi->get_span_lookup ()[mspan];
+            for (size_t j = added.size (); j > 0; --j)
+                planner_rem_span (ctx->plan_multi->get_planner_at (j - 1), added[j - 1]);
             ctx->plan_multi->get_span_lookup ().erase (mspan);
+            errno = saved_errno;
             return -1;
         }
         ctx->plan_multi->get_span_lookup ()[mspan].push_back (span);
