@@ -793,6 +793,42 @@ static void test_planner_t_value_semantics ()
     planner_destroy (&src);
 }
 
+// Points examined by an availability iteration are out of the min-time tree
+// until the next add, remove, or _first; a copy must reproduce that state.
+static void test_planner_copy_during_avail_iteration ()
+{
+    planner_t *src = planner_new (0, 100, 10, "core");
+    ok (planner_add_span (src, 0, 10, 5) != -1 && planner_add_span (src, 10, 10, 10) != -1
+            && planner_add_span (src, 30, 10, 3) != -1,
+        "avail copy: three spans added");
+    ok (planner_avail_time_first (src, 0, 5, 6) == 20, "avail copy: first satisfiable time is 20");
+
+    planner_t *copy = planner_copy (src);
+    ok (copy != nullptr && planners_equal (src, copy), "avail copy: mid-iteration copy is equal");
+
+    planner_t *assigned = planner_new (0, 100, 10, "core");
+    ok (planner_assign (assigned, src) == 0, "avail copy: mid-iteration assign succeeds");
+
+    ok (planner_avail_time_next (src) == 30 && planner_avail_time_next (src) == 40
+            && planner_avail_time_next (src) == -1,
+        "avail copy: source iteration continues 30, 40, end");
+    ok (planner_avail_time_next (copy) == 30 && planner_avail_time_next (copy) == 40
+            && planner_avail_time_next (copy) == -1,
+        "avail copy: copy iteration continues 30, 40, end");
+    ok (planner_avail_time_next (assigned) == 30 && planner_avail_time_next (assigned) == 40
+            && planner_avail_time_next (assigned) == -1,
+        "avail copy: assigned iteration continues 30, 40, end");
+
+    planner_destroy (&src);
+    ok (planner_avail_time_first (copy, 0, 5, 6) == 20, "avail copy: copy restarts at 20");
+    ok (planner_add_span (copy, 50, 10, 4) != -1 && planner_avail_time_first (copy, 0, 5, 6) == 20
+            && planner_avail_time_next (copy) == 30,
+        "avail copy: copy stays consistent after add_span");
+
+    planner_destroy (&assigned);
+    planner_destroy (&copy);
+}
+
 static int test_update ()
 {
     int rc;
@@ -902,7 +938,7 @@ static int test_partial_cancel ()
 
 int main (int argc, char *argv[])
 {
-    plan (88);
+    plan (97);
 
     test_planner_getters ();
 
@@ -927,6 +963,7 @@ int main (int argc, char *argv[])
     test_constructors_and_overload ();
     test_planner_self_assign ();
     test_planner_t_value_semantics ();
+    test_planner_copy_during_avail_iteration ();
 
     test_update ();
 

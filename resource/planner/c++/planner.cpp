@@ -402,8 +402,16 @@ int planner::copy_trees (const planner &o)
             new_point->remaining = point->remaining;
             if ((rc = m_sched_point_tree.insert (new_point)) != 0)
                 return rc;
-            if ((rc = m_mt_resource_tree.insert (new_point)) != 0)
-                return rc;
+            // A point checked out by an availability iteration is held in
+            // m_avail_time_iter until restore_track_points () re-inserts it.
+            if (point->in_mt_resource_tree) {
+                if ((rc = m_mt_resource_tree.insert (new_point)) != 0)
+                    return rc;
+            } else {
+                new_point->resource_rb.set_point (new_point);
+                new_point->resource_rb.at = point->resource_rb.at;
+                new_point->resource_rb.remaining = point->resource_rb.remaining;
+            }
             point = o.m_sched_point_tree.next (point);
         }
     } else {
