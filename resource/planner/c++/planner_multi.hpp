@@ -101,6 +101,7 @@ class planner_multi {
     std::map<uint64_t, std::vector<int64_t>>::iterator &get_span_lookup_iter ();
     void set_span_lookup_iter (std::map<uint64_t, std::vector<int64_t>>::iterator &it);
     void incr_span_lookup_iter ();
+    void span_lookup_erase (std::map<uint64_t, std::vector<int64_t>>::iterator &it);
     // Get and set span_counter
     uint64_t get_span_counter ();
     void set_span_counter (uint64_t sc);

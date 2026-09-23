@@ -494,7 +494,7 @@ extern "C" int planner_multi_rem_span (planner_multi_t *ctx, int64_t span_id)
                 goto done;
         }
     }
-    ctx->plan_multi->get_span_lookup ().erase (it);
+    ctx->plan_multi->span_lookup_erase (it);
     rc = 0;
 done:
     return rc;
@@ -612,7 +612,7 @@ extern "C" int planner_multi_reduce_span (planner_multi_t *ctx,
                                  std::plus<int64_t> ());
     // Delete if all entries are -1
     if (mspan_sum == (-1 * span_it->second.size ())) {
-        ctx->plan_multi->get_span_lookup ().erase (span_it);
+        ctx->plan_multi->span_lookup_erase (span_it);
         removed = true;
     }
 

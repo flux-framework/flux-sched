@@ -293,6 +293,8 @@ scheduled_point_t *planner::mt_tree_get_mintime (int64_t request) const
 
 void planner::span_lookup_erase (std::map<int64_t, std::shared_ptr<span_t>>::iterator &it)
 {
+    if (it == m_span_lookup_iter)
+        m_span_lookup_iter = m_span_lookup.end ();
     m_span_lookup.erase (it);
 }
 

@@ -281,6 +281,13 @@ void planner_multi::incr_span_lookup_iter ()
     m_span_lookup_iter++;
 }
 
+void planner_multi::span_lookup_erase (std::map<uint64_t, std::vector<int64_t>>::iterator &it)
+{
+    if (it == m_span_lookup_iter)
+        m_span_lookup_iter = m_span_lookup.end ();
+    m_span_lookup.erase (it);
+}
+
 uint64_t planner_multi::get_span_counter ()
 {
     return m_span_counter;

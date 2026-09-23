@@ -458,6 +458,24 @@ static void test_planner_span_iterator_guards ()
     errno = 0;
     ok (planner_span_next (empty) == -1, "span_next before span_first returns -1");
 
+    // Erasing the span the cursor points to parks the cursor at end ().
+    planner_t *three = planner_new (0, 100, 10, "core");
+    int64_t s0 = planner_add_span (three, 0, 10, 1);
+    int64_t s1 = planner_add_span (three, 10, 10, 1);
+    int64_t s2 = planner_add_span (three, 20, 10, 1);
+    ok (s0 != -1 && s1 != -1 && s2 != -1, "cursor park: three spans added");
+    ok (planner_span_first (three) == s0 && planner_span_next (three) == s1,
+        "cursor park: cursor on the second span");
+    ok (planner_rem_span (three, s1) == 0, "cursor park: remove the span under the cursor");
+    ok (planner_span_next (three) == -1, "span_next after erasing its span returns -1");
+    ok (planner_span_first (three) == s0, "span_first restarts the iteration");
+
+    // A copy taken mid-iteration starts at end () even after the source is gone.
+    planner_t *mid = planner_copy (three);
+    planner_destroy (&three);
+    ok (planner_span_next (mid) == -1, "span_next on a copy of a mid-iteration source returns -1");
+
+    planner_destroy (&mid);
     planner_destroy (&empty);
     planner_destroy (&copy);
     planner_destroy (&ctx);
@@ -499,6 +517,29 @@ static void test_planner_multi_span_iterator_guards ()
     ok (planner_multi_span_next (fresh) == -1 && errno == ENOENT,
         "multi span_next before span_first returns -1");
 
+    // Erasing the span the cursor points to parks the cursor at end ().
+    planner_multi_t *three = planner_multi_new (0, 100, totals, types, 1);
+    int64_t s0 = planner_multi_add_span (three, 0, 10, requests, 1);
+    int64_t s1 = planner_multi_add_span (three, 10, 10, requests, 1);
+    int64_t s2 = planner_multi_add_span (three, 20, 10, requests, 1);
+    ok (s0 != -1 && s1 != -1 && s2 != -1, "multi cursor park: three spans added");
+    ok (planner_multi_span_first (three) == s0 && planner_multi_span_next (three) == s1,
+        "multi cursor park: cursor on the second span");
+    ok (planner_multi_rem_span (three, s1) == 0,
+        "multi cursor park: remove the span under the cursor");
+    errno = 0;
+    ok (planner_multi_span_next (three) == -1 && errno == ENOENT,
+        "multi span_next after erasing its span returns -1");
+    ok (planner_multi_span_first (three) == s0, "multi span_first restarts the iteration");
+
+    // A copy taken mid-iteration starts at end () even after the source is gone.
+    planner_multi_t *mid = planner_multi_copy (three);
+    planner_multi_destroy (&three);
+    errno = 0;
+    ok (planner_multi_span_next (mid) == -1 && errno == ENOENT,
+        "multi span_next on a copy of a mid-iteration source returns -1");
+
+    planner_multi_destroy (&mid);
     planner_multi_destroy (&fresh);
     planner_multi_destroy (&empty);
     planner_multi_destroy (&copy);
