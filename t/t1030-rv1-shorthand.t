@@ -9,7 +9,7 @@ rabbit_jobspec="${SHARNESS_TEST_SRCDIR}/data/resource/jobspecs/advanced/rabbit.y
 HOSTLIST="hetchy[1,1001-1018,201-202]"
 SIZE="$(flux hostlist -c ${HOSTLIST})"
 
-test_under_flux ${SIZE}
+test_under_flux ${SIZE} full --test-hosts=${HOSTLIST}
 
 test_expect_success 'add overlapping property to JGF' '
     jq "(.graph.nodes[] | select(.metadata.name == \"hetchy1002\") |
@@ -59,7 +59,6 @@ test_expect_success 'load resource' '
     flux resource list &&
     FLUX_RESOURCE_LIST_RPC=sched.resource-status flux resource list &&
     flux queue start --all
-
 '
 
 test_expect_success 'R properties with complex IDSets are merged into JGF' '
@@ -269,15 +268,19 @@ test_expect_success 'sched-now=allocated is null' '
 # (see https://github.com/flux-framework/flux-sched/issues/1513)
 test_expect_success 'set a dynamic property on hetchy1002' '
     NODE_PATH="/hetchy/chassis0/hetchy1002" &&
+    flux ion-resource find -q --format=jgf property=maintenance | jq -e ". == null" &&
     flux ion-resource set-property ${NODE_PATH} maintenance=1 &&
     flux ion-resource get-property ${NODE_PATH} maintenance \
         | grep "maintenance = \[.1.\]"
 '
 
-test_expect_success 'submit a sleep inf job to hetchy1002 and wait for alloc' '
+test_expect_success 'submit a sleep job to hetchy1002 and wait for alloc' '
     flux module list && flux resource list &&
+    flux ion-resource find -q --format=jgf property=bardpeak |
+        jq -e "[.graph.nodes[].metadata | select(.type == \"node\" or .type == \"storage_node\")
+            | .name] == [\"hetchy1002\"]" &&
     # hetchy1002 is the only node in the graph with the bardpeak property
-    JOBID=$(flux submit -n1 --wait-event=alloc --requires=bardpeak sleep inf)
+    JOBID=$(flux submit -n1 -t30s --wait-event=alloc --requires=bardpeak sleep 25)
 '
 
 test_expect_success 'reload fluxion modules to remove the property' '
@@ -290,8 +293,11 @@ test_expect_success 'reload fluxion modules to remove the property' '
 # property in the job R but not in the freshly-loaded base graph.
 test_expect_success 'the job is still running after reload' '
     state=$(flux jobs -n -o {state} ${JOBID}) &&
-    test $state = RUN
+    test "${state}" = RUN &&
+    nodes=$(flux jobs -n -o {nodelist} ${JOBID}) &&
+    test "${nodes}" = hetchy1002
 '
+
 test_expect_success 'the job did not receive an exception' '
     test_must_fail flux job wait-event -t 1s ${JOBID} exception
 '
