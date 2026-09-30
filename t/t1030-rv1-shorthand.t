@@ -96,6 +96,72 @@ test_expect_success 'JGF property values take precedence over R properties' '
         .metadata.properties.overlapping == \"\"" overlapping.jgf
 '
 
+test_expect_success 'reconfigure Flux to modify a queue' '
+    flux config load <<-EOF
+    [sched-fluxion-resource]
+    match-format = "rv1_shorthand"
+
+    [resource]
+    noverify = true
+    norestrict = true
+    scheduling = "$(pwd)/test.jgf"
+
+    [[resource.config]]
+    hosts = "${HOSTLIST}"
+    cores = "0-1"
+
+    [[resource.config]]
+    hosts = "hetchy[1003-1004]"  # this is the only modification
+    properties = ["from_r", "overlapping"]
+
+    [[resource.config]]
+    hosts = "hetchy[201-202]"
+    properties = ["rabbit_from_r"]
+
+    [queues.default]
+    [queues.production]
+    requires = ["from_r"]
+
+    [policy.jobspec.defaults.system]
+    queue = "default"
+EOF
+'
+
+test_expect_success 'load resource' '
+    flux module remove -f sched-simple &&
+    flux module remove -f sched-fluxion-qmanager &&
+    flux module remove -f sched-fluxion-resource &&
+    flux module reload resource &&
+    flux module load sched-fluxion-resource &&
+    flux module load sched-fluxion-qmanager &&
+    test_debug flux module list &&
+    flux resource list &&
+    FLUX_RESOURCE_LIST_RPC=sched.resource-status flux resource list &&
+    flux queue start --all
+'
+
+test_expect_success 'reconfigured R properties with complex IDSets are merged into JGF' '
+    flux ion-resource find -q --format=jgf property=from_r > from_r_reconfig.jgf &&
+    jq -r "[.graph.nodes[] |
+        select(.metadata.type == \"node\") | .metadata.rank] |
+        sort | join(\",\")" from_r_reconfig.jgf > from_r_reconfig.ranks &&
+    echo "3,4" > expected_reconfig.ranks &&
+    test_cmp expected_reconfig.ranks from_r_reconfig.ranks
+'
+
+test_expect_success 'job schedules in queue defined only by updated R property' '
+    jq -e "[.graph.nodes[].metadata.properties.from_r] |
+        all(. == null)" test.jgf &&
+    flux kvs get resource.R |
+        jq -e ".execution.properties.from_r == \"3-4\"" &&
+    JOBID=$(flux submit -N2 -n2 -t30s --wait-event=alloc -q production true) &&
+    nodes=$(flux jobs -n -o {nodelist} ${JOBID}) &&
+    test "${nodes}" = "hetchy[1003-1004]" &&
+    flux job wait-event -t10s $JOBID clean &&
+    JOBID=$(flux submit -N3 -n3 -t30s -q production true) &&
+    flux job wait-event -t10s $JOBID exception
+'
+
 test_expect_success 'run a job' '
     jobid=$(flux submit -N1 hostname) &&
     flux job attach ${jobid} &&
