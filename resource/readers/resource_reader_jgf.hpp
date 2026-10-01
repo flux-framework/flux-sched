@@ -121,6 +121,19 @@ class resource_reader_jgf_t : public resource_reader_base_t {
      */
     int set_node_properties (json_t *properties);
 
+    /*! Set the execution ranks R assigns to each host, decoded from RFC 20
+     *  execution R_lite and nodelist objects. Once set, the rank every
+     *  `node` and `storage_node` vertex declares is validated against them
+     *  as it is unpacked; see validate_vtx_rank ().
+     *
+     *  \param r_lite    RFC 20 execution.R_lite array. If `nullptr`, clear
+     *                       the cached rank assignment and validate nothing.
+     *  \param nodelist  RFC 20 execution.nodelist array.
+     *  \return          0 on success; -1 with errno set to EINVAL if the two
+     *                       do not describe a consistent rank assignment.
+     */
+    int set_node_ranks (json_t *r_lite, json_t *nodelist);
+
     /*! Unpack str into a resource graph.
      *
      * \param g      resource graph
@@ -217,6 +230,12 @@ class resource_reader_jgf_t : public resource_reader_base_t {
 
    private:
     std::map<int64_t, std::map<std::string, std::string>> m_node_properties;
+    /*! Ranks R assigns to each hostname, in ascending order. A host that
+     *  runs several brokers appears once per rank in the R nodelist and so
+     *  maps to several ranks here. Empty when R has not been supplied, in
+     *  which case no rank is validated.
+     */
+    std::map<std::string, std::vector<int64_t>> m_node_ranks;
 
     int fetch_jgf (const std::string &str,
                    json_t **jgf_p,
@@ -225,6 +244,15 @@ class resource_reader_jgf_t : public resource_reader_base_t {
                    jgf_updater_data &update_data);
     int unpack_and_remap_vtx (fetch_helper_t &f, json_t *paths, json_t *properties);
     int remap_aware_unpack_vtx (fetch_helper_t &f, json_t *paths, json_t *properties);
+    /*! Check the rank of a `node` or `storage_node` vertex against the ranks
+     *  R assigns to the host of the same name. Other types, and hosts R does
+     *  not name, are not checked.
+     */
+    int validate_vtx_rank (const fetch_helper_t &f);
+    /*! Check that a containment edge does not join two vertices that both
+     *  declare a rank and disagree about it.
+     */
+    int validate_edge_ranks (const resource_graph_t &g, vtx_t source, vtx_t target);
     int fill_fetcher (json_t *element, fetch_helper_t &f, json_t **path, json_t **properties);
     int unpack_vtx (json_t *element, fetch_helper_t &f);
     vtx_t create_vtx (resource_graph_t &g, const fetch_helper_t &fetcher);
