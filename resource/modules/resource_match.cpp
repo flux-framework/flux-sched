@@ -1194,6 +1194,10 @@ int shrink_resources (std::shared_ptr<resource_ctx_t> &ctx, const char *ids)
     }
     // Update total counts:
     rc = ctx->traverser->initialize ();
+    // Invalidate the cached resource-status views so that the next
+    // sched.resource-status request reflects the smaller resource set.
+    ctx->m_resources_updated = true;
+    ctx->m_resources_down_updated = true;
     flux_log (ctx->h, LOG_DEBUG, "successfully removed ranks %s from resource set", ids);
 
 done:
