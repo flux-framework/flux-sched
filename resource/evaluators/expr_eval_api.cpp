@@ -307,10 +307,12 @@ done:
 
 int expr_eval_api_t::validate (const std::string &e, const expr_eval_target_base_t &target)
 {
-    int rc = -1;
+    int rc = 0;
     pred_op_t op;
     std::size_t next, at, last_before_space;
 
+    if (e == "")
+        goto done;
     if ((rc = validate_paren (e, target, 0, next)) < 0)
         goto done;
     at = next;
@@ -338,11 +340,15 @@ int expr_eval_api_t::evaluate (const std::string &e,
                                const expr_eval_target_base_t &target,
                                bool &result)
 {
-    int rc = -1;
+    int rc = 0;
     pred_op_t op;
     std::size_t next, at, last_before_space;
     bool result1, result2;
 
+    if (e == "") {
+        result = true;
+        goto done;
+    }
     if ((rc = evaluate_paren (e, target, 0, next, result1)) < 0)
         goto done;
     at = next;
@@ -371,10 +377,12 @@ int expr_eval_api_t::extract (const std::string &e,
                               const expr_eval_target_base_t &target,
                               std::vector<std::pair<std::string, std::string>> &predicates)
 {
-    int rc = -1;
+    int rc = 0;
     pred_op_t op;
     std::size_t next, at, last_before_space;
 
+    if (e == "")
+        goto done;
     if ((rc = extract_paren (e, target, 0, next, predicates)) < 0)
         goto done;
     at = next;
