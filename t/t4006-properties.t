@@ -22,6 +22,14 @@ send_rpc() {
 	flux python -c "import flux; flux.Flux().rpc(\"sched-fluxion-resource.${1}\").get()"
 }
 
+# Send a property RPC with the JSON payload in $2 and print the 'not_found'
+# member of the response.
+send_property_rpc() {
+	flux python -c "import flux, json
+resp = flux.Flux().rpc(\"sched-fluxion-resource.${1}\", json.loads('''${2}''')).get()
+print(json.dumps(resp[\"not_found\"]))"
+}
+
 test_debug '
 	echo ${grug} &&
 	echo ${jobspec}
@@ -236,19 +244,63 @@ test_expect_success 'remove property from multiple resource types works' "
 	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node1/socket0/core16 mixed
 "
 
-test_expect_success 'set property with one invalid path fails' "
+test_expect_success 'set property with one invalid path partially succeeds' "
 	test_expect_code 3 flux ion-resource set-property /dont/exist /tiny0/rack0/node0 testprop=1 &&
-	flux ion-resource set-property /tiny0/rack0/node0 /dont/exist testprop=1 2>&1 | grep \"Couldn't find '/dont/exist'\" &&
-	# remove property, since it was set before /dont/exist failed
+	flux ion-resource set-property /dont/exist /tiny0/rack0/node0 testprop=1 2>&1 \
+		| grep \"Couldn't find '/dont/exist'\" &&
+	# the valid path is updated even though it follows the invalid one
+	flux ion-resource get-property /tiny0/rack0/node0 testprop | grep 1 &&
 	flux ion-resource remove-property /tiny0/rack0/node0 testprop
 "
 
-test_expect_success 'remove property with one invalid path fails' "
+test_expect_success 'remove property with one invalid path partially succeeds' "
 	flux ion-resource set-property /tiny0/rack0/node0 testprop2=2 &&
 	test_expect_code 3 flux ion-resource remove-property /dont/exist /tiny0/rack0/node0 testprop2 &&
-	flux ion-resource remove-property /tiny0/rack0/node0 /dont/exist testprop2 2>&1 | grep \"Couldn't find '/dont/exist'\" &&
-	flux ion-resource get-property /tiny0/rack0/node0 testprop2 | grep 2 &&
-	flux ion-resource remove-property /tiny0/rack0/node0 testprop2
+	# the valid path is updated even though it follows the invalid one
+	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node0 testprop2
+"
+
+test_expect_success 'bulk property update fails only when no path is found' "
+	test_expect_code 3 flux ion-resource set-property /dont/exist /me/neither testprop3=3 &&
+	flux ion-resource set-property /dont/exist /me/neither testprop3=3 2>&1 \
+		| grep \"Couldn't find '/dont/exist', '/me/neither'\" &&
+	test_expect_code 3 flux ion-resource remove-property /dont/exist /me/neither testprop3 &&
+	flux ion-resource remove-property /dont/exist /me/neither testprop3 2>&1 \
+		| grep \"Couldn't find '/dont/exist', '/me/neither'\"
+"
+
+test_expect_success 'error message for many missing paths is elided' "
+	missing=\$(seq 0 11 | sed 's|^|/dont/exist|' | tr '\n' ' ') &&
+	test_expect_code 3 flux ion-resource set-property \$missing manyprop=1 > sp.many &&
+	grep \"'/dont/exist9', [.][.][.] in resource graph\" sp.many &&
+	test_must_fail grep /dont/exist10 sp.many
+"
+
+test_expect_success 'partial success response reports offsets and paths' "
+	send_property_rpc set_property \
+		'{\"sp_resource_path\": [\"/dont/exist\", \"/tiny0/rack0/node0\", \"/me/neither\"],
+		  \"sp_keyval\": \"testprop4=4\"}' > sp.partial &&
+	cat <<-EOF >expected &&
+	[{\"offset\": 0, \"path\": \"/dont/exist\"}, {\"offset\": 2, \"path\": \"/me/neither\"}]
+	EOF
+	test_cmp expected sp.partial &&
+	flux ion-resource get-property /tiny0/rack0/node0 testprop4 | grep 4 &&
+	send_property_rpc remove_property \
+		'{\"resource_path\": [\"/dont/exist\", \"/tiny0/rack0/node0\", \"/me/neither\"],
+		  \"key\": \"testprop4\"}' > rp.partial &&
+	test_cmp expected rp.partial &&
+	test_expect_code 3 flux ion-resource get-property /tiny0/rack0/node0 testprop4
+"
+
+test_expect_success 'full success response reports an empty not_found list' "
+	send_property_rpc set_property \
+		'{\"sp_resource_path\": [\"/tiny0/rack0/node0\"], \"sp_keyval\": \"testprop5=5\"}' \
+		> sp.full &&
+	echo '[]' > expected &&
+	test_cmp expected sp.full &&
+	send_property_rpc remove_property \
+		'{\"resource_path\": [\"/tiny0/rack0/node0\"], \"key\": \"testprop5\"}' > rp.full &&
+	test_cmp expected rp.full
 "
 
 test_expect_success 'removing resource works' '
