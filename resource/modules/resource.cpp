@@ -1193,7 +1193,6 @@ static void get_property_request_cb (flux_t *h,
             goto error;
         }
         if (json_array_append_new (resp_array, value) < 0) {
-            json_decref (value);
             errno = EINVAL;
             goto error;
         }
