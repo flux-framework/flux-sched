@@ -876,6 +876,45 @@ error:
         flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
 }
 
+/* Record a resource path that could not be found in the resource graph.
+ * Each entry carries the path along with its offset within the request so
+ * that the caller can retry or continue with the paths that did not fail.
+ */
+static int add_not_found (json_t *not_found, size_t offset, const std::string &path)
+{
+    json_t *entry = json_pack ("{s:I s:s}", "offset", (json_int_t)offset, "path", path.c_str ());
+
+    if (!entry)
+        return -1;
+    if (json_array_append_new (not_found, entry) < 0)
+        return -1;
+    return 0;
+}
+
+/* Build an error message naming the paths in a not-found array, up to
+ * max_errmsg_paths of them if max_errmsg_paths is > 0.
+ */
+static std::string not_found_errmsg (json_t *not_found, size_t max_errmsg_paths)
+{
+    std::string errmsg = "Couldn't find ";
+    size_t index;
+    json_t *entry;
+
+    json_array_foreach (not_found, index, entry) {
+        if (max_errmsg_paths > 0 && index >= max_errmsg_paths) {
+            errmsg += ", ...";
+            break;
+        }
+        if (index > 0)
+            errmsg += ", ";
+        errmsg += "'";
+        errmsg += json_string_value (json_object_get (entry, "path"));
+        errmsg += "'";
+    }
+    errmsg += " in resource graph";
+    return errmsg;
+}
+
 static void set_property_request_cb (flux_t *h,
                                      flux_msg_handler_t *w,
                                      const flux_msg_t *msg,
@@ -883,6 +922,7 @@ static void set_property_request_cb (flux_t *h,
 {
     const char *kv = NULL;
     json_t *paths_json = NULL;
+    json_t *not_found = NULL;
     std::string keyval = "", errmsg = "";
     std::string property_key = "", property_value = "";
     std::vector<std::string> resource_paths;
@@ -891,6 +931,12 @@ static void set_property_request_cb (flux_t *h,
     std::map<std::string, std::vector<vtx_t>>::const_iterator it;
     std::pair<std::map<std::string, std::string>::iterator, bool> ret;
     vtx_t v;
+
+    if (!(not_found = json_array ())) {
+        errno = ENOMEM;
+        errmsg = "could not create response payload";
+        goto error;
+    }
 
     // Try to unpack with sp_resource_path as a json object to check its type
     if (flux_request_unpack (msg,
@@ -945,14 +991,20 @@ static void set_property_request_cb (flux_t *h,
     property_key = keyval.substr (0, pos);
     property_value = keyval.substr (pos + 1);
 
-    // Process each resource path
-    for (const auto &resource_path : resource_paths) {
+    // Process each resource path, skipping over and recording any path that
+    // is missing instead of abandoning the paths that follow it.
+    for (size_t offset = 0; offset < resource_paths.size (); offset++) {
+        const std::string &resource_path = resource_paths[offset];
+
         it = ctx->db->metadata.by_path.find (resource_path);
 
         if (it == ctx->db->metadata.by_path.end ()) {
-            errno = ENOENT;
-            errmsg = "Couldn't find '" + resource_path + "' in resource graph";
-            goto error;
+            if (add_not_found (not_found, offset, resource_path) < 0) {
+                errno = ENOMEM;
+                errmsg = "could not create response payload";
+                goto error;
+            }
+            continue;
         }
 
         for (auto &v : it->second) {
@@ -967,12 +1019,22 @@ static void set_property_request_cb (flux_t *h,
         }
     }
 
-    if (flux_respond_pack (h, msg, "{}") < 0)
+    // Fail the request only if nothing at all could be set, otherwise report
+    // the partial success in the normal response.
+    if (json_array_size (not_found) == resource_paths.size ()) {
+        errno = ENOENT;
+        errmsg = not_found_errmsg (not_found, 10);
+        goto error;
+    }
+
+    if (flux_respond_pack (h, msg, "{s:O}", "not_found", not_found) < 0)
         flux_log_error (h, "%s", __FUNCTION__);
 
+    json_decref (not_found);
     return;
 
 error:
+    json_decref (not_found);
     if (flux_respond_error (h, msg, errno, errmsg.c_str ()) < 0)
         flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
 }
@@ -984,11 +1046,18 @@ static void remove_property_request_cb (flux_t *h,
 {
     const char *kv = NULL;
     json_t *paths_json = NULL;
+    json_t *not_found = NULL;
     std::string property_key = "", errmsg = "";
     std::vector<std::string> resource_paths;
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
     std::map<std::string, std::vector<vtx_t>>::const_iterator it;
     vtx_t v;
+
+    if (!(not_found = json_array ())) {
+        errno = ENOMEM;
+        errmsg = "could not create response payload";
+        goto error;
+    }
 
     // Try to unpack with resource_path as a json object to check its type
     if (flux_request_unpack (msg, NULL, "{s:o s:s}", "resource_path", &paths_json, "key", &kv)
@@ -1026,14 +1095,20 @@ static void remove_property_request_cb (flux_t *h,
         goto error;
     }
 
-    // Process each resource path
-    for (const auto &resource_path : resource_paths) {
+    // Process each resource path, skipping over and recording any path that
+    // is missing instead of abandoning the paths that follow it.
+    for (size_t offset = 0; offset < resource_paths.size (); offset++) {
+        const std::string &resource_path = resource_paths[offset];
+
         it = ctx->db->metadata.by_path.find (resource_path);
 
         if (it == ctx->db->metadata.by_path.end ()) {
-            errno = ENOENT;
-            errmsg = "Couldn't find '" + resource_path + "' in resource graph";
-            goto error;
+            if (add_not_found (not_found, offset, resource_path) < 0) {
+                errno = ENOMEM;
+                errmsg = "could not create response payload";
+                goto error;
+            }
+            continue;
         }
 
         for (auto &v : it->second) {
@@ -1041,12 +1116,22 @@ static void remove_property_request_cb (flux_t *h,
         }
     }
 
-    if (flux_respond_pack (h, msg, "{}") < 0)
+    // Fail the request only if nothing at all could be removed, otherwise
+    // report the partial success in the normal response.
+    if (json_array_size (not_found) == resource_paths.size ()) {
+        errno = ENOENT;
+        errmsg = not_found_errmsg (not_found, 10);
+        goto error;
+    }
+
+    if (flux_respond_pack (h, msg, "{s:O}", "not_found", not_found) < 0)
         flux_log_error (h, "%s", __FUNCTION__);
 
+    json_decref (not_found);
     return;
 
 error:
+    json_decref (not_found);
     if (flux_respond_error (h, msg, errno, errmsg.c_str ()) < 0)
         flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
 }
@@ -1108,7 +1193,6 @@ static void get_property_request_cb (flux_t *h,
             goto error;
         }
         if (json_array_append_new (resp_array, value) < 0) {
-            json_decref (value);
             errno = EINVAL;
             goto error;
         }
