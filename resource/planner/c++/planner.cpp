@@ -14,8 +14,11 @@ extern "C" {
 #endif
 }
 
+#include <cerrno>
 #include <limits>
 #include <map>
+#include <new>
+#include <stdexcept>
 #include <string>
 
 #include "planner.hpp"
@@ -100,36 +103,6 @@ planner::planner (const planner &o)
     m_p0 = m_sched_point_tree.get_state (m_plan_start);
 }
 
-planner &planner::operator= (const planner &o)
-{
-    int rc = -1;
-
-    if ((rc = erase ()) != 0) {
-        throw std::runtime_error ("ERROR erasing *this\n");
-    }
-    // Important: need to copy trees first,
-    // since map copies fetch the scheduled
-    // points inserted into the trees.
-    if ((rc = copy_trees (o)) != 0) {
-        throw std::runtime_error ("ERROR copying trees to *this\n");
-    }
-    if ((rc = copy_maps (o)) != 0) {
-        throw std::runtime_error ("ERROR copying maps to *this\n");
-    }
-
-    m_total_resources = o.m_total_resources;
-    m_resource_type = o.m_resource_type;
-    m_plan_start = o.m_plan_start;
-    m_plan_end = o.m_plan_end;
-    m_current_request = o.m_current_request;
-    m_avail_time_iter_set = o.m_avail_time_iter_set;
-    m_span_counter = o.m_span_counter;
-    // After above copy the SP tree now has the full state of the base point.
-    m_p0 = m_sched_point_tree.get_state (m_plan_start);
-
-    return *this;
-}
-
 bool planner::operator== (const planner &o) const
 {
     if (m_total_resources != o.m_total_resources)
@@ -183,9 +156,12 @@ int planner::erase ()
     // returns 0 or a negative number
     rc = restore_track_points ();
     m_span_lookup.clear ();
+    // clear () invalidates every iterator into the map.
+    m_span_lookup_iter = m_span_lookup.end ();
     if (m_p0 && m_p0->in_mt_resource_tree)
         rc += m_mt_resource_tree.remove (m_p0);
     m_sched_point_tree.destroy ();
+    m_p0 = nullptr;
     m_mt_resource_tree.clear ();
 
     return rc;
@@ -315,13 +291,10 @@ scheduled_point_t *planner::mt_tree_get_mintime (int64_t request) const
     return m_mt_resource_tree.get_mintime (request);
 }
 
-void planner::clear_span_lookup ()
-{
-    m_span_lookup.clear ();
-}
-
 void planner::span_lookup_erase (std::map<int64_t, std::shared_ptr<span_t>>::iterator &it)
 {
+    if (it == m_span_lookup_iter)
+        m_span_lookup_iter = m_span_lookup.end ();
     m_span_lookup.erase (it);
 }
 
@@ -429,8 +402,16 @@ int planner::copy_trees (const planner &o)
             new_point->remaining = point->remaining;
             if ((rc = m_sched_point_tree.insert (new_point)) != 0)
                 return rc;
-            if ((rc = m_mt_resource_tree.insert (new_point)) != 0)
-                return rc;
+            // A point checked out by an availability iteration is held in
+            // m_avail_time_iter until restore_track_points () re-inserts it.
+            if (point->in_mt_resource_tree) {
+                if ((rc = m_mt_resource_tree.insert (new_point)) != 0)
+                    return rc;
+            } else {
+                new_point->resource_rb.set_point (new_point);
+                new_point->resource_rb.at = point->resource_rb.at;
+                new_point->resource_rb.remaining = point->resource_rb.remaining;
+            }
             point = o.m_sched_point_tree.next (point);
         }
     } else {
@@ -541,12 +522,15 @@ bool planner::trees_equal (const planner &o) const
 // Public Planner_t methods
 ////////////////////////////////////////////////////////////////////////////////
 
+// Rethrow so a planner_t is never observable with a null inner planner.
+
 planner_t::planner_t ()
 {
     try {
         plan = new planner ();
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;
+        throw;
     }
 }
 
@@ -556,7 +540,26 @@ planner_t::planner_t (const planner &o)
         plan = new planner (o);
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;
+        throw;
     }
+}
+
+// Deep copy; o.plan is non-null by the constructors' invariant.
+planner_t::planner_t (const planner_t &o)
+{
+    try {
+        plan = new planner (*o.plan);
+    } catch (std::bad_alloc &e) {
+        errno = ENOMEM;
+        throw;
+    }
+}
+
+// Copy-and-swap: the by-value parameter is built before *this is touched.
+planner_t &planner_t::operator= (planner_t o)
+{
+    swap (*this, o);
+    return *this;
 }
 
 planner_t::planner_t (const int64_t base_time,
@@ -568,6 +571,7 @@ planner_t::planner_t (const int64_t base_time,
         plan = new planner (base_time, duration, resource_totals, in_resource_type);
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;
+        throw;
     }
 }
 

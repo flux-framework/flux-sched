@@ -65,18 +65,22 @@ planner_multi_t *planner_multi_empty ();
  *
  *  \return             a new planner_multi context copied from mp; NULL on error
  *                      with errno set as follows:
+ *                          EINVAL: invalid argument.
  *                          ENOMEM: memory error.
  */
 planner_multi_t *planner_multi_copy (planner_multi_t *mp);
 
-/*! Assign a planner_multi_t.
+/*! Assign a planner_multi: copy the state of rhs into lhs.
+ *  On error, lhs is unmodified.
  *
- *  \param lhs          the base planner_multi which will be assigned to rhs.
- *  \param rhs          the base planner_multi which will be copied and returned as
- *                      a new planner_multi context.
- *
+ *  \param lhs          planner_multi context to assign into.
+ *  \param rhs          planner_multi context whose state is copied into lhs.
+ *  \return             0 on success; -1 on an error with errno set as
+ *                      follows:
+ *                          EINVAL: invalid argument.
+ *                          ENOMEM: memory error.
  */
-void planner_multi_assign (planner_multi_t *lhs, planner_multi_t *rhs);
+int planner_multi_assign (planner_multi_t *lhs, const planner_multi_t *rhs);
 
 /*! Getters:
  *  \return             -1 or NULL on an error with errno set as follows:
@@ -86,7 +90,6 @@ int64_t planner_multi_base_time (planner_multi_t *ctx);
 int64_t planner_multi_duration (planner_multi_t *ctx);
 size_t planner_multi_resources_len (planner_multi_t *ctx);
 const char *planner_multi_resource_type_at (planner_multi_t *ctx, unsigned int i);
-const uint64_t *planner_multi_resource_totals (planner_multi_t *ctx);
 int64_t planner_multi_resource_total_at (planner_multi_t *ctx, unsigned int i);
 int64_t planner_multi_resource_total_by_type (planner_multi_t *ctx, const char *resource_type);
 
@@ -165,9 +168,14 @@ int64_t planner_multi_avail_time_first (planner_multi_t *ctx,
  *  \return             the next earliest time at which the resource request
  *                      can be satisfied;
  *                      -1 on error with errno set as follows:
- *                          EINVAL: invalid argument.
+ *                          EINVAL: invalid argument, or the iterator is stale
+ *                                  because planner_multi_update changed the
+ *                                  planner composition.
  *                          ERANGE: request out of range
  *                          ENOENT: no scheduleable point
+ *
+ *  \note               Both conditions return -1; read errno. On EINVAL,
+ *                      restart with planner_multi_avail_time_first.
  */
 int64_t planner_multi_avail_time_next (planner_multi_t *ctx);
 
@@ -261,6 +269,7 @@ int planner_multi_avail_resources_array_during (planner_multi_t *ctx,
  *  \return             span id on success; -1 on error with errno set
  *                      as follows:
  *                          EINVAL: invalid argument.
+ *                          ENOMEM: memory error.
  *                          EKEYREJECTED: can't update planner's internal data.
  *                          ERANGE: a resource state became out of a valid
  *                                  range, e.g., reserving more than available.
@@ -324,6 +333,11 @@ int planner_multi_reduce_span (planner_multi_t *ctx,
  *                      from planner_multi_new.
  *  \param span_id      span_id returned from planner_add_span.
  *  \param i            index of the resource type to queried
+ *  \return             number of planned resources; 0 if the resource type was
+ *                      added after the span was created; -1 on error with errno
+ *                      set as follows:
+ *                          EINVAL: invalid argument.
+ *                          ENOENT: no span matching span_id.
  */
 int64_t planner_multi_span_planned_at (planner_multi_t *ctx, int64_t span_id, unsigned int i);
 
@@ -356,6 +370,7 @@ bool planner_multis_equal (planner_multi_t *lhs, planner_multi_t *rhs);
  *  \param len          length of resource_counts and resource_types arrays.
  *  \return             0 on success; -1 on an error with errno set as follows:
  *                          EINVAL: invalid argument.
+ *                          ENOMEM: memory error.
  */
 int planner_multi_update (planner_multi_t *ctx,
                           const uint64_t *resource_totals,

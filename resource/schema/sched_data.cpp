@@ -14,6 +14,7 @@ extern "C" {
 #endif
 }
 
+#include <stdexcept>
 #include "resource/schema/sched_data.hpp"
 
 namespace Flux {
@@ -26,18 +27,10 @@ schedule_t::schedule_t (const schedule_t &o)
     allocations = o.allocations;
     reservations = o.reservations;
 
-    if (plans) {
-        if (o.plans) {
-            planner_assign (plans, o.plans);
-        } else {
-            planner_destroy (&plans);
-        }
-    } else {
-        if (o.plans) {
-            plans = planner_copy (o.plans);
-            if (!plans)
-                throw std::runtime_error ("ERROR copying planners\n");
-        }
+    if (o.plans) {
+        plans = planner_copy (o.plans);
+        if (!plans)
+            throw std::runtime_error ("ERROR copying planners\n");
     }
 }
 
@@ -50,7 +43,8 @@ schedule_t &schedule_t::operator= (const schedule_t &o)
 
     if (plans) {
         if (o.plans) {
-            planner_assign (plans, o.plans);
+            if (planner_assign (plans, o.plans) != 0)
+                throw std::runtime_error ("ERROR assigning planners\n");
         } else {
             planner_destroy (&plans);
         }

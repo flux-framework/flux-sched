@@ -16,7 +16,10 @@ extern "C" {
 
 #include <cstdlib>
 #include <cerrno>
+#include <new>
+#include <stdexcept>
 #include <cstring>
+#include <memory>
 #include <vector>
 #include <map>
 
@@ -34,95 +37,54 @@ planner_multi::planner_multi (int64_t base_time,
                               const char **resource_types,
                               size_t len)
 {
-    size_t i = 0;
-    std::string type;
-    planner_t *p = nullptr;
-
     m_iter.on_or_after = 0;
     m_iter.duration = 0;
-    for (i = 0; i < len; ++i) {
-        try {
-            type = std::string (resource_types[i]);
-            p = new planner_t (base_time, duration, resource_totals[i], resource_types[i]);
-        } catch (std::bad_alloc &e) {
-            errno = ENOMEM;
-            throw std::bad_alloc ();
+    try {
+        for (size_t i = 0; i < len; ++i) {
+            std::string type (resource_types[i]);
+            auto p = std::make_unique<planner_t> (base_time,
+                                                  duration,
+                                                  resource_totals[i],
+                                                  resource_types[i]);
+            // The res_type index is unique: a duplicate is rejected, not thrown.
+            if (!m_types_totals_planners.push_back ({type, resource_totals[i], p.get ()}).second) {
+                errno = EINVAL;
+                throw std::invalid_argument ("duplicate resource type");
+            }
+            p.release ();
+            m_iter.counts[type] = 0;
         }
-        m_iter.counts[type] = 0;
-        m_types_totals_planners.push_back ({type, resource_totals[i], p});
+    } catch (std::bad_alloc &) {
+        erase ();
+        errno = ENOMEM;
+        throw;
+    } catch (...) {
+        erase ();
+        throw;
     }
     m_span_counter = 0;
 }
 
 planner_multi::planner_multi (const planner_multi &o)
 {
-    for (auto &iter : o.m_types_totals_planners) {
-        planner_t *np = nullptr;
-        if (iter.planner) {
-            try {
-                np = new planner_t (*(iter.planner->plan));
-            } catch (std::bad_alloc &e) {
-                errno = ENOMEM;
-            }
-            // planner copy ctor can throw runtime_error, resulting in nullptr
-            if (np == nullptr)
-                throw std::runtime_error (
-                    "ERROR in planner copy ctor"
-                    " in planner_multi copy"
-                    " constructor\n");
-        } else {
-            try {
-                np = new planner_t ();
-            } catch (std::bad_alloc &e) {
-                errno = ENOMEM;
-                throw std::bad_alloc ();
-            }
+    try {
+        for (const auto &iter : o.m_types_totals_planners) {
+            auto np = iter.planner ? std::make_unique<planner_t> (*(iter.planner->plan))
+                                   : std::make_unique<planner_t> ();
+            m_types_totals_planners.push_back (
+                {iter.resource_type, iter.resource_total, np.get ()});
+            np.release ();
         }
-        m_types_totals_planners.push_back ({iter.resource_type, iter.resource_total, np});
+        m_iter = o.m_iter;
+        m_span_lookup = o.m_span_lookup;
+        // o's iterator points into o's m_span_lookup; never adopt it.
+        m_span_lookup_iter = m_span_lookup.end ();
+        m_span_counter = o.m_span_counter;
+    } catch (...) {
+        erase ();
+        errno = ENOMEM;
+        throw;
     }
-    m_iter = o.m_iter;
-    m_span_lookup = o.m_span_lookup;
-    m_span_lookup_iter = o.m_span_lookup_iter;
-    m_span_counter = o.m_span_counter;
-}
-
-planner_multi &planner_multi::operator= (const planner_multi &o)
-{
-    // Erase *this so the vectors are empty
-    erase ();
-
-    for (const auto &iter : o.m_types_totals_planners) {
-        planner_t *np = nullptr;
-        if (iter.planner) {
-            try {
-                // Invoke copy constructor to avoid the assignment
-                // operator erase () penalty.
-                np = new planner_t (*(iter.planner->plan));
-            } catch (std::bad_alloc &e) {
-                errno = ENOMEM;
-            }
-            // planner copy ctor can throw runtime_error, resulting in nullptr
-            if (np == nullptr)
-                throw std::runtime_error (
-                    "ERROR in planner copy ctor"
-                    " in planner_multi assn"
-                    " operator\n");
-        } else {
-            try {
-                np = new planner_t ();
-            } catch (std::bad_alloc &e) {
-                errno = ENOMEM;
-                throw std::bad_alloc ();
-            }
-        }
-        m_types_totals_planners.push_back ({iter.resource_type, iter.resource_total, np});
-    }
-    m_iter = o.m_iter;
-    m_span_lookup = o.m_span_lookup;
-    m_span_lookup_iter = o.m_span_lookup_iter;
-    m_span_counter = o.m_span_counter;
-
-    return *this;
 }
 
 bool planner_multi::operator== (const planner_multi &o) const
@@ -164,13 +126,9 @@ bool planner_multi::operator!= (const planner_multi &o) const
 
 void planner_multi::erase ()
 {
-    if (!m_types_totals_planners.empty ()) {
-        for (auto iter : m_types_totals_planners) {
-            if (iter.planner) {
-                delete iter.planner;
-                iter.planner = nullptr;
-            }
-        }
+    for (const auto &iter : m_types_totals_planners) {
+        if (iter.planner)
+            delete iter.planner;
     }
     m_types_totals_planners.clear ();
 }
@@ -187,22 +145,30 @@ void planner_multi::add_planner (int64_t base_time,
                                  size_t i)
 {
     std::string type;
-    planner_t *p = nullptr;
+    std::unique_ptr<planner_t> p;
+    bool inserted = false;
 
+    // Own the new planner until it is inserted; the insertion can throw.
     try {
         type = std::string (resource_type);
-        p = new planner_t (base_time, duration, resource_total, resource_type);
+        p = std::make_unique<planner_t> (base_time, duration, resource_total, resource_type);
+        if (i > m_types_totals_planners.size ())
+            inserted = m_types_totals_planners.push_back ({type, resource_total, p.get ()}).second;
+        else {
+            auto it = m_types_totals_planners.begin () + i;
+            planner_multi_meta meta{type, resource_total, p.get ()};
+            inserted = m_types_totals_planners.insert (it, meta).second;
+        }
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;
         throw std::bad_alloc ();
     }
-    m_iter.counts[type] = 0;
-    if (i > m_types_totals_planners.size ())
-        m_types_totals_planners.push_back ({type, resource_total, p});
-    else {
-        auto it = m_types_totals_planners.begin () + i;
-        m_types_totals_planners.insert (it, planner_multi_meta{type, resource_total, p});
+    if (!inserted) {
+        errno = EINVAL;
+        throw std::invalid_argument ("duplicate resource type");
     }
+    p.release ();
+    m_iter.counts[type] = 0;
 }
 
 void planner_multi::delete_planners (const std::unordered_set<std::string> &rtypes)
@@ -315,6 +281,13 @@ void planner_multi::incr_span_lookup_iter ()
     m_span_lookup_iter++;
 }
 
+void planner_multi::span_lookup_erase (std::map<uint64_t, std::vector<int64_t>>::iterator &it)
+{
+    if (it == m_span_lookup_iter)
+        m_span_lookup_iter = m_span_lookup.end ();
+    m_span_lookup.erase (it);
+}
+
 uint64_t planner_multi::get_span_counter ()
 {
     return m_span_counter;
@@ -340,6 +313,7 @@ planner_multi_t::planner_multi_t ()
         plan_multi = new planner_multi ();
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;
+        throw;
     }
 }
 
@@ -349,7 +323,26 @@ planner_multi_t::planner_multi_t (const planner_multi &o)
         plan_multi = new planner_multi (o);
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;
+        throw;
     }
+}
+
+// Deep copy; see planner_t.
+planner_multi_t::planner_multi_t (const planner_multi_t &o)
+{
+    try {
+        plan_multi = new planner_multi (*o.plan_multi);
+    } catch (std::bad_alloc &e) {
+        errno = ENOMEM;
+        throw;
+    }
+}
+
+// Copy-and-swap; see planner_t::operator=.
+planner_multi_t &planner_multi_t::operator= (planner_multi_t o)
+{
+    swap (*this, o);
+    return *this;
 }
 
 planner_multi_t::planner_multi_t (int64_t base_time,
@@ -362,6 +355,7 @@ planner_multi_t::planner_multi_t (int64_t base_time,
         plan_multi = new planner_multi (base_time, duration, resource_totals, resource_types, len);
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;
+        throw;
     }
 }
 
