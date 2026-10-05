@@ -1,3 +1,15 @@
+flux-sched version 0.56.0 - 2026-10-06
+--------------------------------------
+
+### New Features
+ * resource: add R properties to JGF nodes (#1557)
+
+### Fixes
+ * resource: fix lost allocations on reload with rv1_shorthand (#1559)
+ * resource: fix unguarded dereferences, improve exception safety
+   and planner errno handling (#1540)
+
+
 flux-sched version 0.55.0 - 2026-09-08
 --------------------------------------
 
