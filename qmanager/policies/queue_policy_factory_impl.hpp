@@ -23,6 +23,7 @@
 #include "qmanager/policies/queue_policy_hybrid_impl.hpp"
 #include "qmanager/policies/queue_policy_conservative.hpp"
 #include "qmanager/policies/queue_policy_conservative_impl.hpp"
+#include "qmanager/policies/queue_policy_coschedule_impl.hpp"
 #include <string>
 
 namespace Flux {
@@ -50,6 +51,9 @@ std::shared_ptr<queue_policy_base_t> create_queue_policy (const std::string &pol
         } else if (policy == "conservative") {
             if (reapi == "module")
                 p = std::make_shared<queue_policy_conservative_t<reapi_module_t>> ();
+        } else if (policy == "coschedule") {
+            if (reapi == "module")
+                p = std::make_shared<queue_policy_coschedule_t<reapi_module_t>> ();
         }
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;

@@ -38,6 +38,10 @@ set(ALL_TESTS
   t1033-qmanager-vqueue.t
   t1034-rabbit-partial-release.t
   t1035-reconfig-reload-sweep.t
+  t1036-qmanager-hold.t
+  t1037-qmanager-hold-reserve.t
+  t1038-qmanager-coschedule.t
+  t1039-coschedule-device.t
   t2317-resource-shrink.t
   t3000-jobspec.t
   t3001-resource-basic.t
@@ -83,6 +87,7 @@ set(ALL_TESTS
   t3041-jgf-shorthand-load-format.t
   t3042-storage-node.t
   t3044-resource-rabbit-cancel.t
+  t3045-resource-reserve.t
   t3300-system-dontblock.t
   t3301-system-latestart.t
   t4000-match-params.t

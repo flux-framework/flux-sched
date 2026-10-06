@@ -19,6 +19,7 @@ extern "C" {
 #include "src/common/c++wrappers/eh_wrapper.hpp"
 
 #include <jansson.hpp>
+#include <cstring>
 
 using namespace Flux;
 using namespace Flux::Jobspec;
@@ -346,6 +347,49 @@ void qmanager_cb_t::jobmanager_stats_clear_cb (flux_t *h,
     qmanager_cb_ctx_t *ctx = static_cast<qmanager_cb_ctx_t *> (arg);
 }
 
+/* A hold is only in memory. After a qmanager reload the job manager sends
+ * every pending job again, the hold attribute is still in the jobspec, and
+ * a job that was already released would be held a second time with nobody
+ * left to release it. The agent that releases a job posts a memo with a
+ * released key to the job eventlog first, and the eventlog is in the KVS,
+ * so that is the durable record of a release.
+ *
+ * Returns true when the job has already been released.
+ */
+static bool job_was_released (flux_t *h, flux_jobid_t id)
+{
+    char key[64] = {0};
+    flux_future_t *f = NULL;
+    const char *log = NULL;
+    bool released = false;
+
+    if (flux_job_kvs_key (key, sizeof (key), id, "eventlog") < 0)
+        return false;
+    if (!(f = flux_kvs_lookup (h, NULL, 0, key)))
+        return false;
+    if (flux_kvs_lookup_get (f, &log) == 0 && log) {
+        const char *line = log;
+        while (line && *line) {
+            const char *end = strchr (line, '\n');
+            size_t len = end ? (size_t)(end - line) : strlen (line);
+            json_t *entry = json_loadb (line, len, 0, NULL);
+            if (entry) {
+                const char *name = NULL;
+                json_t *ctx = NULL;
+                if (json_unpack (entry, "{s:s s?o}", "name", &name, "context", &ctx) == 0 && name
+                    && strcmp (name, "memo") == 0 && ctx && json_object_get (ctx, "released"))
+                    released = true;
+                json_decref (entry);
+            }
+            if (released)
+                break;
+            line = end ? end + 1 : NULL;
+        }
+    }
+    flux_future_destroy (f);
+    return released;
+}
+
 void qmanager_cb_t::jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg, void *arg)
 {
     qmanager_cb_ctx_t *ctx = nullptr;
@@ -386,6 +430,29 @@ void qmanager_cb_t::jobmanager_alloc_cb (flux_t *h, const flux_msg_t *msg, void 
     job->userid = userid;
     job->t_submit = t_submit;
     job->priority = calc_priority (priority);
+    {
+        // attributes.system.hold asks for the job to be held until it is
+        // released through the sched-fluxion-qmanager.release RPC. A true
+        // boolean or a nonzero integer holds. Anything else schedules the
+        // job normally.
+        json_t *hold_o = NULL;
+        (void)json_unpack (jobspec, "{s?{s?{s?o}}}", "attributes", "system", "hold", &hold_o);
+        if (hold_o) {
+            if (json_is_boolean (hold_o))
+                job->hold = json_is_true (hold_o);
+            else if (json_is_integer (hold_o))
+                job->hold = (json_integer_value (hold_o) != 0);
+        }
+        // the attribute still says held after a reload, but a release is
+        // durable, so do not hold the job a second time
+        if (job->hold && job_was_released (h, id)) {
+            flux_log (h,
+                      LOG_DEBUG,
+                      "job %ju was already released, not holding it again",
+                      (uintmax_t)id);
+            job->hold = false;
+        }
+    }
     try {
         jobspec_obj = Flux::Jobspec::Jobspec (jobspec_str);
     } catch (const Flux::Jobspec::parse_error &e) {
