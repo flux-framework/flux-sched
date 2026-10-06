@@ -65,6 +65,8 @@ int expr_eval_vtx_target_t::validate (const std::string &p, const std::string &x
         }
     } else if (p == "property") {
         rc = (lcx.length () > 0) ? 0 : -1;
+    } else if (p == "exists") {
+        rc = (lcx.length () > 0) ? 0 : -1;
     } else
         errno = EINVAL;
 done:
@@ -143,6 +145,8 @@ int expr_eval_vtx_target_t::evaluate (const std::string &p,
         hostlist_destroy (hlist);
     } else if (p == "property") {
         result = (*m_g)[m_u].properties.contains (lcx);
+    } else if (p == "exists") {
+        result = (lcx == "true" | lcx == "t");
     } else {
         rc = -1;
         errno = EINVAL;
