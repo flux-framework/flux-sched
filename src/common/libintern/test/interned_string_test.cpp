@@ -53,6 +53,7 @@ TEST_CASE ("interner: finalize prevents new strings, open and unfinalize open", 
 
         REQUIRE_NOTHROW (tt2 ("test5"sv));
     }
+    CHECK_THROWS (tt2 ("test6"sv));
     ds2::unfinalize ();
     REQUIRE_NOTHROW (tt2 ("test6"sv));
 }

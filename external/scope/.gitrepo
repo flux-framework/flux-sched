@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/boostorg/scope
+	branch = develop
+	commit = c979d5e11b43cc36d5d5b8883e5b8a243478794f
+	parent = 7b7315a420ead319822028128a50d037de449764
+	method = merge
+	cmdver = 0.4.9
