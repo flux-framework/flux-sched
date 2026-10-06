@@ -79,7 +79,8 @@ int dfu_traverser_t::request_feasible (detail::jobmeta_t const &meta,
     if (target_nodes > get_graph_db ()->metadata.nodes_up) {
         if (op == match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE || op == match_op_t::MATCH_ALLOCATE
             || op == match_op_t::MATCH_WITHOUT_ALLOCATING
-            || op == match_op_t::MATCH_WITHOUT_ALLOCATING_FUTURE) {
+            || op == match_op_t::MATCH_WITHOUT_ALLOCATING_FUTURE
+            || op == match_op_t::MATCH_RESERVE) {
             errno = EBUSY;
             return -1;
         }
@@ -126,7 +127,8 @@ int dfu_traverser_t::request_feasible (detail::jobmeta_t const &meta,
         // no chance, don't even try
         if (op == match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE || op == match_op_t::MATCH_ALLOCATE
             || op == match_op_t::MATCH_WITHOUT_ALLOCATING
-            || op == match_op_t::MATCH_WITHOUT_ALLOCATING_FUTURE) {
+            || op == match_op_t::MATCH_WITHOUT_ALLOCATING_FUTURE
+            || op == match_op_t::MATCH_RESERVE) {
             errno = EBUSY;
             return -1;
         }
@@ -162,7 +164,21 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
         goto out;
 
     sched_iters++;
-    if ((rc = traverser->select (jobspec.resources, root, meta, x)) == 0) {
+    if (op == match_op_t::MATCH_RESERVE) {
+        // A reserve only match never takes the resources now. It reserves
+        // them at the earliest future instant even when they are free, so
+        // try one second ahead first. The loop below walks the points where
+        // availability changes, and a planner with nothing on it has no
+        // such point, so on a free graph the loop alone would find no time.
+        meta.alloc_type = jobmeta_t::alloc_type_t::AT_ALLOC_ORELSE_RESERVE;
+        meta.at = meta.at + 1;
+        if ((rc = traverser->select (jobspec.resources, root, meta, x)) == 0) {
+            m_total_preorder = traverser->get_preorder_count ();
+            m_total_postorder = traverser->get_postorder_count ();
+            goto out;
+        }
+        meta.at = meta.at - 1;
+    } else if ((rc = traverser->select (jobspec.resources, root, meta, x)) == 0) {
         m_total_preorder = traverser->get_preorder_count ();
         m_total_postorder = traverser->get_postorder_count ();
         goto out;
@@ -192,6 +208,7 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
             ++sched_iters;
             break;
         }
+        case match_op_t::MATCH_RESERVE:
         case match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE: {
             /* Or else reserve */
             meta.alloc_type = jobmeta_t::alloc_type_t::AT_ALLOC_ORELSE_RESERVE;
