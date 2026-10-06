@@ -8,6 +8,7 @@
 # For details, see https://github.com/flux-framework.
 #
 # SPDX-License-Identifier: LGPL-3.0
+###############################################################
 
 import unittest
 import json
@@ -100,5 +101,5 @@ class TestResourceGraph(unittest.TestCase):
 if __name__ == "__main__":
     from subflux import rerun_under_flux
 
-    if rerun_under_flux(size=1):
+    if rerun_under_flux("--test-size=1"):
         unittest.main(testRunner=TAPTestRunner())

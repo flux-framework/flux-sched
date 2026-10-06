@@ -112,6 +112,7 @@ set(ALL_TESTS
   t8001-util-ion-R.t
   t9001-golang-basic.t
   python/t10001-resourcegraph.py
+  python/t10002-resourcenotify.py
   )
 foreach(test ${ALL_TESTS})
   flux_add_test(NAME ${test}
