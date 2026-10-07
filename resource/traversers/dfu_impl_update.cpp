@@ -734,16 +734,20 @@ int dfu_impl_t::get_parent_vtx (vtx_t vtx, vtx_t &parent_vtx)
 
 int dfu_impl_t::remove_metadata_outedges (vtx_t source_vertex, vtx_t dest_vertex)
 {
-    std::vector<edg_t> remove_edges;
     auto iter = m_graph_db->metadata.by_outedges.find (source_vertex);
+    // A vertex with no indexed out-edges has nothing to remove
     if (iter == m_graph_db->metadata.by_outedges.end ())
-        return -1;
+        return 0;
     auto &outedges = iter->second;
-    for (auto kv = outedges.begin (); kv != outedges.end (); ++kv) {
+    for (auto kv = outedges.begin (); kv != outedges.end ();) {
+        // The key contains the uniq_id of the target, thus at most one entry
+        // matches. Do not increment the iterator that erase () returns. If
+        // the erased entry was the last one, that iterator is end ().
         if (boost::target (kv->second, *m_graph) == dest_vertex) {
-            kv = outedges.erase (kv);
-            // TODO: Consider adding break here
+            outedges.erase (kv);
+            break;
         }
+        ++kv;
     }
 
     return 0;
