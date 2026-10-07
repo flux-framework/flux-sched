@@ -27,6 +27,15 @@ struct schedule_t {
     bool operator== (const schedule_t &o) const;
     ~schedule_t ();
 
+    // True if a span in allocations holds resources. A span that holds
+    // no resources is a placeholder on an ancestor of a partial release.
+    // The job owns such a vertex (jobid-alloc, jobid-tag and by_excl ()
+    // examine the entry), but the vertex is not allocated (sched-now and
+    // the state that find gives to a subtree examine this function).
+    bool allocated () const;
+    // True if a span in reservations holds resources
+    bool reserved () const;
+
     std::map<int64_t, int64_t> allocations;
     std::map<int64_t, int64_t> reservations;
     planner_t *plans = nullptr;

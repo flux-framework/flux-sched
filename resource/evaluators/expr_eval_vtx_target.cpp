@@ -94,17 +94,15 @@ int expr_eval_vtx_target_t::evaluate (const std::string &p,
         }
     } else if (p == "sched-now") {
         if (lcx == "allocated") {
-            result = m_overridden.sched_now_allocated || !(*m_g)[m_u].schedule.allocations.empty ();
+            result = m_overridden.sched_now_allocated || (*m_g)[m_u].schedule.allocated ();
         } else if (lcx == "free") {
-            result = !m_overridden.sched_now_allocated && (*m_g)[m_u].schedule.allocations.empty ();
+            result = !m_overridden.sched_now_allocated && !(*m_g)[m_u].schedule.allocated ();
         }
     } else if (p == "sched-future") {
         if (lcx == "reserved") {
-            result =
-                m_overridden.sched_future_reserved || !(*m_g)[m_u].schedule.reservations.empty ();
+            result = m_overridden.sched_future_reserved || (*m_g)[m_u].schedule.reserved ();
         } else if (lcx == "free") {
-            result =
-                !m_overridden.sched_future_reserved && (*m_g)[m_u].schedule.reservations.empty ();
+            result = !m_overridden.sched_future_reserved && !(*m_g)[m_u].schedule.reserved ();
         }
     } else if (p == "jobid-alloc") {
         result = (flux_job_id_parse (x.c_str (), &jobid) == 0  // must use non-lowercased version
