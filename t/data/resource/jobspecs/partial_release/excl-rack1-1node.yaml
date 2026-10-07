@@ -1,0 +1,25 @@
+version: 9999
+# One exclusive rack with one node and one core, for a graph that has no
+# socket between the node and the core
+resources:
+    - type: rack
+      count: 1
+      exclusive: true
+      with:
+        - type: node
+          count: 1
+          with:
+              - type: slot
+                count: 1
+                label: default
+                with:
+                  - type: core
+                    count: 1
+attributes:
+  system:
+    duration: 3600
+tasks:
+  - command: [ "app" ]
+    slot: default
+    count:
+      per_slot: 1
