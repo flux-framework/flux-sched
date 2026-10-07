@@ -1514,8 +1514,15 @@ int resource_reader_jgf_t::update (resource_graph_t &g,
         undo_vertices (g, vmap, update_data);
         goto done;
     }
-    if ((rc = update_edges (g, m, vmap, edges, sequence_number, update_data)) != 0)
+    // The vertices already hold the schedule spans of the job. Remove them
+    // also if the edge update fails. If not, the job keeps its resources
+    // although the caller gets an error. The edges that the update stamped
+    // before the error cause no problem. The traverser follows only the
+    // edges that have the sequence number of the current update.
+    if ((rc = update_edges (g, m, vmap, edges, sequence_number, update_data)) != 0) {
+        undo_vertices (g, vmap, update_data);
         goto done;
+    }
 
 done:
     json_decref (jgf);
