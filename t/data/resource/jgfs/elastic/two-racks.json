@@ -1,0 +1,389 @@
+{
+  "graph": {
+    "nodes": [
+      {
+        "id": "0",
+        "metadata": {
+          "type": "cluster",
+          "basename": "cluster",
+          "name": "tiny0",
+          "id": 0,
+          "uniq_id": 0,
+          "rank": -1,
+          "exclusive": false,
+          "unit": "",
+          "size": 1,
+          "paths": {
+            "containment": "/tiny0"
+          }
+        }
+      },
+      {
+        "id": "1",
+        "metadata": {
+          "type": "rack",
+          "basename": "rack",
+          "name": "rack0",
+          "id": 0,
+          "uniq_id": 1,
+          "rank": -1,
+          "exclusive": false,
+          "unit": "",
+          "size": 1,
+          "paths": {
+            "containment": "/tiny0/rack0"
+          }
+        }
+      },
+      {
+        "id": "2",
+        "metadata": {
+          "type": "rack",
+          "basename": "rack",
+          "name": "rack1",
+          "id": 1,
+          "uniq_id": 2,
+          "rank": -1,
+          "exclusive": false,
+          "unit": "",
+          "size": 1,
+          "paths": {
+            "containment": "/tiny0/rack1"
+          }
+        }
+      },
+      {
+        "id": "3",
+        "metadata": {
+          "type": "node",
+          "basename": "node",
+          "name": "node0",
+          "id": 0,
+          "uniq_id": 3,
+          "rank": 0,
+          "exclusive": false,
+          "unit": "",
+          "size": 1,
+          "paths": {
+            "containment": "/tiny0/rack0/node0"
+          }
+        }
+      },
+      {
+        "id": "4",
+        "metadata": {
+          "type": "core",
+          "basename": "core",
+          "name": "core0",
+          "id": 0,
+          "uniq_id": 4,
+          "rank": 0,
+          "exclusive": false,
+          "unit": "",
+          "size": 1,
+          "paths": {
+            "containment": "/tiny0/rack0/node0/core0"
+          }
+        }
+      },
+      {
+        "id": "5",
+        "metadata": {
+          "type": "core",
+          "basename": "core",
+          "name": "core1",
+          "id": 1,
+          "uniq_id": 5,
+          "rank": 0,
+          "exclusive": false,
+          "unit": "",
+          "size": 1,
+          "paths": {
+            "containment": "/tiny0/rack0/node0/core1"
+          }
+        }
+      },
+      {
+        "id": "6",
+        "metadata": {
+          "type": "node",
+          "basename": "node",
+          "name": "node1",
+          "id": 1,
+          "uniq_id": 6,
+          "rank": 1,
+          "exclusive": false,
+          "unit": "",
+          "size": 1,
+          "paths": {
+            "containment": "/tiny0/rack0/node1"
+          }
+        }
+      },
+      {
+        "id": "7",
+        "metadata": {
+          "type": "core",
+          "basename": "core",
+          "name": "core0",
+          "id": 0,
+          "uniq_id": 7,
+          "rank": 1,
+          "exclusive": false,
+          "unit": "",
+          "size": 1,
+          "paths": {
+            "containment": "/tiny0/rack0/node1/core0"
+          }
+        }
+      },
+      {
+        "id": "8",
+        "metadata": {
+          "type": "core",
+          "basename": "core",
+          "name": "core1",
+          "id": 1,
+          "uniq_id": 8,
+          "rank": 1,
+          "exclusive": false,
+          "unit": "",
+          "size": 1,
+          "paths": {
+            "containment": "/tiny0/rack0/node1/core1"
+          }
+        }
+      },
+      {
+        "id": "9",
+        "metadata": {
+          "type": "node",
+          "basename": "node",
+          "name": "node2",
+          "id": 2,
+          "uniq_id": 9,
+          "rank": 2,
+          "exclusive": false,
+          "unit": "",
+          "size": 1,
+          "paths": {
+            "containment": "/tiny0/rack0/node2"
+          }
+        }
+      },
+      {
+        "id": "10",
+        "metadata": {
+          "type": "core",
+          "basename": "core",
+          "name": "core0",
+          "id": 0,
+          "uniq_id": 10,
+          "rank": 2,
+          "exclusive": false,
+          "unit": "",
+          "size": 1,
+          "paths": {
+            "containment": "/tiny0/rack0/node2/core0"
+          }
+        }
+      },
+      {
+        "id": "11",
+        "metadata": {
+          "type": "core",
+          "basename": "core",
+          "name": "core1",
+          "id": 1,
+          "uniq_id": 11,
+          "rank": 2,
+          "exclusive": false,
+          "unit": "",
+          "size": 1,
+          "paths": {
+            "containment": "/tiny0/rack0/node2/core1"
+          }
+        }
+      },
+      {
+        "id": "12",
+        "metadata": {
+          "type": "node",
+          "basename": "node",
+          "name": "node3",
+          "id": 3,
+          "uniq_id": 12,
+          "rank": 3,
+          "exclusive": false,
+          "unit": "",
+          "size": 1,
+          "paths": {
+            "containment": "/tiny0/rack1/node3"
+          }
+        }
+      },
+      {
+        "id": "13",
+        "metadata": {
+          "type": "core",
+          "basename": "core",
+          "name": "core0",
+          "id": 0,
+          "uniq_id": 13,
+          "rank": 3,
+          "exclusive": false,
+          "unit": "",
+          "size": 1,
+          "paths": {
+            "containment": "/tiny0/rack1/node3/core0"
+          }
+        }
+      },
+      {
+        "id": "14",
+        "metadata": {
+          "type": "core",
+          "basename": "core",
+          "name": "core1",
+          "id": 1,
+          "uniq_id": 14,
+          "rank": 3,
+          "exclusive": false,
+          "unit": "",
+          "size": 1,
+          "paths": {
+            "containment": "/tiny0/rack1/node3/core1"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "0",
+        "target": "1",
+        "metadata": {
+          "name": {
+            "containment": "contains"
+          }
+        }
+      },
+      {
+        "source": "0",
+        "target": "2",
+        "metadata": {
+          "name": {
+            "containment": "contains"
+          }
+        }
+      },
+      {
+        "source": "1",
+        "target": "3",
+        "metadata": {
+          "name": {
+            "containment": "contains"
+          }
+        }
+      },
+      {
+        "source": "3",
+        "target": "4",
+        "metadata": {
+          "name": {
+            "containment": "contains"
+          }
+        }
+      },
+      {
+        "source": "3",
+        "target": "5",
+        "metadata": {
+          "name": {
+            "containment": "contains"
+          }
+        }
+      },
+      {
+        "source": "1",
+        "target": "6",
+        "metadata": {
+          "name": {
+            "containment": "contains"
+          }
+        }
+      },
+      {
+        "source": "6",
+        "target": "7",
+        "metadata": {
+          "name": {
+            "containment": "contains"
+          }
+        }
+      },
+      {
+        "source": "6",
+        "target": "8",
+        "metadata": {
+          "name": {
+            "containment": "contains"
+          }
+        }
+      },
+      {
+        "source": "1",
+        "target": "9",
+        "metadata": {
+          "name": {
+            "containment": "contains"
+          }
+        }
+      },
+      {
+        "source": "9",
+        "target": "10",
+        "metadata": {
+          "name": {
+            "containment": "contains"
+          }
+        }
+      },
+      {
+        "source": "9",
+        "target": "11",
+        "metadata": {
+          "name": {
+            "containment": "contains"
+          }
+        }
+      },
+      {
+        "source": "2",
+        "target": "12",
+        "metadata": {
+          "name": {
+            "containment": "contains"
+          }
+        }
+      },
+      {
+        "source": "12",
+        "target": "13",
+        "metadata": {
+          "name": {
+            "containment": "contains"
+          }
+        }
+      },
+      {
+        "source": "12",
+        "target": "14",
+        "metadata": {
+          "name": {
+            "containment": "contains"
+          }
+        }
+      }
+    ]
+  }
+}
