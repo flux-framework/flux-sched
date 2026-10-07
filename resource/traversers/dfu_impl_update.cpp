@@ -1192,6 +1192,11 @@ int dfu_impl_t::remove (vtx_t root,
                 m_err_msg += std::to_string (rank) + " not found in by_rank map.\n";
                 return -1;
             }
+            // A shrink removed the vertices of this rank, and released the
+            // resources of the job on it. flux-core frees the rank also.
+            // There is nothing to cancel for it.
+            if (rank_vector->second.empty ())
+                continue;
             for (const vtx_t &vtx : rank_vector->second) {
                 // If no job tag is found on the vertex, job must not have
                 // allocated all rank resources
@@ -1217,12 +1222,14 @@ int dfu_impl_t::remove (vtx_t root,
         }
     }
 
-    if (mod_data.rank_to_root.size () == 0) {
+    if (mod_data.ranks.empty ()) {
         m_err_msg += __FUNCTION__;
-        m_err_msg += ": rank_to_root is empty.\n";
+        m_err_msg += ": R contains no rank.\n";
         return -1;
     }
-
+    // If a shrink removed all the ranks in R, no reduction is necessary.
+    // The check below then finds if the job holds other resources.
+    rc = 0;
     std::unordered_map<vtx_t, type_counts_t> reductions;
     std::unordered_map<vtx_t, size_t> depth;
     for (const auto &rank_root : mod_data.rank_to_root) {
@@ -1245,7 +1252,7 @@ int dfu_impl_t::remove (vtx_t root,
     // resources that the job holds. A difference between R and the graph
     // shows an inconsistency between core and sched, and must cause an
     // error.
-    if ((rc = reduce_ancestors (jobid, reductions, depth, false)) != 0)
+    if (!reductions.empty () && (rc = reduce_ancestors (jobid, reductions, depth, false)) != 0)
         return rc;
 
     // Exact full-cancel semantics: the job is fully canceled when no
