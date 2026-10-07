@@ -14,6 +14,7 @@ extern "C" {
 #endif
 }
 
+#include <limits>
 #include <boost/optional/optional.hpp>
 
 #include "resource/traversers/dfu_impl.hpp"
@@ -796,14 +797,33 @@ void dfu_impl_t::remove_graph_metadata (vtx_t v)
         m_graph_db->metadata.remove_job_vertex (kv.first, v);
 }
 
+int dfu_impl_t::find_subgraph_root (const std::vector<vtx_t> &vtcs, vtx_t &sub_root)
+{
+    // The subgraph root of a rank is the vertex of the rank that has the
+    // shortest path
+    subsystem_t dom = m_match->dom_subsystem ();
+    size_t len = std::numeric_limits<size_t>::max ();
+    sub_root = boost::graph_traits<resource_graph_t>::null_vertex ();
+    for (const vtx_t &v : vtcs) {
+        auto p = (*m_graph)[v].paths.find (dom);
+        if (p != (*m_graph)[v].paths.end () && p->second.length () < len) {
+            len = p->second.length ();
+            sub_root = v;
+        }
+    }
+    return (sub_root == boost::graph_traits<resource_graph_t>::null_vertex ()) ? -1 : 0;
+}
+
 int dfu_impl_t::remove_subgraph (const std::vector<vtx_t> &roots, std::set<vtx_t> &vertices)
 {
     for (const auto &root : roots) {
         vtx_t parent_vtx = boost::graph_traits<resource_graph_t>::null_vertex ();
         m_color.reset ();
-        if (get_parent_vtx (root, parent_vtx) != 0)
+        if (get_parent_vtx (root, parent_vtx) != 0) {
+            m_err_msg += __FUNCTION__ + std::string (": ");
+            m_err_msg += (*m_graph)[root].name + " has no parent in the dominant subsystem.\n";
             return -1;
-
+        }
         if (remove_metadata_outedges (parent_vtx, root) != 0)
             return -1;
     }
@@ -1262,29 +1282,25 @@ int dfu_impl_t::mark (std::set<int64_t> &ranks, resource_pool_t::status_t status
 
 int dfu_impl_t::remove_subgraph (const std::set<int64_t> &ranks)
 {
-    vtx_t subgraph_root_vtx = boost::graph_traits<resource_graph_t>::null_vertex ();
-    vtx_t rank_root_vtx = boost::graph_traits<resource_graph_t>::null_vertex ();
     std::set<vtx_t> vtx_set;
     std::vector<vtx_t> roots_list;
-    std::string tmp_path = "";
-    subsystem_t dom = m_match->dom_subsystem ();
-    int str_len = INT_MAX;
 
     for (const auto &rank : ranks) {
         auto br_iter = m_graph_db->metadata.by_rank.find (rank);
-        if (br_iter != m_graph_db->metadata.by_rank.end ()) {
-            str_len = INT_MAX;
-            vtx_t rank_root_vtx = boost::graph_traits<resource_graph_t>::null_vertex ();
-            for (const auto &v : br_iter->second) {
-                vtx_set.insert (v);
-                tmp_path = (*m_graph)[v].paths.at (dom);
-                if (tmp_path.length () < str_len) {
-                    str_len = tmp_path.length ();
-                    rank_root_vtx = v;
-                }
-            }
-            roots_list.push_back (rank_root_vtx);
+        // remove_graph_metadata () removes each vertex from by_rank, but it
+        // keeps the key. Thus, a rank that a shrink removed before has an
+        // empty vector. There is nothing to remove for it.
+        if (br_iter == m_graph_db->metadata.by_rank.end () || br_iter->second.empty ())
+            continue;
+        vtx_t rank_root_vtx = boost::graph_traits<resource_graph_t>::null_vertex ();
+        if (find_subgraph_root (br_iter->second, rank_root_vtx) != 0) {
+            m_err_msg += __FUNCTION__ + std::string (": ");
+            m_err_msg += "no vertex of rank " + std::to_string (rank);
+            m_err_msg += " has a path in the dominant subsystem.\n";
+            return -1;
         }
+        vtx_set.insert (br_iter->second.begin (), br_iter->second.end ());
+        roots_list.push_back (rank_root_vtx);
     }
 
     if (remove_subgraph (roots_list, vtx_set) != 0)
