@@ -704,7 +704,19 @@ class queue_policy_base_t : public resource_model::queue_adapter_base_t {
                 }
                 // We still want to run the sched loop even if there's an inconsistent state
                 set_schedulability (true);
-                if (full_removal || final) {
+                if (full_removal && !final) {
+                    // A partial cancel removed the last resources of the job
+                    // before the final .free RPC. This may occur if a shrink
+                    // removed the other ranks of the job. Keep the job until
+                    // the final .free RPC, so that RPC finds the job and its
+                    // queue.
+                    flux_log (flux_h,
+                              LOG_DEBUG,
+                              "%s: partial cancel removed the last resources of jobid %jd "
+                              "before the final .free RPC",
+                              __FUNCTION__,
+                              static_cast<intmax_t> (id));
+                } else if (final) {
                     m_alloced.erase (job_it->second->t_stamps.running_ts);
                     m_running.erase (job_it->second->t_stamps.running_ts);
                     job_it->second->t_stamps.complete_ts = m_cq_cnt++;
@@ -712,19 +724,6 @@ class queue_policy_base_t : public resource_model::queue_adapter_base_t {
                     // hold a reference to the shared_ptr to keep it alive
                     // during cancel
                     m_jobs.erase (job_it);
-                    if (full_removal && !final) {
-                        // This error condition can indicate a discrepancy between core and sched,
-                        // specifically that a partial cancel removed an allocation prior to
-                        // receiving the final .free RPC from core.
-                        flux_log_error (flux_h,
-                                        "%s: removed allocation before final .free RPC for "
-                                        "jobid "
-                                        "%jd",
-                                        __FUNCTION__,
-                                        static_cast<intmax_t> (id));
-                        errno = EPROTO;
-                        goto out;
-                    }
                 }
                 break;
             default:
