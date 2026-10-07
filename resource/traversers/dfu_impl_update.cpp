@@ -678,29 +678,37 @@ int dfu_impl_t::cancel_vertex (vtx_t vtx, modify_data_t &mod_data, int64_t jobid
     return rc;
 }
 
-int dfu_impl_t::clear_vertex (vtx_t vtx, modify_data_t &mod_data)
+int dfu_impl_t::clear_vertex (vtx_t vtx, job_counts_t &freed)
 {
-    bool stop = false;
     subsystem_t dom = m_match->dom_subsystem ();
     int64_t base_time = 0;
     int64_t duration = 0;
     planner_t *plans = NULL;
     boost::optional<planner_multi_t *&> opt_multi_plans;
+    const resource_type_t &type = (*m_graph)[vtx].type;
 
-    // Compute removed span counts
+    // Add the count of each removed span to the job that holds the span.
+    // The aggregate spans of the ancestors of a job must decrease by the
+    // sum of the counts of that job only. Count the reservations also,
+    // because reserved jobs also have tags on this vertex. Collect the
+    // counts first. Add them to freed only if no error occurs. Then a
+    // failure does not add the count of a span that stays on the vertex to
+    // a job. All the spans have the type of this vertex.
+    std::unordered_map<int64_t, int64_t> counts;
     plans = (*m_graph)[vtx].schedule.plans;
-    int64_t count = 0;
-    int64_t total_count = 0;
-    for (const auto &alloc_it : (*m_graph)[vtx].schedule.allocations) {
-        if ((count = planner_span_resource_count (plans, alloc_it.second)) < 0) {
-            m_err_msg += __FUNCTION__;
-            m_err_msg += ": planner_span_resource_count failed.\n";
-            m_err_msg += (*m_graph)[vtx].name + " " + strerror (errno) + ".\n";
-            return -1;
+    for (const auto *spans :
+         {&(*m_graph)[vtx].schedule.allocations, &(*m_graph)[vtx].schedule.reservations}) {
+        for (const auto &[jobid, span] : *spans) {
+            int64_t count = planner_span_resource_count (plans, span);
+            if (count < 0) {
+                m_err_msg += __FUNCTION__;
+                m_err_msg += ": planner_span_resource_count failed.\n";
+                m_err_msg += (*m_graph)[vtx].name + " " + strerror (errno) + ".\n";
+                return -1;
+            }
+            counts[jobid] += count;
         }
-        total_count += count;
     }
-    mod_data.rank_to_counts[(*m_graph)[vtx].rank][(*m_graph)[vtx].type] += total_count;
     // Reset planner
     base_time = planner_base_time (plans);
     duration = planner_duration (plans);
@@ -742,6 +750,8 @@ int dfu_impl_t::clear_vertex (vtx_t vtx, modify_data_t &mod_data)
     // Clear allocations and reservations
     (*m_graph)[vtx].schedule.allocations.clear ();
     (*m_graph)[vtx].schedule.reservations.clear ();
+    for (const auto &[jobid, count] : counts)
+        freed[jobid][type] += count;
 
     return 0;
 }
@@ -916,9 +926,36 @@ void dfu_impl_t::add_chain_counts (const std::vector<vtx_t> &chain,
     }
 }
 
+void dfu_impl_t::bound_by_planned (vtx_t u, int64_t jobid, type_counts_t &counts)
+{
+    // Replace each count r with min (r, p). p is the count of the same type
+    // in the aggregate span of the job at u. If r > p, record a message.
+    subsystem_t dom = m_match->dom_subsystem ();
+    boost::optional<planner_multi_t *&> opt_p = (*m_graph)[u].idata.subplans.try_at (dom);
+    auto span_it = (*m_graph)[u].idata.job2span.find (jobid);
+    if (!opt_p || !(*opt_p) || span_it == (*m_graph)[u].idata.job2span.end ())
+        return;
+    size_t len = planner_multi_resources_len (*opt_p);
+    for (size_t i = 0; i < len; ++i) {
+        auto it = counts.find (resource_type_t{planner_multi_resource_type_at (*opt_p, i)});
+        if (it == counts.end ())
+            continue;
+        int64_t planned = planner_multi_span_planned_at (*opt_p, span_it->second, i);
+        if (planned >= 0 && it->second > planned) {
+            m_err_msg += __FUNCTION__ + std::string (": ") + (*m_graph)[u].name;
+            m_err_msg += ": job " + std::to_string (jobid) + " holds " + std::to_string (planned);
+            m_err_msg += " " + it->first.get () + ", but the reduction is ";
+            m_err_msg += std::to_string (it->second) + ". The reduction is now ";
+            m_err_msg += std::to_string (planned) + ".\n";
+            it->second = planned;
+        }
+    }
+}
+
 int dfu_impl_t::reduce_ancestors (int64_t jobid,
                                   std::unordered_map<vtx_t, type_counts_t> &reductions,
-                                  const std::unordered_map<vtx_t, size_t> &depth)
+                                  const std::unordered_map<vtx_t, size_t> &depth,
+                                  bool bound)
 {
     // Visit the ancestors in decreasing order of depth. A visit can remove
     // the exclusive span of the job from an ancestor a (see
@@ -949,6 +986,8 @@ int dfu_impl_t::reduce_ancestors (int64_t jobid,
         modify_data_t mod_data;
         mod_data.mod_type = job_modify_t::PARTIAL_CANCEL;
         mod_data.type_to_count = reductions[u];
+        if (bound)
+            bound_by_planned (u, jobid, mod_data.type_to_count);
         m_preorder++;
         // After an error, continue with the other ancestors. If the counts
         // in reductions are correct, an ancestor that is not reduced shows
@@ -1202,7 +1241,11 @@ int dfu_impl_t::remove (vtx_t root,
     // Reduce the ancestor aggregate filters by the freed counts.
     // Ancestors are visited (their aggregate spans reduced) but not
     // purged: they retain the job's state until the job is removed.
-    if ((rc = reduce_ancestors (jobid, reductions, depth)) != 0)
+    // Do not bound the reductions on this path. R gives exactly the
+    // resources that the job holds. A difference between R and the graph
+    // shows an inconsistency between core and sched, and must cause an
+    // error.
+    if ((rc = reduce_ancestors (jobid, reductions, depth, false)) != 0)
         return rc;
 
     // Exact full-cancel semantics: the job is fully canceled when no
@@ -1266,60 +1309,79 @@ int dfu_impl_t::remove (vtx_t root,
 
 int dfu_impl_t::remove (vtx_t root, const std::set<int64_t> &ranks)
 {
-    int rc = -1;
-    modify_data_t mod_data;
-    resource_graph_t &g = m_graph_db->resource_graph;
+    int rc = 0;
     resource_graph_metadata_t &m = m_graph_db->metadata;
     m_preorder = 0;
     m_postorder = 0;
-    std::unordered_set<int64_t> jobids;
 
+    // Normalize the request to the ranks that by_rank knows. An unknown
+    // rank is an error of the caller, not a failure of the cleanup. Record
+    // a message for it and keep the other ranks. remove_subgraph () also
+    // ignores an unknown rank. Thus, both stages of a shrink act on the
+    // same ranks, and an unknown rank never suppresses the cleanup of a
+    // known rank. A rank that an earlier shrink removed keeps its key with
+    // an empty vector. This loop accepts that rank, as before.
+    std::set<int64_t> known;
     for (const int64_t &rank : ranks) {
-        auto rank_vector = m.by_rank.find (rank);
-        if (rank_vector == m.by_rank.end ()) {
+        if (m.by_rank.find (rank) == m.by_rank.end ()) {
             m_err_msg += __FUNCTION__ + std::string (": ");
-            m_err_msg += std::to_string (rank) + " not found in by_rank map.\n";
-            return -1;
+            m_err_msg += "rank " + std::to_string (rank);
+            m_err_msg += " is not in the by_rank map. The function ignores it.\n";
+            continue;
         }
-        mod_data.ranks.insert (rank);
-        for (const vtx_t &vtx : rank_vector->second) {
-            for (const auto &jobid : (*m_graph)[vtx].idata.tags) {
-                jobids.insert (jobid.first);
-            }
-            // Clear all job data from the vertex.
-            if ((rc = clear_vertex (vtx, mod_data)) != 0) {
-                m_err_msg += __FUNCTION__;
-                m_err_msg += ": clear_vertex failed.\n";
-                m_err_msg += (*m_graph)[vtx].name + ".\n";
-                return rc;
-            }
-        }
-        vtx_t sub_root = boost::graph_traits<resource_graph_t>::null_vertex ();
-        if (find_subgraph_root (rank_vector->second, sub_root) == 0)
-            mod_data.rank_to_root[rank] = sub_root;
+        known.insert (rank);
     }
-    if (jobids.size () == 0) {
-        // Nothing to do
-        return 0;
-    }
+
+    // Clear all vertices of each lost rank. Record the released counts for
+    // each job that held them. Add the counts of a job only to the
+    // ancestors of the subgraph root of that rank. As a result, the
+    // reductions of a job contain only the resources that the job held on
+    // that rank. They do not contain resources of other jobs or of other
+    // lost ranks.
     std::unordered_map<int64_t, std::unordered_map<vtx_t, type_counts_t>> per_job;
     std::unordered_map<vtx_t, size_t> depth;
-    for (const auto &rank_root : mod_data.rank_to_root) {
-        const auto &rank_it = mod_data.rank_to_counts.find (rank_root.first);
-        if (rank_it == mod_data.rank_to_counts.end ()) {
-            m_err_msg += __FUNCTION__ + std::string (": ");
-            m_err_msg += std::to_string (rank_root.first) + " not found in rank_to_counts.\n";
-            return -1;
+    for (const int64_t &rank : known) {
+        const std::vector<vtx_t> &vtcs = m.by_rank.at (rank);
+        vtx_t sub_root = boost::graph_traits<resource_graph_t>::null_vertex ();
+        job_counts_t freed;
+        for (const vtx_t &vtx : vtcs) {
+            m_preorder++;
+            // Continue after an error. The caller removes the rank from the
+            // graph in all cases, and the other vertices must also be clear.
+            if (clear_vertex (vtx, freed) != 0) {
+                m_err_msg += __FUNCTION__;
+                m_err_msg += ": clear_vertex failed on " + (*m_graph)[vtx].name + ".\n";
+                rc = -1;
+                continue;
+            }
+            m_postorder++;
         }
-        // Accumulate type_to_count for all vertices up to graph root
+        if (freed.empty ())
+            continue;
+        // A rank that has no vertices (for example, after a shrink) held no
+        // job. Thus, freed is empty for that rank, and the code does not
+        // get here.
+        if (find_subgraph_root (vtcs, sub_root) != 0) {
+            m_err_msg += __FUNCTION__ + std::string (": ");
+            m_err_msg += "no vertex of rank " + std::to_string (rank);
+            m_err_msg += " has a path in the dominant subsystem.\n";
+            rc = -1;
+            continue;
+        }
         std::vector<vtx_t> chain;
-        ancestor_chain (rank_root.second, chain);
-        for (const int64_t &jobid : jobids)
-            add_chain_counts (chain, rank_it->second, per_job[jobid], depth);
+        ancestor_chain (sub_root, chain);
+        for (const auto &[jobid, counts] : freed)
+            add_chain_counts (chain, counts, per_job[jobid], depth);
     }
-    // Decrease the aggregate spans of the ancestors of each job
+
+    // Decrease the aggregate spans of the ancestors of each job. Use the
+    // count in each span as an upper bound for its reduction. The bound is
+    // a recovery from an inconsistent state, not a proof: if the counts in
+    // freed are correct, a smaller reduction makes an ancestor show more
+    // resources in use than the true value, but never fewer. The final
+    // cancel of the job removes these spans.
     for (auto &[jobid, reductions] : per_job) {
-        if (reduce_ancestors (jobid, reductions, depth) != 0)
+        if (reduce_ancestors (jobid, reductions, depth, true) != 0)
             rc = -1;
     }
     return rc;

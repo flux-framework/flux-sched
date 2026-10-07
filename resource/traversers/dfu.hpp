@@ -188,8 +188,15 @@ class dfu_traverser_t {
     /*! Remove the allocation/reservation referred to by a set of ranks
      *  and update the resource state.
      *
+     *  The function ignores a rank that the by_rank map does not know. It
+     *  records a message for that rank and processes the other ranks.
+     *  remove_subgraph () uses the same policy. Thus, a caller can pass the
+     *  same set to both functions.
+     *
      *  \param ranks     set of ranks to deallocate.
-     *  \return          0 on success; -1 on error.
+     *  \return          0 on success; -1 if the cleanup of a known rank
+     *                   failed. An unknown rank alone gives 0 and a
+     *                   message in err_message ().
      *                       EINVAL: graph, roots or match callback not set.
      */
     int remove (const std::set<int64_t> &ranks);
