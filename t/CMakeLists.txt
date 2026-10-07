@@ -39,6 +39,8 @@ set(ALL_TESTS
   t1034-rabbit-partial-release.t
   t1035-reconfig-reload-sweep.t
   t1036-overrun-exclusive.t
+  t1037-partial-release-overrun.t
+  t1038-partial-release-multitenant.t
   t2317-resource-shrink.t
   t3000-jobspec.t
   t3001-resource-basic.t
@@ -105,6 +107,7 @@ set(ALL_TESTS
   t4015-notify-feasibility.t
   t4016-match-flexible.t
   t4017-match-without-allocating.t
+  t4018-notify-shrink-unknown-rank.t
   t5000-valgrind.t
   t5100-issues-test-driver.t
   t5200-jgf-load-no-parent-jgf.t
