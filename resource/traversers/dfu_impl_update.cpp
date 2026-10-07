@@ -14,6 +14,7 @@ extern "C" {
 #endif
 }
 
+#include <algorithm>
 #include <limits>
 #include <boost/optional/optional.hpp>
 
@@ -538,66 +539,113 @@ int dfu_impl_t::mod_idata (vtx_t u,
     return mod_agfilter (u, jobid, subsystem, mod_data, stop);
 }
 
+int dfu_impl_t::remove_exclusive_span (vtx_t u,
+                                       std::map<int64_t, int64_t> &spans,
+                                       std::map<int64_t, int64_t>::iterator it,
+                                       modify_data_t &mod_data)
+{
+    // A partial release occurs below u. The job holds u exclusively, but u
+    // is not part of the released resources. For example, u is a rack or a
+    // cluster that has no broker rank.
+    // Replace the exclusive schedule span of the job on u with a span that
+    // holds no resources. Then by_avail () gives other jobs access to the
+    // released resources below u, as for a node-exclusive allocation.
+    // The entry in schedule.allocations stays, but it refers to the new
+    // span. by_excl () examines this entry independently of time, so an
+    // exclusive request for u is refused also after the planned end of the
+    // job, while the job holds resources below u. The x_checker span alone
+    // cannot do this, because it ends at the planned end of the job.
+    // Keep the tag, the x_checker span, the decreased aggregate span and the
+    // by_jobid entry until the final cancel also. The residue check in
+    // remove () treats a span that holds no resources as residue.
+    planner_t *plans = (*m_graph)[u].schedule.plans;
+    int64_t count = planner_span_resource_count (plans, it->second);
+    int64_t start = planner_span_start_time (plans, it->second);
+    int64_t duration = planner_span_duration (plans, it->second);
+    if (count < 0 || start < 0 || duration <= 0) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": cannot examine the exclusive span on ";
+        m_err_msg += (*m_graph)[u].name + " " + strerror (errno) + ".\n";
+        return -1;
+    }
+    // A previous partial release below u already replaced the span. The
+    // proper ancestors of u subtracted the type of u at that time, and they
+    // must not subtract it again.
+    if (count == 0)
+        return 0;
+    // Add the new span before the removal of the old span. A span that
+    // holds no resources needs no capacity, so the add can succeed while
+    // the old span exists. If the add fails, u keeps the old span and the
+    // entry, and the protection of by_excl () stays.
+    int64_t span = planner_add_span (plans, start, static_cast<uint64_t> (duration), 0);
+    if (span == -1) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": cannot add a placeholder span on ";
+        m_err_msg += (*m_graph)[u].name + " " + strerror (errno) + ".\n";
+        return -1;
+    }
+    if (planner_rem_span (plans, it->second) == -1) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": cannot remove the exclusive span on ";
+        m_err_msg += (*m_graph)[u].name + " " + strerror (errno) + ".\n";
+        // Do not keep a span that no entry refers to
+        planner_rem_span (plans, span);
+        return -1;
+    }
+    it->second = span;
+    // Each proper ancestor of u must subtract the count of the type of u.
+    // accum_to_parent () added the size of u to the ancestors, not the
+    // count in the exclusive span (needs). Thus, subtract the size.
+    mod_data.released_own_count = (*m_graph)[u].size;
+    return 0;
+}
+
 int dfu_impl_t::mod_plan (vtx_t u, int64_t jobid, modify_data_t &mod_data)
 {
     int rc = 0;
     int64_t span = -1;
     int64_t prev_count = -1;
-    int64_t to_remove = 0;
-    bool removed = false;
     std::map<int64_t, int64_t>::iterator alloc_span;
     std::map<int64_t, int64_t>::iterator res_span;
     planner_t *plans = NULL;
+    auto &allocations = (*m_graph)[u].schedule.allocations;
+    auto &reservations = (*m_graph)[u].schedule.reservations;
 
-    alloc_span = (*m_graph)[u].schedule.allocations.find (jobid);
-    if (alloc_span != (*m_graph)[u].schedule.allocations.end ()) {
+    if ((alloc_span = allocations.find (jobid)) != allocations.end ()) {
+        if (mod_data.mod_type == job_modify_t::PARTIAL_CANCEL)
+            return remove_exclusive_span (u, allocations, alloc_span, mod_data);
         span = alloc_span->second;
-        if (mod_data.mod_type != job_modify_t::PARTIAL_CANCEL) {
-            (*m_graph)[u].schedule.allocations.erase (alloc_span);
-        } else {
-            // This condition is encountered when the vertex is
-            // not associated with a broker rank. We may need
-            // extra logic here to handle more advanced partial
-            // cancel in the future.
-            goto done;
-        }
-    } else if ((res_span = (*m_graph)[u].schedule.reservations.find (jobid))
-               != (*m_graph)[u].schedule.reservations.end ()) {
+        allocations.erase (alloc_span);
+    } else if ((res_span = reservations.find (jobid)) != reservations.end ()) {
+        // A PARTIAL_CANCEL visit to a reservation occurs in a shrink, or
+        // when the resource module does a partial cancel of a reserved job
+        if (mod_data.mod_type == job_modify_t::PARTIAL_CANCEL)
+            return remove_exclusive_span (u, reservations, res_span, mod_data);
         span = res_span->second;
-        // Can't be PARTIAL_CANCEL
-        (*m_graph)[u].schedule.reservations.erase (res_span);
+        reservations.erase (res_span);
     } else {
         goto done;
     }
 
     plans = (*m_graph)[u].schedule.plans;
-    if (mod_data.mod_type != job_modify_t::PARTIAL_CANCEL) {
-        if (mod_data.mod_type == job_modify_t::VTX_CANCEL) {
-            if ((prev_count = planner_span_resource_count (plans, span)) < 0) {
-                m_err_msg += __FUNCTION__;
-                m_err_msg += ": planner_span_resource_count failed.\n";
-                m_err_msg += (*m_graph)[u].name + " " + strerror (errno) + ".\n";
-                rc = -1;
-                goto done;
-            }
-        }
-        if ((rc = planner_rem_span (plans, span)) == -1) {
+    if (mod_data.mod_type == job_modify_t::VTX_CANCEL) {
+        if ((prev_count = planner_span_resource_count (plans, span)) < 0) {
             m_err_msg += __FUNCTION__;
-            m_err_msg += ": planner_rem_span returned -1.\n";
+            m_err_msg += ": planner_span_resource_count failed.\n";
             m_err_msg += (*m_graph)[u].name + " " + strerror (errno) + ".\n";
+            rc = -1;
             goto done;
         }
-        // Accumulate counts per type to partially remove from filters
-        if (mod_data.mod_type == job_modify_t::VTX_CANCEL) {
-            mod_data.rank_to_counts[(*m_graph)[u].rank][(*m_graph)[u].type] += prev_count;
-        }
-    } else {  // PARTIAL_CANCEL
-        m_err_msg += __FUNCTION__;
-        m_err_msg += ": traverser tried to remove schedule and span";
-        m_err_msg += " after vtx_cancel during partial cancel:\n";
-        m_err_msg += (*m_graph)[u].name + " " + strerror (errno) + ".\n";
-        rc = -1;
     }
+    if ((rc = planner_rem_span (plans, span)) == -1) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": planner_rem_span returned -1.\n";
+        m_err_msg += (*m_graph)[u].name + " " + strerror (errno) + ".\n";
+        goto done;
+    }
+    // Accumulate counts per type to partially remove from filters
+    if (mod_data.mod_type == job_modify_t::VTX_CANCEL)
+        mod_data.rank_to_counts[(*m_graph)[u].rank][(*m_graph)[u].type] += prev_count;
 
 done:
     return rc;
@@ -613,6 +661,10 @@ int dfu_impl_t::cancel_vertex (vtx_t vtx, modify_data_t &mod_data, int64_t jobid
         errno = EINVAL;
         return rc;
     }
+    // Call mod_plan () also if mod_idata () set stop, because the vertex
+    // has no tag or no aggregate span for the job. A vertex can hold a
+    // schedule span for the job without them. mod_plan () must remove that
+    // span also.
     if ((rc = mod_plan (vtx, jobid, mod_data)) == -1)
         errno = EINVAL;
     // A PARTIAL_CANCEL visit only reduces the vertex's aggregate span;
@@ -836,6 +888,91 @@ int dfu_impl_t::remove_subgraph (const std::vector<vtx_t> &roots, std::set<vtx_t
     return 0;
 }
 
+void dfu_impl_t::ancestor_chain (vtx_t sub_root, std::vector<vtx_t> &chain)
+{
+    // Find the proper ancestors of sub_root in increasing order of
+    // distance. The last element is the graph root.
+    vtx_t parent = boost::graph_traits<resource_graph_t>::null_vertex ();
+    vtx_t curr = sub_root;
+    chain.clear ();
+    while (get_parent_vtx (curr, parent) == 0) {
+        chain.push_back (parent);
+        curr = parent;
+    }
+}
+
+void dfu_impl_t::add_chain_counts (const std::vector<vtx_t> &chain,
+                                   const type_counts_t &counts,
+                                   std::unordered_map<vtx_t, type_counts_t> &reductions,
+                                   std::unordered_map<vtx_t, size_t> &depth)
+{
+    // Because the dominant subsystem is a tree, a vertex has the same depth
+    // on each chain that contains it. The graph root has depth 0.
+    for (size_t i = 0; i < chain.size (); ++i) {
+        depth[chain[i]] = chain.size () - 1 - i;
+        auto &red = reductions[chain[i]];
+        for (const auto &[type, count] : counts)
+            red[type] += count;
+    }
+}
+
+int dfu_impl_t::reduce_ancestors (int64_t jobid,
+                                  std::unordered_map<vtx_t, type_counts_t> &reductions,
+                                  const std::unordered_map<vtx_t, size_t> &depth)
+{
+    // Visit the ancestors in decreasing order of depth. A visit can remove
+    // the exclusive span of the job from an ancestor a (see
+    // remove_exclusive_span ()). Each proper ancestor of a must then also
+    // subtract the count of the type of a. The loop visits these ancestors
+    // after a, because their depth is less. Add the count to their
+    // reductions before those visits.
+    int rc = 0;
+    std::vector<vtx_t> order;
+    order.reserve (reductions.size ());
+    // add_chain_counts () records a depth for each vertex in reductions.
+    // A vertex without a depth shows an error in the caller. Report it,
+    // and do not visit the vertex: a missing visit leaves the ancestor
+    // with more resources in use, which the final cancel removes.
+    for (const auto &kv : reductions) {
+        if (depth.find (kv.first) == depth.end ()) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": no depth for " + (*m_graph)[kv.first].name + ".\n";
+            rc = -1;
+            continue;
+        }
+        order.push_back (kv.first);
+    }
+    std::sort (order.begin (), order.end (), [&depth] (vtx_t a, vtx_t b) {
+        return depth.at (a) > depth.at (b);
+    });
+    for (const vtx_t &u : order) {
+        modify_data_t mod_data;
+        mod_data.mod_type = job_modify_t::PARTIAL_CANCEL;
+        mod_data.type_to_count = reductions[u];
+        m_preorder++;
+        // After an error, continue with the other ancestors. If the counts
+        // in reductions are correct, an ancestor that is not reduced shows
+        // more resources in use than the true value, never fewer. The final
+        // cancel of the job removes its spans.
+        if (cancel_vertex (u, mod_data, jobid) != 0) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": cancel_vertex failed on " + (*m_graph)[u].name;
+            m_err_msg += " for job " + std::to_string (jobid) + ".\n";
+            rc = -1;
+            continue;
+        }
+        if (mod_data.released_own_count > 0) {
+            vtx_t parent = boost::graph_traits<resource_graph_t>::null_vertex ();
+            for (vtx_t curr = u; get_parent_vtx (curr, parent) == 0; curr = parent) {
+                auto it = reductions.find (parent);
+                if (it != reductions.end ())
+                    it->second[(*m_graph)[u].type] += mod_data.released_own_count;
+            }
+        }
+    }
+    return rc;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DFU Traverser Implementation Update API
 ////////////////////////////////////////////////////////////////////////////////
@@ -988,7 +1125,6 @@ int dfu_impl_t::remove (vtx_t root,
     modify_data_t mod_data;
     resource_graph_t &g = m_graph_db->resource_graph;
     resource_graph_metadata_t &m = m_graph_db->metadata;
-    subsystem_t dom = m_match->dom_subsystem ();
     m_preorder = 0;
     m_postorder = 0;
 
@@ -996,7 +1132,8 @@ int dfu_impl_t::remove (vtx_t root,
     mod_data.sequence_number = m_sequence_number;
     if (reader->partial_cancel (g, m, mod_data, R_to_cancel, jobid) != 0) {
         m_err_msg += __FUNCTION__;
-        m_err_msg += ": partial_cancel returned error.\n";
+        m_err_msg += ": partial_cancel returned error: " + reader->err_message ();
+        reader->clear_err_message ();
         return -1;
     }
     // A reader-driven cancel (e.g. JGF) visits and releases vertices
@@ -1016,8 +1153,6 @@ int dfu_impl_t::remove (vtx_t root,
                 m_err_msg += std::to_string (rank) + " not found in by_rank map.\n";
                 return -1;
             }
-            uint32_t subgraph_root_len = std::numeric_limits<uint32_t>::max ();
-            // Max characters 2^32 - 1 for a huge graph
             for (const vtx_t &vtx : rank_vector->second) {
                 // If no job tag is found on the vertex, job must not have
                 // allocated all rank resources
@@ -1031,11 +1166,15 @@ int dfu_impl_t::remove (vtx_t root,
                     }
                     m_postorder++;
                 }
-                if ((*m_graph)[vtx].paths.at (dom).length () < subgraph_root_len) {
-                    subgraph_root_len = (*m_graph)[vtx].paths.at (dom).length ();
-                    mod_data.rank_to_root[rank] = vtx;
-                }
             }
+            vtx_t sub_root = boost::graph_traits<resource_graph_t>::null_vertex ();
+            if (find_subgraph_root (rank_vector->second, sub_root) != 0) {
+                m_err_msg += __FUNCTION__ + std::string (": ");
+                m_err_msg += "no vertex of rank " + std::to_string (rank);
+                m_err_msg += " has a path in the dominant subsystem.\n";
+                return -1;
+            }
+            mod_data.rank_to_root[rank] = sub_root;
         }
     }
 
@@ -1045,7 +1184,8 @@ int dfu_impl_t::remove (vtx_t root,
         return -1;
     }
 
-    std::unordered_map<vtx_t, std::unordered_map<resource_type_t, int64_t>> parent_counts;
+    std::unordered_map<vtx_t, type_counts_t> reductions;
+    std::unordered_map<vtx_t, size_t> depth;
     for (const auto &rank_root : mod_data.rank_to_root) {
         const auto &rank_it = mod_data.rank_to_counts.find (rank_root.first);
         if (rank_it == mod_data.rank_to_counts.end ()) {
@@ -1053,33 +1193,17 @@ int dfu_impl_t::remove (vtx_t root,
             m_err_msg += std::to_string (rank_root.first) + " not found in rank_to_counts.\n";
             return -1;
         }
-        vtx_t subgraph_root_vtx = rank_root.second;
         // Accumulate type_to_count for all vertices up to graph root
-        vtx_t parent_vtx = boost::graph_traits<resource_graph_t>::null_vertex ();
-        vtx_t curr_vtx = subgraph_root_vtx;
-        while (get_parent_vtx (curr_vtx, parent_vtx) == 0) {
-            for (const auto &vtx_count : rank_it->second) {
-                parent_counts[parent_vtx][vtx_count.first] += vtx_count.second;
-            }
-            curr_vtx = parent_vtx;
-        }
+        std::vector<vtx_t> chain;
+        ancestor_chain (rank_root.second, chain);
+        add_chain_counts (chain, rank_it->second, reductions, depth);
     }
 
     // Reduce the ancestor aggregate filters by the freed counts.
     // Ancestors are visited (their aggregate spans reduced) but not
     // purged: they retain the job's state until the job is removed.
-    for (const auto &v : parent_counts) {
-        modify_data_t mod_data_new;
-        mod_data_new.mod_type = job_modify_t::PARTIAL_CANCEL;
-        mod_data_new.type_to_count = v.second;
-        m_preorder++;
-        if ((rc = cancel_vertex (v.first, mod_data_new, jobid)) != 0) {
-            m_err_msg += __FUNCTION__;
-            m_err_msg += ": cancel_vertex failed\n.";
-            m_err_msg += (*m_graph)[v.first].name + ".\n";
-            return rc;
-        }
-    }
+    if ((rc = reduce_ancestors (jobid, reductions, depth)) != 0)
+        return rc;
 
     // Exact full-cancel semantics: the job is fully canceled when no
     // vertex holds any of its state. The walk above purged and
@@ -1097,9 +1221,18 @@ int dfu_impl_t::remove (vtx_t root,
     } else if ((*m_graph)[root].idata.job2span.find (jobid)
                == (*m_graph)[root].idata.job2span.end ()) {
         bool residue_only = true;
+        // A schedule span that holds no resources is residue: it is the
+        // placeholder that remove_exclusive_span () keeps on an ancestor.
+        auto holds_resources = [this] (vtx_t vtx,
+                                       const std::map<int64_t, int64_t> &spans,
+                                       int64_t id) {
+            auto it = spans.find (id);
+            return it != spans.end ()
+                   && planner_span_resource_count ((*m_graph)[vtx].schedule.plans, it->second) != 0;
+        };
         for (const vtx_t &vtx : job_it->second) {
-            if ((*m_graph)[vtx].schedule.allocations.contains (jobid)
-                || (*m_graph)[vtx].schedule.reservations.contains (jobid)
+            if (holds_resources (vtx, (*m_graph)[vtx].schedule.allocations, jobid)
+                || holds_resources (vtx, (*m_graph)[vtx].schedule.reservations, jobid)
                 || (*m_graph)[vtx].idata.job2span.contains (jobid)) {
                 residue_only = false;
                 break;
@@ -1140,7 +1273,6 @@ int dfu_impl_t::remove (vtx_t root, const std::set<int64_t> &ranks)
     m_preorder = 0;
     m_postorder = 0;
     std::unordered_set<int64_t> jobids;
-    subsystem_t dom = m_match->dom_subsystem ();
 
     for (const int64_t &rank : ranks) {
         auto rank_vector = m.by_rank.find (rank);
@@ -1150,8 +1282,6 @@ int dfu_impl_t::remove (vtx_t root, const std::set<int64_t> &ranks)
             return -1;
         }
         mod_data.ranks.insert (rank);
-        uint32_t subgraph_root_len = std::numeric_limits<uint32_t>::max ();
-        // Max characters 2^32 - 1 for a huge graph
         for (const vtx_t &vtx : rank_vector->second) {
             for (const auto &jobid : (*m_graph)[vtx].idata.tags) {
                 jobids.insert (jobid.first);
@@ -1163,19 +1293,17 @@ int dfu_impl_t::remove (vtx_t root, const std::set<int64_t> &ranks)
                 m_err_msg += (*m_graph)[vtx].name + ".\n";
                 return rc;
             }
-            if ((*m_graph)[vtx].paths.at (dom).length () < subgraph_root_len) {
-                subgraph_root_len = (*m_graph)[vtx].paths.at (dom).length ();
-                mod_data.rank_to_root[rank] = vtx;
-            }
         }
+        vtx_t sub_root = boost::graph_traits<resource_graph_t>::null_vertex ();
+        if (find_subgraph_root (rank_vector->second, sub_root) == 0)
+            mod_data.rank_to_root[rank] = sub_root;
     }
     if (jobids.size () == 0) {
         // Nothing to do
         return 0;
     }
-    std::unordered_map<vtx_t,
-                       std::unordered_map<int64_t, std::unordered_map<resource_type_t, int64_t>>>
-        parent_jobid_counts;
+    std::unordered_map<int64_t, std::unordered_map<vtx_t, type_counts_t>> per_job;
+    std::unordered_map<vtx_t, size_t> depth;
     for (const auto &rank_root : mod_data.rank_to_root) {
         const auto &rank_it = mod_data.rank_to_counts.find (rank_root.first);
         if (rank_it == mod_data.rank_to_counts.end ()) {
@@ -1183,31 +1311,16 @@ int dfu_impl_t::remove (vtx_t root, const std::set<int64_t> &ranks)
             m_err_msg += std::to_string (rank_root.first) + " not found in rank_to_counts.\n";
             return -1;
         }
-        vtx_t subgraph_root_vtx = rank_root.second;
         // Accumulate type_to_count for all vertices up to graph root
-        vtx_t parent_vtx = boost::graph_traits<resource_graph_t>::null_vertex ();
-        vtx_t curr_vtx = subgraph_root_vtx;
-        while (get_parent_vtx (curr_vtx, parent_vtx) == 0) {
-            for (const auto &vtx_count : rank_it->second) {
-                for (const int64_t &jobid : jobids) {
-                    parent_jobid_counts[parent_vtx][jobid][vtx_count.first] += vtx_count.second;
-                }
-            }
-            curr_vtx = parent_vtx;
-        }
+        std::vector<vtx_t> chain;
+        ancestor_chain (rank_root.second, chain);
+        for (const int64_t &jobid : jobids)
+            add_chain_counts (chain, rank_it->second, per_job[jobid], depth);
     }
-    // Now partial cancel DFV from graph root
-    for (const auto &v : parent_jobid_counts) {
-        for (const auto &jobid : v.second) {
-            modify_data_t mod_data_new;
-            mod_data_new.mod_type = job_modify_t::PARTIAL_CANCEL;
-            mod_data_new.type_to_count = jobid.second;
-            if ((rc = cancel_vertex (v.first, mod_data_new, jobid.first)) != 0) {
-                m_err_msg += __FUNCTION__ + std::string (": ");
-                m_err_msg += (*m_graph)[v.first].name + ": cancel_vertex failed.\n";
-                return rc;
-            }
-        }
+    // Decrease the aggregate spans of the ancestors of each job
+    for (auto &[jobid, reductions] : per_job) {
+        if (reduce_ancestors (jobid, reductions, depth) != 0)
+            rc = -1;
     }
     return rc;
 }

@@ -14,7 +14,10 @@
 #include <cstdlib>
 #include <cstdint>
 #include <cmath>
+#include <map>
 #include <memory>
+#include <unordered_map>
+#include <vector>
 #include "resource/libjobspec/jobspec.hpp"
 #include "resource/config/system_defaults.hpp"
 #include "resource/schema/resource_data.hpp"
@@ -32,6 +35,9 @@ namespace resource_model {
 namespace detail {
 
 enum class visit_t { DFV, UPV };
+
+// type_counts_t maps a resource type to a count
+using type_counts_t = std::unordered_map<resource_type_t, int64_t>;
 
 enum class match_kind_t { RESOURCE_MATCH, SLOT_MATCH, NONE_MATCH, PRISTINE_NONE_MATCH };
 
@@ -660,8 +666,23 @@ class dfu_impl_t {
                    const modify_data_t &mod_data,
                    bool &stop);
     int mod_plan (vtx_t u, int64_t jobid, modify_data_t &mod_data);
+    int remove_exclusive_span (vtx_t u,
+                               std::map<int64_t, int64_t> &spans,
+                               std::map<int64_t, int64_t>::iterator it,
+                               modify_data_t &mod_data);
     int cancel_vertex (vtx_t vtx, modify_data_t &mod_data, int64_t jobid);
     int clear_vertex (vtx_t vtx, modify_data_t &mod_data);
+
+    // The rank-based and the R-based partial release paths use these
+    // functions
+    void ancestor_chain (vtx_t sub_root, std::vector<vtx_t> &chain);
+    void add_chain_counts (const std::vector<vtx_t> &chain,
+                           const type_counts_t &counts,
+                           std::unordered_map<vtx_t, type_counts_t> &reductions,
+                           std::unordered_map<vtx_t, size_t> &depth);
+    int reduce_ancestors (int64_t jobid,
+                          std::unordered_map<vtx_t, type_counts_t> &reductions,
+                          const std::unordered_map<vtx_t, size_t> &depth);
 
     // Subgraph removal functions
     int find_subgraph_root (const std::vector<vtx_t> &vtcs, vtx_t &sub_root);
