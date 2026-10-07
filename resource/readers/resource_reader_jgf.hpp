@@ -82,6 +82,11 @@ struct jgf_updater_data {
     std::unordered_set<int64_t> ranks;
     // track vertices that are skipped because their ranks are freed
     std::unordered_set<int64_t> skip_vertices;
+    // The ancestors of the resources that a previous partial free released.
+    // The reader makes an exclusive vertex in this set non-exclusive. The
+    // partial cancel in the traverser made the same change (see
+    // dfu_impl_t::remove_exclusive_span ()).
+    std::unordered_set<vtx_t> freed_ancestors;
     bool update = true;        // Updating or partial cancel
     bool isect_ranks = false;  // Updating with partial_ok; intersecting with ranks key
     bool skipped = false;
@@ -244,6 +249,19 @@ class resource_reader_jgf_t : public resource_reader_base_t {
                      vtx_t v,
                      const std::map<subsystem_t, bool> &root_checks,
                      const fetch_helper_t &fetcher);
+    int update_vmap (std::map<std::string, vmap_val_t> &vmap,
+                     vtx_t v,
+                     const std::map<subsystem_t, bool> &root_checks,
+                     const fetch_helper_t &fetcher,
+                     unsigned int exclusive);
+    void collect_freed_ancestors (const resource_graph_t &g,
+                                  const resource_graph_metadata_t &m,
+                                  json_t *nodes,
+                                  jgf_updater_data &update_data);
+    void collect_freed_ancestors_by_path (const resource_graph_metadata_t &m,
+                                          json_t *nodes,
+                                          const std::unordered_set<int64_t> &ranks,
+                                          jgf_updater_data &update_data);
     int add_vtx (resource_graph_t &g,
                  resource_graph_metadata_t &m,
                  std::map<std::string, vmap_val_t> &vmap,
@@ -256,7 +274,8 @@ class resource_reader_jgf_t : public resource_reader_base_t {
                vtx_t &v);
     int update_vtx_plan (vtx_t v,
                          resource_graph_t &g,
-                         const fetch_helper_t &fetcher,
+                         bool exclusive,
+                         bool demoted,
                          jgf_updater_data &update_data);
     int cancel_vtx (vtx_t v,
                     resource_graph_t &g,
