@@ -37,10 +37,12 @@
  * copy must not reach the original. Each test also shows that the refusal
  * takes no free resource away: another node, or another rack, or the
  * released node still serves the request, and the state after a full
- * cancel is clean. After each change of the state, the helper
- * check_x_checker () recomputes, for every vertex of the containment
- * subsystem, whether a job holds a span in the subtree of the vertex, and
- * compares the result with the x_checker of the vertex.
+ * cancel is clean. The two-rack tests check the per-job aggregate counts
+ * of a partial release below an exclusive rack, live and after a reload.
+ * After each change of the state, the helper check_x_checker ()
+ * recomputes, for every vertex of the containment subsystem, whether a
+ * job holds a span in the subtree of the vertex, and compares the result
+ * with the x_checker of the vertex.
  */
 
 extern "C" {
@@ -153,6 +155,35 @@ static const char *excl_rack_jobspec = R"({
         {
             "type": "rack",
             "count": 1,
+            "exclusive": true,
+            "with": [
+                {
+                    "type": "node",
+                    "count": 1,
+                    "with": [
+                        {
+                            "type": "slot",
+                            "count": 1,
+                            "label": "task",
+                            "with": [{"type": "core", "count": 1}]
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "tasks": [{"command": ["sleep", "0"], "slot": "task", "count": {"per_slot": 1}}],
+    "attributes": {"system": {"duration": 10.0}}
+})";
+
+// Two exclusive racks, for 10 seconds. An exclusive rack holds all of its
+// nodes, thus this request takes the four nodes of the two racks.
+static const char *two_rack_jobspec = R"({
+    "version": 1,
+    "resources": [
+        {
+            "type": "rack",
+            "count": 2,
             "exclusive": true,
             "with": [
                 {
@@ -321,6 +352,10 @@ static const char *rank0_R =
     R"({"version": 1, "execution": {"R_lite": [{"rank": "0", "children": {"core": "0"}}], "starttime": 0, "expiration": 0, "nodelist": ["node0"]}})";
 static const char *rank1_R =
     R"({"version": 1, "execution": {"R_lite": [{"rank": "1", "children": {"core": "0"}}], "starttime": 0, "expiration": 0, "nodelist": ["node1"]}})";
+static const char *rank2_R =
+    R"({"version": 1, "execution": {"R_lite": [{"rank": "2", "children": {"core": "0"}}], "starttime": 0, "expiration": 0, "nodelist": ["node2"]}})";
+static const char *rank3_R =
+    R"({"version": 1, "execution": {"R_lite": [{"rank": "3", "children": {"core": "0"}}], "starttime": 0, "expiration": 0, "nodelist": ["node3"]}})";
 
 static const char *params_nosched =
     "{\"load_format\": \"jgf\", \"matcher_policy\": \"first\", "
@@ -489,6 +524,86 @@ static bool find_is_empty (void *h, const char *criteria)
     bool empty = (o == nullptr) || (json_array_size (nodes) == 0);
     json_decref (o);
     return empty;
+}
+
+// Ask find () for the per-job aggregate counts. The jgf writer puts them
+// in metadata.agfilter of each vertex that holds an aggregate span of the
+// job. The caller owns the result.
+static json_t *find_agfilter (void *h, int64_t jobid)
+{
+    std::string criteria = "jobid-span=" + std::to_string (jobid) + " and agfilter=true";
+    json_t *o = nullptr;
+    if (reapi_cli_t::find (h, criteria, o, std::string ("jgf")) != 0)
+        return nullptr;
+    return o;
+}
+
+// Return the used count of a type at a containment path in the graph that
+// find () emitted. Return -1 if the graph has no such path, or the path
+// has no count of that type.
+static int64_t agfilter_used (json_t *graph, const char *path, const char *type)
+{
+    size_t i = 0;
+    json_t *v = NULL;
+    json_t *nodes = json_object_get (json_object_get (graph, "graph"), "nodes");
+
+    json_array_foreach (nodes, i, v) {
+        json_t *md = json_object_get (v, "metadata");
+        const char *p =
+            json_string_value (json_object_get (json_object_get (md, "paths"), "containment"));
+        if (!p || strcmp (p, path) != 0)
+            continue;
+        // The value has the form "used:X, total:Y"
+        const char *counts =
+            json_string_value (json_object_get (json_object_get (md, "agfilter"), type));
+        if (!counts || strncmp (counts, "used:", 5) != 0)
+            return -1;
+        return static_cast<int64_t> (strtoll (counts + 5, nullptr, 10));
+    }
+    return -1;
+}
+
+// Compare the per-job counts of core, node and rack at a containment path
+// with the expected values. A value of -1 means that the count is absent:
+// the vertex has no pruning filter of that type, or the job holds no
+// aggregate span on the vertex.
+static void check_used (void *h,
+                        int64_t jobid,
+                        const char *path,
+                        int64_t core,
+                        int64_t node,
+                        int64_t rack,
+                        const char *fmt,
+                        ...) __attribute__ ((format (printf, 7, 8)));
+
+static void check_used (void *h,
+                        int64_t jobid,
+                        const char *path,
+                        int64_t core,
+                        int64_t node,
+                        int64_t rack,
+                        const char *fmt,
+                        ...)
+{
+    json_t *o = find_agfilter (h, jobid);
+    int64_t c = agfilter_used (o, path, "core");
+    int64_t n = agfilter_used (o, path, "node");
+    int64_t r = agfilter_used (o, path, "rack");
+    bool good = (c == core && n == node && r == rack);
+    char desc[256];
+    va_list ap;
+
+    va_start (ap, fmt);
+    vsnprintf (desc, sizeof (desc), fmt, ap);
+    va_end (ap);
+    ok (good, "%s", desc);
+    if (!good)
+        diag ("%s: core %jd, node %jd, rack %jd",
+              path,
+              static_cast<intmax_t> (c),
+              static_cast<intmax_t> (n),
+              static_cast<intmax_t> (r));
+    json_decref (o);
 }
 
 // Return true if the x_checker of the vertex at a containment path holds
@@ -1184,6 +1299,160 @@ static void test_reload_partial_then_overrun ()
     delete rq;
 }
 
+// The demotion of an exclusive rack occurs one time. The per-job rack
+// count of the cluster is the oracle. Before the fix, each partial
+// release below rack0 subtracted the rack again, and the count reached 0
+// while the job still held rack1. The first release removes the entry of
+// the job from rack0, thus a later release below rack0 finds no entry to
+// remove. The x_checker of rack0 keeps the span of the job, thus an
+// exclusive request for rack0 stays refused after the planned end.
+static void test_two_racks_demote_one_time ()
+{
+    resource_query_t *rq = make_rq (two_rack_jgf, params_prune);
+    void *h = static_cast<void *> (rq);
+    std::string R;
+    bool reserved = false;
+    bool full_removal = true;
+    int64_t at = 0;
+    double ov = 0.0;
+    int rc = 0;
+
+    ok (reapi_cli_t::match_allocate (h, MATCH_ALLOCATE, two_rack_jobspec, 1, reserved, R, at, ov)
+            == 0,
+        "two racks: job 1 gets both racks at t=0");
+    ok (R_ranks_are (R, {0, 1, 2, 3}), "two racks: the allocation holds the four nodes");
+    check_used (h, 1, "/tiny0", 4, 4, 2, "two racks: the cluster holds 4 cores, 4 nodes, 2 racks");
+    check_used (h, 1, "/tiny0/rack1", 1, 1, -1, "two racks: rack1 holds 1 core and 1 node");
+    ok (alloc_span_count (rq, "/tiny0/rack0", 1) == 1, "two racks: rack0 holds an exclusive span");
+    check_x_checker (rq, "two racks: the x_checker agrees after the match of job 1");
+
+    full_removal = true;
+    ok (reapi_cli_t::cancel (h, 1, rank0_R, false, full_removal) == 0 && !full_removal,
+        "two racks: the release of rank 0 is not a full removal");
+    check_used (h, 1, "/tiny0", 3, 3, 1, "two racks: the release of rank 0 demotes rack0");
+    check_used (h, 1, "/tiny0/rack1", 1, 1, -1, "two racks: rack1 is the same after rank 0");
+    ok (alloc_span_count (rq, "/tiny0/rack0", 1) == -2,
+        "two racks: rack0 holds no entry after the release");
+    check_x_checker (rq, "two racks: the x_checker agrees after the release of rank 0");
+
+    errno = 0;
+    at = 20;
+    rc = run_at (rq, excl_rack_jobspec, MATCH_ALLOCATE, 2, at, R);
+    ok (rc < 0 && errno == EBUSY,
+        "two racks: an exclusive rack request at t=20 is refused while job 1 holds nodes of rack0");
+    ok (find_is_empty (h, "jobid-tag=2"), "two racks: no vertex keeps a tag of job 2");
+    check_x_checker (rq, "two racks: the x_checker agrees after the refused request");
+
+    full_removal = true;
+    ok (reapi_cli_t::cancel (h, 1, rank1_R, false, full_removal) == 0 && !full_removal,
+        "two racks: the release of rank 1 is not a full removal");
+    check_used (h, 1, "/tiny0", 2, 2, 1, "two racks: the release of rank 1 keeps 1 rack");
+    check_used (h, 1, "/tiny0/rack1", 1, 1, -1, "two racks: rack1 is the same after rank 1");
+    ok (alloc_span_count (rq, "/tiny0/rack0", 1) == -2,
+        "two racks: rack0 holds no entry after the second release");
+    check_x_checker (rq, "two racks: the x_checker agrees after the release of rank 1");
+
+    full_removal = true;
+    ok (reapi_cli_t::cancel (h, 1, rank2_R, false, full_removal) == 0 && !full_removal,
+        "two racks: the release of rank 2 empties rack0");
+    check_used (h, 1, "/tiny0", 1, 1, 1, "two racks: the cluster keeps the count of rack1");
+    check_used (h, 1, "/tiny0/rack1", 1, 1, -1, "two racks: rack1 is the same after rank 2");
+    check_x_checker (rq, "two racks: the x_checker agrees after the release of rank 2");
+
+    full_removal = false;
+    ok (reapi_cli_t::cancel (h, 1, rank3_R, false, full_removal) == 0 && full_removal,
+        "two racks: the release of rank 3 completes the cancel of job 1");
+    ok (find_is_empty (h, "jobid-alloc=1"), "two racks: no vertex keeps a span of job 1");
+    check_x_checker (rq, "two racks: the x_checker agrees after the release of rank 3");
+    delete rq;
+}
+
+// The same after a replay: the reader demotes rack0 while it reloads job
+// 1, and a later partial release below rack0 must not demote it again.
+static void test_two_racks_replay (bool remove_rank0)
+{
+    const char *label = remove_rank0 ? "replay absent" : "replay present";
+    resource_query_t *rq = make_rq (two_rack_jgf, params_prune);
+    void *h = static_cast<void *> (rq);
+    std::string R;
+    bool reserved = false;
+    bool full_removal = true;
+    int64_t at = 0;
+    double ov = 0.0;
+    int rc = 0;
+
+    if (reapi_cli_t::match_allocate (h, MATCH_ALLOCATE, two_rack_jobspec, 1, reserved, R, at, ov)
+        != 0)
+        BAIL_OUT ("the two-rack match for the replay failed");
+    delete rq;
+
+    json_error_t err;
+    json_t *o = json_loads (R.c_str (), 0, &err);
+    json_t *scheduling = o ? json_object_get (o, "scheduling") : nullptr;
+    if (!scheduling)
+        BAIL_OUT ("the two-rack R has no scheduling key");
+    json_object_set_new (scheduling, "free_ranks", json_string ("0"));
+    char *s = json_dumps (o, JSON_COMPACT);
+    std::string R_free0 = s;
+    free (s);
+    json_decref (o);
+
+    rq = make_rq (two_rack_jgf, params_prune);
+    h = static_cast<void *> (rq);
+    // A shrink removes the freed rank from the graph. Then the reader
+    // cannot walk up from the rank, and it uses the paths of the JGF of
+    // the job to find the ancestors to demote.
+    if (remove_rank0)
+        ok (reapi_cli_t::remove_subgraph (h, "/tiny0/rack0/node0") == 0,
+            "%s: a shrink removes rank 0 from the graph",
+            label);
+
+    std::string R_out;
+    at = 0;
+    ok (reapi_cli_t::update_allocate (h, 1, R_free0, at, ov, R_out) == 0,
+        "%s: job 1 is reloaded with rank 0 in free_ranks",
+        label);
+    ok (R_ranks_are (R_out, {1, 2, 3}), "%s: the reloaded allocation holds three nodes", label);
+    check_used (h, 1, "/tiny0", 3, 3, 1, "%s: the reload demotes rack0", label);
+    check_used (h, 1, "/tiny0/rack1", 1, 1, -1, "%s: rack1 holds 1 core and 1 node", label);
+    ok (alloc_span_count (rq, "/tiny0/rack0", 1) == -2,
+        "%s: rack0 holds no entry after the reload",
+        label);
+    check_x_checker (rq, "%s: the x_checker agrees after the reload", label);
+
+    // The reload acts as the release of rank 0.
+    errno = 0;
+    at = 20;
+    rc = run_at (rq, excl_rack_jobspec, MATCH_ALLOCATE, 2, at, R);
+    ok (rc < 0 && errno == EBUSY,
+        "%s: an exclusive rack request at t=20 is refused while job 1 holds nodes of rack0",
+        label);
+    ok (find_is_empty (h, "jobid-tag=2"), "%s: no vertex keeps a tag of job 2", label);
+    check_x_checker (rq, "%s: the x_checker agrees after the refused request", label);
+
+    full_removal = true;
+    ok (reapi_cli_t::cancel (h, 1, rank1_R, false, full_removal) == 0 && !full_removal,
+        "%s: the release of rank 1 is not a full removal",
+        label);
+    check_used (h, 1, "/tiny0", 2, 2, 1, "%s: the release of rank 1 keeps 1 rack", label);
+    check_x_checker (rq, "%s: the x_checker agrees after the release of rank 1", label);
+
+    full_removal = true;
+    ok (reapi_cli_t::cancel (h, 1, rank2_R, false, full_removal) == 0 && !full_removal,
+        "%s: the release of rank 2 empties rack0",
+        label);
+    check_used (h, 1, "/tiny0", 1, 1, 1, "%s: the cluster keeps the count of rack1", label);
+    check_x_checker (rq, "%s: the x_checker agrees after the release of rank 2", label);
+
+    full_removal = false;
+    ok (reapi_cli_t::cancel (h, 1, rank3_R, false, full_removal) == 0 && full_removal,
+        "%s: the release of rank 3 completes the cancel of job 1",
+        label);
+    ok (find_is_empty (h, "jobid-tag=1"), "%s: no vertex keeps a tag of job 1", label);
+    check_x_checker (rq, "%s: the x_checker agrees after the release of rank 3", label);
+    delete rq;
+}
+
 // A shrink removes the subtree that holds a job. The cluster keeps the
 // span of the job in its x_checker until the cancel of the job. The
 // other rack holds no span, thus an exclusive request for it succeeds.
@@ -1621,6 +1890,9 @@ int main (int argc, char *argv[])
     test_partial_release_shared_then_overrun ();
     test_partial_release_excl_then_overrun ();
     test_reload_partial_then_overrun ();
+    test_two_racks_demote_one_time ();
+    test_two_racks_replay (false);
+    test_two_racks_replay (true);
     test_shrink_keeps_x_checker ();
     test_rank_shrink_rankless_descendant ();
     test_two_rank_shrink_other_holder ();
