@@ -23,6 +23,51 @@ jobs:
     - name: Check Spelling
       uses: crate-ci/typos@v1.39.0
 
+  coccinelle:
+    name: coccinelle
+    runs-on: ubuntu-24.04
+    # coccinelle in ubuntu-24.04 is 1.1.1, which predates --c++=23 and
+    # cannot parse the sources.  Run in a trixie container for 1.3.0.
+    container: debian:trixie
+    steps:
+    - name: install coccinelle
+      run: apt-get update; apt-get install -y coccinelle git
+    - uses: actions/checkout@v4
+    - name: run coccinelle checks
+      run: |
+        git config --global --add safe.directory "$PWD"
+        # spatch --c++ turns off handling of .c files, so the C and C++
+        # sources have to be scanned in separate passes.  The C++ pass
+        # needs an explicit standard: bare --c++ makes spatch bail out on
+        # "auto", and the project builds as C++23 (see CMakeLists.txt).
+        #
+        # src/common/yggdrasil is vendored third-party template code that
+        # spatch cannot parse.  A hard parse error there aborts the whole
+        # pass, and it contains no jansson calls, so skip it.
+        cxx_files=$(git ls-files resource qmanager src | grep -E '\.(cpp|hpp)$' \
+          | grep -v '^src/common/yggdrasil/')
+        c_files=$(git ls-files resource qmanager src | grep -E '\.(c|h)$')
+        rc=0
+        for f in t/cocci/*.cocci; do
+          # spatch only makes "a small attempt" to parse C++.  When that
+          # attempt fails it matches nothing and exits 0, which would make
+          # the check below silently pass.  Run each semantic patch against
+          # its own known-bad input first and fail if it comes back clean.
+          echo "self-testing $f ..."
+          spatch --c++=23 --sp-file $f --very-quiet \
+            t/cocci/test/$(basename $f .cocci).cpp >self.out 2>&1
+          test -s self.out || {
+            echo "$f matched nothing in its test input"
+            rc=1
+          }
+          echo "checking $f ..."
+          spatch --c++=23 --sp-file $f --very-quiet $cxx_files >spatch.out 2>&1
+          spatch --sp-file $f --very-quiet $c_files >>spatch.out 2>&1
+          cat spatch.out
+          test ! -s spatch.out || rc=1
+        done
+        exit $rc
+
   python-format:
     name: code formatting
     runs-on: ubuntu-24.04
