@@ -58,6 +58,25 @@ schedule_t &schedule_t::operator= (const schedule_t &o)
     return *this;
 }
 
+static bool holds_resources (planner_t *plans, const std::map<int64_t, int64_t> &spans)
+{
+    for (const auto &[jobid, span] : spans) {
+        if (planner_span_resource_count (plans, span) != 0)
+            return true;
+    }
+    return false;
+}
+
+bool schedule_t::allocated () const
+{
+    return holds_resources (plans, allocations);
+}
+
+bool schedule_t::reserved () const
+{
+    return holds_resources (plans, reservations);
+}
+
 bool schedule_t::operator== (const schedule_t &o) const
 {
     if (allocations != o.allocations)
