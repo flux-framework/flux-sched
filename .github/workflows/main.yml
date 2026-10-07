@@ -23,6 +23,40 @@ jobs:
     - name: Check Spelling
       uses: crate-ci/typos@v1.39.0
 
+  coccinelle:
+    name: coccinelle
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+    - name: install coccinelle
+      run: sudo apt update; sudo apt install -y coccinelle
+    - name: run coccinelle checks
+      run: |
+        # spatch --c++ turns off handling of .c files, so the C and C++
+        # sources have to be scanned in separate passes.
+        cxx_files=$(git ls-files resource qmanager src | grep -E '\.(cpp|hpp)$')
+        c_files=$(git ls-files resource qmanager src | grep -E '\.(c|h)$')
+        rc=0
+        for f in t/cocci/*.cocci; do
+          # spatch only makes "a small attempt" to parse C++.  When that
+          # attempt fails it matches nothing and exits 0, which would make
+          # the check below silently pass.  Run each semantic patch against
+          # its own known-bad input first and fail if it comes back clean.
+          echo "self-testing $f ..."
+          spatch --c++ --sp-file $f --very-quiet \
+            t/cocci/test/$(basename $f .cocci).cpp >self.out 2>&1
+          test -s self.out || {
+            echo "$f matched nothing in its test input"
+            rc=1
+          }
+          echo "checking $f ..."
+          spatch --c++ --sp-file $f --very-quiet $cxx_files >spatch.out 2>&1
+          spatch --sp-file $f --very-quiet $c_files >>spatch.out 2>&1
+          cat spatch.out
+          test ! -s spatch.out || rc=1
+        done
+        exit $rc
+
   python-format:
     name: code formatting
     runs-on: ubuntu-24.04
