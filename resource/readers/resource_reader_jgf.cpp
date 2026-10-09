@@ -15,7 +15,10 @@ extern "C" {
 #include <flux/idset.h>
 }
 
+#include <cstring>
+#include <limits>
 #include <map>
+#include <unordered_map>
 #include <unordered_set>
 #include <unistd.h>
 #include <regex>
@@ -606,13 +609,26 @@ int resource_reader_jgf_t::update_vmap (std::map<std::string, vmap_val_t> &vmap,
                                         const std::map<subsystem_t, bool> &root_checks,
                                         const fetch_helper_t &fetcher)
 {
+    return update_vmap (vmap,
+                        v,
+                        root_checks,
+                        fetcher,
+                        static_cast<unsigned int> (fetcher.exclusive));
+}
+
+int resource_reader_jgf_t::update_vmap (std::map<std::string, vmap_val_t> &vmap,
+                                        vtx_t v,
+                                        const std::map<subsystem_t, bool> &root_checks,
+                                        const fetch_helper_t &fetcher,
+                                        unsigned int exclusive)
+{
     int rc = -1;
     std::pair<std::map<std::string, vmap_val_t>::iterator, bool> ptr;
     ptr = vmap.emplace (std::string (fetcher.vertex_id),
                         vmap_val_t{v,
                                    root_checks,
                                    static_cast<unsigned int> (fetcher.size),
-                                   static_cast<unsigned int> (fetcher.exclusive)});
+                                   exclusive});
     if (!ptr.second) {
         m_err_msg += __FUNCTION__;
         m_err_msg += ": can't insert into vmap for ";
@@ -734,7 +750,8 @@ done:
 
 int resource_reader_jgf_t::update_vtx_plan (vtx_t v,
                                             resource_graph_t &g,
-                                            const fetch_helper_t &fetcher,
+                                            bool exclusive,
+                                            bool demoted,
                                             jgf_updater_data &update_data)
 {
     int rc = -1;
@@ -756,13 +773,17 @@ int resource_reader_jgf_t::update_vtx_plan (vtx_t v,
         goto done;
     }
 
-    if (fetcher.exclusive) {
+    if (exclusive || demoted) {
         // Update the vertex plan here (not in traverser code) so vertices
         // that the traverser won't walk still get their plans updated.
+        // A demoted vertex gets a span that holds no resources. The entry
+        // in allocations or reservations then refers to a valid span, and
+        // by_excl () refuses an exclusive request for the vertex
+        // independently of time, as after the partial cancel.
         if ((span = planner_add_span (plans,
                                       update_data.at,
                                       update_data.duration,
-                                      static_cast<const uint64_t> (g[v].size)))
+                                      demoted ? 0 : static_cast<const uint64_t> (g[v].size)))
             == -1) {
             m_err_msg += __FUNCTION__;
             m_err_msg += ": can't add span into " + g[v].name + ".\n";
@@ -886,6 +907,105 @@ error:
     return -1;
 }
 
+void resource_reader_jgf_t::collect_freed_ancestors_by_path (
+    const resource_graph_metadata_t &m,
+    json_t *nodes,
+    const std::unordered_set<int64_t> &ranks,
+    jgf_updater_data &update_data)
+{
+    // The graph has no vertex of these ranks: a shrink removed the ranks, or
+    // the graph was built after the loss of the ranks. The JGF of the job
+    // still has the paths of the freed vertices. Each proper prefix of the
+    // shortest path with a rank is the path of an ancestor of the rank. Add
+    // the ancestors that the graph still has. Examine the nodes of the JGF
+    // one time for all the ranks.
+    std::unordered_map<int64_t, std::string> sub_roots;
+    size_t i = 0;
+
+    for (i = 0; i < json_array_size (nodes); i++) {
+        json_int_t r = 0;
+        const char *path = NULL;
+        if (json_unpack (json_array_get (nodes, i),
+                         "{s:{s:I s:{s:s}}}",
+                         "metadata",
+                         "rank",
+                         &r,
+                         "paths",
+                         "containment",
+                         &path)
+            < 0)
+            continue;
+        if (!path || ranks.find (static_cast<int64_t> (r)) == ranks.end ())
+            continue;
+        auto it = sub_roots.find (static_cast<int64_t> (r));
+        if (it == sub_roots.end ())
+            sub_roots.emplace (static_cast<int64_t> (r), path);
+        else if (strlen (path) < it->second.length ())
+            it->second = path;
+    }
+    for (auto &[rank, sub_root] : sub_roots) {
+        for (size_t pos = sub_root.rfind ('/'); pos != std::string::npos && pos > 0;
+             pos = sub_root.rfind ('/')) {
+            sub_root.erase (pos);
+            auto it = m.by_path.find (sub_root);
+            if (it == m.by_path.end ())
+                continue;
+            for (const vtx_t &v : it->second)
+                update_data.freed_ancestors.insert (v);
+        }
+    }
+}
+
+void resource_reader_jgf_t::collect_freed_ancestors (const resource_graph_t &g,
+                                                     const resource_graph_metadata_t &m,
+                                                     json_t *nodes,
+                                                     jgf_updater_data &update_data)
+{
+    // Find the set of containment ancestors of the subgraph root of each
+    // freed rank. A walk up stops at a vertex that is already in the set,
+    // because its ancestors are also in the set. Thus, the walks up visit
+    // each ancestor one time. The search for the subgraph root examines all
+    // the vertices of each freed rank.
+    static const subsystem_t containment_sub{"containment"};
+    std::unordered_set<int64_t> absent;
+    for (const int64_t rank : update_data.ranks) {
+        vtx_t curr = boost::graph_traits<resource_graph_t>::null_vertex ();
+        size_t len = std::numeric_limits<size_t>::max ();
+        auto it = m.by_rank.find (rank);
+        if (it != m.by_rank.end ()) {
+            for (const vtx_t &v : it->second) {
+                auto p = g[v].paths.find (containment_sub);
+                if (p != g[v].paths.end () && p->second.length () < len) {
+                    len = p->second.length ();
+                    curr = v;
+                }
+            }
+        }
+        // A rank that a shrink removed has no vertex, and a key with an
+        // empty vector. Use the paths in the JGF for it, below.
+        if (curr == boost::graph_traits<resource_graph_t>::null_vertex ()) {
+            absent.insert (rank);
+            continue;
+        }
+        while (curr != boost::graph_traits<resource_graph_t>::null_vertex ()) {
+            vtx_t parent = boost::graph_traits<resource_graph_t>::null_vertex ();
+            boost::graph_traits<resource_graph_t>::in_edge_iterator ei, ei_end;
+            for (boost::tie (ei, ei_end) = boost::in_edges (curr, g); ei != ei_end; ++ei) {
+                if (g[*ei].subsystem == containment_sub) {
+                    parent = boost::source (*ei, g);
+                    break;
+                }
+            }
+            if (parent == boost::graph_traits<resource_graph_t>::null_vertex ()
+                || !update_data.freed_ancestors.insert (parent).second)
+                break;
+            curr = parent;
+        }
+    }
+    if (!absent.empty ())
+        collect_freed_ancestors_by_path (m, nodes, absent, update_data);
+}
+
 int resource_reader_jgf_t::update_vtx (resource_graph_t &g,
                                        resource_graph_metadata_t &m,
                                        std::map<std::string, vmap_val_t> &vmap,
@@ -893,16 +1013,17 @@ int resource_reader_jgf_t::update_vtx (resource_graph_t &g,
                                        jgf_updater_data &update_data)
 {
     int rc = -1;
+    unsigned int excl = 0;
+    bool demoted = false;
     std::map<subsystem_t, bool> root_checks;
     vtx_t v = boost::graph_traits<resource_graph_t>::null_vertex ();
     std::pair<std::map<std::string, vmap_val_t>::iterator, bool> ptr;
 
     update_data.skipped = false;
-    if ((rc = find_vtx (g, m, vmap, fetcher, v)) != 0)
-        goto done;
-    if ((rc = check_root (v, g, root_checks)) != 0)
-        goto done;
-    // Check if skipping due to previous partial free
+    // Check if skipping due to previous partial free. Test the rank before
+    // the lookup of the vertex: a shrink may have removed the vertices of a
+    // freed rank from the graph. Then the lookup fails although the reload
+    // of the job is correct without the rank.
     if (update_data.isect_ranks && !update_data.ranks.empty ()) {
         if (update_data.ranks.find (fetcher.rank) != update_data.ranks.end ()) {
             update_data.skipped = true;
@@ -910,10 +1031,29 @@ int resource_reader_jgf_t::update_vtx (resource_graph_t &g,
             goto done;
         }
     }
-    if ((rc = update_vmap (vmap, v, root_checks, fetcher)) != 0)
+    if ((rc = find_vtx (g, m, vmap, fetcher, v)) != 0)
+        goto done;
+    if ((rc = check_root (v, g, root_checks)) != 0)
+        goto done;
+    // A previous partial free released resources below this vertex. If
+    // the vertex is exclusive, that partial cancel replaced its exclusive
+    // schedule span with a span that holds no resources (see
+    // dfu_impl_t::remove_exclusive_span ()). Make the same state here: add
+    // only such a span, and make the in-edge non-exclusive. Then the
+    // traverser does not add the count of the type of this vertex to its
+    // ancestors.
+    // Do not change the exclusive flag of the fetcher. In a shorthand JGF,
+    // this flag also shows that the JGF does not contain the subtree below
+    // the vertex. The reader must add that subtree.
+    excl = static_cast<unsigned int> (fetcher.exclusive);
+    if (excl && update_data.freed_ancestors.find (v) != update_data.freed_ancestors.end ()) {
+        excl = 0;
+        demoted = true;
+    }
+    if ((rc = update_vmap (vmap, v, root_checks, fetcher, excl)) != 0)
         goto done;
     if (update_data.update) {
-        if ((rc = update_vtx_plan (v, g, fetcher, update_data)) != 0)
+        if ((rc = update_vtx_plan (v, g, excl != 0, demoted, update_data)) != 0)
             goto done;
     } else {
         if ((rc = cancel_vtx (v, g, m, fetcher, update_data)) != 0)
@@ -934,9 +1074,10 @@ int resource_reader_jgf_t::undo_vertices (resource_graph_t &g,
     planner_t *plans = NULL;
     vtx_t v = boost::graph_traits<resource_graph_t>::null_vertex ();
 
+    // A vertex that is not exclusive in vmap can hold a span also: a
+    // demoted ancestor holds a span with no resources. Thus, examine each
+    // vertex, and ignore a vertex that holds no span for the job.
     for (const auto &kv : vmap) {
-        if (kv.second.exclusive != 1)
-            continue;
         try {
             v = kv.second.v;
             if (update_data.reserved) {
@@ -1367,12 +1508,21 @@ int resource_reader_jgf_t::update (resource_graph_t &g,
 
     if ((rc = fetch_jgf (str, &jgf, &nodes, &edges, update_data)) != 0)
         goto done;
+    if (update_data.isect_ranks)
+        collect_freed_ancestors (g, m, nodes, update_data);
     if ((rc = update_vertices (g, m, vmap, nodes, update_data)) != 0) {
         undo_vertices (g, vmap, update_data);
         goto done;
     }
-    if ((rc = update_edges (g, m, vmap, edges, sequence_number, update_data)) != 0)
+    // The vertices already hold the schedule spans of the job. Remove them
+    // also if the edge update fails. If not, the job keeps its resources
+    // although the caller gets an error. The edges that the update stamped
+    // before the error cause no problem. The traverser follows only the
+    // edges that have the sequence number of the current update.
+    if ((rc = update_edges (g, m, vmap, edges, sequence_number, update_data)) != 0) {
+        undo_vertices (g, vmap, update_data);
         goto done;
+    }
 
 done:
     json_decref (jgf);
