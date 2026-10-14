@@ -139,7 +139,10 @@ TEST_CASE ("duration too large is rejected with EINVAL", "[jobmeta]")
 {
     jobmeta_t m;
     auto js = make_jobspec (std::numeric_limits<int64_t>::max ());
-    auto gd = graph_duration_of (std::numeric_limits<int64_t>::max ());
+    // system_clock cannot represent a time_t near INT64_MAX: the conversion
+    // to nanoseconds overflows. Use the largest window the clock holds,
+    // which is still more than the limit that build () enforces.
+    auto gd = graph_duration_of (std::numeric_limits<int64_t>::max () / 1000000000);
     errno = 0;
     REQUIRE (m.build (js, alloc_type_t::AT_ALLOC, 1, 0, gd) == -1);
     REQUIRE (errno == EINVAL);

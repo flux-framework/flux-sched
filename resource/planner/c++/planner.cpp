@@ -58,6 +58,17 @@ bool span_t::operator!= (const span_t &o) const
 
 planner::planner () = default;
 
+// The end time of a planner is base_time + duration. If the sum does not
+// fit in int64_t, the planner ends at the maximum value: the callers give
+// INT64_MAX as the duration of a planner without a known end.
+static int64_t plan_end (int64_t base_time, uint64_t duration)
+{
+    const uint64_t max = static_cast<uint64_t> (std::numeric_limits<int64_t>::max ());
+    if (base_time >= 0 && duration > max - static_cast<uint64_t> (base_time))
+        return std::numeric_limits<int64_t>::max ();
+    return base_time + static_cast<int64_t> (duration);
+}
+
 planner::planner (const int64_t base_time,
                   const uint64_t duration,
                   const uint64_t resource_totals,
@@ -66,7 +77,7 @@ planner::planner (const int64_t base_time,
     m_total_resources = static_cast<int64_t> (resource_totals);
     m_resource_type = in_resource_type;
     m_plan_start = base_time;
-    m_plan_end = base_time + static_cast<int64_t> (duration);
+    m_plan_end = plan_end (base_time, duration);
     m_p0 = new scheduled_point_t ();
     m_p0->in_mt_resource_tree = 0;
     m_p0->new_point = 1;
@@ -172,7 +183,7 @@ int planner::reinitialize (int64_t base_time, uint64_t duration)
     int rc = 0;
 
     m_plan_start = base_time;
-    m_plan_end = base_time + static_cast<int64_t> (duration);
+    m_plan_end = plan_end (base_time, duration);
     m_p0 = new scheduled_point_t ();
     m_p0->at = base_time;
     m_p0->ref_count = 1;
