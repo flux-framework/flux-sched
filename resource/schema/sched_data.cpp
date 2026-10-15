@@ -26,6 +26,7 @@ schedule_t::schedule_t (const schedule_t &o)
 {
     allocations = o.allocations;
     reservations = o.reservations;
+    subtree_allocations = o.subtree_allocations;
 
     if (o.plans) {
         plans = planner_copy (o.plans);
@@ -40,6 +41,7 @@ schedule_t &schedule_t::operator= (const schedule_t &o)
     reservations.clear ();
     allocations = o.allocations;
     reservations = o.reservations;
+    subtree_allocations = o.subtree_allocations;
 
     if (plans) {
         if (o.plans) {
@@ -63,6 +65,8 @@ bool schedule_t::operator== (const schedule_t &o) const
     if (allocations != o.allocations)
         return false;
     if (reservations != o.reservations)
+        return false;
+    if (subtree_allocations != o.subtree_allocations)
         return false;
     if (!planners_equal (plans, o.plans))
         return false;

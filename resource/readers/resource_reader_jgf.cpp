@@ -771,7 +771,7 @@ int resource_reader_jgf_t::update_vtx_plan (vtx_t v,
         if (update_data.reserved)
             g[v].schedule.reservations[update_data.jobid] = span;
         else
-            g[v].schedule.allocations[update_data.jobid] = span;
+            set_allocation (g, v, update_data.jobid, span);
         if (update_data.metadata)
             update_data.metadata->add_job_vertex (update_data.jobid, v);
     } else {
@@ -845,7 +845,7 @@ int resource_reader_jgf_t::cancel_vtx (vtx_t vtx,
     span_it = g[vtx].schedule.allocations.find (update_data.jobid);
     if (span_it != g[vtx].schedule.allocations.end ()) {
         sched_span = span_it->second;
-        g[vtx].schedule.allocations.erase (update_data.jobid);
+        erase_allocation (g, vtx, update_data.jobid);
     } else {
         m_err_msg += __FUNCTION__;
         m_err_msg += ": can't find allocation span for job ";
@@ -944,7 +944,7 @@ int resource_reader_jgf_t::undo_vertices (resource_graph_t &g,
                 g[v].schedule.reservations.erase (update_data.jobid);
             } else {
                 span = g[v].schedule.allocations.at (update_data.jobid);
-                g[v].schedule.allocations.erase (update_data.jobid);
+                erase_allocation (g, v, update_data.jobid);
             }
             if (update_data.metadata)
                 update_data.metadata->remove_job_vertex (update_data.jobid, v);

@@ -71,7 +71,7 @@ void allocate_job_on_vertex (resource_graph_db_t &db, vtx_t v, int64_t jobid)
     REQUIRE (pool.schedule.plans != nullptr);
     int64_t sched_span = planner_add_span (pool.schedule.plans, k_base_time, k_duration, 1);
     REQUIRE (sched_span >= 0);
-    pool.schedule.allocations[jobid] = sched_span;
+    set_allocation (db.resource_graph, v, jobid, sched_span);
 
     db.metadata.add_job_vertex (jobid, v);
 }
@@ -136,6 +136,8 @@ TEST_CASE ("by_jobid index retains a vertex whose purge fails and a retry visits
     REQUIRE_FALSE (db->resource_graph[a].idata.tags.contains (jobid));
     REQUIRE_FALSE (db->resource_graph[a].idata.x_spans.contains (jobid));
     REQUIRE (db->resource_graph[a].schedule.allocations.contains (jobid));
+    REQUIRE (db->resource_graph[a].schedule.subtree_allocations == 1);
+    REQUIRE (db->resource_graph[b].schedule.subtree_allocations == 0);
     REQUIRE (db->metadata.vertex_has_job_state (db->resource_graph, jobid, a));
     REQUIRE (db->metadata.verify_job_index (db->resource_graph));
 
@@ -157,6 +159,7 @@ TEST_CASE ("by_jobid index retains a vertex whose purge fails and a retry visits
     REQUIRE (db->metadata.by_jobid.find (jobid) == db->metadata.by_jobid.end ());
     REQUIRE_FALSE (db->metadata.vertex_has_job_state (db->resource_graph, jobid, a));
     REQUIRE_FALSE (db->metadata.vertex_has_job_state (db->resource_graph, jobid, b));
+    REQUIRE (db->resource_graph[a].schedule.subtree_allocations == 0);
     REQUIRE (db->metadata.verify_job_index (db->resource_graph));
 
     // Removing an already-fully-removed (or never-seen) job is

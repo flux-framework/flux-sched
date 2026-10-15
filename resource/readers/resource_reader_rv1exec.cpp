@@ -298,7 +298,7 @@ int resource_reader_rv1exec_t::update_vertex (resource_graph_t &g,
     if (update_data.reserved)
         g[vtx].schedule.reservations[update_data.jobid] = span;
     else
-        g[vtx].schedule.allocations[update_data.jobid] = span;
+        set_allocation (g, vtx, update_data.jobid, span);
     if (update_data.metadata)
         update_data.metadata->add_job_vertex (update_data.jobid, vtx);
 
@@ -331,7 +331,7 @@ int resource_reader_rv1exec_t::undo_vertices (resource_graph_t &g, updater_data 
                 g[vtx].schedule.reservations.erase (update_data.jobid);
             } else {
                 span = g[vtx].schedule.allocations.at (update_data.jobid);
-                g[vtx].schedule.allocations.erase (update_data.jobid);
+                erase_allocation (g, vtx, update_data.jobid);
             }
             if (update_data.metadata)
                 update_data.metadata->remove_job_vertex (update_data.jobid, vtx);
@@ -435,7 +435,7 @@ int resource_reader_rv1exec_t::update_exclusivity (resource_graph_t &g,
     if (update_data.reserved)
         g[vtx].schedule.reservations[update_data.jobid] = span;
     else
-        g[vtx].schedule.allocations[update_data.jobid] = span;
+        set_allocation (g, vtx, update_data.jobid, span);
     if (update_data.metadata)
         update_data.metadata->add_job_vertex (update_data.jobid, vtx);
     // Add to the updated vertices vector to undo upon error.
