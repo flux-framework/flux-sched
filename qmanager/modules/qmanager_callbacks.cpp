@@ -454,6 +454,9 @@ void qmanager_cb_t::jobmanager_free_cb (flux_t *h, const flux_msg_t *msg, const 
                         static_cast<intmax_t> (id));
         goto done;
     }
+    // remove () reconsiders the blocked jobs of this queue only. The next
+    // prepare callback reconsiders the other queues.
+    ctx->resources_freed = true;
     if ((queue->remove (static_cast<void *> (h), id, final, Rstr)) < 0) {
         flux_log_error (h,
                         "%s: remove (queue=%s id=%jd)",
@@ -556,6 +559,13 @@ void qmanager_cb_t::prep_watcher_cb (flux_reactor_t *r, flux_watcher_t *w, int r
     ctx = static_cast<qmanager_cb_ctx_t *> (arg);
     ctx->pls_sched_loop = false;
     ctx->pls_post_loop = false;
+    if (ctx->resources_freed) {
+        // A free in one queue can unblock jobs of every queue. Reconsider
+        // them one time per reactor turn, not one time per free.
+        ctx->resources_freed = false;
+        for (auto &kv : ctx->queues)
+            kv.second->reconsider_blocked_jobs ();
+    }
     for (auto &kv : ctx->queues) {
         std::shared_ptr<queue_policy_base_t> &queue = kv.second;
         ctx->pls_sched_loop = ctx->pls_sched_loop || queue->is_schedulable ();

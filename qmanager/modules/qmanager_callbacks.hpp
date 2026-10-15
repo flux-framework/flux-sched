@@ -27,6 +27,8 @@ struct qmanager_cb_ctx_t {
     flux_watcher_t *idle{nullptr};
     bool pls_sched_loop{false};
     bool pls_post_loop{false};
+    // A .free RPC arrived since the last prepare callback.
+    bool resources_freed{false};
 
     schedutil_t *schedutil{nullptr};
     Flux::opts_manager::optmgr_composer_t<Flux::opts_manager::qmanager_opts_t> opts;
