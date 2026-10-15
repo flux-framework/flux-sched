@@ -139,10 +139,7 @@ int dfu_impl_t::by_excl (const jobmeta_t &meta,
         // not overrun. Therefore, they will match resources immediately
         // following an active or planned job's span. However, they will
         // correctly fail to match `now` resources with an overrunning job.
-        if (at == meta.now
-            && (meta.alloc_type == jobmeta_t::alloc_type_t::AT_ALLOC
-                || meta.alloc_type == jobmeta_t::alloc_type_t::AT_NO_ALLOC)
-            && !(*m_graph)[u].schedule.allocations.empty ()) {
+        if (meta.is_immediate () && !(*m_graph)[u].schedule.allocations.empty ()) {
             errno = EBUSY;
             return -1;
         }
@@ -160,6 +157,23 @@ int dfu_impl_t::by_excl (const jobmeta_t &meta,
     }
 
     // All cases reached this point indicate further walk is needed.
+    return 0;
+}
+
+int dfu_impl_t::by_shadow (const jobmeta_t &meta, subsystem_t s, vtx_t u)
+{
+    // If the type of u is exclusive, the update walk allocates every
+    // descendant of u to the job, also the descendants that the match did
+    // not select (modify_traversal ()). A job that holds a descendant
+    // without exclusivity has no entry on u, thus by_excl () does not
+    // see it. The count of the entries below u does.
+    if (s != containment_sub || s != m_match->dom_subsystem () || !meta.is_immediate ()
+        || !m_match->is_resource_type_exclusive ((*m_graph)[u].type))
+        return 0;
+    if ((*m_graph)[u].schedule.subtree_allocations > 0) {
+        errno = EBUSY;
+        return -1;
+    }
     return 0;
 }
 
@@ -288,6 +302,9 @@ int dfu_impl_t::prune (const jobmeta_t &meta,
             errno = EBUSY;
         return -1;
     }
+
+    if (by_shadow (meta, s, u) == -1)
+        return -1;
 
     return 0;
 }
