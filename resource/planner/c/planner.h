@@ -107,11 +107,12 @@ const char *planner_resource_type (planner_t *ctx);
 /*! Find and return the earliest point in integer time when the request can be
  *  satisfied.
  *
- *  Note on semantics: this function returns a time point where the resource state
- *  changes. If the number of available resources change at time point t1 and
- *  t2 (assuming t2 is greater than t1+2), the possible schedule points that this
- *  function can return is either t1 or t2, but not t1+1 nor t1+2 even if these
- *  points also satisfy the request.
+ *  Note on semantics: the candidates are on_or_after itself and the scheduled
+ *  points after it. A scheduled point is a time at which the resource state
+ *  changes. If the state changes at t1 and t2 only (t2 greater than t1+2), and
+ *  on_or_after is t1, this function returns t1 or t2, but not t1+1 nor t1+2
+ *  even if these points also satisfy the request. If on_or_after is t1+1, it
+ *  returns t1+1 or t2.
  *
  *  \param ctx          opaque planner context returned from planner_new.
  *  \param on_or_after  available on or after the specified time.
@@ -130,8 +131,8 @@ int64_t planner_avail_time_first (planner_t *ctx,
 
 /*! Find and return the next earliest point in time at which the same request
  *  queried before via either planner_avail_time_first or
- *  planner_avail_time_next can be satisfied.  Same semantics as
- *  planner_avail_time_first.
+ *  planner_avail_time_next can be satisfied. The candidates are the scheduled
+ *  points after on_or_after that no earlier call returned.
  *
  *  \param ctx          opaque planner context returned from planner_new.
  *  \return             earliest time at which the request can be satisfied;
@@ -143,7 +144,7 @@ int64_t planner_avail_time_first (planner_t *ctx,
 int64_t planner_avail_time_next (planner_t *ctx);
 
 /*! Test if the given request can be satisfied at the start time.
- *  Note on semantics: Unlike planner_avail_time* functions, this function
+ *  Note on semantics: Unlike planner_avail_time_next, this function
  *  can be used to test an arbitrary time span.
  *
  *  \param ctx          opaque planner context returned from planner_new.
