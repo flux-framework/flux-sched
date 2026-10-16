@@ -173,13 +173,16 @@ static bool span_ok (planner_t *ctx,
     return ok;
 }
 
+// Return the earliest scheduled point after on_or_after whose window of
+// duration satisfies request. planner_avail_time_first () tests the window
+// at on_or_after itself, so on_or_after is not a candidate here.
 static int64_t avail_at (planner_t *ctx, int64_t on_or_after, uint64_t duration, int64_t request)
 {
     int64_t at = -1;
     scheduled_point_t *start_point = nullptr;
     while ((start_point = ctx->plan->mt_tree_get_mintime (request))) {
         at = start_point->at;
-        if (at < on_or_after) {
+        if (at <= on_or_after) {
             ctx->plan->mt_tree_remove (start_point);
             track_points (ctx->plan->get_avail_time_iter (), start_point);
             at = -1;
@@ -469,6 +472,9 @@ extern "C" int64_t planner_avail_time_first (planner_t *ctx,
     restore_track_points (ctx);
     ctx->plan->set_avail_time_iter_set (1);
     copy_req (ctx->plan->get_current_request (), on_or_after, duration, request);
+    // on_or_after need not be a scheduled point.
+    if (avail_during (ctx, on_or_after, duration, (int64_t)request))
+        return on_or_after;
     if ((t = avail_at (ctx, on_or_after, duration, (int64_t)request)) == -1)
         errno = ENOENT;
     return t;

@@ -280,7 +280,9 @@ static int test_multi_strictly_larger ()
     ok ((t == -1 && errno == ENOENT), "avail_time_next for (%s)", ss.str ().c_str ());
 
     t = planner_multi_avail_time_first (ctx, 3500, 1000, requestB, len);
-    ok ((t == 4000), "avail_time_first for (%s)", ss.str ().c_str ());
+    ok ((t == 3500), "avail_time_first for (%s)", ss.str ().c_str ());
+    t = planner_multi_avail_time_next (ctx);
+    ok ((t == 4000), "avail_time_next for (%s)", ss.str ().c_str ());
     t = planner_multi_avail_time_next (ctx);
     ok ((t == 5000), "avail_time_next for (%s)", ss.str ().c_str ());
     t = planner_multi_avail_time_next (ctx);
@@ -296,6 +298,63 @@ static int test_multi_strictly_larger ()
     ok ((t == 5000), "avail_time_next for (%s)", ss.str ().c_str ());
     t = planner_multi_avail_time_next (ctx);
     ok ((t == -1 && errno == ENOENT), "avail_time_next for (%s)", ss.str ().c_str ());
+
+    planner_multi_destroy (&ctx);
+    return 0;
+}
+
+// The candidate times come from the first planner, and on_or_after itself is
+// a candidate. A candidate is accepted only when every planner has the
+// requested resources over the whole window.
+static int test_multi_on_or_after_between_points ()
+{
+    size_t len = 2;
+    int64_t t = -1;
+    uint64_t duration = 10;
+    const uint64_t resource_totals[] = {2, 4};
+    const char *resource_types[] = {"core", "memory"};
+    const uint64_t req_1_2[] = {1, 2};
+    const uint64_t req_1_1[] = {1, 1};
+    const uint64_t span_1_2[] = {1, 2};
+    const uint64_t span_0_4[] = {0, 4};
+    planner_multi_t *ctx = NULL;
+
+    ctx = planner_multi_new (0, 3600, resource_totals, resource_types, len);
+    ok (ctx != nullptr, "planner_multi_new (core 2, memory 4)");
+
+    t = planner_multi_avail_time_first (ctx, 1, duration, req_1_2, len);
+    ok ((t == 1), "empty planner_multi: avail_time_first (1) returns 1");
+
+    errno = 0;
+    t = planner_multi_avail_time_next (ctx);
+    ok ((t == -1 && errno == ENOENT), "empty planner_multi: avail_time_next returns ENOENT");
+
+    ok ((planner_multi_add_span (ctx, 0, duration, span_1_2, len) != -1),
+        "span [0, 10) of 1 core and 2 memory is added");
+
+    t = planner_multi_avail_time_first (ctx, 11, duration, req_1_2, len);
+    ok ((t == 11), "one span before on_or_after: avail_time_first (11) returns 11");
+
+    errno = 0;
+    t = planner_multi_avail_time_next (ctx);
+    ok ((t == -1 && errno == ENOENT),
+        "one span before on_or_after: avail_time_next returns ENOENT");
+
+    ok ((planner_multi_add_span (ctx, 20, duration, span_0_4, len) != -1),
+        "span [20, 30) of 0 core and 4 memory is added");
+
+    t = planner_multi_avail_time_first (ctx, 5, duration, req_1_1, len);
+    ok ((t == 5), "both planners free at on_or_after: avail_time_first (5) returns 5");
+
+    // The core planner is free at 15, but the memory planner has nothing left
+    // over [20, 30). The first planner offers 20, which the memory planner
+    // rejects, and then 30, which both planners accept.
+    t = planner_multi_avail_time_first (ctx, 15, duration, req_1_1, len);
+    ok ((t == 30), "memory full on [20, 30): avail_time_first (15) returns 30");
+
+    errno = 0;
+    t = planner_multi_avail_time_next (ctx);
+    ok ((t == -1 && errno == ENOENT), "memory full on [20, 30): avail_time_next returns ENOENT");
 
     planner_multi_destroy (&ctx);
     return 0;
@@ -951,13 +1010,15 @@ static int test_partial_cancel ()
 
 int main (int argc, char *argv[])
 {
-    plan (143);
+    plan (154);
 
     test_multi_basics ();
 
     test_multi_getters ();
 
     test_multi_strictly_larger ();
+
+    test_multi_on_or_after_between_points ();
 
     test_multi_partially_larger ();
 
