@@ -47,79 +47,33 @@ parse_error::parse_error (const YAML::Node &node, const char *msg)
 namespace {
 void parse_yaml_count (Resource &res, const YAML::Node &cnode)
 {
-    /* count can have an unsigned integer value */
+    struct resourcecount *count;
+    YAML::Emitter emitter;
+
+    // Convert YAML node to a valid JSON string
     if (cnode.IsScalar ()) {
-        res.count.min = cnode.as<unsigned> ();
-        res.count.max = res.count.min;
-        return;
+        try {
+            emitter << cnode.as<long long> ();
+        } catch (const YAML::Exception &) {
+            emitter << YAML::DoubleQuoted << cnode;
+        }
+    } else if (cnode.IsMap ()) {
+        emitter << YAML::Flow << YAML::BeginMap;
+        for (auto &&kv : cnode) {
+            emitter << YAML::DoubleQuoted << kv.first;
+            if (kv.first.as<std::string> () == "operator") {
+                emitter << YAML::DoubleQuoted << kv.second;
+            } else {
+                emitter << kv.second;
+            }
+        }
+        emitter << YAML::EndMap;
     }
 
-    /* or count may be a more complicated verbose form */
-    if (!cnode.IsMap ()) {
-        throw parse_error (cnode, "count is not a mapping");
-    }
-
-    /* Verify existence of required entries */
-    if (!cnode["min"]) {
-        throw parse_error (cnode, "Key \"min\" missing from count");
-    }
-    if (!cnode["min"].IsScalar ()) {
-        throw parse_error (cnode["min"], "Value of \"min\" must be a scalar");
-    }
-    if (cnode["max"] || cnode["operator"] || cnode["operand"]) {
-        if (!cnode["max"] || !cnode["operator"] || !cnode["operand"]) {
-            throw parse_error (cnode,
-                               "All or none of \"max\", \"operator\", and \"operand\" must be "
-                               "specified");
-        }
-        if (!cnode["max"].IsScalar ()) {
-            throw parse_error (cnode["max"], "Value of \"max\" must be a scalar");
-        }
-        if (!cnode["operator"].IsScalar ()) {
-            throw parse_error (cnode["operator"], "Value of \"operator\" must be a scalar");
-        }
-        if (!cnode["operand"].IsScalar ()) {
-            throw parse_error (cnode["operand"], "Value of \"operand\" must be a scalar");
-        }
-        res.count.max = cnode["max"].as<unsigned> ();
-        res.count.oper = cnode["operator"].as<char> ();
-        res.count.operand = cnode["operand"].as<int> ();
-    }
-
-    /* Validate values of entries */
-    res.count.min = cnode["min"].as<unsigned> ();
-    if (cnode["min"].as<long long> () < 1) {
-        throw parse_error (cnode["min"], "\"min\" must be greater than zero");
-    }
-    if (cnode["max"] && cnode["max"].as<long long> () < cnode["min"].as<long long> ()) {
-        throw parse_error (cnode["max"], "\"max\" must be greater than or equal to \"min\"");
-    }
-    switch (res.count.oper) {
-        case '+':
-            if (res.count.operand < 1) {
-                throw parse_error (cnode["operand"],
-                                   "\"operand\" must be greater than zero for addition '+'");
-            }
-            break;
-        case '*':
-            if (res.count.operand < 2) {
-                throw parse_error (cnode["operand"],
-                                   "\"operand\" must be greater than one for multiplication '*'");
-            }
-            break;
-        case '^':
-            if (res.count.operand < 2) {
-                throw parse_error (cnode["operand"],
-                                   "\"operand\" must be greater than one for exponentiation '^'");
-            }
-            if (res.count.min < 2) {
-                throw parse_error (cnode["min"],
-                                   "\"min\" must be greater than one for exponentiation '^'");
-            }
-            break;
-        default:
-            throw parse_error (cnode["operator"], "Invalid count operator");
-    }
+    count = resourcecount_decode (emitter.c_str ());
+    if (!count)
+        throw parse_error (cnode, "count is not a valid integer, string, or mapping");
+    res.count = ResourceCount (count);
 }
 }  // namespace
 
@@ -489,14 +443,16 @@ std::ostream &Flux::Jobspec::operator<< (std::ostream &s, Jobspec const &jobspec
     return s;
 }
 
+std::ostream &Flux::Jobspec::operator<< (std::ostream &s, ResourceCount const &count)
+{
+    s << count.encode ();
+    return s;
+}
+
 std::ostream &Flux::Jobspec::operator<< (std::ostream &s, Resource const &resource)
 {
     s << "- type: " << resource.type << std::endl;
-    s << "  count:" << std::endl;
-    s << "    min: " << resource.count.min << std::endl;
-    s << "    max: " << resource.count.max << std::endl;
-    s << "    operator: " << resource.count.oper << std::endl;
-    s << "    operand: " << resource.count.operand << std::endl;
+    s << "  count: " << resource.count << std::endl;
     if (resource.unit.size () > 0)
         s << "  unit: " << resource.unit << std::endl;
     if (resource.label.size () > 0)

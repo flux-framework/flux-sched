@@ -34,11 +34,11 @@
 #include <stdexcept>
 #include <unordered_map>
 #include <cstdint>
-#include <limits>
 #include <yaml-cpp/yaml.h>
 
 #include "parse_error.hpp"
 #include "constraint.hpp"
+#include "resourcecount.hpp"
 #include "resource/schema/data_std.hpp"
 
 namespace Flux {
@@ -49,12 +49,7 @@ enum class tristate_t { FALSE, TRUE, UNSPECIFIED };
 class Resource {
    public:
     resource_model::resource_type_t type;
-    struct {
-        unsigned min;
-        unsigned max = std::numeric_limits<unsigned int>::max ();
-        char oper = '+';
-        int operand = 1;
-    } count;
+    ResourceCount count;
     std::string unit;
     std::string label;
     std::string id;

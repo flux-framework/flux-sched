@@ -15,7 +15,6 @@ extern "C" {
 }
 
 #include <algorithm>
-#include <limits>
 #include "policies/base/matcher.hpp"
 
 namespace Flux {
@@ -101,50 +100,28 @@ const multi_subsystemsS &matcher_data_t::subsystemsS () const
 unsigned int matcher_util_api_t::calc_count (const Flux::Jobspec::Resource &resource,
                                              unsigned int qc) const
 {
-    if (resource.count.min > resource.count.max || resource.count.min > qc)
-        return 0;
-
-    unsigned int range = 0;
     unsigned int count = 0;
-    unsigned int cur = resource.count.min;
+    unsigned int cur = resource.count.first ();
+    unsigned int last = resource.count.last ();
 
-    switch (resource.count.oper) {
-        case '+':
-            count = (qc < resource.count.max) ? qc : resource.count.max;
-            range = count - cur;
-            count -= (range % resource.count.operand);
-            break;
-        case '*':
-            if (resource.count.operand == 1)
-                count = cur;
-            else {
-                while (cur <= qc && cur <= resource.count.max) {
-                    count = cur;
-                    cur *= resource.count.operand;
-                }
-            }
-            break;
-        case '^':
-            if (resource.count.operand < 2 || cur == 1)
-                count = cur;
-            else {
-                while (cur <= qc && cur <= resource.count.max) {
-                    unsigned int base = cur;
-                    count = cur;
-                    for (int i = 1; i < resource.count.operand; i++)
-                        cur *= base;
-                }
-            }
-            break;
-        default:
-            break;
-    }
+    if (last == RESOURCECOUNT_INVALID_VALUE)
+        return 0;
+    if (last <= qc)
+        return last;
+
+    /* qc is smaller than the largest valid count, so walk the count values
+     * until the next one would exceed qc and return the previous value.
+     */
+    for (; cur <= qc; cur = resource.count.next (cur))
+        count = cur;
     return count;
 }
 
 unsigned int matcher_util_api_t::calc_effective_max (const Flux::Jobspec::Resource &resource) const
 {
-    return calc_count (resource, std::numeric_limits<unsigned int>::max ());
+    unsigned int last = resource.count.last ();
+
+    return last == RESOURCECOUNT_INVALID_VALUE ? 0 : last;
 }
 
 int matcher_util_api_t::register_resource_pair (subsystem_t subsystem, std::string &r_pair)

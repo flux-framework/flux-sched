@@ -160,7 +160,7 @@ void dfu_flexible_t::prime_jobspec (std::vector<Resource> &resources,
             m_match->add_exclusive_resource_type (resource.type);
         // Use minimum requirement because you don't want to prune search
         // as far as a subtree satisfies the minimum requirement
-        accum_if (subsystem, resource.type, resource.count.min, to_parent);
+        accum_if (subsystem, resource.type, resource.count.first (), to_parent);
         prime_jobspec (resource.with, resource.user_data);
 
         // Or slots should use a minimum of values rather than an accumulation
@@ -169,7 +169,7 @@ void dfu_flexible_t::prime_jobspec (std::vector<Resource> &resources,
             for (const auto &aggregate : resource.user_data) {
                 min_if (subsystem,
                         aggregate.first,
-                        resource.count.min * aggregate.second,
+                        resource.count.first () * aggregate.second,
                         to_parent);
             }
             // If there are Or Slots that do not contain a resource type
@@ -184,7 +184,7 @@ void dfu_flexible_t::prime_jobspec (std::vector<Resource> &resources,
             for (const auto &aggregate : resource.user_data) {
                 accum_if (subsystem,
                           aggregate.first,
-                          resource.count.min * aggregate.second,
+                          resource.count.first () * aggregate.second,
                           to_parent);
             }
         }
@@ -415,7 +415,7 @@ int dfu_flexible_t::dom_slot (const jobmeta_t &meta,
             } else {
                 // We need the maximum value for count here
                 // otherwise first match policies won't work
-                if (it->second.count.min < r.count.min)
+                if (it->second.count.first () < r.count.first ())
                     pre_union.insert_or_assign (r.type, r);
             }
         }

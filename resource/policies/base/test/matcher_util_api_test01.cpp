@@ -214,19 +214,21 @@ void test_plus_op ()
     count = api.calc_count (job_005.resources[0], 5);
     ok (count == 1, "{min=1, max=10, oper='+', op=10} w/ qc=5 is 1");
 
-    // {min=1, max=4294967295, operator='+', operand=1}
-    test_jobspec_template jobin_006 (1, 4294967295, "+", 1);
+    // {min=1, max=RESOURCECOUNT_MAX, operator='+', operand=1}
+    test_jobspec_template jobin_006 (1, RESOURCECOUNT_MAX, "+", 1);
     Flux::Jobspec::Jobspec job_006{jobin_006.get ()};
 
     count = api.calc_count (job_006.resources[0], std::numeric_limits<unsigned int>::max ());
-    ok (count == 4294967295, "{min=1, max=4294967295, oper='+', op=1} is 4294967295");
+    ok (count == RESOURCECOUNT_MAX,
+        "{min=1, max=RESOURCECOUNT_MAX, oper='+', op=1} is RESOURCECOUNT_MAX");
 
-    // {min=2, max=4294967295, operator='+', operand=2}
-    test_jobspec_template jobin_007 (2, 4294967295, "+", 2);
+    // {min=2, max=RESOURCECOUNT_MAX, operator='+', operand=2}
+    test_jobspec_template jobin_007 (2, RESOURCECOUNT_MAX, "+", 2);
     Flux::Jobspec::Jobspec job_007{jobin_007.get ()};
 
     count = api.calc_count (job_007.resources[0], std::numeric_limits<unsigned int>::max ());
-    ok (count == 4294967294, "{min=2, max=4294967295, oper='+', op=2} is 4294967294");
+    ok (count == RESOURCECOUNT_MAX - 1,
+        "{min=2, max=RESOURCECOUNT_MAX, oper='+', op=2} is RESOURCECOUNT_MAX - 1");
 }
 
 int main (int argc, char *argv[])
