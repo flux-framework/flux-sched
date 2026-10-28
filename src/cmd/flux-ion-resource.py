@@ -379,6 +379,23 @@ def stats_clear_action(_):
     rmod.rpc_stats_clear()
 
 
+def report_not_found(resp):
+    """
+    Report the paths a bulk property update could not find and exit nonzero.
+
+    A property update that succeeds for at least one path returns a normal
+    response rather than an error, with the paths that were skipped listed
+    in 'not_found'.
+    """
+
+    not_found = resp.get("not_found", [])
+    if not not_found:
+        return
+    paths = ", ".join("'{}'".format(entry["path"]) for entry in not_found)
+    print("Couldn't find {} in resource graph".format(paths))
+    sys.exit(3)
+
+
 def set_property_action(args):
     """
     Action for set-property sub-command
@@ -387,7 +404,7 @@ def set_property_action(args):
     rmod = ResourceModuleInterface()
     sp_resource_paths = args.sp_resource_paths
     sp_keyval = args.sp_keyval
-    rmod.rpc_set_property(sp_resource_paths, sp_keyval)
+    report_not_found(rmod.rpc_set_property(sp_resource_paths, sp_keyval))
 
 
 def remove_property_action(args):
@@ -395,7 +412,7 @@ def remove_property_action(args):
     Action for remove-property sub-command
     """
     rmod = ResourceModuleInterface()
-    rmod.rpc_remove_property(args.rp_resource_paths, args.rp_key)
+    report_not_found(rmod.rpc_remove_property(args.rp_resource_paths, args.rp_key))
 
 
 def get_property_action(args):

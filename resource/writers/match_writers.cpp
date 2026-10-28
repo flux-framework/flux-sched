@@ -880,7 +880,6 @@ int rlite_match_writers_t::fill (json_t *rlite_array, json_t *host_array, json_t
             goto ret;
         }
         if ((rc = json_array_append_new (rlite_array, robj)) < 0) {
-            json_decref (robj);
             errno = EINVAL;
             goto ret;
         }
@@ -901,7 +900,6 @@ int rlite_match_writers_t::fill (json_t *rlite_array, json_t *host_array, json_t
                 goto ret;
             }
             if (json_object_set_new (props, kv.first.c_str (), ranks) < 0) {
-                json_decref (ranks);
                 rc = -1;
                 errno = EINVAL;
                 goto ret;
