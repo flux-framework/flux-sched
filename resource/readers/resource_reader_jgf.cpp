@@ -13,8 +13,10 @@ extern "C" {
 #include "config.h"
 #endif
 #include <flux/idset.h>
+#include <flux/hostlist.h>
 }
 
+#include <algorithm>
 #include <map>
 #include <unordered_set>
 #include <unistd.h>
@@ -60,6 +62,75 @@ int resource_reader_jgf_t::set_node_properties (json_t *properties)
         ranks = nullptr;
     }
     return 0;
+}
+
+int resource_reader_jgf_t::set_node_ranks (json_t *r_lite, json_t *nodelist)
+{
+    size_t index;
+    json_t *entry = NULL;
+    struct idset *ranks = NULL;
+    struct idset *entry_ranks = NULL;
+    struct hostlist *hosts = NULL;
+
+    m_node_ranks.clear ();
+    if (!r_lite)
+        return 0;
+    if (!json_is_array (r_lite) || !json_is_array (nodelist)
+        || !(ranks = idset_create (0, IDSET_FLAG_AUTOGROW)) || !(hosts = hostlist_create ()))
+        goto error;
+    json_array_foreach (r_lite, index, entry) {
+        const char *encoded = NULL;
+        unsigned int rank;
+
+        if (json_unpack (entry, "{s:s}", "rank", &encoded) < 0
+            || !(entry_ranks = idset_decode (encoded)))
+            goto inval;
+        rank = idset_first (entry_ranks);
+        while (rank != IDSET_INVALID_ID) {
+            // A rank belongs to exactly one R_lite entry, so a repeat means
+            // R contradicts itself about which host owns that broker.
+            if (idset_test (ranks, rank) || idset_set (ranks, rank) < 0)
+                goto inval;
+            rank = idset_next (entry_ranks, rank);
+        }
+        idset_destroy (entry_ranks);
+        entry_ranks = NULL;
+    }
+    json_array_foreach (nodelist, index, entry) {
+        const char *encoded = json_string_value (entry);
+        if (!encoded || hostlist_append (hosts, encoded) < 0)
+            goto inval;
+    }
+    {
+        // The nodelist is positional: its Nth host is the host of the Nth
+        // lowest rank, which need not be rank N -- flux-core omits excluded
+        // execution targets from the R it hands the scheduler. A host
+        // running several brokers therefore occurs once per rank, and
+        // collects each of them.
+        unsigned int rank = idset_first (ranks);
+        int host_index = 0;
+        while (rank != IDSET_INVALID_ID) {
+            const char *hostname = hostlist_nth (hosts, host_index++);
+            if (!hostname)
+                goto inval;
+            m_node_ranks[hostname].push_back (rank);
+            rank = idset_next (ranks, rank);
+        }
+        if (hostlist_nth (hosts, host_index))
+            goto inval;
+    }
+    hostlist_destroy (hosts);
+    idset_destroy (ranks);
+    return 0;
+
+inval:
+    errno = EINVAL;
+error:
+    hostlist_destroy (hosts);
+    idset_destroy (entry_ranks);
+    idset_destroy (ranks);
+    m_node_ranks.clear ();
+    return -1;
 }
 
 int64_t fetch_remap_support_t::get_remapped_id () const
@@ -360,7 +431,64 @@ int resource_reader_jgf_t::remap_aware_unpack_vtx (fetch_helper_t &f,
             f.properties[std::string (key)] = std::string (json_string_value (value));
         }
     }
-    return 0;
+    return validate_vtx_rank (f);
+}
+
+/* Only a `node` or a `storage_node` owns an execution target, and its name
+ * is the hostname R lists for that target. Check the rank it declares
+ * against the ranks R assigns to that host; every other vertex takes its
+ * rank from the host containing it, which validate_edge_ranks () checks.
+ *
+ * A host R does not name is left alone: a JGF may legitimately describe
+ * resources the instance has not been given, as an added subgraph does.
+ */
+int resource_reader_jgf_t::validate_vtx_rank (const fetch_helper_t &f)
+{
+    if (m_node_ranks.empty ())
+        return 0;
+    resource_type_t type{f.type};
+    if (type != node_rt && type != storage_node_rt)
+        return 0;
+    auto match = m_node_ranks.find (f.get_proper_name ());
+    if (match == m_node_ranks.end ())
+        return 0;
+    const std::vector<int64_t> &r_ranks = match->second;
+    int64_t rank = f.get_proper_rank ();
+
+    if (std::find (r_ranks.begin (), r_ranks.end (), rank) != r_ranks.end ())
+        return 0;
+
+    errno = EINVAL;
+    m_err_msg += __FUNCTION__;
+    m_err_msg += ": JGF rank=" + std::to_string (rank) + " for hostname=";
+    m_err_msg += f.get_proper_name ();
+    m_err_msg += " but R assigns it rank";
+    m_err_msg += (r_ranks.size () > 1) ? "s " : " ";
+    for (std::size_t i = 0; i < r_ranks.size (); i++)
+        m_err_msg += (i ? "," : "") + std::to_string (r_ranks[i]);
+    m_err_msg += ".\n";
+    return -1;
+}
+
+/* Every vertex under a host belongs to that host's execution target, so a
+ * containment edge may not join two ranks. A vertex that declares no rank
+ * at all is not constrained: JGF above the node level carries none, and a
+ * good deal of JGF in the wild leaves it off intermediate vertices such as
+ * sockets while setting it on the cores beneath them.
+ */
+int resource_reader_jgf_t::validate_edge_ranks (const resource_graph_t &g,
+                                                vtx_t source,
+                                                vtx_t target)
+{
+    if (g[source].rank == -1 || g[target].rank == -1 || g[source].rank == g[target].rank)
+        return 0;
+
+    errno = EINVAL;
+    m_err_msg += __FUNCTION__;
+    m_err_msg += ": containment edge joins rank=" + std::to_string (g[source].rank);
+    m_err_msg += " (" + g[source].name + ") to rank=" + std::to_string (g[target].rank);
+    m_err_msg += " (" + g[target].name + ").\n";
+    return -1;
 }
 
 int resource_reader_jgf_t::apply_defaults (fetch_helper_t &f, const char *name)
@@ -1146,6 +1274,9 @@ int resource_reader_jgf_t::unpack_edges (resource_graph_t &g,
             goto done;
         // We only add the edge when it connects at least one newly added vertex
         if ((added_vtcs.count (source) == 1) || (added_vtcs.count (target) == 1)) {
+            if (subsystem_t{subsystem} == containment_sub
+                && (rc = validate_edge_ranks (g, vmap[source].v, vmap[target].v)) != 0)
+                goto done;
             tie (e, inserted) = add_edge (vmap[source].v, vmap[target].v, g);
             if (inserted == false) {
                 errno = EINVAL;

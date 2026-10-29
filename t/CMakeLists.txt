@@ -38,6 +38,7 @@ set(ALL_TESTS
   t1033-qmanager-vqueue.t
   t1034-rabbit-partial-release.t
   t1035-reconfig-reload-sweep.t
+  t1036-jgf-rank-validate.t
   t2317-resource-shrink.t
   t3000-jobspec.t
   t3001-resource-basic.t
