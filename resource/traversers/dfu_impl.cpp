@@ -107,11 +107,6 @@ int dfu_impl_t::by_excl (const jobmeta_t &meta,
                          bool exclusive_in,
                          const Jobspec::Resource &resource)
 {
-    planner_t *p = NULL;
-    int64_t at = meta.at;
-    int64_t njobs = -1;
-    uint64_t duration = meta.duration;
-
     // If a non-exclusive resource request is explicitly given on a
     // resource that lies under slot, this spec is invalid.
     if (exclusive_in && resource.exclusive == Jobspec::tristate_t::FALSE) {
@@ -139,28 +134,54 @@ int dfu_impl_t::by_excl (const jobmeta_t &meta,
         // not overrun. Therefore, they will match resources immediately
         // following an active or planned job's span. However, they will
         // correctly fail to match `now` resources with an overrunning job.
-        if (at == meta.now
-            && (meta.alloc_type == jobmeta_t::alloc_type_t::AT_ALLOC
-                || meta.alloc_type == jobmeta_t::alloc_type_t::AT_NO_ALLOC)
-            && !(*m_graph)[u].schedule.allocations.empty ()) {
+        if (meta.is_immediate () && !(*m_graph)[u].schedule.allocations.empty ()) {
             errno = EBUSY;
             return -1;
         }
-        p = (*m_graph)[u].idata.x_checker;
-        njobs = planner_avail_resources_during (p, at, duration);
-        if (njobs == -1) {
-            m_err_msg += "by_excl: planner_avail_resources_during.\n";
-            m_err_msg += strerror (errno);
-            m_err_msg += ".\n";
+        if (x_checker_busy (meta, u) == -1)
             return -1;
-        } else if (njobs < X_CHECKER_NJOBS) {
-            errno = EBUSY;
-            return -1;
-        }
     }
 
     // All cases reached this point indicate further walk is needed.
     return 0;
+}
+
+int dfu_impl_t::x_checker_busy (const jobmeta_t &meta, vtx_t u)
+{
+    // The x_checker of u holds a span for each job that holds u or a
+    // descendant of u, from the start of the job to its planned end,
+    // until the cancel of the job. For an immediate request, start the
+    // window at the base time of the planner: a job that runs past its
+    // planned end then still refuses u, because its span is before at.
+    // With a request equal to the capacity, the planner stops at the
+    // first span, so the cost does not grow with the number of spans
+    // that ended before at.
+    planner_t *p = (*m_graph)[u].idata.x_checker;
+    int64_t start = meta.is_immediate () ? planner_base_time (p) : meta.at;
+    uint64_t duration = static_cast<uint64_t> (meta.at - start) + meta.duration;
+    // Do not change errno on success: schedule () sets errno before a
+    // satisfiability check and reads it after a successful select.
+    if (planner_avail_during (p, start, duration, X_CHECKER_NJOBS) == 0)
+        return 0;
+    if (errno != EBUSY) {
+        m_err_msg += "x_checker_busy: planner_avail_during.\n";
+        m_err_msg += strerror (errno);
+        m_err_msg += ".\n";
+    }
+    return -1;
+}
+
+int dfu_impl_t::by_shadow (const jobmeta_t &meta, subsystem_t s, vtx_t u)
+{
+    // If the type of u is exclusive, the update walk allocates every
+    // descendant of u to the job, also the descendants that the match did
+    // not select (modify_traversal ()). by_excl () does not run at u if
+    // the jobspec names no resource of the type of u, thus examine the
+    // x_checker of u here.
+    if (s != containment_sub || s != m_match->dom_subsystem () || !meta.is_immediate ()
+        || !m_match->is_resource_type_exclusive ((*m_graph)[u].type))
+        return 0;
+    return x_checker_busy (meta, u);
 }
 
 int dfu_impl_t::by_subplan (const jobmeta_t &meta,
@@ -288,6 +309,9 @@ int dfu_impl_t::prune (const jobmeta_t &meta,
             errno = EBUSY;
         return -1;
     }
+
+    if (by_shadow (meta, s, u) == -1)
+        return -1;
 
     return 0;
 }
