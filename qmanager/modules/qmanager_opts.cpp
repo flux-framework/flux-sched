@@ -112,7 +112,8 @@ int Flux::opts_manager::classify_queues (json_t *queues_conf,
 bool queue_prop_t::known_queue_policy (const std::string &policy)
 {
     bool rc = false;
-    if (policy == "fcfs" || policy == "easy" || policy == "hybrid" || policy == "conservative")
+    if (policy == "fcfs" || policy == "easy" || policy == "hybrid" || policy == "conservative"
+        || policy == "coschedule")
         rc = true;
     return rc;
 }

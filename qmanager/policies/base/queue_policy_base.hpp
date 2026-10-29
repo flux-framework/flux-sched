@@ -150,6 +150,9 @@ class job_t {
     std::string note = "";
     t_stamps_t t_stamps;
     schedule_t schedule;
+    // A held job stays pending and is not allocated until the hold is
+    // cleared through set_hold. Only the coschedule policy acts on it.
+    bool hold = false;
 };
 
 /*! Queue policy base interface abstract class. Derived classes must
@@ -592,6 +595,35 @@ class queue_policy_base_t : public resource_model::queue_adapter_base_t {
         rc = 0;
     out:
         return rc;
+    }
+
+    /*! Set or clear the hold on a pending job. A held job stays in the
+     *  pending set and is not allocated until the hold is cleared, which
+     *  marks the queue schedulable again so the next loop picks it up.
+     *
+     *  \param id    jobid of a pending job.
+     *  \param hold  true to hold, false to release.
+     *  \return      0 on success, -1 with errno set on error.
+     *                   ENOENT: no such job.
+     *                   EINVAL: the job is not pending.
+     */
+    int set_hold (flux_jobid_t id, bool hold)
+    {
+        auto job_it = m_jobs.find (id);
+        if (job_it == m_jobs.end ()) {
+            errno = ENOENT;
+            return -1;
+        }
+        auto &job = job_it->second;
+        if (job->state != job_state_kind_t::PENDING) {
+            errno = EINVAL;
+            return -1;
+        }
+        if (hold == job->hold)
+            return 0;
+        job->hold = hold;
+        set_schedulability (true);
+        return 0;
     }
 
     /*! Remove a job whose jobid is id from the pending or maybe_pending queues.

@@ -588,6 +588,36 @@ static const struct flux_msg_handler_spec htab[] = {
     {FLUX_MSGTYPE_REQUEST, "*.params", params_request_cb, FLUX_ROLE_USER},
     FLUX_MSGHANDLER_TABLE_END,
 };
+// Release a held job. The payload is the jobid. The requester must own the
+// job or the instance, and the job must still be pending.
+static void release_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t *msg, void *arg)
+{
+    qmanager_cb_ctx_t *ctx = static_cast<qmanager_cb_ctx_t *> (arg);
+    std::shared_ptr<queue_policy_base_t> queue;
+    std::shared_ptr<job_t> job;
+    std::string queue_name;
+    flux_jobid_t id;
+
+    if (flux_msg_unpack (msg, "{s:I}", "id", &id) < 0)
+        goto error;
+    if (ctx->find_queue (id, queue_name, queue) < 0) {
+        errno = ENOENT;
+        goto error;
+    }
+    if (!(job = queue->lookup (id)))
+        goto error;
+    if (flux_msg_authorize (msg, job->userid) < 0)
+        goto error;
+    if (queue->set_hold (id, false) < 0)
+        goto error;
+    if (flux_respond (h, msg, NULL) < 0)
+        flux_log_error (h, "%s: flux_respond", __FUNCTION__);
+    return;
+error:
+    if (flux_respond_error (h, msg, errno, NULL) < 0)
+        flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
+}
+
 static const struct flux_msg_handler_spec statstab[] = {
     {FLUX_MSGTYPE_REQUEST,
      "sched-fluxion-qmanager.stats-get",
@@ -597,6 +627,7 @@ static const struct flux_msg_handler_spec statstab[] = {
      "sched-fluxion-qmanager.stats-clear",
      qmanager_safe_cb_t::jobmanager_stats_clear_cb,
      FLUX_ROLE_USER},
+    {FLUX_MSGTYPE_REQUEST, "sched-fluxion-qmanager.release", release_request_cb, FLUX_ROLE_USER},
     FLUX_MSGHANDLER_TABLE_END,
 };
 
