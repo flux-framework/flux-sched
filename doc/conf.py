@@ -169,7 +169,6 @@ sys.path.insert(0, py_bindings_dir)
 # run api doc
 def run_apidoc(app):
     # Move import inside so this file can be exec'd without sphinx installed
-    # pylint: disable=import-outside-toplevel
     from sphinx.ext.apidoc import main
 
     # Generate the stubs under the directory Sphinx is actually reading
