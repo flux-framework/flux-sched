@@ -275,6 +275,45 @@ matrix.add_build(
     coverage=True,
 )
 
+# fedora40: address + undefined behavior sanitizers.
+#
+# Runs on every branch, not only master, because the point of the entry is to
+# catch a new memory error in the pull request that introduces it.
+#
+# This builds flux-sched's own libraries, modules and test binaries with ASan
+# and UBSan.  flux-core is not sanitized, so `flux version` does not report
+# +asan and the sharness ASAN prereq stays unset: the suites that skip under
+# ASAN (t1035, t5100) do run here, which is intended -- they exercise
+# flux-sched code and that code *is* instrumented.
+#
+# The live module tests (t1xxx/t2xxx/t4xxx) are included rather than excluded.
+# The broker that dlopen()s sched-fluxion-*.so is not instrumented, so the ASan
+# runtime has to be preloaded for them; checks_run.sh therefore runs ctest in
+# two passes -- the broker-less tests (C++ unit tests, resource-query t3xxx)
+# without the preload, then the live tests with it -- and sets
+# FLUX_LOAD_WITH_DEEPBIND=0 (needs flux-core >= v0.64.0) so the sanitizer
+# runtimes are not refused by RTLD_DEEPBIND.  See the comment there for why a
+# single blanket LD_PRELOAD does not work.
+#
+# No TEST_INSTALL: a sanitized tree is not worth installing, and `make install`
+# plus the installed-path test pass would only add time.  recheck is off
+# because a sanitizer report is deterministic -- a rerun would just repeat it.
+#
+# LeakSanitizer is disabled in checks_run.sh (ASAN_OPTIONS=detect_leaks=0)
+# because of pre-existing leaks in the reapi CLI bindings; see the comment
+# there.
+matrix.add_build(
+    name="fedora40 - asan,ubsan",
+    image="fedora40",
+    env=dict(
+        CC="clang-18",
+        CXX="clang++-18",
+        SANITIZE="t",
+    ),
+    recheck=False,
+    timeout_minutes=90,
+)
+
 # RHEL8 clone
 matrix.add_build(
     name="el8 - test-install",

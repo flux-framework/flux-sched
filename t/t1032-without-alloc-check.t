@@ -32,11 +32,16 @@ test_expect_success 'load fluxion modules' '
 
 # Test for flux-framework/flux-sched#1043
 #
+# The epilog must still run when the match runs. A match that starts
+# after the planned end of the job and finds the epilog complete sees
+# free resources, and a sanitized build makes each step slower, so give
+# the epilog more time than the steps between epilog-start and the match
+# need.
 test_expect_success 'configure epilog with delay' '
 	flux config load <<-EOT &&
 	[job-manager.epilog]
 	per-rank = true
-	command = [ "sleep", "2" ]
+	command = [ "sleep", "5" ]
 	EOT
 	flux jobtap load perilog.so
 '
@@ -47,7 +52,7 @@ test_expect_success 'MWOA fails while the previous epilog is still running' '
 	>jobspec.json flux run --dry-run -N1 -x hostname &&
 	flux job wait-event --timeout=5s $JOBID_WITH_EPILOG epilog-start &&
 	test_expect_code 16 flux ion-resource match without_allocating jobspec.json &&
-	flux job wait-event --timeout=3s $JOBID_WITH_EPILOG epilog-finish
+	flux job wait-event --timeout=10s $JOBID_WITH_EPILOG epilog-finish
 '
 test_expect_success 'submit another node-exclusive job that exceeds its time limit' '
 	JOBID_WITH_EPILOG=$(flux submit -N1 -x -t1s sleep 30)
@@ -55,7 +60,7 @@ test_expect_success 'submit another node-exclusive job that exceeds its time lim
 test_expect_success 'MWOAF fails while the previous epilog is still running' '
 	flux job wait-event --timeout=5s $JOBID_WITH_EPILOG epilog-start &&
 	test_expect_code 16 flux ion-resource match without_allocating_future jobspec.json &&
-	flux job wait-event --timeout=3s $JOBID_WITH_EPILOG epilog-finish
+	flux job wait-event --timeout=10s $JOBID_WITH_EPILOG epilog-finish
 '
 test_expect_success 'clean up' '
 	flux cancel --all &&
@@ -94,7 +99,7 @@ test_expect_success 'MWOAF and orelse_reserve succeed in the future while an epi
     flux job wait-event --timeout=5s $JOBID_WITH_EPILOG epilog-start && # Wait for the overrun
     flux ion-resource match without_allocating_future jobspec.json >future_match &&
     flux ion-resource match allocate_orelse_reserve jobspec.json >future_reserve &&
-    flux job wait-event --timeout=3s $JOBID_WITH_EPILOG epilog-finish
+    flux job wait-event --timeout=10s $JOBID_WITH_EPILOG epilog-finish
 '
 test_expect_success 'The future match and reservation start at the end of the "active" span' '
     present_match_time=$(grep "starttime" present_match | jq -e .execution.starttime) &&

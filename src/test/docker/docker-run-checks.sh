@@ -177,6 +177,7 @@ export BUILD_DIR
 export COVERAGE
 export chain_lint
 export INSTALL_ONLY
+export SANITIZE
 
 docker run --rm \
     --workdir=$WORKDIR \
@@ -213,7 +214,10 @@ docker run --rm \
     -e PRELOAD \
     -e POISON \
     -e INCEPTION \
+    -e SANITIZE \
     -e ASAN_OPTIONS \
+    -e UBSAN_OPTIONS \
+    -e LSAN_OPTIONS \
     -e BUILD_DIR \
     -e S3_ACCESS_KEY_ID \
     -e S3_SECRET_ACCESS_KEY \

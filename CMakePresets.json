@@ -22,12 +22,13 @@
     },
     {
       "name": "asan",
-      "displayName": "Debug with address sanitizer",
-      "description": "ASAN build using Ninja generator",
+      "displayName": "Debug with address and undefined behavior sanitizers",
+      "description": "ASan + UBSan build using Ninja generator, matching the CI sanitizer entry",
       "inherits": "default",
       "binaryDir": "${sourceDir}/build/asan",
       "cacheVariables": {
-        "SANITIZE_ADDRESS": "ON"
+        "SANITIZE_ADDRESS": "ON",
+        "SANITIZE_UNDEFINED": "ON"
       }
     },
     {
@@ -86,7 +87,9 @@
         "verbosity": "verbose"
       },
       "environment": {
-        "ASAN_OPTIONS": "detect_leaks=0:start_deactivated=true:replace_str=true:verify_asan_link_order=false"
+        "ASAN_OPTIONS": "detect_leaks=0:start_deactivated=true:replace_str=true:verify_asan_link_order=false",
+        "UBSAN_OPTIONS": "print_stacktrace=1",
+        "FLUX_LOAD_WITH_DEEPBIND": "0"
       },
       "execution": {
         "noTestsAction": "error",
