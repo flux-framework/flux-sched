@@ -60,6 +60,15 @@ struct jobmeta_t {
         return m_queue;
     }
 
+    //! True if the match is an allocation, or a probe of one, at the
+    //! current time. Only such a match must respect jobs that run past
+    //! their planned end; a reservation stays optimistic about them.
+    bool is_immediate () const
+    {
+        return at == now
+               && (alloc_type == alloc_type_t::AT_ALLOC || alloc_type == alloc_type_t::AT_NO_ALLOC);
+    }
+
     int build (Jobspec::Jobspec &jobspec,
                alloc_type_t alloc,
                int64_t id,
@@ -389,6 +398,8 @@ class dfu_impl_t {
                  vtx_t u,
                  bool exclusive_in,
                  const Jobspec::Resource &resource);
+    int x_checker_busy (const jobmeta_t &meta, vtx_t u);
+    int by_shadow (const jobmeta_t &meta, subsystem_t s, vtx_t u);
     int by_subplan (const jobmeta_t &meta,
                     subsystem_t s,
                     vtx_t u,
