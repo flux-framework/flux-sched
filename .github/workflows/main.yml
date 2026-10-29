@@ -70,11 +70,11 @@ jobs:
 
   python-format:
     name: code formatting
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/setup-python@v5
       with:
-        python-version: 3.8
+        python-version: '3.13'
     - uses: actions/checkout@v4
       with:
         ref: ${{ github.event.pull_request.head.sha }}
