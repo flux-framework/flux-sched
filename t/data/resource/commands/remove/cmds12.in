@@ -1,0 +1,5 @@
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test008.yaml
+remove 0 false
+remove 0 false
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test008.yaml
+quit
