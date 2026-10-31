@@ -736,7 +736,9 @@ class queue_policy_base_t : public resource_model::queue_adapter_base_t {
         cancel_sched_loop ();
         // blocked jobs must be reconsidered after a job completes
         // this covers cases where jobs that couldn't run because of an
-        // existing job's reservation can when it completes early
+        // existing job's reservation can when it completes early.
+        // This covers this queue only. The qmanager module reconsiders
+        // the other queues in its prepare callback.
         reconsider_blocked_jobs ();
         return rc;
     }
