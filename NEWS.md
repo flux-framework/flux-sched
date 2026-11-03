@@ -1,3 +1,16 @@
+flux-sched version 0.57.0 - 2026-11-04
+--------------------------------------
+
+### New Features
+ * resource: address partial property RPC success (#1569)
+
+### Fixes
+ * t/scripts: update waitfile to match core (#1587)
+
+### Build/Testsuite/Documentation
+ * build: remove `black` dependency (#1584)
+
+
 flux-sched version 0.56.0 - 2026-10-06
 --------------------------------------
 
