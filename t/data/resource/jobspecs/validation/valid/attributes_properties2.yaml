@@ -1,14 +1,11 @@
 version: 9999
 resources:
-  - type: switch
-    count: 3
+  - type: slot
+    count: 4
+    label: default
     with:
-      - type: slot
+      - type: node
         count: 1
-        label: default
-        with:
-          - type: core
-            count: 1
 tasks:
   - command: [ "flux", "start" ]
     slot: default
@@ -17,3 +14,5 @@ tasks:
 attributes:
   system:
     duration: 3600.0
+    constraints:
+      properties: [ "foo$", "+bar" ]
