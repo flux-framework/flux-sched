@@ -68,7 +68,7 @@ void collect_non_default_slot_labels (const std::vector<Resource> &resources,
 std::string resource_signature (const Resource &resource)
 {
     std::ostringstream out;
-    out << resource.type << "{" << resource.label << "," << resource.count.min << "}";
+    out << resource.type << "{" << resource.label << "," << resource.count.first () << "}";
 
     if (!resource.with.empty ()) {
         out << "[";
