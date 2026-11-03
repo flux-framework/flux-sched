@@ -1305,10 +1305,13 @@ void dfu_impl_t::prime_jobspec (std::vector<Resource> &resources,
             m_match->add_exclusive_resource_type (resource.type);
         // Use minimum requirement because you don't want to prune search
         // as far as a subtree satisfies the minimum requirement
-        accum_if (subsystem, resource.type, resource.count.min, to_parent);
+        accum_if (subsystem, resource.type, resource.count.first (), to_parent);
         prime_jobspec (resource.with, resource.user_data);
         for (auto &aggregate : resource.user_data) {
-            accum_if (subsystem, aggregate.first, resource.count.min * aggregate.second, to_parent);
+            accum_if (subsystem,
+                      aggregate.first,
+                      resource.count.first () * aggregate.second,
+                      to_parent);
         }
     }
 }
