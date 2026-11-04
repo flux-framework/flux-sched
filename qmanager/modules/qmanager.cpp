@@ -24,12 +24,14 @@ extern "C" {
 #include "qmanager/modules/qmanager_opts.hpp"
 #include "src/common/c++wrappers/eh_wrapper.hpp"
 #include "qmanager/modules/qmanager_callbacks.hpp"
+#include "resource/modules/resource_notify.hpp"
 
 using namespace Flux;
 using namespace Flux::queue_manager;
 using namespace Flux::queue_manager::detail;
 using namespace Flux::opts_manager;
 using namespace Flux::cplusplus_wrappers;
+using namespace Flux::resource_notify;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Queue Manager Service Module Context
@@ -254,12 +256,20 @@ out:
 static int handshake_resource (std::shared_ptr<qmanager_ctx_t> &ctx)
 {
     int rc = -1;
+    const json_t *requested = notify_flags_to_json (NOTIFY_NONE);
 
-    if (!(ctx->notify_f = flux_rpc (ctx->h,
-                                    "sched-fluxion-resource.notify",
-                                    NULL,
-                                    FLUX_NODEID_ANY,
-                                    FLUX_RPC_STREAMING))) {
+    if (!requested) {
+        flux_log_error (ctx->h, "%s: notify_flags_to_json", __FUNCTION__);
+        goto out;
+    }
+
+    if (!(ctx->notify_f = flux_rpc_pack (ctx->h,
+                                         "sched-fluxion-resource.notify",
+                                         FLUX_NODEID_ANY,
+                                         FLUX_RPC_STREAMING,
+                                         "{s:o}",
+                                         NOTIFY_REQUEST_KEY,
+                                         requested))) {
         flux_log_error (ctx->h, "%s: flux_rpc (notify)", __FUNCTION__);
         goto out;
     }
