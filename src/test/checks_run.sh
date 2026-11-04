@@ -19,6 +19,7 @@
 #  POISON        Install poison libflux and flux(1) in image
 #  INCEPTION     Run tests under a flux instance with prove(1)
 #  chain_lint    Run sharness with --chain-lint if chain_lint=t
+#  SANITIZE      Build with ASan/UBSan and run the tests under them if set
 #
 #  And, obviously, some crucial variables that configure itself cares about:
 #
@@ -150,6 +151,111 @@ elif test "$INCEPTION" = "t"; then
 	           cd .."
 fi
 
+# Sanitizer build: build with ASan + UBSan and run the whole ctest suite under
+# them, in two passes.
+#
+# flux-sched's libraries, modules and test binaries are sanitized, but the flux
+# broker that dlopen()s sched-fluxion-*.so is not.  For the ASan runtime to work
+# inside a shared object loaded by an uninstrumented process it must already be
+# in that process, so the live tests need the runtime preloaded; without it the
+# broker segfaults on the first fluxion module load.  FLUX_LOAD_WITH_DEEPBIND=0
+# additionally clears RTLD_DEEPBIND from flux-core's dlopen() flags (needs
+# flux-core >= v0.64.0) -- the sanitizer runtimes refuse to run under
+# RTLD_DEEPBIND and abort the broker otherwise.
+#
+# The preload cannot simply be applied to the whole suite, because it also
+# instruments unrelated system binaries the tests shell out to.  Notably
+# coreutils split(1), which t3022/t3023 use, calls aligned_alloc() with a size
+# that is not a multiple of the alignment: glibc allows that, but ASan enforces
+# the stricter C11 rule and aborts with "invalid alignment requested in
+# aligned_alloc", so split(1) dies with "memory exhausted".
+#
+# Scoping the preload to the broker via the FLUX_TEST_WRAP hook in
+# t/sharness.d/flux-sharness.sh is not enough either: that hook only wraps the
+# `flux start` that test_under_flux() runs, and several tests (t1005, t4010)
+# invoke `flux broker` directly.
+#
+# So: run the tests that need no broker (the C++ unit tests and the
+# resource-query t3xxx suites, which are instrumented executables that link the
+# runtime themselves) without the preload, then run the live tests with it.
+if test "$SANITIZE" = "t"; then
+	# This block replaces CHECKCMDS wholesale, so it cannot be combined
+	# with the modes above that build their own.
+	if test -n "${COVERAGE}${INSTALL_ONLY}${TEST_INSTALL}${INCEPTION}${DISTCHECK}"; then
+		printf "::error::SANITIZE cannot be combined with COVERAGE, INSTALL_ONLY, TEST_INSTALL, INCEPTION or DISTCHECK\n"
+		exit 1
+	fi
+	ARGS="$ARGS --enable-sanitize-address --enable-sanitize-undefined"
+
+	# gcc names the shared runtime libasan.so; clang names it
+	# libclang_rt.asan-<arch>.so or libclang_rt.asan.so.  Both compilers
+	# -print-file-name the full path when the library exists, and echo the
+	# bare name when it does not.  Ask for the names of clang first: clang
+	# also finds the gcc runtime, but the preload must be the runtime that
+	# the sanitized modules link.
+	for name in libclang_rt.asan-$(uname -m).so \
+		    libclang_rt.asan.so \
+		    libasan.so; do
+		ASAN_LIB=$(${CC:-gcc} -print-file-name=$name)
+		test -e "$ASAN_LIB" && break
+		ASAN_LIB=
+	done
+	if test -z "$ASAN_LIB"; then
+		printf "::error::cannot locate the ASan runtime for ${CC:-gcc}\n"
+		exit 1
+	fi
+	export FLUX_LOAD_WITH_DEEPBIND=0
+
+	# UBSan suppressions.  Written outside the (bind-mounted) source
+	# tree so the build leaves no stray file behind.  See the comment
+	# for why the entry is here; keep the list short and justified.
+	UBSAN_SUPP=${TMPDIR:-/tmp}/flux-sched-ubsan.supp
+	cat <<-EOF >${UBSAN_SUPP}
+	# resource/reapi/test/reapi_cli_test_cxx.cpp builds out-of-bounds
+	# match_op_t values on purpose to check that match_op_valid ()
+	# rejects them, so -fsanitize=enum necessarily fires there.
+	enum:reapi_cli_test_cxx.cpp
+	EOF
+
+	# LeakSanitizer is off: flux-sched has pre-existing leaks in the
+	# reapi CLI bindings (the options json_t in
+	# resource_query_t::set_resource_ctx_params () and the strdup()ed
+	# buffers the C binding hands back) that the unit tests do not free.
+	# Turn this back on once those are fixed.
+	#
+	# The ODR check is off: each flux broker module defines the global
+	# mod_name (the MOD_NAME macro of flux-core), and the ASan runtime of
+	# clang reports an ODR violation when the broker loads a second
+	# module.  That is the module protocol of flux-core, not an error.
+	export ASAN_OPTIONS="detect_leaks=0:detect_odr_violation=0${ASAN_OPTIONS:+:$ASAN_OPTIONS}"
+	export UBSAN_OPTIONS="print_stacktrace=1:suppressions=${UBSAN_SUPP}${UBSAN_OPTIONS:+:$UBSAN_OPTIONS}"
+
+	# Tests that start a broker, and therefore need the preload.
+	SANITIZE_LIVE_RE='^(t1[0-9]|t2[0-9]|t4[0-9]|t5[0-9]|t6[0-9]|t8[0-9]|t9[0-9]|t3300|t3301)'
+
+	# The valgrind test (t5000) runs the broker under valgrind, and the
+	# preloaded ASan runtime does not come first in that process. The
+	# test skips by itself when flux-core is sanitized, but flux-core is
+	# not sanitized here, so leave FLUX_ENABLE_VALGRIND_TEST unset (see
+	# below) and keep the test out of the live pass.
+	SANITIZE_EXCLUDE_RE='^t5000'
+
+	# checks_group evaluates CHECKCMDS with eval two times, which strips
+	# the quotes around the regular expression and then parses its
+	# parentheses as shell syntax.  Keep the commands in a function, so
+	# that CHECKCMDS is one word and the quoting is ordinary.
+	sanitize_check() {
+		${CMAKE_CTEST_COMMAND:-ctest} --output-on-failure \
+		    --output-junit "$(pwd)/test-results.xml" \
+		    -E "$SANITIZE_LIVE_RE" &&
+		LD_PRELOAD="$ASAN_LIB" ${CMAKE_CTEST_COMMAND:-ctest} \
+		    --output-on-failure \
+		    --output-junit "$(pwd)/test-results-live.xml" \
+		    -R "$SANITIZE_LIVE_RE" -E "$SANITIZE_EXCLUDE_RE"
+	}
+	CHECKCMDS="sanitize_check"
+fi
+
 if test -n "$PRELOAD" ; then
   CHECKCMDS="/usr/bin/env 'LD_PRELOAD=$PRELOAD' ${CHECKCMDS}"
 fi
@@ -170,8 +276,8 @@ export FLUX_TEST_MPI=t
 export FLUX_TESTS_LOGFILE=t
 export DISTCHECK_CONFIGURE_FLAGS="${ARGS}"
 
-# Force enable valgrind test
-export FLUX_ENABLE_VALGRIND_TEST=t
+# Force enable valgrind test, except in the sanitizer build (see above)
+test "$SANITIZE" = "t" || export FLUX_ENABLE_VALGRIND_TEST=t
 
 if test "$CPPCHECK" = "t"; then
     sh -x src/test/cppcheck.sh
