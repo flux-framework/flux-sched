@@ -116,15 +116,27 @@ int resource_reader_jgf_shorthand_t::update_additional_edges (
         || v == boost::graph_traits<resource_graph_t>::null_vertex ())
         return -1;
     fetcher.vertex_id = nullptr;
+    // Update the virtual in-edge if v is a root. Do this before the loop,
+    // because the loop can ignore all out-edges.
+    if (update_src_edge (g, m, vmap, vertex_id, sequence_number) < 0)
+        return -1;
     f_out_edg_iterator_t ei, ei_end;
     for (boost::tie (ei, ei_end) = boost::out_edges (v, g); ei != ei_end; ++ei) {
         if (g[*ei].subsystem != containment_sub)
             continue;
-        std::string target_str = std::to_string (boost::target (*ei, g));
-        if (update_src_edge (g, m, vmap, vertex_id, sequence_number) < 0
-            || update_tgt_edge (g, m, vmap, vertex_id, target_str, sequence_number) < 0) {
+        // The keys of vmap are JGF node IDs. A JGF node ID is the uniq_id of
+        // the vertex, not its descriptor. These values are different, for
+        // example, in a subinstance that reads its graph from the JGF of its
+        // parent.
+        std::string target_str = std::to_string (g[boost::target (*ei, g)].uniq_id);
+        // update_vtx () ignores a target that a previous partial free
+        // released. Such a target has no vmap entry, and its edge is not
+        // part of the allocation. Use find (), not vmap[]: vmap[] adds a
+        // default entry, and update_tgt_edge () then fails.
+        if (vmap.find (target_str) == vmap.end ())
+            continue;
+        if (update_tgt_edge (g, m, vmap, vertex_id, target_str, sequence_number) < 0)
             return -1;
-        }
     }
     return 0;
 }
