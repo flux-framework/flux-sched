@@ -80,7 +80,8 @@ const std::vector<Resource> &dfu_flexible_t::test (vtx_t u,
                                                    const std::vector<Resource> &resources,
                                                    bool &pristine,
                                                    unsigned int &nslots,
-                                                   match_kind_t &spec)
+                                                   match_kind_t &spec,
+                                                   std::string &label)
 {
     /* Note on the purpose of pristine: we differentiate two similar but
      * distinct cases with this parameter.
@@ -387,6 +388,7 @@ int dfu_flexible_t::dom_slot (const jobmeta_t &meta,
                               unsigned int nslots,
                               bool pristine,
                               bool *excl,
+                              const std::string &label,
                               scoring_api_t &dfu)
 {
     int rc;
@@ -478,6 +480,7 @@ int dfu_flexible_t::dom_slot (const jobmeta_t &meta,
         edg_group.score = score;
         edg_group.count = 1;
         edg_group.exclusive = 1;
+        edg_group.task_label = slots[slot_index].label;
         edg_group_vector.push_back (edg_group);
 
         current_config = or_config[std::get<0> (current_config)];

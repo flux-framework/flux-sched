@@ -40,19 +40,19 @@ bool resource_opts_t::is_number (const std::string &num_str)
     return i == num_str.end ();
 }
 
-const std::map<std::string, resource_opts_t::opt_key_t> resource_opts_t::opt_key_map = {
-    {"load-file", LOAD_FILE},
-    {"load-format", LOAD_FORMAT},
-    {"load-allowlist", LOAD_ALLOWLIST},
-    {"policy", MATCH_POLICY},
-    {"match-policy", MATCH_POLICY},
-    {"match-format", MATCH_FORMAT},
-    {"subsystems", MATCH_SUBSYSTEMS},
-    {"reserve-vtx-vec", RESERVE_VTX_VEC},
-    {"prune-filters", PRUNE_FILTERS},
-    {"update-interval", UPDATE_INTERVAL},
-    {"traverser", TRAVERSER_POLICY},
-};
+const std::map<std::string, resource_opts_t::opt_key_t> resource_opts_t::opt_key_map =
+    {{"load-file", LOAD_FILE},
+     {"load-format", LOAD_FORMAT},
+     {"load-allowlist", LOAD_ALLOWLIST},
+     {"policy", MATCH_POLICY},
+     {"match-policy", MATCH_POLICY},
+     {"match-format", MATCH_FORMAT},
+     {"subsystems", MATCH_SUBSYSTEMS},
+     {"reserve-vtx-vec", RESERVE_VTX_VEC},
+     {"prune-filters", PRUNE_FILTERS},
+     {"update-interval", UPDATE_INTERVAL},
+     {"traverser", TRAVERSER_POLICY},
+     {"emit-nslots", EMIT_NSLOTS}};
 
 ////////////////////////////////////////////////////////////////////////////////
 // Public API for Resource Match Option Class
@@ -106,6 +106,11 @@ const std::optional<int> &resource_opts_t::get_update_interval () const
 const std::optional<std::string> &resource_opts_t::get_traverser_policy () const
 {
     return m_traverser_policy;
+}
+
+const std::optional<int> &resource_opts_t::get_emit_nslots () const
+{
+    return m_emit_nslots;
 }
 
 void resource_opts_t::set_load_file (const std::string &p)
@@ -178,6 +183,11 @@ void resource_opts_t::set_update_interval (const int i)
     m_update_interval = i;
 }
 
+void resource_opts_t::set_emit_nslots (const int i)
+{
+    m_emit_nslots = i;
+}
+
 resource_opts_t &resource_opts_t::canonicalize ()
 {
     return *this;
@@ -207,6 +217,8 @@ resource_opts_t &resource_opts_t::operator+= (const resource_opts_t &src)
         set_update_interval (*src_update_interval);
     if (auto src_traverser_policy = src.get_traverser_policy ())
         set_traverser_policy (*src_traverser_policy);
+    if (auto src_emit_nslots = src.get_emit_nslots ())
+        set_emit_nslots (*src_emit_nslots);
     return *this;
 }
 
@@ -295,6 +307,14 @@ int resource_opts_t::parse (const std::string &k, const std::string &v, std::str
             }
             break;
 
+        case EMIT_NSLOTS:
+            if (is_number (v)) {
+                int s = std::stoi (v);
+                if (s >= 0)
+                    set_emit_nslots (s);
+            }
+            break;
+
         case UNKNOWN:
             info += "Unknown option (" + k + ").";
             errno = EINVAL;
@@ -314,7 +334,7 @@ int resource_opts_t::jsonify (std::string &json_out) const
     const char *json_str{nullptr};
     auto to_c_str = [] (auto &s) { return s.c_str (); };
 
-    o = json_pack ("{ s:s? s:s? s:s? s:s? s:s? s:s? s:i s:s? s:i s:s? }",
+    o = json_pack ("{ s:s? s:s? s:s? s:s? s:s? s:s? s:i s:s? s:i s:s? s:i }",
                    "load-file",
                    get_load_file ().transform (to_c_str).value_or (nullptr),
                    "load-format",
@@ -334,7 +354,9 @@ int resource_opts_t::jsonify (std::string &json_out) const
                    "update-interval",
                    get_update_interval ().value_or (0),
                    "traverser",
-                   get_traverser_policy ().transform (to_c_str).value_or (nullptr));
+                   get_traverser_policy ().transform (to_c_str).value_or (nullptr),
+                   "emit-nslots",
+                   get_emit_nslots ().value_or (0));
     if (!o) {
         errno = ENOMEM;
         goto ret;

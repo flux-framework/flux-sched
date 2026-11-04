@@ -52,6 +52,7 @@ struct resource_params_t {
     std::string matcher_name;     /* Matcher name */
     std::string matcher_policy;   /* Matcher policy name */
     std::string traverser_policy; /* Traverser policy name */
+    int emit_nslots;              /* Flag to emit nslots */
     std::string o_fname;          /* Output file to dump the filtered graph */
     std::string r_fname;          /* Output file to dump the emitted R */
     std::string o_fext;           /* File extension */

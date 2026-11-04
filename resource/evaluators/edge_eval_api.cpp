@@ -49,6 +49,7 @@ eval_egroup_t::eval_egroup_t (const eval_egroup_t &o)
     needs = o.needs;
     exclusive = o.exclusive;
     root = o.root;
+    task_label = o.task_label;
     edges = o.edges;
 }
 
@@ -59,6 +60,7 @@ eval_egroup_t &eval_egroup_t::operator= (const eval_egroup_t &o)
     needs = o.needs;
     exclusive = o.exclusive;
     root = o.root;
+    task_label = o.task_label;
     edges = o.edges;
     return *this;
 }
