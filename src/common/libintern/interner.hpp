@@ -60,6 +60,7 @@ struct dense_storage {
     using id_instance_t = Id;
     using id_storage_t = size_t;
 
+    ~dense_storage () = default;
     dense_storage (dense_storage const &) = delete;
     dense_storage (dense_storage &&) = delete;
     dense_storage &operator= (dense_storage const &) = delete;
@@ -120,19 +121,19 @@ struct dense_storage {
 };
 
 template<class Tag, class Id>
-    requires (sizeof (Id) <= sizeof (unsigned long int))
+    requires (sizeof (Id) <= sizeof (uint64_t))
 detail::view_and_id dense_storage<Tag, Id>::get_both (std::string_view s)
 {
     return ::intern::detail::get_both (dense_storage::get_storage (), s, sizeof (Id));
 }
 template<class Tag, class Id>
-    requires (sizeof (Id) <= sizeof (unsigned long int))
+    requires (sizeof (Id) <= sizeof (uint64_t))
 Id dense_storage<Tag, Id>::get_id (std::string_view s)
 {
     return ::intern::detail::get_both (dense_storage::get_storage (), s, sizeof (Id)).id;
 }
 template<class Tag, class Id>
-    requires (sizeof (Id) <= sizeof (unsigned long int))
+    requires (sizeof (Id) <= sizeof (uint64_t))
 const std::string *dense_storage<Tag, Id>::get_by_id (id_storage_t string_id)
 {
     return ::intern::detail::get_by_id (dense_storage::get_storage (), string_id);
@@ -142,7 +143,7 @@ namespace detail {
 struct sparse_inner_storage;
 sparse_inner_storage *get_sparse_inner_storage (size_t);
 using rc_str_t = std::shared_ptr<const std::string>;
-typedef void (*rc_free_fn) (const std::string *s);
+using rc_free_fn = void (*) (const std::string *s);
 rc_str_t get_rc (sparse_inner_storage *storage,
                  std::string_view s,
                  rc_free_fn fn,
@@ -158,6 +159,7 @@ struct rc_storage {
     using id_instance_t = detail::rc_str_t;
     using id_storage_t = detail::rc_str_t;
 
+    ~rc_storage () = default;
     rc_storage (rc_storage const &) = delete;
     rc_storage (rc_storage &&) = delete;
     rc_storage &operator= (rc_storage const &) = delete;
@@ -214,6 +216,8 @@ class interned_string {
     using storage_t = Storage;
     using id_type = Id;
 
+    ~interned_string () = default;
+
     explicit interned_string (const std::string_view sv) : _id (Storage::get_id (sv))
     {
     }
@@ -256,6 +260,8 @@ class interned_string {
         Id _cur;
 
        public:
+        ~istring_incrementable () = default;
+
         explicit istring_incrementable (interned_string cur) : _cur{cur.id ()}
         {
         }
@@ -292,6 +298,8 @@ class interned_string {
         Id _one_past_last;
 
        public:
+        ~istring_range () = default;
+
         istring_range (const istring_range &o) = default;
 
         istring_range (istring_range &&) = default;
@@ -412,7 +420,7 @@ template<typename Tval>
 struct FastPointerHash {
     size_t operator() (const Tval *val) const
     {
-        static const size_t shift = (size_t)log2 (1 + sizeof (Tval));
+        static const auto shift = (size_t)log2 (1 + sizeof (Tval));
         return (size_t)(val) >> shift;
     }
 };

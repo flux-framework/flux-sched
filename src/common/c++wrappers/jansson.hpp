@@ -5,6 +5,7 @@
 #ifndef JANSONN_HPP
 #define JANSONN_HPP
 #include <boost/icl/detail/map_algo.hpp>
+#include <cstddef>
 
 extern "C" {
 #include <jansson.h>
@@ -16,13 +17,13 @@ class value {
 
    public:
     value () = default;
-    value (value &&rhs)
+    value (value &&rhs) noexcept
     {
         json_decref (_v);
-        _v = rhs._v;
+        _v = rhs._v;  // NOLINT
         rhs._v = nullptr;
     }
-    value &operator= (value &&rhs)
+    value &operator= (value &&rhs) noexcept
     {
         json_decref (_v);
         _v = rhs._v;
@@ -32,21 +33,26 @@ class value {
     value (value const &rhs)
     {
         json_decref (_v);
-        _v = rhs._v;
+        _v = rhs._v;  // NOLINT
         json_incref (_v);
     }
     value &operator= (value const &rhs)
     {
+        if (&rhs == this)
+            return *this;
         json_decref (_v);
         _v = rhs._v;
         json_incref (_v);
         return *this;
     }
-    value (json_t *v) : _v (v)
+    explicit value (json_t *v) : _v (v)
     {
         json_incref (_v);
     }
     value (no_incref, json_t *v) : _v (v)
+    {
+    }
+    value (std::nullptr_t)  // NOLINT(google-explicit-constructor
     {
     }
     ~value ()
@@ -72,7 +78,7 @@ class value {
     {
         return _v;
     }
-    operator bool ()
+    explicit operator bool ()
     {
         return _v;
     }
