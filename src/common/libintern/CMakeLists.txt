@@ -1,6 +1,8 @@
 add_library(intern STATIC
         interner.cpp)
 
+target_link_libraries(intern PUBLIC boost_scope)
+
 add_executable(interned_string_test test/interned_string_test.cpp)
 add_sanitizers(interned_string_test)
 target_link_libraries(interned_string_test intern Catch2::Catch2WithMain)
