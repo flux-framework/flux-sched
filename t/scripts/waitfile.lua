@@ -15,7 +15,9 @@
 --
 local usage = [[
 Usage: waitfile.lua [OPTIONS] FILE
+
 Wait for FILE to appear with optional pattern and number of lines.
+
 Options:
  -h, --help       Display this message
  -q, --quiet      Do not print file lines on stdout
@@ -30,7 +32,7 @@ Options:
 ]]
 
 local getopt = require 'flux.alt_getopt' .get_opts
-local posix  = require 'flux.posix'
+local lstat  = require 'posix.sys.stat'.lstat
 local flux   = require 'flux'
 local timer  = require 'flux.timer'
 local loadstring = loadstring or load
@@ -156,7 +158,7 @@ function filewatcher:start ()
     }
     --  Be sure to call initial stat(2) *after*
     --  statwatcher is started above, to avoid any race
-    local st = posix.stat (self.filename)
+    local st = lstat (self.filename)
     if st then
         self.st = setmetatable (st, stat)
     end
