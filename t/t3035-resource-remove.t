@@ -109,4 +109,36 @@ test_expect_success "${test011_desc}" '
     test_cmp 011.R.out ${exp_dir}/011.R.out
 '
 
+# A shrink removes the vertices of a rank from by_rank, but it keeps the
+# key of the rank. A second shrink of the same rank must ignore the rank.
+cmds012="${cmd_dir}/cmds12.in"
+test012_desc="remove the same rank twice and then allocate the remaining graph"
+test_expect_success "${test012_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds012} > cmds012 &&
+    ${query} -L ${jgf_ranks} -f jgf -t 012.R.out -P low \
+    < cmds012 &&
+    test_cmp 012.R.out ${exp_dir}/012.R.out
+'
+
+# The shrink of rank 0 and rank 1 removes the last node below the rack.
+# The rack then loses its last indexed out-edge.
+cmds013="${cmd_dir}/cmds13.in"
+test013_desc="remove all ranks below a rack"
+test_expect_success "${test013_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds013} > cmds013 &&
+    ${query} -L ${jgf_ranks} -f jgf -t 013.R.out -P low \
+    < cmds013 &&
+    test_cmp 013.R.out ${exp_dir}/013.R.out
+'
+
+# The cluster loses its last indexed out-edge in the same way.
+cmds014="${cmd_dir}/cmds14.in"
+test014_desc="remove the subgraph of a whole rack"
+test_expect_success "${test014_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds014} > cmds014 &&
+    ${query} -L ${jgf_ranks} -f jgf -t 014.R.out -P low \
+    < cmds014 &&
+    test_cmp 014.R.out ${exp_dir}/014.R.out
+'
+
 test_done

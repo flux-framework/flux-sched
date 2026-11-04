@@ -1,0 +1,3 @@
+remove /tiny0/rack0 true
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test008.yaml
+quit
