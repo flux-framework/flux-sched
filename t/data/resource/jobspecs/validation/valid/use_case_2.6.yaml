@@ -1,4 +1,4 @@
-version: 9999
+version: 999
 resources:
   - type: slot
     label: 4GB-node
@@ -8,7 +8,8 @@ resources:
       count: 1
       with:
         - type: memory
-          count: 4
+          count:
+            min: 4
           unit: GB
 tasks:
   - command: [ "app" ]
@@ -17,4 +18,7 @@ tasks:
       total: 10
 attributes:
   system:
-    duration: 3600.0
+    duration: 3600.
+    cwd: "/home/flux"
+    environment:
+      HOME: "/home/flux"
