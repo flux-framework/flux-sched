@@ -1,9 +1,11 @@
 #define CATCH_CONFIG_MAIN
 
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 #include <resource/reapi/bindings/c++/reapi_cli.hpp>
 #include <resource/policies/base/match_op.h>
 #include <resource/schema/resource_graph.hpp>
+#include <jansson.h>
 #include <fstream>
 #include <cstdlib>
 
@@ -368,6 +370,91 @@ TEST_CASE ("Test the graph idempotence of certain match operations", "[match C++
             changed |= !(sched_map.at (*u) == ctx->db->resource_graph[*u].schedule);
         }
         REQUIRE (changed == true);
+    }
+}
+
+TEST_CASE ("Test the graph idempotence of loading from the output of find()", "[find C++]")
+{
+    std::stringstream buffer;
+    std::string reader;
+    std::string writer;
+    const char *test_srcdir = std::getenv ("SHARNESS_TEST_SRCDIR");
+    REQUIRE (test_srcdir);
+
+    SECTION ("Load JGF-formatted graph")
+    {
+        reader = "jgf";
+        writer = GENERATE ("jgf", "jgf_shorthand");
+
+        std::ifstream inputFile (std::string (test_srcdir)
+                                 + "/data/resource/jgfs/elastic/node-test.json");
+        REQUIRE (inputFile.is_open ());
+
+        buffer << inputFile.rdbuf ();
+    }
+
+    SECTION ("Load RV1-formatted graph")
+    {
+        reader = "rv1exec";
+        writer = GENERATE ("rv1", "rv1_nosched", "rv1_shorthand");
+
+        std::ifstream inputFile (std::string (test_srcdir)
+                                 + "/data/resource/rv1exec/tiny_rv1exec.json");
+        REQUIRE (inputFile.is_open ());
+
+        buffer << inputFile.rdbuf ();
+    }
+
+    std::string options = "{\"load_format\": \"" + reader + "\"}";
+    std::string rgraph = buffer.str ();
+
+    CAPTURE (reader);
+    CAPTURE (writer);
+
+    std::shared_ptr<resource_query_t> ctx = nullptr;
+    ctx = std::make_shared<resource_query_t> (rgraph, options);
+    CAPTURE (ctx->m_err_msg);
+    ctx->m_err_msg.clear ();
+    REQUIRE (ctx);
+
+    // Store the initial state of the graph
+    size_t num_vertices = boost::num_vertices (ctx->db->resource_graph);
+    std::map<vtx_t, pool_infra_t> idata_map;
+    std::map<vtx_t, schedule_t> sched_map;
+    vtx_iterator_t u, end;
+    for (boost::tuples::tie (u, end) = boost::vertices (ctx->db->resource_graph); u != end; u++) {
+        idata_map[*u] = ctx->db->resource_graph[*u].idata;
+        sched_map[*u] = ctx->db->resource_graph[*u].schedule;
+        REQUIRE (idata_map[*u] == ctx->db->resource_graph[*u].idata);
+        REQUIRE (sched_map[*u] == ctx->db->resource_graph[*u].schedule);
+    }
+    size_t num_edges = boost::num_edges (ctx->db->resource_graph);
+    std::vector<std::pair<vtx_t, vtx_t>> edge_list;
+    edg_iterator_t e, ef;
+    for (boost::tuples::tie (e, ef) = boost::edges (ctx->db->resource_graph); e != ef; e++)
+        edge_list.push_back ({boost::source (*e, ctx->db->resource_graph),
+                              boost::target (*e, ctx->db->resource_graph)});
+
+    json_t *output;
+    int rc = detail::reapi_cli_t::find (ctx.get (), "", output, writer);
+    CAPTURE (detail::reapi_cli_t::get_err_message ());
+    detail::reapi_cli_t::clear_err_message ();
+    REQUIRE (rc == 0);
+
+    // Construct a new graph from the output of find
+    ctx.reset (new resource_query_t (std::string (json_dumps (output, 0)), options));
+    REQUIRE (ctx);
+
+    // Check that the post-load graph state is the same as the initial state
+    REQUIRE (boost::num_vertices (ctx->db->resource_graph) == num_vertices);
+    for (boost::tuples::tie (u, end) = boost::vertices (ctx->db->resource_graph); u != end; u++) {
+        CHECK (idata_map.at (*u).equal_except_color (ctx->db->resource_graph[*u].idata));
+        CHECK (sched_map.at (*u) == ctx->db->resource_graph[*u].schedule);
+    }
+
+    REQUIRE (boost::num_edges (ctx->db->resource_graph) == num_edges);
+    for (const auto &p : edge_list) {
+        CHECK (boost::edge (p.first, p.second, ctx->db->resource_graph).second);
     }
 }
 
