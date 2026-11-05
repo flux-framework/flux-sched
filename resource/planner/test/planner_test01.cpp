@@ -362,7 +362,7 @@ int test_on_or_after ()
 
     ss.str ("");
     t = planner_avail_time_first (ctx, 100000, 100, counts2);
-    bo = (bo || t != -1);
+    bo = (bo || t != 100000);
     rc = planner_avail_during (ctx, 100000, 100, counts2);
     bo = (bo || rc != 0);
     span1 = planner_add_span (ctx, 100000, 100, counts2);
@@ -384,6 +384,96 @@ int test_on_or_after ()
     ok (!bo, "on_or_after support works");
 
     planner_destroy (&ctx);
+    return 0;
+}
+
+// A scheduled point exists only at the plan start and at the start and end of
+// each span. The on_or_after time is a candidate whether or not it is a
+// scheduled point. The avail_time_next calls return only the points that come
+// after on_or_after.
+static int test_on_or_after_between_points ()
+{
+    int64_t t = -1;
+    uint64_t duration = 10;
+    uint64_t request = 1;
+    uint64_t resource_total = 2;
+    const char resource_type[] = "core";
+    planner_t *ctx = NULL;
+    planner_t *full = NULL;
+
+    ctx = planner_new (0, 3600, resource_total, resource_type);
+    ok (ctx != nullptr, "new planner for times between scheduled points");
+
+    t = planner_avail_time_first (ctx, 1, duration, request);
+    ok (t == 1, "empty planner: avail_time_first (1) returns 1");
+
+    errno = 0;
+    t = planner_avail_time_next (ctx);
+    ok (t == -1 && errno == ENOENT, "empty planner: avail_time_next returns ENOENT");
+
+    ok (planner_add_span (ctx, 0, 10, 1) != -1, "span [0, 10) of 1 core is added");
+
+    t = planner_avail_time_first (ctx, 11, duration, request);
+    ok (t == 11, "one span before on_or_after: avail_time_first (11) returns 11");
+
+    errno = 0;
+    t = planner_avail_time_next (ctx);
+    ok (t == -1 && errno == ENOENT, "one span before on_or_after: avail_time_next returns ENOENT");
+
+    t = planner_avail_time_first (ctx, 10, duration, request);
+    ok (t == 10, "on_or_after at the span end: avail_time_first (10) returns 10");
+
+    errno = 0;
+    t = planner_avail_time_next (ctx);
+    ok (t == -1 && errno == ENOENT,
+        "on_or_after at the span end: avail_time_next does not return 10 again");
+
+    ok (planner_add_span (ctx, 100, 10, 1) != -1, "span [100, 110) of 1 core is added");
+
+    t = planner_avail_time_first (ctx, 11, duration, request);
+    ok (t == 11, "a later span: avail_time_first (11) returns 11, not 100");
+
+    t = planner_avail_time_next (ctx);
+    ok (t == 100, "a later span: avail_time_next returns 100");
+
+    t = planner_avail_time_next (ctx);
+    ok (t == 110, "a later span: avail_time_next returns 110");
+
+    errno = 0;
+    t = planner_avail_time_next (ctx);
+    ok (t == -1 && errno == ENOENT, "a later span: avail_time_next returns ENOENT");
+
+    errno = 0;
+    t = planner_avail_time_first (ctx, 3595, duration, request);
+    ok (t == -1 && errno == ENOENT,
+        "a window past the plan end: avail_time_first (3595) returns ENOENT");
+
+    errno = 0;
+    t = planner_avail_time_first (ctx, 3600, duration, request);
+    ok (t == -1 && errno == EINVAL,
+        "on_or_after at the plan end: avail_time_first (3600) returns EINVAL");
+
+    full = planner_new (0, 3600, resource_total, resource_type);
+    ok (full != nullptr, "new planner for a span that takes all cores");
+
+    ok (planner_add_span (full, 100, 10, 2) != -1, "span [100, 110) of 2 cores is added");
+
+    t = planner_avail_time_first (full, 90, duration, request);
+    ok (t == 90, "a free window before a full span: avail_time_first (90) returns 90");
+
+    t = planner_avail_time_next (full);
+    ok (t == 110, "a free window before a full span: avail_time_next returns 110");
+
+    errno = 0;
+    t = planner_avail_time_next (full);
+    ok (t == -1 && errno == ENOENT,
+        "a free window before a full span: avail_time_next returns ENOENT");
+
+    t = planner_avail_time_first (full, 95, duration, request);
+    ok (t == 110, "a window that overlaps a full span: avail_time_first (95) returns 110");
+
+    planner_destroy (&ctx);
+    planner_destroy (&full);
     return 0;
 }
 
@@ -938,7 +1028,7 @@ static int test_partial_cancel ()
 
 int main (int argc, char *argv[])
 {
-    plan (97);
+    plan (118);
 
     test_planner_getters ();
 
@@ -949,6 +1039,8 @@ int main (int argc, char *argv[])
     test_add_and_iterator ();
 
     test_on_or_after ();
+
+    test_on_or_after_between_points ();
 
     test_remove_more ();
 

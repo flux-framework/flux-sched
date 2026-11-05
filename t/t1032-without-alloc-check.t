@@ -22,6 +22,11 @@ if ! flux jobtap load alloc-check.so; then
     test_done
 fi
 
+# The epilog waits for this file, so that each match below runs while the
+# job still holds its node. The cap of 60s only bounds a test that fails
+# before the touch.
+EPILOG_RELEASE_FLAG="${SHARNESS_TRASH_DIRECTORY}/epilog-release.flag"
+
 test_expect_success 'load test resources' '
     load_test_resources ${excl_1N1B}
 '
@@ -32,32 +37,44 @@ test_expect_success 'load fluxion modules' '
 
 # Test for flux-framework/flux-sched#1043
 #
-test_expect_success 'configure epilog with delay' '
+test_expect_success 'configure an epilog that waits for a release file' '
 	flux config load <<-EOT &&
 	[job-manager.epilog]
 	per-rank = true
-	command = [ "sleep", "2" ]
+	command = [ "sh", "-c", "n=0; while ! test -f ${EPILOG_RELEASE_FLAG}; do n=\$((n+1)); test \$n -eq 600 && exit 0; sleep 0.1; done; exit 0" ]
 	EOT
 	flux jobtap load perilog.so
 '
 test_expect_success 'submit a node-exclusive job that exceeds its time limit' '
+	rm -f ${EPILOG_RELEASE_FLAG} &&
 	JOBID_WITH_EPILOG=$(flux submit -N1 -x -t1s sleep 30)
 '
 test_expect_success 'MWOA fails while the previous epilog is still running' '
 	>jobspec.json flux run --dry-run -N1 -x hostname &&
 	flux job wait-event --timeout=5s $JOBID_WITH_EPILOG epilog-start &&
 	test_expect_code 16 flux ion-resource match without_allocating jobspec.json &&
-	flux job wait-event --timeout=3s $JOBID_WITH_EPILOG epilog-finish
+	touch ${EPILOG_RELEASE_FLAG} &&
+	flux job wait-event --timeout=10s $JOBID_WITH_EPILOG epilog-finish
 '
 test_expect_success 'submit another node-exclusive job that exceeds its time limit' '
+	rm -f ${EPILOG_RELEASE_FLAG} &&
 	JOBID_WITH_EPILOG=$(flux submit -N1 -x -t1s sleep 30)
 '
-test_expect_success 'MWOAF fails while the previous epilog is still running' '
+# The planned span of the job has ended, so no scheduled point is after now.
+# The future match is optimistic about the epilog and starts after now, while
+# the immediate match is still refused.
+test_expect_success 'MWOAF matches after now while the previous epilog is still running' '
 	flux job wait-event --timeout=5s $JOBID_WITH_EPILOG epilog-start &&
-	test_expect_code 16 flux ion-resource match without_allocating_future jobspec.json &&
-	flux job wait-event --timeout=3s $JOBID_WITH_EPILOG epilog-finish
+	test_expect_code 16 flux ion-resource match without_allocating jobspec.json &&
+	before=$(date +%s) &&
+	flux ion-resource match without_allocating_future jobspec.json >epilog_match &&
+	touch ${EPILOG_RELEASE_FLAG} &&
+	flux job wait-event --timeout=10s $JOBID_WITH_EPILOG epilog-finish &&
+	match_time=$(grep "starttime" epilog_match | jq -e .execution.starttime) &&
+	test $match_time -gt $before
 '
 test_expect_success 'clean up' '
+	touch ${EPILOG_RELEASE_FLAG} &&
 	flux cancel --all &&
 	flux queue idle &&
 	(flux resource undrain 0 || true)
@@ -83,6 +100,7 @@ test_expect_success 'load fluxion modules' '
     load_qmanager
 '
 test_expect_success 'on two nodes, submit one job that overruns and one that does not' '
+    rm -f ${EPILOG_RELEASE_FLAG} &&
     >jobspec.json flux run --dry-run -N2 -t1m -x sleep 60 &&
     flux ion-resource match allocate jobspec.json >present_match && #take two nodes out
     JOBID_ACTIVE=$(flux submit -N1 -t30s -x sleep 30) &&    # This job will have an active span
@@ -94,7 +112,8 @@ test_expect_success 'MWOAF and orelse_reserve succeed in the future while an epi
     flux job wait-event --timeout=5s $JOBID_WITH_EPILOG epilog-start && # Wait for the overrun
     flux ion-resource match without_allocating_future jobspec.json >future_match &&
     flux ion-resource match allocate_orelse_reserve jobspec.json >future_reserve &&
-    flux job wait-event --timeout=3s $JOBID_WITH_EPILOG epilog-finish
+    touch ${EPILOG_RELEASE_FLAG} &&
+    flux job wait-event --timeout=10s $JOBID_WITH_EPILOG epilog-finish
 '
 test_expect_success 'The future match and reservation start at the end of the "active" span' '
     present_match_time=$(grep "starttime" present_match | jq -e .execution.starttime) &&
@@ -106,6 +125,7 @@ test_expect_success 'The future match and reservation start at the end of the "a
     test $future_reserve_time -le $(( $present_match_time + 35 ))
 '
 test_expect_success 'clean up' '
+    touch ${EPILOG_RELEASE_FLAG} &&
     flux cancel --all &&
     flux queue idle &&
     (flux resource undrain 0 || true)
