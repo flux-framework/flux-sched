@@ -36,8 +36,8 @@ command_t commands[] =
       "m",
       cmd_match,
       "Allocate or reserve matching resources (subcmd: "
-      "allocate | allocate_with_satisfiability | allocate_orelse_reserve) | "
-      "satisfiability | without_allocating | without_allocating_future: "
+      "allocate | allocate_with_satisfiability | allocate_orelse_reserve | "
+      "reserve | satisfiability | without_allocating | without_allocating_future): "
       "resource-query> match allocate jobspec"},
      {"multi-match",
       "M",

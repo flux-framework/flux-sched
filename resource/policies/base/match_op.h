@@ -27,6 +27,7 @@ typedef enum match_op_t {
     MATCH_SATISFIABILITY,
     MATCH_WITHOUT_ALLOCATING,
     MATCH_WITHOUT_ALLOCATING_FUTURE,
+    MATCH_RESERVE,
     END_MATCH_OP_T
 } match_op_t;
 
