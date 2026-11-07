@@ -883,8 +883,8 @@ int dfu_impl_t::dom_find_dfv (std::shared_ptr<match_writers_t> &w,
     subsystem_t dom = m_match->dom_subsystem ();
     bool result = false;
     bool down = (*m_graph)[u].status == resource_pool_t::status_t::DOWN;
-    bool allocated = !(*m_graph)[u].schedule.allocations.empty ();
-    bool reserved = !(*m_graph)[u].schedule.reservations.empty ();
+    bool allocated = (*m_graph)[u].schedule.allocated ();
+    bool reserved = (*m_graph)[u].schedule.reserved ();
     Flux::resource_model::vtx_predicates_override_t p_overridden = p;
     p_overridden.set (down, allocated, reserved);
     std::map<std::string, std::string> agfilter_data;

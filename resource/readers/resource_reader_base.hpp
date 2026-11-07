@@ -37,6 +37,11 @@ struct modify_data_t {
     // as the traverser's own rank walk
     unsigned int n_visited = 0;
     unsigned int n_purged = 0;
+    // A PARTIAL_CANCEL visit sets this value when it removes the exclusive
+    // schedule span of the job from an ancestor of the released resources.
+    // The value is the count of the type of that ancestor. Each proper
+    // ancestor of that ancestor must subtract this count.
+    int64_t released_own_count = 0;
 };
 
 /*!  Base resource reader class.
