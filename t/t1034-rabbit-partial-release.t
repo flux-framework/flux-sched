@@ -30,7 +30,7 @@ does it), followed by qmanagers final cancel once the job goes inactive.
 . $(dirname $0)/sharness.sh
 
 cluster_jgf="${SHARNESS_TEST_SRCDIR}/data/resource/jgfs/rabbit.json"
-HOSTLIST="hetchy[1,201-202,1001-1018]"
+HOSTLIST="hetchy[1,1001-1018,201-202]"
 SIZE="$(flux hostlist -c ${HOSTLIST})"
 
 test_under_flux ${SIZE}
