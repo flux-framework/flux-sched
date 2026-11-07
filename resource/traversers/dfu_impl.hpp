@@ -14,7 +14,10 @@
 #include <cstdlib>
 #include <cstdint>
 #include <cmath>
+#include <map>
 #include <memory>
+#include <unordered_map>
+#include <vector>
 #include "resource/libjobspec/jobspec.hpp"
 #include "resource/config/system_defaults.hpp"
 #include "resource/schema/resource_data.hpp"
@@ -32,6 +35,11 @@ namespace resource_model {
 namespace detail {
 
 enum class visit_t { DFV, UPV };
+
+// type_counts_t maps a resource type to a count. job_counts_t maps a
+// job ID to a type_counts_t.
+using type_counts_t = std::unordered_map<resource_type_t, int64_t>;
+using job_counts_t = std::unordered_map<int64_t, type_counts_t>;
 
 enum class match_kind_t { RESOURCE_MATCH, SLOT_MATCH, NONE_MATCH, PRISTINE_NONE_MATCH };
 
@@ -58,6 +66,15 @@ struct jobmeta_t {
     const std::string &get_queue () const
     {
         return m_queue;
+    }
+
+    //! True if the match is an allocation, or a probe of one, at the
+    //! current time. Only such a match must respect jobs that run past
+    //! their planned end; a reservation stays optimistic about them.
+    bool is_immediate () const
+    {
+        return at == now
+               && (alloc_type == alloc_type_t::AT_ALLOC || alloc_type == alloc_type_t::AT_NO_ALLOC);
     }
 
     int build (Jobspec::Jobspec &jobspec,
@@ -318,12 +335,18 @@ class dfu_impl_t {
                 int64_t jobid,
                 bool &full_cancel);
 
-    /*! Remove the allocation/reservation referred to by jobid and update
-     *  the resource state.
+    /*! Clear the vertices of a set of lost ranks and reduce the aggregate
+     *  spans of their ancestors for each job that held them.
+     *
+     *  The function ignores a rank that the by_rank map does not know. It
+     *  records a message for that rank and processes the other ranks.
+     *  remove_subgraph () uses the same policy.
      *
      *  \param root      root resource vertex.
-     *  \param ranks     job id.
-     *  \return          0 on success; -1 on error.
+     *  \param ranks     set of lost ranks.
+     *  \return          0 on success; -1 if the cleanup of a known rank
+     *                   failed. An unknown rank alone gives 0 and a
+     *                   message in err_message ().
      */
     int remove (vtx_t root, const std::set<int64_t> &ranks);
 
@@ -389,6 +412,8 @@ class dfu_impl_t {
                  vtx_t u,
                  bool exclusive_in,
                  const Jobspec::Resource &resource);
+    int x_checker_busy (const jobmeta_t &meta, vtx_t u);
+    int by_shadow (const jobmeta_t &meta, subsystem_t s, vtx_t u);
     int by_subplan (const jobmeta_t &meta,
                     subsystem_t s,
                     vtx_t u,
@@ -661,9 +686,23 @@ class dfu_impl_t {
                    bool &stop);
     int mod_plan (vtx_t u, int64_t jobid, modify_data_t &mod_data);
     int cancel_vertex (vtx_t vtx, modify_data_t &mod_data, int64_t jobid);
-    int clear_vertex (vtx_t vtx, modify_data_t &mod_data);
+    int clear_vertex (vtx_t vtx, job_counts_t &freed);
+
+    // The rank-based and the R-based partial release paths use these
+    // functions
+    void ancestor_path (vtx_t sub_root, std::vector<vtx_t> &path);
+    void add_path_counts (const std::vector<vtx_t> &path,
+                          const type_counts_t &counts,
+                          std::unordered_map<vtx_t, type_counts_t> &reductions,
+                          std::unordered_map<vtx_t, size_t> &depth);
+    void bound_by_planned (vtx_t u, int64_t jobid, type_counts_t &counts);
+    int reduce_ancestors (int64_t jobid,
+                          std::unordered_map<vtx_t, type_counts_t> &reductions,
+                          const std::unordered_map<vtx_t, size_t> &depth,
+                          bool bound);
 
     // Subgraph removal functions
+    int find_subgraph_root (const std::vector<vtx_t> &vtcs, vtx_t &sub_root);
     int get_subgraph_vertices (vtx_t vtx, std::set<vtx_t> &vtx_set);
     int get_parent_vtx (vtx_t vtx, vtx_t &parent_vtx);
     int remove_metadata_outedges (vtx_t source_vertex, vtx_t dest_vertex);

@@ -520,10 +520,17 @@ static int remove (std::shared_ptr<detail::resource_query_t> &ctx,
             rank = idset_next (r_ids, rank);
         }
 
+        // Do the same steps as shrink_resources () in the resource module.
+        // The traverser ignores a rank that it does not know, and it reports
+        // that rank in its message. An error means that the cleanup of a
+        // known rank failed. Show the error, then remove the ranks.
+        int rc = 0;
         if ((ctx->traverser->remove (ranks)) != 0) {
             std::cerr << "ERROR: can't partial cancel subgraph " << std::endl;
             std::cerr << "ERROR: " << ctx->traverser->err_message ();
-            return -1;
+            rc = -1;
+        } else if (!ctx->traverser->err_message ().empty ()) {
+            std::cerr << "WARNING: " << ctx->traverser->err_message ();
         }
         if ((ctx->traverser->remove_subgraph (ranks)) != 0) {
             std::cerr << "ERROR: can't remove subgraph " << std::endl;
@@ -537,6 +544,8 @@ static int remove (std::shared_ptr<detail::resource_query_t> &ctx,
             std::cerr << "ERROR: " << ctx->traverser->err_message ();
             return -1;
         }
+        if (rc != 0)
+            return rc;
     } else {
         std::cerr << "ERROR: invalid path boolean input " << std::endl;
         return -1;

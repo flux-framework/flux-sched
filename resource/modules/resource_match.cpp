@@ -1176,14 +1176,42 @@ int shrink_resources (std::shared_ptr<resource_ctx_t> &ctx, const char *ids)
         flux_log (ctx->h, LOG_ERR, "decode_rankset (\"%s\") failed", ids);
         goto done;
     }
-    if ((rc = ctx->traverser->remove (ranks)) != 0) {
+    // The partial cancel only corrects the accounting of the jobs that held
+    // the lost ranks. Its result is a diagnostic, not the result of this
+    // function. The removal of the subgraph below is the authority, because
+    // update_resource () adds the ranks to the lost history and sends them to
+    // the subscribers of sched-fluxion-resource.notify only after a success.
+    // A removal that this function does not report leaves the graph of a
+    // subscriber, such as the feasibility module, with ranks that the graph
+    // of this module no longer has.
+    if (ctx->traverser->remove (ranks) != 0) {
         flux_log (ctx->h,
                   LOG_ERR,
                   "partial cancel by ranks (\"%s\") failed: %s",
                   ids,
                   ctx->traverser->err_message ().c_str ());
-        goto done;
+        // The traverser ignores a rank that it does not know, so this error
+        // means that the cleanup of a known rank failed.
+        // Continue to remove the lost ranks after this error. Because
+        // update_resource_db () subtracts the lost ranks from the down
+        // ranks, no function marks a lost rank as down. If a lost rank stays
+        // in the graph, the scheduler can give its resources to new jobs.
+        // After the removal, the ancestor spans of a job can show more
+        // resources in use than the true value. The final cancel of the job
+        // removes these spans.
+    } else if (!ctx->traverser->err_message ().empty ()) {
+        // The partial cancel is complete, but it replaced at least one
+        // reduction with its upper bound
+        flux_log (ctx->h,
+                  LOG_WARNING,
+                  "partial cancel by ranks (\"%s\"): %s",
+                  ids,
+                  ctx->traverser->err_message ().c_str ());
     }
+    // A failure here can leave the graph between the two states: the removal
+    // of the out-edges of a rank root can succeed before the failure. Report
+    // the failure and do not publish the ranks, because the set of the ranks
+    // that the graph lost is unknown.
     if ((rc = ctx->traverser->remove_subgraph (ranks)) != 0) {
         flux_log (ctx->h,
                   LOG_ERR,
@@ -1193,7 +1221,10 @@ int shrink_resources (std::shared_ptr<resource_ctx_t> &ctx, const char *ids)
         goto done;
     }
     // Update total counts:
-    rc = ctx->traverser->initialize ();
+    if ((rc = ctx->traverser->initialize ()) != 0) {
+        flux_log (ctx->h, LOG_ERR, "initialize after the removal of ranks %s failed", ids);
+        goto done;
+    }
     flux_log (ctx->h, LOG_DEBUG, "successfully removed ranks %s from resource set", ids);
 
 done:
