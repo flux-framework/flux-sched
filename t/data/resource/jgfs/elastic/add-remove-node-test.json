@@ -671,7 +671,7 @@
                     "name": "node0",
                     "id": 0,
                     "uniq_id": 5,
-                    "rank": -1,
+                    "rank": 0,
                     "exclusive": true,
                     "unit": "",
                     "size": 1,

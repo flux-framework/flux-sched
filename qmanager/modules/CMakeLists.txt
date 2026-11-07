@@ -12,6 +12,7 @@ target_link_libraries(sched-fluxion-qmanager PRIVATE
     PkgConfig::JANSSON
     cppwrappers
     match_op
+    sched-fluxion-resource-notify
     )
 
 add_subdirectory( test )
