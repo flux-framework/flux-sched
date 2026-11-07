@@ -664,6 +664,7 @@ class dfu_impl_t {
     int clear_vertex (vtx_t vtx, modify_data_t &mod_data);
 
     // Subgraph removal functions
+    int find_subgraph_root (const std::vector<vtx_t> &vtcs, vtx_t &sub_root);
     int get_subgraph_vertices (vtx_t vtx, std::set<vtx_t> &vtx_set);
     int get_parent_vtx (vtx_t vtx, vtx_t &parent_vtx);
     int remove_metadata_outedges (vtx_t source_vertex, vtx_t dest_vertex);

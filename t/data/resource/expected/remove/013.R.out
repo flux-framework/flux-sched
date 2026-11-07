@@ -1,0 +1,14 @@
+      ---------------core0[1:x]
+      ------------socket0[1:s]
+      ---------node0[1:s]
+      ------rack0[1:s]
+      ---tiny0[1:s]
+INFO: =============================
+INFO: JOBID=1
+INFO: RESOURCES=ALLOCATED
+INFO: SCHEDULED AT=Now
+INFO: =============================
+INFO: =============================
+INFO: No matching resources found
+INFO: JOBID=2
+INFO: =============================
