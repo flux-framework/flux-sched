@@ -92,6 +92,27 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/sanitizers-cmake/cmake)
 list(APPEND CMAKE_PREFIX_PATH ${CMAKE_INSTALL_PREFIX})
 
 include(FindSanitizers)
+# With clang, the sanitizer module links the shared ASan runtime
+# (-shared-libasan). That runtime is in the resource directory of clang,
+# which is not on the search path of the loader, so a sanitized binary
+# does not start. Add the directory to the rpath of the build tree.
+if(SANITIZE_ADDRESS AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  execute_process(
+    COMMAND ${CMAKE_CXX_COMPILER} -print-file-name=libclang_rt.asan-${CMAKE_SYSTEM_PROCESSOR}.so
+    OUTPUT_VARIABLE ASAN_RUNTIME OUTPUT_STRIP_TRAILING_WHITESPACE)
+  if(NOT IS_ABSOLUTE "${ASAN_RUNTIME}")
+    execute_process(
+      COMMAND ${CMAKE_CXX_COMPILER} -print-file-name=libclang_rt.asan.so
+      OUTPUT_VARIABLE ASAN_RUNTIME OUTPUT_STRIP_TRAILING_WHITESPACE)
+  endif()
+  if(IS_ABSOLUTE "${ASAN_RUNTIME}")
+    get_filename_component(ASAN_RUNTIME_DIR "${ASAN_RUNTIME}" DIRECTORY)
+    list(APPEND CMAKE_BUILD_RPATH "${ASAN_RUNTIME_DIR}")
+    message(STATUS "Shared ASan runtime: ${ASAN_RUNTIME}")
+  else()
+    message(WARNING "Cannot find the shared ASan runtime of ${CMAKE_CXX_COMPILER}")
+  endif()
+endif()
 
 # external dependencies
 find_package(PkgConfig REQUIRED)

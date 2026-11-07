@@ -38,11 +38,11 @@ struct test_params_t {
     std::string o_fext;           /* File extension */
     std::string prune_filters;    /* Raw prune-filter specification */
     std::string match_format;     /* Format to emit a matched resources */
-    emit_format_t o_format;
-    bool elapse_time;       /* Print elapse time */
-    bool disable_prompt;    /* Disable resource-query> prompt */
-    bool flux_hwloc;        /* get hwloc info from flux instance */
-    size_t reserve_vtx_vec; /* Allow for reserving vertex vector size */
+    emit_format_t o_format = emit_format_t::GRAPHVIZ_DOT;
+    bool elapse_time = false;    /* Print elapse time */
+    bool disable_prompt = false; /* Disable resource-query> prompt */
+    bool flux_hwloc = false;     /* get hwloc info from flux instance */
+    size_t reserve_vtx_vec = 0;  /* Allow for reserving vertex vector size */
 };
 
 struct match_perf_t {
