@@ -250,9 +250,9 @@ struct validate_test validate_tests[] =
      {"ranks can be included", "{\"ranks\": [\"0-10\"]}", 0, NULL},
      {
          "invalid ranks entry fails",
-         "{\"ranks\": [\"5,1-3\"]}",
+         "{\"ranks\": [\"5,1-\"]}",
          -1,
-         "Invalid idset `5,1-3'",
+         "Invalid idset `5,1-'",
      },
      {NULL, NULL, 0, NULL}};
 
