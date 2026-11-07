@@ -219,6 +219,18 @@ class dfu_traverser_t {
      */
     int mark (const std::string &root_path, resource_pool_t::status_t status);
 
+    /*! Update the resource status to up|down|etc starting at subtree_root.
+     *
+     *  \param root_path     path to the root of the subtree to update.
+     *  \param status        new status value.
+     *  \param ranks_out     set returning the ranks updated (optional).
+     *  \return              0 on success; -1 on error.
+     *                       EINVAL: graph, roots or match callback not set.
+     */
+    int mark (const std::string &root_path,
+              resource_pool_t::status_t status,
+              boost::optional<std::set<int> &> ranks_out);
+
     /*! Mark the resource status up|down|etc for subgraph represented by ranks.
      *
      *  \param ranks         set of ranks representing the subgraph to update.

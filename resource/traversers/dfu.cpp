@@ -543,6 +543,15 @@ int dfu_traverser_t::remove (const std::set<int64_t> &ranks)
     return rc;
 }
 
+int dfu_traverser_t::mark (const std::string &root_path,
+                           resource_pool_t::status_t status,
+                           boost::optional<std::set<int> &> ranks_out)
+{
+    // Clear the error message to disambiguate errors
+    clear_err_message ();
+    return traverser->mark (root_path, status, ranks_out);
+}
+
 int dfu_traverser_t::mark (const std::string &root_path, resource_pool_t::status_t status)
 {
     // Clear the error message to disambiguate errors
