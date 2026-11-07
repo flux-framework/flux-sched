@@ -198,7 +198,8 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
         }
             [[fallthrough]];
         case match_op_t::MATCH_WITHOUT_ALLOCATING_FUTURE: {
-            /* Seek to first successful match */
+            /* Seek to first successful match. The callers report a match at
+             * meta.now as an allocation, so a reservation must start after it. */
             t = meta.at + 1;
             p = (*get_graph ())[root].idata.subplans.at (dom);
             len = planner_multi_resources_len (p);

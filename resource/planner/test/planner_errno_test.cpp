@@ -15,6 +15,7 @@ extern "C" {
 }
 
 #include <cerrno>
+#include <cstdint>
 #include "planner.h"
 #include "planner_multi.h"
 #include "src/common/libtap/tap.h"
@@ -168,6 +169,125 @@ static int test_planner_avail_during_erange ()
     ok (rc == 0, "planner_avail_during succeeds when at+duration == plan_end");
 
     planner_destroy (&ctx);
+    return 0;
+}
+
+// A window whose end does not fit in int64_t must be refused at every entry
+// point. Before, the end was formed as a sum and wrapped.
+static int test_planner_window_overflow ()
+{
+    planner_t *ctx = planner_new (0, 100, 2, "core");
+    ok (ctx != nullptr, "planner_new succeeded");
+
+    errno = 0;
+    ok (planner_avail_time_first (ctx, 1, UINT64_MAX, 1) == -1 && errno == ENOENT,
+        "planner_avail_time_first returns -1 with errno=ENOENT for a duration of UINT64_MAX");
+
+    errno = 0;
+    ok (planner_avail_time_next (ctx) == -1 && errno == ENOENT,
+        "planner_avail_time_next returns -1 with errno=ENOENT after the refused window");
+
+    errno = 0;
+    ok (planner_avail_time_first (ctx, 1, INT64_MAX, 1) == -1 && errno == ENOENT,
+        "planner_avail_time_first returns -1 with errno=ENOENT for a duration of INT64_MAX");
+
+    errno = 0;
+    ok (planner_avail_time_first (ctx, 90, 10, 1) == 90,
+        "planner_avail_time_first returns 90 for a window that ends at the plan end");
+
+    errno = 0;
+    ok (planner_avail_during (ctx, 1, UINT64_MAX, 1) == -1 && errno == ERANGE,
+        "planner_avail_during returns -1 with errno=ERANGE for a duration of UINT64_MAX");
+
+    errno = 0;
+    ok (planner_avail_during (ctx, -1, 10, 1) == -1 && errno == ERANGE,
+        "planner_avail_during returns -1 with errno=ERANGE for a start before the plan start");
+
+    errno = 0;
+    ok (planner_avail_resources_during (ctx, 1, UINT64_MAX) == -1 && errno == ERANGE,
+        "planner_avail_resources_during returns -1 with errno=ERANGE for a duration of UINT64_MAX");
+
+    errno = 0;
+    ok (planner_add_span (ctx, 1, UINT64_MAX, 1) == -1 && errno == EINVAL,
+        "planner_add_span returns -1 with errno=EINVAL for a duration of UINT64_MAX");
+
+    errno = 0;
+    ok (planner_span_size (ctx) == 0, "planner_span_size is 0: the refused span is not recorded");
+
+    planner_destroy (&ctx);
+    return 0;
+}
+
+// A plan that ends at INT64_MAX: a window may end exactly there, and a window
+// past it is refused.
+static int test_planner_window_at_int64_max ()
+{
+    planner_t *ctx = planner_new (0, INT64_MAX, 2, "core");
+    ok (ctx != nullptr, "planner_new succeeded");
+
+    const int64_t end = INT64_MAX;
+
+    errno = 0;
+    ok (planner_avail_time_first (ctx, end - 5, 10, 1) == -1 && errno == ENOENT,
+        "planner_avail_time_first returns -1 with errno=ENOENT for a window past INT64_MAX");
+
+    errno = 0;
+    ok (planner_add_span (ctx, end - 20, 10, 2) >= 0,
+        "planner_add_span records [INT64_MAX - 20, INT64_MAX - 10) of 2 cores");
+
+    // The window at end - 30 of 20 overlaps the whole span. The next candidate
+    // is the span end at end - 10, and [end - 10, end + 10) does not fit.
+    errno = 0;
+    ok (planner_avail_time_first (ctx, end - 30, 20, 1) == -1 && errno == ENOENT,
+        "planner_avail_time_first returns -1 with errno=ENOENT when no later point fits");
+
+    errno = 0;
+    ok (planner_avail_time_first (ctx, end - 30, 10, 1) == end - 30,
+        "planner_avail_time_first returns INT64_MAX - 30 for a free window before the span");
+
+    errno = 0;
+    ok (planner_avail_time_next (ctx) == end - 10,
+        "planner_avail_time_next returns INT64_MAX - 10: a window that ends at INT64_MAX fits");
+
+    errno = 0;
+    ok (planner_avail_time_next (ctx) == -1 && errno == ENOENT,
+        "planner_avail_time_next returns -1 with errno=ENOENT after the last point");
+
+    planner_destroy (&ctx);
+    return 0;
+}
+
+// planner_multi forwards to the planners, so the same windows are refused.
+static int test_planner_multi_window_overflow ()
+{
+    const uint64_t totals[] = {2};
+    const char *types[] = {"core"};
+    planner_multi_t *ctx = planner_multi_new (0, 100, totals, types, 1);
+    ok (ctx != nullptr, "planner_multi_new succeeded");
+
+    const uint64_t req[] = {1};
+
+    errno = 0;
+    ok (planner_multi_avail_time_first (ctx, 1, UINT64_MAX, req, 1) == -1 && errno == ENOENT,
+        "planner_multi_avail_time_first returns -1 with errno=ENOENT for a duration of UINT64_MAX");
+
+    errno = 0;
+    ok (planner_multi_avail_time_next (ctx) == -1 && errno == ENOENT,
+        "planner_multi_avail_time_next returns -1 with errno=ENOENT after the refused window");
+
+    errno = 0;
+    ok (planner_multi_avail_during (ctx, 1, UINT64_MAX, req, 1) == -1 && errno == ERANGE,
+        "planner_multi_avail_during returns -1 with errno=ERANGE for a duration of UINT64_MAX");
+
+    errno = 0;
+    ok (planner_multi_add_span (ctx, 1, UINT64_MAX, req, 1) == -1 && errno == EINVAL,
+        "planner_multi_add_span returns -1 with errno=EINVAL for a duration of UINT64_MAX");
+
+    errno = 0;
+    ok (planner_multi_avail_time_first (ctx, 90, 10, req, 1) == 90,
+        "planner_multi_avail_time_first returns 90 for a window that ends at the plan end");
+
+    planner_multi_destroy (&ctx);
     return 0;
 }
 
@@ -556,6 +676,9 @@ int main (int argc, char *argv[])
     test_planner_rem_span_errno ();
     test_planner_avail_during_ebusy ();
     test_planner_avail_during_erange ();
+    test_planner_window_overflow ();
+    test_planner_window_at_int64_max ();
+    test_planner_multi_window_overflow ();
     test_planner_null_arg_guards ();
     test_planner_multi_null_arg_guards ();
     test_planner_multi_empty_guards ();
