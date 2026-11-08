@@ -98,7 +98,8 @@ int reapi_cli_match (reapi_cli_ctx_t *ctx,
  *  orelse reserve them. The best resources are determined by
  *  the selected match policy.  This function is identical to
  *  reapi_cli_match() in all respects except the jobid is provided
- *  by the caller, who is responsible for ensuring uniqueness.
+ *  by the caller.  If jobid already has an allocation or reservation,
+ *  -1 is returned with errno set to EEXIST.
  *  N.B. To avoid jobid collisions, this call should not be mixed
  *  with the other match calls that allocate them internally.
  *

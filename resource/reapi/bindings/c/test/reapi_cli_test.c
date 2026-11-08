@@ -139,12 +139,34 @@ static int test_match_with_jobid ()
     rc = reapi_cli_cancel (ctx, jobid, false);
     ok (rc == 0, "reapi_cli_cancel succeeded for allocated job");
 
-    // Try to allocate with same jobid - currently not an error, resources just get reallocated
-    // (Duplicate jobid detection may be a future feature)
-    // errno = 0;
-    // rc = reapi_cli_match_with_jobid (ctx, MATCH_ALLOCATE, simple_jobspec, jobid, &reserved, &R,
-    // &at, &ov); ok (rc == -1 && errno == EEXIST,
-    //     "reapi_cli_match_with_jobid returns -1 with errno=EEXIST for duplicate jobid");
+    // Allocate again with the same jobid: allowed once the first is cancelled
+    rc = reapi_cli_match_with_jobid (ctx,
+                                     MATCH_ALLOCATE,
+                                     simple_jobspec,
+                                     jobid,
+                                     &reserved,
+                                     &R,
+                                     &at,
+                                     &ov);
+    ok (rc == 0, "reapi_cli_match_with_jobid succeeded with reused jobid after cancel");
+    free (R);
+    R = NULL;
+
+    // A second allocation under a live jobid is rejected with EEXIST
+    errno = 0;
+    rc = reapi_cli_match_with_jobid (ctx,
+                                     MATCH_ALLOCATE,
+                                     simple_jobspec,
+                                     jobid,
+                                     &reserved,
+                                     &R,
+                                     &at,
+                                     &ov);
+    ok (rc == -1 && errno == EEXIST,
+        "reapi_cli_match_with_jobid returns -1 with errno=EEXIST for duplicate jobid");
+    ok (R == NULL, "reapi_cli_match_with_jobid did not set R for duplicate jobid");
+    rc = reapi_cli_cancel (ctx, jobid, false);
+    ok (rc == 0, "reapi_cli_cancel succeeded after duplicate attempt");
 
     // Test with NULL context
     errno = 0;
