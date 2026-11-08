@@ -827,10 +827,35 @@ int resource_query_t::set_subsystems_use (const std::string &n)
         {power_sub, "supplies_to"},
     };
 
-    for (auto &sub : subsystem_map.at (n)) {
+    auto it = subsystem_map.find (n);
+    if (it == subsystem_map.end ()) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": ERROR: unknown matcher_name '" + n + "'\n";
+        errno = EINVAL;
+        return -1;
+    }
+    for (auto &sub : it->second) {
         matcher->add_subsystem (sub, subsys_to_edge_name.at (sub));
     }
 
+    return 0;
+}
+
+/* Fetch an optional string option.  Returns 0 and leaves dst alone if key is
+ * absent, 0 with dst set if key is a string, -1 with errno = EINVAL otherwise.
+ */
+static int get_string_option (json_t *opts, const char *key, std::string &dst, std::string &err_msg)
+{
+    json_t *val = json_object_get (opts, key);
+    if (!val)
+        return 0;
+    if (!json_is_string (val)) {
+        err_msg += __FUNCTION__;
+        err_msg += ": ERROR: option " + std::string (key) + " must be a string\n";
+        errno = EINVAL;
+        return -1;
+    }
+    dst = json_string_value (val);
     return 0;
 }
 
@@ -838,6 +863,7 @@ int resource_query_t::set_resource_ctx_params (const std::string &options)
 {
     int rc = -1;
     json_t *tmp_json = NULL, *opt_json = NULL;
+    std::string policy_err;
 
     // Set default values
     perf.min = std::numeric_limits<double>::max ();
@@ -860,83 +886,27 @@ int resource_query_t::set_resource_ctx_params (const std::string &options)
     params.disable_prompt = false;
 
     if (!(opt_json = json_loads (options.c_str (), JSON_DECODE_ANY, NULL))) {
-        errno = ENOMEM;
+        errno = EINVAL;
         m_err_msg += __FUNCTION__;
         m_err_msg += ": Error loading options\n";
         goto out;
     }
+    if (!json_is_object (opt_json)) {
+        errno = EINVAL;
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": options must be a JSON object\n";
+        goto out;
+    }
 
     // Override defaults if present in options argument
-    if ((tmp_json = json_object_get (opt_json, "load_format"))) {
-        params.load_format = json_string_value (tmp_json);
-        if (!params.load_format.c_str ()) {
-            errno = EINVAL;
-            m_err_msg += __FUNCTION__;
-            m_err_msg += ": Error loading load_format\n";
-            json_decref (opt_json);
-            goto out;
-        }
-    }
-    if ((tmp_json = json_object_get (opt_json, "load_allowlist"))) {
-        params.load_allowlist = json_string_value (tmp_json);
-        if (!params.load_allowlist.c_str ()) {
-            errno = EINVAL;
-            m_err_msg += __FUNCTION__;
-            m_err_msg += ": Error loading load_allowlist\n";
-            json_decref (opt_json);
-            goto out;
-        }
-    }
-    if ((tmp_json = json_object_get (opt_json, "matcher_name"))) {
-        params.matcher_name = json_string_value (tmp_json);
-        if (!params.matcher_name.c_str ()) {
-            errno = EINVAL;
-            m_err_msg += __FUNCTION__;
-            m_err_msg += ": Error loading matcher_name\n";
-            json_decref (opt_json);
-            goto out;
-        }
-    }
-    if ((tmp_json = json_object_get (opt_json, "matcher_policy"))) {
-        params.matcher_policy = json_string_value (tmp_json);
-        if (!params.matcher_policy.c_str ()) {
-            errno = EINVAL;
-            m_err_msg += __FUNCTION__;
-            m_err_msg += ": Error loading matcher_policy\n";
-            json_decref (opt_json);
-            goto out;
-        }
-    }
-    if ((tmp_json = json_object_get (opt_json, "traverser_policy"))) {
-        params.traverser_policy = json_string_value (tmp_json);
-        if (!params.traverser_policy.c_str ()) {
-            errno = EINVAL;
-            m_err_msg += __FUNCTION__;
-            m_err_msg += ": Error loading traverser_policy\n";
-            json_decref (opt_json);
-            goto out;
-        }
-    }
-    if ((tmp_json = json_object_get (opt_json, "match_format"))) {
-        params.match_format = json_string_value (tmp_json);
-        if (!params.match_format.c_str ()) {
-            errno = EINVAL;
-            m_err_msg += __FUNCTION__;
-            m_err_msg += ": Error loading match_format\n";
-            json_decref (opt_json);
-            goto out;
-        }
-    }
-    if ((tmp_json = json_object_get (opt_json, "prune_filters"))) {
-        params.prune_filters = json_string_value (tmp_json);
-        if (!params.prune_filters.c_str ()) {
-            errno = EINVAL;
-            m_err_msg += __FUNCTION__;
-            m_err_msg += ": Error loading prune_filters\n";
-            json_decref (opt_json);
-            goto out;
-        }
-    }
+    if (get_string_option (opt_json, "load_format", params.load_format, m_err_msg) < 0
+        || get_string_option (opt_json, "load_allowlist", params.load_allowlist, m_err_msg) < 0
+        || get_string_option (opt_json, "matcher_name", params.matcher_name, m_err_msg) < 0
+        || get_string_option (opt_json, "matcher_policy", params.matcher_policy, m_err_msg) < 0
+        || get_string_option (opt_json, "traverser_policy", params.traverser_policy, m_err_msg) < 0
+        || get_string_option (opt_json, "match_format", params.match_format, m_err_msg) < 0
+        || get_string_option (opt_json, "prune_filters", params.prune_filters, m_err_msg) < 0)
+        goto out;
     if ((tmp_json = json_object_get (opt_json, "reserve_vtx_vec")))
         // No need for check here; returns 0 on failure
         params.reserve_vtx_vec = json_integer_value (tmp_json);
@@ -944,9 +914,38 @@ int resource_query_t::set_resource_ctx_params (const std::string &options)
         // No need for check here; returns 0 on failure
         params.elapse_time = json_boolean_value (tmp_json);
 
+    // Validate the values that would otherwise fail obscurely (or not at all)
+    // later on.  N.B. match_writers_factory_t::get_writers_type() silently
+    // falls back to the simple writer for an unknown format.
+    if (!known_resource_reader (params.load_format)) {
+        errno = EINVAL;
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": unknown load_format '" + params.load_format + "'\n";
+        goto out;
+    }
+    if (!known_match_format (params.match_format)) {
+        errno = EINVAL;
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": unknown match_format '" + params.match_format + "'\n";
+        goto out;
+    }
+    if (!known_match_policy (params.matcher_policy, policy_err)) {
+        errno = EINVAL;
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": unknown matcher_policy '" + params.matcher_policy + "'\n";
+        goto out;
+    }
+    if (!known_traverser_policy (params.traverser_policy)) {
+        errno = EINVAL;
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": unknown traverser_policy '" + params.traverser_policy + "'\n";
+        goto out;
+    }
+
     rc = 0;
 
 out:
+    json_decref (opt_json);
     return rc;
 }
 
@@ -973,7 +972,7 @@ static void initialize_matchers_and_traversers (resource_query_t *rq)
     }
     if (rq->set_subsystems_use (rq->params.matcher_name) != 0) {
         tmp_err = __FUNCTION__;
-        tmp_err += ": ERROR: can't set subsystems\n";
+        tmp_err += ": ERROR: can't set subsystems\n" + rq->get_resource_query_err_msg ();
         throw std::runtime_error (tmp_err);
     }
     if (rq->params.prune_filters != ""
@@ -1046,7 +1045,7 @@ resource_query_t::resource_query_t (const std::string &rgraph, const std::string
 
     if (set_resource_ctx_params (options) < 0) {
         tmp_err = __FUNCTION__;
-        tmp_err += ": ERROR: can't set resource graph parameters\n";
+        tmp_err += ": ERROR: can't set resource graph parameters\n" + m_err_msg;
         throw std::runtime_error (tmp_err);
     }
 
