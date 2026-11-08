@@ -275,8 +275,11 @@ TEST_CASE ("Initialize REAPI CLI and test add and remove", "[initialize-add-remo
     REQUIRE (detail::reapi_cli_t::remove_subgraph (ctx.get (), "") != 0);
 
     // Valid add then remove.
+    CHECK (ctx->db->metadata.nodes_up == 1);
     CHECK (detail::reapi_cli_t::add_subgraph (ctx.get (), add_sgraph) == 0);
+    CHECK (ctx->db->metadata.nodes_up == 2);
     CHECK (detail::reapi_cli_t::remove_subgraph (ctx.get (), remove_path) == 0);
+    CHECK (ctx->db->metadata.nodes_up == 1);
 }
 
 TEST_CASE ("Test the graph idempotence of certain match operations", "[match C++]")
