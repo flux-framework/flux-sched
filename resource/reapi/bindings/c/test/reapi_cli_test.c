@@ -16,6 +16,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 #include <jansson.h>
 #include "resource/reapi/bindings/c/reapi_cli.h"
 #include "resource/policies/base/match_op.h"
@@ -139,12 +140,34 @@ static int test_match_with_jobid ()
     rc = reapi_cli_cancel (ctx, jobid, false);
     ok (rc == 0, "reapi_cli_cancel succeeded for allocated job");
 
-    // Try to allocate with same jobid - currently not an error, resources just get reallocated
-    // (Duplicate jobid detection may be a future feature)
-    // errno = 0;
-    // rc = reapi_cli_match_with_jobid (ctx, MATCH_ALLOCATE, simple_jobspec, jobid, &reserved, &R,
-    // &at, &ov); ok (rc == -1 && errno == EEXIST,
-    //     "reapi_cli_match_with_jobid returns -1 with errno=EEXIST for duplicate jobid");
+    // Allocate again with the same jobid: allowed once the first is cancelled
+    rc = reapi_cli_match_with_jobid (ctx,
+                                     MATCH_ALLOCATE,
+                                     simple_jobspec,
+                                     jobid,
+                                     &reserved,
+                                     &R,
+                                     &at,
+                                     &ov);
+    ok (rc == 0, "reapi_cli_match_with_jobid succeeded with reused jobid after cancel");
+    free (R);
+    R = NULL;
+
+    // A second allocation under a live jobid is rejected with EEXIST
+    errno = 0;
+    rc = reapi_cli_match_with_jobid (ctx,
+                                     MATCH_ALLOCATE,
+                                     simple_jobspec,
+                                     jobid,
+                                     &reserved,
+                                     &R,
+                                     &at,
+                                     &ov);
+    ok (rc == -1 && errno == EEXIST,
+        "reapi_cli_match_with_jobid returns -1 with errno=EEXIST for duplicate jobid");
+    ok (R == NULL, "reapi_cli_match_with_jobid did not set R for duplicate jobid");
+    rc = reapi_cli_cancel (ctx, jobid, false);
+    ok (rc == 0, "reapi_cli_cancel succeeded after duplicate attempt");
 
     // Test with NULL context
     errno = 0;
@@ -499,6 +522,51 @@ static int test_find ()
     return 0;
 }
 
+static int test_initialize_options ()
+{
+    struct {
+        const char *desc;
+        const char *options;
+    } bad[] = {
+        {"not JSON", "not json"},
+        {"not an object", "[1,2]"},
+        {"load_format not a string", "{\"load_format\": 42}"},
+        {"unknown load_format", "{\"load_format\": \"bogus\"}"},
+        {"match_format not a string", "{\"load_format\": \"jgf\", \"match_format\": 42}"},
+        {"unknown match_format", "{\"load_format\": \"jgf\", \"match_format\": \"bogus\"}"},
+        {"unknown matcher_policy", "{\"load_format\": \"jgf\", \"matcher_policy\": \"bogus\"}"},
+        {"unknown traverser_policy", "{\"load_format\": \"jgf\", \"traverser_policy\": \"bogus\"}"},
+        {"unknown matcher_name", "{\"load_format\": \"jgf\", \"matcher_name\": \"bogus\"}"},
+    };
+
+    for (size_t i = 0; i < sizeof (bad) / sizeof (bad[0]); i++) {
+        reapi_cli_ctx_t *ctx = reapi_cli_new ();
+        if (!ctx)
+            BAIL_OUT ("reapi_cli_new failed");
+        errno = 0;
+        int rc = reapi_cli_initialize (ctx, tiny_jgf, bad[i].options);
+        ok (rc == -1 && errno != 0, "reapi_cli_initialize fails on %s", bad[i].desc);
+        const char *msg = reapi_cli_get_err_msg (ctx);
+        ok (msg != NULL && strlen (msg) > 0, "reapi_cli_initialize sets error message");
+        free ((void *)msg);
+        reapi_cli_destroy (ctx);
+    }
+
+    // The remaining options are accepted
+    reapi_cli_ctx_t *ctx = reapi_cli_new ();
+    if (!ctx)
+        BAIL_OUT ("reapi_cli_new failed");
+    int rc = reapi_cli_initialize (ctx,
+                                   tiny_jgf,
+                                   "{\"load_format\": \"jgf\", \"match_format\": \"rv1_nosched\", "
+                                   "\"matcher_policy\": \"low\", \"matcher_name\": \"ca\", "
+                                   "\"traverser_policy\": \"flexible\", "
+                                   "\"prune_filters\": \"ALL:core\", \"reserve_vtx_vec\": 16}");
+    ok (rc == 0, "reapi_cli_initialize succeeds with all options set");
+    reapi_cli_destroy (ctx);
+    return 0;
+}
+
 static int test_match_satisfy ()
 {
     reapi_cli_ctx_t *ctx = reapi_cli_new ();
@@ -545,6 +613,7 @@ int main (int argc, char *argv[])
     test_cancel_ex ();
     test_find ();
     test_match_satisfy ();
+    test_initialize_options ();
 
     done_testing ();
     return EXIT_SUCCESS;

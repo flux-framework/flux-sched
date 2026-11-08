@@ -6,6 +6,7 @@
 #include <resource/schema/resource_graph.hpp>
 #include <fstream>
 #include <cstdlib>
+#include <cerrno>
 
 namespace Flux::resource_model::detail {
 
@@ -180,13 +181,13 @@ TEST_CASE ("Match basic jobspec", "[match C++]")
             CHECK (sched_map.at (*u) == ctx->db->resource_graph[*u].schedule);
         }
 
-        // Allocate all resources
+        // Allocate all resources (each job needs a distinct jobid)
         match_op = MATCH_ALLOCATE;
         for (int i = 0; i < 4; i++) {
             rc = detail::reapi_cli_t::match_allocate (ctx.get (),
                                                       match_op,
                                                       jobspec,
-                                                      jobid,
+                                                      jobid + i,
                                                       reserved,
                                                       R,
                                                       at,
@@ -200,7 +201,7 @@ TEST_CASE ("Match basic jobspec", "[match C++]")
         rc = detail::reapi_cli_t::match_allocate (ctx.get (),
                                                   match_op,
                                                   jobspec,
-                                                  jobid,
+                                                  jobid + 4,
                                                   reserved,
                                                   R,
                                                   at,
@@ -275,8 +276,17 @@ TEST_CASE ("Initialize REAPI CLI and test add and remove", "[initialize-add-remo
     REQUIRE (detail::reapi_cli_t::remove_subgraph (ctx.get (), "") != 0);
 
     // Valid add then remove.
+    CHECK (ctx->db->metadata.nodes_up == 1);
     CHECK (detail::reapi_cli_t::add_subgraph (ctx.get (), add_sgraph) == 0);
+    CHECK (ctx->db->metadata.nodes_up == 2);
     CHECK (detail::reapi_cli_t::remove_subgraph (ctx.get (), remove_path) == 0);
+    CHECK (ctx->db->metadata.nodes_up == 1);
+
+    // Removing a path that is not in the graph fails with ENOENT and a message.
+    errno = 0;
+    CHECK (detail::reapi_cli_t::remove_subgraph (ctx.get (), "/medium0/rack0/nonexistent") != 0);
+    CHECK (errno == ENOENT);
+    CHECK (ctx->get_resource_query_err_msg ().find ("not found") != std::string::npos);
 }
 
 TEST_CASE ("Test the graph idempotence of certain match operations", "[match C++]")

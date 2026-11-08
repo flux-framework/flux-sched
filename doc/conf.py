@@ -294,7 +294,7 @@ def setup(app):
 
 # ReadTheDocs runs sphinx without first building flux-sched, so the compiled
 # CFFI module in `_fluxion` will not exist, causing import errors when autodoc
-# imports fluxion.reapi.cli.  The `flux` package (from flux-core) is likewise
+# imports fluxion.reapi.  The `flux` package (from flux-core) is likewise
 # not installed in the docs build environment.  Mock these imports to prevent
 # import errors.
 autodoc_mock_imports = ["_fluxion._reapi_cli", "flux"]

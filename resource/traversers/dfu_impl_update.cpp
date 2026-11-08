@@ -808,6 +808,7 @@ int dfu_impl_t::remove_subgraph (const std::vector<vtx_t> &roots, std::set<vtx_t
         boost::clear_vertex (vtx, *m_graph);
         remove_graph_metadata (vtx);
     }
+    m_graph_db->metadata.initialize_node_stats (*m_graph);
 
     return 0;
 }
@@ -1297,6 +1298,9 @@ int dfu_impl_t::remove_subgraph (const std::string &target)
 
     auto iter = m_graph_db->metadata.by_path.find (target);
     if (iter == m_graph_db->metadata.by_path.end ()) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": " + target + " not found\n";
+        errno = ENOENT;
         return -1;
     }
     for (const auto &v : iter->second) {
