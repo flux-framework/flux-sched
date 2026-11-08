@@ -1770,8 +1770,7 @@ int run_add_subgraph (std::shared_ptr<resource_ctx_t> &ctx, const std::string &R
         flux_log (ctx->h, LOG_ERR, "creating JGF reader failed");
         goto done;
     }
-    if ((rc = reader->unpack_at (ctx->db->resource_graph, ctx->db->metadata, v, R_subgraph, -1))
-        != 0) {
+    if ((rc = ctx->db->load (R_subgraph, reader, v, -1)) != 0) {
         flux_log (ctx->h,
                   LOG_ERR,
                   "add subgraph: %s failed: %s",
