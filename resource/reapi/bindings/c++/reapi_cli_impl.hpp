@@ -126,6 +126,19 @@ int reapi_cli_t::match_allocate (void *h,
         return -1;
     }
 
+    // Ops that record an allocation or reservation under jobid must not
+    // clobber an existing one.
+    if (match_op == match_op_t::MATCH_ALLOCATE
+        || match_op == match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE
+        || match_op == match_op_t::MATCH_ALLOCATE_W_SATISFIABILITY) {
+        if (rq->allocation_exists (jobid) || rq->reservation_exists (jobid)) {
+            m_err_msg += __FUNCTION__;
+            m_err_msg += ": ERROR: existing jobid " + std::to_string (jobid) + "\n";
+            errno = EEXIST;
+            return -1;
+        }
+    }
+
     if (gettimeofday (&start_time, NULL) < 0) {
         m_err_msg += __FUNCTION__;
         m_err_msg += ": ERROR: gettimeofday: " + std::string (strerror (errno)) + "\n";
