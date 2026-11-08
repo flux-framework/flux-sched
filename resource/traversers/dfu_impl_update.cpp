@@ -1298,6 +1298,9 @@ int dfu_impl_t::remove_subgraph (const std::string &target)
 
     auto iter = m_graph_db->metadata.by_path.find (target);
     if (iter == m_graph_db->metadata.by_path.end ()) {
+        m_err_msg += __FUNCTION__;
+        m_err_msg += ": " + target + " not found\n";
+        errno = ENOENT;
         return -1;
     }
     for (const auto &v : iter->second) {
