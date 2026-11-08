@@ -180,13 +180,13 @@ TEST_CASE ("Match basic jobspec", "[match C++]")
             CHECK (sched_map.at (*u) == ctx->db->resource_graph[*u].schedule);
         }
 
-        // Allocate all resources
+        // Allocate all resources (each job needs a distinct jobid)
         match_op = MATCH_ALLOCATE;
         for (int i = 0; i < 4; i++) {
             rc = detail::reapi_cli_t::match_allocate (ctx.get (),
                                                       match_op,
                                                       jobspec,
-                                                      jobid,
+                                                      jobid + i,
                                                       reserved,
                                                       R,
                                                       at,
@@ -200,7 +200,7 @@ TEST_CASE ("Match basic jobspec", "[match C++]")
         rc = detail::reapi_cli_t::match_allocate (ctx.get (),
                                                   match_op,
                                                   jobspec,
-                                                  jobid,
+                                                  jobid + 4,
                                                   reserved,
                                                   R,
                                                   at,
