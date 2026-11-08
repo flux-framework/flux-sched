@@ -44,6 +44,7 @@ void resource_graph_metadata_t::update_node_stats (int count, resource_pool_t::s
 
 void resource_graph_metadata_t::initialize_node_stats (resource_graph_t const &g)
 {
+    nodes_up = 0;
     const auto by_type_iter = by_type.find (resource_model::node_rt);
     if (by_type_iter == by_type.end ())
         return;

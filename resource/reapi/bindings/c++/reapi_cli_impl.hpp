@@ -1324,7 +1324,7 @@ int resource_query_t::add_subgraph (const std::string &R_subgraph)
         m_err_msg += ": ERROR: can't create JGF reader\n";
         goto out;
     }
-    if ((rc = reader->unpack_at (db->resource_graph, db->metadata, v, R_subgraph, -1)) != 0) {
+    if ((rc = db->load (R_subgraph, reader, v, -1)) != 0) {
         m_err_msg = __FUNCTION__;
         m_err_msg += ": ERROR: reader returned error: ";
         m_err_msg += reader->err_message () + "\n";

@@ -808,6 +808,7 @@ int dfu_impl_t::remove_subgraph (const std::vector<vtx_t> &roots, std::set<vtx_t
         boost::clear_vertex (vtx, *m_graph);
         remove_graph_metadata (vtx);
     }
+    m_graph_db->metadata.initialize_node_stats (*m_graph);
 
     return 0;
 }
