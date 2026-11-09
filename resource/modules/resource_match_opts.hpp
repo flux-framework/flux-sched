@@ -38,6 +38,7 @@ class resource_opts_t : public optmgr_parse_t {
         PRUNE_FILTERS = 70,     // prune-filter
         UPDATE_INTERVAL = 80,   // update-interval
         TRAVERSER_POLICY = 90,  // traverser
+        EMIT_NSLOTS = 100,
         UNKNOWN = 5000
     };
 
@@ -58,6 +59,7 @@ class resource_opts_t : public optmgr_parse_t {
     const std::optional<std::string> &get_prune_filters () const;
     const std::optional<int> &get_update_interval () const;
     const std::optional<std::string> &get_traverser_policy () const;
+    const std::optional<int> &get_emit_nslots () const;
 
     void set_load_file (const std::string &o);
     bool set_load_format (const std::string &o);
@@ -70,6 +72,7 @@ class resource_opts_t : public optmgr_parse_t {
     void add_to_prune_filters (const std::string &o);
     void set_update_interval (const int i);
     bool set_traverser_policy (const std::string &o);
+    void set_emit_nslots (const int i);
 
     /*! Canonicalize the option set -- apply the general resource properties
      */
@@ -128,6 +131,7 @@ class resource_opts_t : public optmgr_parse_t {
     std::optional<std::string> m_prune_filters;
     std::optional<int> m_update_interval;
     std::optional<std::string> m_traverser_policy;
+    std::optional<int> m_emit_nslots;
 };
 
 }  // namespace opts_manager

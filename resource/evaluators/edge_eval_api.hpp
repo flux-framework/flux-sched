@@ -40,6 +40,7 @@ struct eval_egroup_t {
     unsigned int needs = 0;
     unsigned int exclusive = 0;
     bool root = false;
+    std::string task_label = "";
     std::vector<eval_edg_t> edges;
 };
 

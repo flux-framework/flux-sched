@@ -1664,6 +1664,7 @@ static int init_resource_graph (std::shared_ptr<resource_ctx_t> &ctx)
     const std::optional<std::string> &match_subsystems = opts.get_match_subsystems ();
     const std::optional<std::string> &match_format = opts.get_match_format ();
     const std::optional<std::string> &prune_filters = opts.get_prune_filters ();
+    const std::optional<int> &emit_nslots = opts.get_emit_nslots ();
 
     // Check for all required module options.
     rc += required_module_option (ctx, traverser_policy, "traverser");
@@ -1709,8 +1710,10 @@ static int init_resource_graph (std::shared_ptr<resource_ctx_t> &ctx)
     }
 
     // Create a writers object for matched vertices and edges.
-    if (!(ctx->writers = match_writers_factory_t::create (
-              match_writers_factory_t::get_writers_type (*match_format)))) {
+    if (!(ctx->writers =
+              match_writers_factory_t::create (match_writers_factory_t::get_writers_type (
+                                                   *match_format),
+                                               (int)*emit_nslots))) {
         flux_log (ctx->h,
                   LOG_ERR,
                   "%s: error creating match writer with: %s",
