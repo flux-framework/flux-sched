@@ -34,6 +34,13 @@ struct infra_base_t {
     intern::interned_key_vec<subsystem_t, bool> member_of;
 };
 
+// The span of a job in the aggregate pruning filter of a vertex
+struct agg_span_t {
+    int64_t span = -1;      // span id in the filter; -1 after a partial cancel removed it
+    bool reserved = false;  // the span is a reservation, which does not hold the vertex
+    bool operator== (const agg_span_t &o) const = default;
+};
+
 struct pool_infra_t : public infra_base_t {
     pool_infra_t ();
     pool_infra_t (const pool_infra_t &o);
@@ -45,7 +52,10 @@ struct pool_infra_t : public infra_base_t {
 
     std::map<int64_t, int64_t> tags;
     std::map<int64_t, int64_t> x_spans;
-    std::map<int64_t, int64_t> job2span;
+    std::map<int64_t, agg_span_t> job2span;
+    // The number of entries of job2span that are not reservations.
+    // Invariant: equal to the count of entries with reserved == false.
+    uint32_t held_spans = 0;
     planner_t *x_checker = NULL;
     subsystem_key_vec<planner_multi_t *> subplans;
     subsystem_key_vec<uint64_t> colors;

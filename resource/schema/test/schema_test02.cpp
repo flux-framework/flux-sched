@@ -41,7 +41,7 @@ static int test_constructors_and_overload ()
     infra1 = new pool_infra_t ();
     infra1->tags[0] = 0;
     infra1->x_spans[0] = 0;
-    infra1->job2span[0] = 0;
+    infra1->job2span[0] = {0};
     infra1->colors[containment_sub] = 0;
     infra1->colors[network_sub] = 1;
     infra1->x_checker = planner_new (0, INT64_MAX, resource_total, resource_type);
@@ -57,7 +57,7 @@ static int test_constructors_and_overload ()
 
     infra2->tags[0] = 0;
     infra2->x_spans[0] = 0;
-    infra2->job2span[0] = 0;
+    infra2->job2span[0] = {0};
     infra2->colors[containment_sub] = 0;
     infra2->colors[network_sub] = 1;
     infra2->x_checker = planner_new (0, INT64_MAX, resource_total, resource_type);
@@ -77,14 +77,14 @@ static int test_constructors_and_overload ()
     bo = (bo || !(*infra4 == *infra1));
     ok (!bo, "assigned pool_infra_t equal to rhs pool_infra_t");
 
-    infra4->job2span[0] = 1;
+    infra4->job2span[0] = {1};
     bo = (bo || (*infra4 == *infra1));
     ok (!bo, "mutated pool_infra_t not equal to original pool_infra_t");
 
     infra5 = new pool_infra_t ();
     infra5->tags[0] = 0;
     infra5->x_spans[0] = 0;
-    infra5->job2span[0] = 0;
+    infra5->job2span[0] = {0};
     infra5->colors[containment_sub] = 0;
     infra5->colors[network_sub] = 1;
     infra5->x_checker = planner_new (1, INT64_MAX, resource_total, resource_type);
@@ -99,7 +99,7 @@ static int test_constructors_and_overload ()
     infra6 = new pool_infra_t ();
     infra6->tags[0] = 0;
     infra6->x_spans[0] = 0;
-    infra6->job2span[0] = 0;
+    infra6->job2span[0] = {0};
     infra6->colors[containment_sub] = 0;
     infra6->colors[storage_sub] = 1;
     infra6->x_checker = planner_new (0, INT64_MAX, resource_total, resource_type);
@@ -113,7 +113,7 @@ static int test_constructors_and_overload ()
     infra7 = new pool_infra_t ();
     infra7->tags[0] = 0;
     infra7->x_spans[0] = 0;
-    infra7->job2span[0] = 0;
+    infra7->job2span[0] = {0};
     infra7->colors[containment_sub] = 0;
     infra7->colors[network_sub] = 1;
     infra7->x_checker = planner_new (0, INT64_MAX, resource_total, resource_type);
@@ -129,7 +129,7 @@ static int test_constructors_and_overload ()
     infra8 = new pool_infra_t ();
     infra8->tags[0] = 0;
     infra8->x_spans[0] = 0;
-    infra8->job2span[0] = 0;
+    infra8->job2span[0] = {0};
     infra8->colors[containment_sub] = 0;
     infra8->colors[network_sub] = 1;
     infra8->x_checker = planner_new (0, INT64_MAX, resource_total, resource_type);
@@ -145,7 +145,7 @@ static int test_constructors_and_overload ()
     infra9 = new pool_infra_t ();
     infra9->tags[0] = 0;
     infra9->x_spans[0] = 0;
-    infra9->job2span[0] = 0;
+    infra9->job2span[0] = {0};
     infra9->colors[containment_sub] = 0;
     infra9->colors[network_sub] = 1;
     infra9->x_checker = planner_new (0, INT64_MAX, resource_total, resource_type);

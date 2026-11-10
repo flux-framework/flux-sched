@@ -139,10 +139,7 @@ int dfu_impl_t::by_excl (const jobmeta_t &meta,
         // not overrun. Therefore, they will match resources immediately
         // following an active or planned job's span. However, they will
         // correctly fail to match `now` resources with an overrunning job.
-        if (at == meta.now
-            && (meta.alloc_type == jobmeta_t::alloc_type_t::AT_ALLOC
-                || meta.alloc_type == jobmeta_t::alloc_type_t::AT_NO_ALLOC)
-            && !(*m_graph)[u].schedule.allocations.empty ()) {
+        if (meta.is_immediate () && held_below (u)) {
             errno = EBUSY;
             return -1;
         }
@@ -160,6 +157,37 @@ int dfu_impl_t::by_excl (const jobmeta_t &meta,
     }
 
     // All cases reached this point indicate further walk is needed.
+    return 0;
+}
+
+bool dfu_impl_t::held_below (vtx_t u)
+{
+    // True if a job holds u or a descendant of u at the current time,
+    // also after the planned end of the job. An allocation entry on u
+    // shows a job that holds u. A job that holds a descendant of u
+    // without exclusivity has no entry on u, but it has an aggregate
+    // span on u that a partial cancel reduces and removes when the job
+    // holds nothing below u. A reservation has an aggregate span also,
+    // but it does not hold the vertex. Tags and x_checker spans stay on
+    // u until the final cancel of the job, so they are not a record of
+    // what the job still holds.
+    return !(*m_graph)[u].schedule.allocations.empty () || (*m_graph)[u].idata.held_spans > 0;
+}
+
+int dfu_impl_t::by_shadow (const jobmeta_t &meta, subsystem_t s, vtx_t u)
+{
+    // If the type of u is exclusive, the update walk allocates every
+    // descendant of u in the dominant subsystem to the job, also the
+    // descendants that the match did not select (modify_traversal ()).
+    // by_excl () does not run at u if the jobspec names no resource of
+    // the type of u, thus examine u here.
+    if (s != m_match->dom_subsystem () || !meta.is_immediate ()
+        || !m_match->is_resource_type_exclusive ((*m_graph)[u].type))
+        return 0;
+    if (held_below (u)) {
+        errno = EBUSY;
+        return -1;
+    }
     return 0;
 }
 
@@ -283,6 +311,14 @@ int dfu_impl_t::prune (const jobmeta_t &meta,
 
     if (prune_resources (meta, exclusive, s, u, resources) == -1) {
         // errno already set by prune_resources
+        // Prevent Unsatisfiable from escaping from planner again
+        if (errno == ERANGE)
+            errno = EBUSY;
+        return -1;
+    }
+
+    if (by_shadow (meta, s, u) == -1) {
+        // errno already set by by_shadow
         // Prevent Unsatisfiable from escaping from planner again
         if (errno == ERANGE)
             errno = EBUSY;
@@ -961,7 +997,7 @@ int dfu_impl_t::dom_find_dfv (std::shared_ptr<match_writers_t> &w,
             for (size_t i = 0; i < planner_multi_resources_len (filter_plan); ++i) {
                 int64_t total_resources = planner_multi_resource_total_at (filter_plan, i);
                 if ((planned_resources =
-                         planner_multi_span_planned_at (filter_plan, span_it->second, i))
+                         planner_multi_span_planned_at (filter_plan, span_it->second.span, i))
                     < 0) {
                     m_err_msg += __FUNCTION__;
                     m_err_msg += ": error from planner_multi_span_planned_at: ";
