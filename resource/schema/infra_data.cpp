@@ -54,6 +54,7 @@ pool_infra_t::pool_infra_t (const pool_infra_t &o) : infra_base_t (o)
     tags = o.tags;
     x_spans = o.x_spans;
     job2span = o.job2span;
+    held_spans = o.held_spans;
 
     for (auto s : o.subplans.key_range ()) {
         auto opt_p = o.subplans.try_at (s);
@@ -76,6 +77,7 @@ pool_infra_t &pool_infra_t::operator= (const pool_infra_t &o)
     tags = o.tags;
     x_spans = o.x_spans;
     job2span = o.job2span;
+    held_spans = o.held_spans;
 
     for (auto k : o.subplans.key_range ()) {
         auto opt_p = o.subplans.try_at (k);
@@ -107,6 +109,8 @@ bool pool_infra_t::equal_except_color (const pool_infra_t &o) const
         return false;
     if (job2span != o.job2span)
         return false;
+    if (held_spans != o.held_spans)
+        return false;
     if (!planners_equal (x_checker, o.x_checker))
         return false;
     if (subplans.size () != o.subplans.size ())
@@ -136,6 +140,7 @@ void pool_infra_t::scrub ()
     tags.clear ();
     x_spans.clear ();
     job2span.clear ();
+    held_spans = 0;
     for (auto &p : subplans)
         planner_multi_destroy (&(p));
     colors.clear ();

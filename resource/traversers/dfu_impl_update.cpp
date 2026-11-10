@@ -96,7 +96,14 @@ int dfu_impl_t::upd_agfilter (vtx_t u,
             m_err_msg += "\n";
             return -1;
         }
-        (*m_graph)[u].idata.job2span[jobmeta.jobid] = span;
+        bool reserved = (jobmeta.alloc_type == jobmeta_t::alloc_type_t::AT_ALLOC_ORELSE_RESERVE);
+        auto ret = (*m_graph)[u].idata.job2span.insert_or_assign (jobmeta.jobid,
+                                                                  agg_span_t{span, reserved});
+        // A new entry that is not a reservation adds one held span. A job
+        // has at most one entry on a vertex, so a replaced entry keeps the
+        // count (the readers replace the entry of a job on a reload).
+        if (ret.second && !reserved)
+            (*m_graph)[u].idata.held_spans++;
     }
     return 0;
 }
@@ -445,7 +452,7 @@ int dfu_impl_t::mod_agfilter (vtx_t u,
     bool removed = false;
     boost::optional<planner_multi_t *&> opt_subtree_plan;
     auto &job2span = (*m_graph)[u].idata.job2span;
-    std::map<int64_t, int64_t>::iterator span_it;
+    std::map<int64_t, agg_span_t>::iterator span_it;
 
     opt_subtree_plan = (*m_graph)[u].idata.subplans.try_at (subsystem);
     if (!opt_subtree_plan || !(*opt_subtree_plan))
@@ -456,17 +463,19 @@ int dfu_impl_t::mod_agfilter (vtx_t u,
             stop = true;
         goto done;
     }
-    if (span_it->second == -1) {
+    if (span_it->second.span == -1) {
         rc = -1;
         goto done;
     }
     if (mod_data.mod_type != job_modify_t::PARTIAL_CANCEL) {
-        if ((rc = planner_multi_rem_span (*opt_subtree_plan, span_it->second)) != 0) {
+        if ((rc = planner_multi_rem_span (*opt_subtree_plan, span_it->second.span)) != 0) {
             m_err_msg += __FUNCTION__;
             m_err_msg += ": planner_multi_rem_span returned -1.\n";
             m_err_msg += (*m_graph)[u].name + " " + strerror (errno) + ".\n";
             goto done;
         }
+        if (!span_it->second.reserved)
+            (*m_graph)[u].idata.held_spans--;
         job2span.erase (span_it);
     } else {  // PARTIAL_CANCEL
         if ((*m_graph)[u].idata.tags.find (jobid) == (*m_graph)[u].idata.tags.end ()) {
@@ -482,7 +491,7 @@ int dfu_impl_t::mod_agfilter (vtx_t u,
                 reduced_counts.push_back (t2ct_it.second);
             }
             if ((rc = planner_multi_reduce_span (*opt_subtree_plan,
-                                                 span_it->second,
+                                                 span_it->second.span,
                                                  reduced_counts.data (),
                                                  reduced_types.data (),
                                                  mod_data.type_to_count.size (),
@@ -508,6 +517,8 @@ int dfu_impl_t::mod_agfilter (vtx_t u,
             // another job match this vertex exclusively while this job
             // still holds resources beneath it, and severs the state
             // needed for exact full-cancel accounting.
+            if (!span_it->second.reserved)
+                (*m_graph)[u].idata.held_spans--;
             job2span.erase (span_it);
         }
     }
@@ -686,6 +697,7 @@ int dfu_impl_t::clear_vertex (vtx_t vtx, modify_data_t &mod_data)
     (*m_graph)[vtx].idata.tags.clear ();
     (*m_graph)[vtx].idata.x_spans.clear ();
     (*m_graph)[vtx].idata.job2span.clear ();
+    (*m_graph)[vtx].idata.held_spans = 0;
     // Clear allocations and reservations
     (*m_graph)[vtx].schedule.allocations.clear ();
     (*m_graph)[vtx].schedule.reservations.clear ();
