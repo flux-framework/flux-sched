@@ -114,13 +114,8 @@ bool Constraint::match (const Flux::resource_model::resource_t &r) const
 PropertyConstraint::PropertyConstraint (const YAML::Node &properties)
 {
     for (auto &&property : properties) {
-        // YAML::Node::as<std:string> will work on a non-string YAML node.
-        //  use Tag() instead to determine if the scalar is a quoted string,
-        //   in which case "!" is returned.
-        //
-        //  Ref: https://yaml.org/spec/1.2-old/spec.html#id2804923
-        if (!property.IsScalar () || property.Tag () != "!")
-            throw parse_error (properties, "non-string property specified");
+        if (!property.IsScalar ())
+            throw parse_error (properties, "non-scalar property specified");
 
         std::string prop = property.as<std::string> ();
         if (prop[0] == '^')

@@ -209,12 +209,6 @@ struct validate_test validate_tests[] =
          "properties operator value must be an array",
      },
      {
-         "non-string property fails",
-         "{ \"properties\": [ \"foo\", 42 ] }",
-         -1,
-         "non-string property specified",
-     },
-     {
          "invalid property string fails",
          "{ \"properties\": [ \"foo\", \"bar&\" ] }",
          -1,

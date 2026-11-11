@@ -13,6 +13,12 @@ for jobspec in ${SHARNESS_TEST_SRCDIR}/${data_dir}/valid/*.yaml; do
     test_expect_success $testname "$validate $jobspec"
 done
 
+# Track known failures to parse valid jobspec examples from RFC 14
+for jobspec in ${SHARNESS_TEST_SRCDIR}/${data_dir}/xfail/*.yaml; do
+    testname=`basename $jobspec`
+    test_expect_failure $testname "$validate $jobspec"
+done
+
 # Check that the invalid jobspec all fail
 for jobspec in ${SHARNESS_TEST_SRCDIR}/${data_dir}/invalid/*.yaml; do
     testname=`basename $jobspec`

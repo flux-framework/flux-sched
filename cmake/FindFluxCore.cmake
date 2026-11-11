@@ -10,7 +10,7 @@ else()
     endif()
 endif()
 
-pkg_check_modules(FLUX_CORE REQUIRED IMPORTED_TARGET flux-core>=0.78)
+pkg_check_modules(FLUX_CORE REQUIRED IMPORTED_TARGET flux-core>=0.91)
 set(FLUX_PREFIX ${FLUX_CORE_PREFIX})
 set(LIBFLUX_VERSION ${FLUX_CORE_VERSION})
 
@@ -23,6 +23,7 @@ execute_process(COMMAND $FLUX python -c "import sys; print(\".\".join(map(str, s
 pkg_check_modules(FLUX_HOSTLIST REQUIRED IMPORTED_TARGET flux-hostlist )
 pkg_check_modules(FLUX_IDSET REQUIRED IMPORTED_TARGET flux-idset )
 pkg_check_modules(FLUX_OPTPARSE REQUIRED IMPORTED_TARGET flux-optparse )
+pkg_check_modules(FLUX_RESOURCECOUNT REQUIRED IMPORTED_TARGET flux-resourcecount )
 pkg_check_modules(FLUX_SCHEDUTIL REQUIRED IMPORTED_TARGET flux-schedutil )
 pkg_check_modules(FLUX_TASKMAP REQUIRED IMPORTED_TARGET flux-taskmap )
 
@@ -30,11 +31,19 @@ add_library(flux::core ALIAS PkgConfig::FLUX_CORE)
 add_library(flux::hostlist ALIAS PkgConfig::FLUX_HOSTLIST)
 add_library(flux::idset ALIAS PkgConfig::FLUX_IDSET)
 add_library(flux::optparse ALIAS PkgConfig::FLUX_OPTPARSE)
+add_library(flux::resourcecount ALIAS PkgConfig::FLUX_RESOURCECOUNT)
 add_library(flux::schedutil ALIAS PkgConfig::FLUX_SCHEDUTIL)
 add_library(flux::taskmap ALIAS PkgConfig::FLUX_TASKMAP)
 
 # all but PMI
 add_library(flux-all INTERFACE)
-target_link_libraries(flux-all INTERFACE flux::core flux::hostlist flux::idset flux::optparse flux::schedutil flux::taskmap)
+target_link_libraries(flux-all INTERFACE
+    flux::core
+    flux::hostlist
+    flux::idset
+    flux::optparse
+    flux::resourcecount
+    flux::schedutil
+    flux::taskmap)
 add_library(flux::all ALIAS flux-all)
 

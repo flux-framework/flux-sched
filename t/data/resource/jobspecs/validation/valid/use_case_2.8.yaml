@@ -1,0 +1,30 @@
+version: 999
+resources:
+  - type: slot
+    count: 1
+    label: default
+    with:
+      - type: node
+        count: 1
+tasks:
+  - command: [ "flux", "start" ]
+    slot: default
+    count:
+      per_slot: 1
+attributes:
+  system:
+    duration: 3600.
+    cwd: "/home/flux"
+    dependencies:
+      - type: in
+        scope: user
+        scheme: fluid
+        value: hungry-hippo-white-elephant
+      - type: in
+        scope: user
+        scheme: string
+        value: foo
+      - type: out
+        scope: user
+        scheme: string
+        value: bar
