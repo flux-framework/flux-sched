@@ -22,7 +22,6 @@
 
 #include <boost/container/small_vector.hpp>
 #include <boost/optional/optional.hpp>
-#include <boost/scope/defer.hpp>
 #include <stdexcept>
 
 namespace intern {
@@ -100,11 +99,18 @@ struct dense_storage {
         detail::dense_storage_unfinalize (get_storage ());
     }
 
+    struct scope_closer {
+        ~scope_closer ()
+        {
+            close ();
+        }
+    };
+
     /// open the interner for additions and auto-close on scope exit
     [[nodiscard]] static auto open_for_scope ()
     {
         open ();
-        return boost::scope::defer_guard ([] () { close (); });
+        return scope_closer ();
     }
 
     /// open the interner for additions
