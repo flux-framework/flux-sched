@@ -231,6 +231,7 @@ endif()
 include(FindValgrind) # Search for Valgrind
 
 include_directories(.)
+add_subdirectory( external )
 add_subdirectory( etc )
 add_subdirectory( src )
 add_subdirectory( resource )

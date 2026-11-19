@@ -20,7 +20,6 @@
 #include <ostream>
 #include <math.h>
 
-#include "scope_guard.hpp"
 #include <boost/container/small_vector.hpp>
 #include <boost/optional/optional.hpp>
 #include <stdexcept>
@@ -100,11 +99,18 @@ struct dense_storage {
         detail::dense_storage_unfinalize (get_storage ());
     }
 
+    struct scope_closer {
+        ~scope_closer ()
+        {
+            close ();
+        }
+    };
+
     /// open the interner for additions and auto-close on scope exit
     [[nodiscard]] static auto open_for_scope ()
     {
         open ();
-        return sg::make_scope_guard ([] () { close (); });
+        return scope_closer ();
     }
 
     /// open the interner for additions
