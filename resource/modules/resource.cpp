@@ -8,7 +8,11 @@
  * SPDX-License-Identifier: LGPL-3.0
 \*****************************************************************************/
 
+#include <jansson.h>
 #include "resource_match.hpp"
+
+#include <boost/scope/scope_exit.hpp>
+#include <boost/scope/scope_fail.hpp>
 
 MOD_NAME ("sched-fluxion-resource");
 
@@ -696,7 +700,6 @@ done:
 static void stat_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t *msg, void *arg)
 {
     std::shared_ptr<resource_ctx_t> ctx = getctx ((flux_t *)arg);
-    int saved_errno;
     json::value o;
     json_t *match_succeeded = nullptr;
     json_t *match_failed = nullptr;
@@ -710,6 +713,13 @@ static void stat_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t 
     int64_t graph_uptime_s = 0;
     int64_t time_since_reset_s = 0;
     std::chrono::time_point<std::chrono::system_clock> now;
+    bool failed = false;
+    auto respond_error_on_fail_ = boost::scope::make_scope_fail (
+        [h, msg] () {
+            if (flux_respond_error (h, msg, errno, NULL) < 0)
+                flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
+        },
+        [&failed] () { return failed; });
 
     if (perf.succeeded.njobs_reset > 1) {
         avg = perf.succeeded.avg;
@@ -725,11 +735,13 @@ static void stat_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t 
     }
     if (!(o = json::value::take (json_object ()))) {
         errno = ENOMEM;
-        goto error;
+        failed = true;
+        return;
     }
     if (get_stat_by_rank (ctx, o.get ()) < 0) {
         flux_log_error (h, "%s: get_stat_by_rank", __FUNCTION__);
-        goto error;
+        failed = true;
+        return;
     }
 
     if (!(match_succeeded = json_pack ("{s:I s:I s:I s:I s:{s:f s:f s:f s:f}}",
@@ -751,8 +763,14 @@ static void stat_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t 
                                        "variance",
                                        variance))) {
         errno = ENOMEM;
-        goto error;
+        failed = true;
+        return;
     }
+    auto cleanup_succeeded_ = boost::scope::make_scope_exit ([&] () {
+        int saved_errno = errno;
+        json_decref (match_succeeded);
+        errno = saved_errno;
+    });
     if (!(match_failed = json_pack ("{s:I s:I s:I s:I s:{s:f s:f s:f s:f}}",
                                     "njobs",
                                     perf.failed.njobs,
@@ -772,8 +790,14 @@ static void stat_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t 
                                     "variance",
                                     variance_failed))) {
         errno = ENOMEM;
-        goto error;
+        failed = true;
+        return;
     }
+    auto cleanup_failed_ = boost::scope::make_scope_exit ([&] () {
+        int saved_errno = errno;
+        json_decref (match_failed);
+        errno = saved_errno;
+    });
     now = std::chrono::system_clock::now ();
     graph_uptime_s =
         std::chrono::duration_cast<std::chrono::seconds> (now - perf.graph_uptime).count ();
@@ -803,18 +827,6 @@ static void stat_request_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t 
         < 0) {
         flux_log_error (h, "%s: flux_respond_pack", __FUNCTION__);
     }
-    json_decref (match_succeeded);
-    json_decref (match_failed);
-
-    return;
-
-error:
-    saved_errno = errno;
-    json_decref (match_succeeded);
-    json_decref (match_failed);
-    errno = saved_errno;
-    if (flux_respond_error (h, msg, errno, NULL) < 0)
-        flux_log_error (h, "%s: flux_respond_error", __FUNCTION__);
 }
 
 static void stat_clear_cb (flux_t *h, flux_msg_handler_t *w, const flux_msg_t *msg, void *arg)

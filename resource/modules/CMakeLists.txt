@@ -21,6 +21,7 @@ flux_add_plugin ( sched-fluxion-feasibility MODULE
 
 target_link_libraries (sched-fluxion-resource PRIVATE
 	sched-fluxion-resource-module
+  boost_scope
     )
 target_link_libraries (sched-fluxion-feasibility PRIVATE
 	sched-fluxion-resource-module
