@@ -127,6 +127,10 @@ inline const char *get_status_string (std::string cmd, int64_t now, int64_t at)
     if (cmd == std::string ("without_allocating")
         || cmd == std::string ("without_allocating_future"))
         return "MATCHED";
+    else if (cmd == std::string ("deferred_allocate"))
+        // A deferred allocate records an allocation even when its start
+        // time is in the future
+        return "ALLOCATED";
     else
         return (at == now) ? "ALLOCATED" : "RESERVED";
 }

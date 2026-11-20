@@ -1,0 +1,12 @@
+# 1x deferred_allocate without a deferred_start: allocated now
+match deferred_allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test001.yaml
+# 3x deferred_allocate with deferred_start 1800: allocated at 1800
+match deferred_allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test016.yaml
+match deferred_allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test016.yaml
+match deferred_allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test016.yaml
+# an allocate now overlaps the deferred allocations and must fail
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test001.yaml
+# cancelling a deferred allocation frees its resources
+cancel 2
+match allocate @TEST_SRCDIR@/data/resource/jobspecs/basics/test001.yaml
+quit

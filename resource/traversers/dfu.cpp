@@ -79,7 +79,8 @@ int dfu_traverser_t::request_feasible (detail::jobmeta_t const &meta,
     if (target_nodes > get_graph_db ()->metadata.nodes_up) {
         if (op == match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE || op == match_op_t::MATCH_ALLOCATE
             || op == match_op_t::MATCH_WITHOUT_ALLOCATING
-            || op == match_op_t::MATCH_WITHOUT_ALLOCATING_FUTURE) {
+            || op == match_op_t::MATCH_WITHOUT_ALLOCATING_FUTURE || op == match_op_t::MATCH_RESERVE
+            || op == match_op_t::MATCH_DEFERRED_ALLOCATE) {
             errno = EBUSY;
             return -1;
         }
@@ -101,11 +102,13 @@ int dfu_traverser_t::request_feasible (detail::jobmeta_t const &meta,
         std::chrono::duration_cast<std::chrono::seconds> (
             get_graph_db ()->metadata.graph_duration.graph_end.time_since_epoch ())
             .count ();
-    // only the initial time matters for allocate
-    const int64_t target_time =
-        op == match_op_t::MATCH_ALLOCATE || op == match_op_t::MATCH_WITHOUT_ALLOCATING
-            ? meta.at
-            : graph_end - 1;
+    // only the initial time matters for allocate; a deferred allocate is an
+    // allocate whose initial time was advanced to the requested start
+    const int64_t target_time = op == match_op_t::MATCH_ALLOCATE
+                                        || op == match_op_t::MATCH_WITHOUT_ALLOCATING
+                                        || op == match_op_t::MATCH_DEFERRED_ALLOCATE
+                                    ? meta.at
+                                    : graph_end - 1;
     int feasible_nodes = 0;
     for (auto const &node_vtx : all_nodes) {
         auto const &node = g[node_vtx];
@@ -126,7 +129,8 @@ int dfu_traverser_t::request_feasible (detail::jobmeta_t const &meta,
         // no chance, don't even try
         if (op == match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE || op == match_op_t::MATCH_ALLOCATE
             || op == match_op_t::MATCH_WITHOUT_ALLOCATING
-            || op == match_op_t::MATCH_WITHOUT_ALLOCATING_FUTURE) {
+            || op == match_op_t::MATCH_WITHOUT_ALLOCATING_FUTURE || op == match_op_t::MATCH_RESERVE
+            || op == match_op_t::MATCH_DEFERRED_ALLOCATE) {
             errno = EBUSY;
             return -1;
         }
@@ -162,7 +166,21 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
         goto out;
 
     sched_iters++;
-    if ((rc = traverser->select (jobspec.resources, root, meta, x)) == 0) {
+    if (op == match_op_t::MATCH_RESERVE) {
+        // A reserve only match never takes the resources now. It reserves
+        // them at the earliest future instant even when they are free, so
+        // try one second ahead first. The loop below walks the points where
+        // availability changes, and a planner with nothing on it has no
+        // such point, so on a free graph the loop alone would find no time.
+        meta.alloc_type = jobmeta_t::alloc_type_t::AT_ALLOC_ORELSE_RESERVE;
+        meta.at = meta.at + 1;
+        if ((rc = traverser->select (jobspec.resources, root, meta, x)) == 0) {
+            m_total_preorder = traverser->get_preorder_count ();
+            m_total_postorder = traverser->get_postorder_count ();
+            goto out;
+        }
+        meta.at = meta.at - 1;
+    } else if ((rc = traverser->select (jobspec.resources, root, meta, x)) == 0) {
         m_total_preorder = traverser->get_preorder_count ();
         m_total_postorder = traverser->get_postorder_count ();
         goto out;
@@ -192,6 +210,7 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
             ++sched_iters;
             break;
         }
+        case match_op_t::MATCH_RESERVE:
         case match_op_t::MATCH_ALLOCATE_ORELSE_RESERVE: {
             /* Or else reserve */
             meta.alloc_type = jobmeta_t::alloc_type_t::AT_ALLOC_ORELSE_RESERVE;
@@ -239,6 +258,7 @@ int dfu_traverser_t::schedule (Jobspec::Jobspec &jobspec,
             break;
         }
         case match_op_t::MATCH_ALLOCATE:
+        case match_op_t::MATCH_DEFERRED_ALLOCATE:
             errno = EBUSY;
             break;
         case match_op_t::MATCH_WITHOUT_ALLOCATING:
@@ -404,6 +424,28 @@ int dfu_traverser_t::run (Jobspec::Jobspec &jobspec,
     if (op == match_op_t::MATCH_WITHOUT_ALLOCATING
         || op == match_op_t::MATCH_WITHOUT_ALLOCATING_FUTURE)
         meta.alloc_type = jobmeta_t::alloc_type_t::AT_NO_ALLOC;
+
+    // A deferred allocate is a plain allocate whose start is advanced to the
+    // time the jobspec asks for. Resources busy at that time refuse the match
+    // like an allocate would; there is no reservation fallback.
+    if (op == match_op_t::MATCH_DEFERRED_ALLOCATE) {
+        auto it = jobspec.attributes.system.optional.find ("deferred_start");
+        if (it != jobspec.attributes.system.optional.end ()) {
+            int64_t deferred_start = -1;
+            try {
+                deferred_start = it->second.as<int64_t> ();
+            } catch (YAML::Exception &e) {
+                errno = EINVAL;
+                return -1;
+            }
+            if (deferred_start < 0) {
+                errno = EINVAL;
+                return -1;
+            }
+            if (deferred_start > meta.at)
+                meta.at = deferred_start;
+        }
+    }
 
     if (op == match_op_t::MATCH_SATISFIABILITY) {
         rc = is_satisfiable (jobspec, meta, x, root, dfv);

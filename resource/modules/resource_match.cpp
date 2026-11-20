@@ -1606,7 +1606,9 @@ int run_match (std::shared_ptr<resource_ctx_t> &ctx,
         goto done;
     }
 
-    rsv = (*now != *at) ? true : false;
+    // A deferred allocate is tracked as an allocation even when its start
+    // time is in the future
+    rsv = (*now != *at) && op != match_op_t::MATCH_DEFERRED_ALLOCATE;
     elapsed = std::chrono::system_clock::now () - start;
     *overhead = elapsed.count ();
     update_match_perf (*overhead, jobid, true);

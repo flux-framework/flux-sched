@@ -36,8 +36,9 @@ command_t commands[] =
       "m",
       cmd_match,
       "Allocate or reserve matching resources (subcmd: "
-      "allocate | allocate_with_satisfiability | allocate_orelse_reserve) | "
-      "satisfiability | without_allocating | without_allocating_future: "
+      "allocate | allocate_with_satisfiability | allocate_orelse_reserve | "
+      "reserve | deferred_allocate | satisfiability | without_allocating | "
+      "without_allocating_future): "
       "resource-query> match allocate jobspec"},
      {"multi-match",
       "M",
@@ -159,6 +160,7 @@ static void print_schedule_info (std::shared_ptr<detail::resource_query_t> &ctx,
                                  const std::string &jobspec_fn,
                                  bool matched,
                                  bool allocated,
+                                 bool reserved,
                                  int64_t at,
                                  bool sat,
                                  double elapse)
@@ -170,7 +172,7 @@ static void print_schedule_info (std::shared_ptr<detail::resource_query_t> &ctx,
         job_lifecycle_t st;
         std::string mode;
         if (allocated)
-            mode = (at == 0) ? "ALLOCATED" : "RESERVED";
+            mode = reserved ? "RESERVED" : "ALLOCATED";
         else
             mode = "MATCHED";
         std::string scheduled_at = (at == 0) ? "Now" : std::to_string (at);
@@ -195,12 +197,12 @@ static void print_schedule_info (std::shared_ptr<detail::resource_query_t> &ctx,
 
         // Only add the job to ctx->jobs if it was actually allocated
         if (allocated) {
-            st = (at == 0) ? job_lifecycle_t::ALLOCATED : job_lifecycle_t::RESERVED;
+            st = reserved ? job_lifecycle_t::RESERVED : job_lifecycle_t::ALLOCATED;
             ctx->jobs[jobid] = std::make_shared<job_info_t> (jobid, st, at, jobspec_fn, "", elapse);
-            if (at == 0)
-                ctx->allocations[jobid] = jobid;
-            else
+            if (reserved)
                 ctx->reservations[jobid] = jobid;
+            else
+                ctx->allocations[jobid] = jobid;
         }
     } else {
         out << "INFO:"
@@ -297,6 +299,7 @@ static int run_match (std::shared_ptr<detail::resource_query_t> &ctx,
                              matched,
                              match_op != match_op_t::MATCH_WITHOUT_ALLOCATING
                                  && match_op != match_op_t::MATCH_WITHOUT_ALLOCATING_FUTURE,
+                             reserved,
                              at,
                              sat,
                              ov);
@@ -395,7 +398,7 @@ static int update_run (std::shared_ptr<detail::resource_query_t> &ctx,
     elapse = get_elapse_time (st, et);
     update_match_perf (ctx, elapse);
     ctx->jobid_counter = id;
-    print_schedule_info (ctx, out, id, fn, rc == 0, true, at, true, elapse);
+    print_schedule_info (ctx, out, id, fn, rc == 0, true, at != 0, at, true, elapse);
     ctx->jobid_counter++;
 
     return 0;
