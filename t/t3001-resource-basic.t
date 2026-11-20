@@ -75,6 +75,14 @@ test_expect_success "${test008_desc}" '
     test_cmp 008.R.out ${exp_dir}/008.R.out
 '
 
+cmds022="${cmd_dir}/cmds13.in"
+test022_desc="match deferred_allocate at deferred_start or now (pol=hi)"
+test_expect_success "${test022_desc}" '
+    sed "s~@TEST_SRCDIR@~${SHARNESS_TEST_SRCDIR}~g" ${cmds022} > cmds022 &&
+    ${query} -L ${grugs} -S CA -P high -t 022.R.out < cmds022 &&
+    test_cmp 022.R.out ${exp_dir}/022.R.out
+'
+
 
 #
 # Selection Policy -- Low ID first (-P low)

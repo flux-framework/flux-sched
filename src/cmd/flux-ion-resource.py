@@ -68,6 +68,10 @@ class ResourceModuleInterface:
         payload = {"cmd": "reserve", "jobid": jobid, "jobspec": jobspec_str}
         return self.handle.rpc("sched-fluxion-resource.match", payload).get()
 
+    def rpc_deferred_allocate(self, jobid, jobspec_str):
+        payload = {"cmd": "deferred_allocate", "jobid": jobid, "jobspec": jobspec_str}
+        return self.handle.rpc("sched-fluxion-resource.match", payload).get()
+
     def rpc_wo_alloc(self, jobid, jobspec_str):
         payload = {"cmd": "without_allocating", "jobid": jobid, "jobspec": jobspec_str}
         return self.handle.rpc("sched-fluxion-resource.match", payload).get()
@@ -232,6 +236,22 @@ def match_reserve_only_action(args):
         jobspec_str = yaml.dump(yaml.safe_load(stream))
         rmod = ResourceModuleInterface()
         resp = rmod.rpc_reserve_only(rmod.rpc_next_jobid(), jobspec_str)
+        print(heading())
+        print(body(resp["jobid"], resp["status"], resp["at"], resp["overhead"]))
+        print("=" * width())
+        print("MATCHED RESOURCES:")
+        print(resp["R"])
+
+
+def match_deferred_allocate_action(args):
+    """
+    Action for match deferred_allocate sub-command
+    """
+
+    with open(args.jobspec, "r") as stream:
+        jobspec_str = yaml.dump(yaml.safe_load(stream))
+        rmod = ResourceModuleInterface()
+        resp = rmod.rpc_deferred_allocate(rmod.rpc_next_jobid(), jobspec_str)
         print(heading())
         print(body(resp["jobid"], resp["status"], resp["at"], resp["overhead"]))
         print("=" * width())
@@ -575,6 +595,14 @@ def parse_match(parser_m: argparse.ArgumentParser):
             "and resources only available in the future."
         ),
     )
+    parser_md = subparsers_m.add_parser(
+        "deferred_allocate",
+        help=(
+            "Allocate the best matching resources at the start time the "
+            "jobspec asks for (attributes.system.deferred_start), or now "
+            "when it asks for none."
+        ),
+    )
     parser_fe = subparsers_m.add_parser(
         "satisfiability", help="Check jobspec's overall satisfiability."
     )
@@ -589,6 +617,7 @@ def parse_match(parser_m: argparse.ArgumentParser):
         parser_mro,
         parser_mw,
         parser_mf,
+        parser_md,
         parser_fe,
     ):
         subparser.add_argument(
@@ -599,6 +628,7 @@ def parse_match(parser_m: argparse.ArgumentParser):
     parser_ms.set_defaults(func=match_alloc_sat_action)
     parser_mr.set_defaults(func=match_reserve_action)
     parser_mro.set_defaults(func=match_reserve_only_action)
+    parser_md.set_defaults(func=match_deferred_allocate_action)
     parser_mw.set_defaults(func=match_wo_alloc_action)
     parser_mf.set_defaults(func=match_wo_alloc_future_action)
     parser_fe.set_defaults(func=satisfiability_action)

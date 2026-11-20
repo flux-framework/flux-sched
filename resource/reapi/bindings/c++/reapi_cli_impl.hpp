@@ -186,7 +186,9 @@ int reapi_cli_t::match_allocate (void *h,
             || match_op == match_op_t::MATCH_WITHOUT_ALLOCATING_FUTURE) {
             reserved = false;
         } else {
-            reserved = (at != 0) ? true : false;
+            // A deferred allocate records an allocation even when its start
+            // time is in the future
+            reserved = (at != 0) && match_op != match_op_t::MATCH_DEFERRED_ALLOCATE;
             st = (reserved) ? job_lifecycle_t::RESERVED : job_lifecycle_t::ALLOCATED;
             if (reserved)
                 rq->set_reservation (jobid);

@@ -84,6 +84,7 @@ set(ALL_TESTS
   t3042-storage-node.t
   t3044-resource-rabbit-cancel.t
   t3045-resource-reserve.t
+  t3046-resource-deferred.t
   t3300-system-dontblock.t
   t3301-system-latestart.t
   t4000-match-params.t
